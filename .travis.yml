@@ -1,0 +1,9 @@
+language: bash
+os: linux
+
+
+script:
+  - set -e && for i in $(ls run.d) ; do test -x run.d/${i} ; done
+
+notifications:
+  email: false
