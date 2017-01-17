@@ -7,7 +7,7 @@
 #
 # http://llvm.org/releases/3.8.0/tools/clang/docs/ClangFormatStyleOptions.html
 AlignAfterOpenBracket: true
-AlignConsecutiveAssignments: false
+AlignConsecutiveAssignments: true
 AlignEscapedNewlinesLeft: false
 AlignOperands: true
 AlignTrailingComments: false
@@ -18,12 +18,11 @@ AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: None
-AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: true
 BasedOnStyle: Mozilla
 BinPackArguments: false
-BinPackParameters: false # this applies to template arguments
+BinPackParameters: true # this applies to template arguments, function arguments and typedefs, so we cannot set this to false (very much unfortunately)!
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Mozilla
 BreakBeforeTernaryOperators: true
