@@ -76,7 +76,14 @@ def check_file(touched_file, basedir, format_binary, extension_whitelist=CPP_EXT
 
 if __name__ == '__main__':
     dirname = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else os.getcwd())
-    fails = check_dir(dirname, mode='staged')
+    try:
+        fails = check_dir(dirname, mode='staged')
+    except FileNotFoundError as err:
+        raise RuntimeError("""If you have trouble with clang-format, you can specify which version to use with
+
+    git config hooks.clangformat clang-format
+
+The original error was: {}""".format(err))
     if len(fails) > 0:
         print('files need to be formatted:\n\t{}'.format('\n\t'.join(fails)) )
     sys.exit(len(fails))
