@@ -55,6 +55,8 @@ def check_file(touched_file, basedir, format_binary, extension_whitelist=CPP_EXT
     if os.path.splitext(touched_file)[1] not in extension_whitelist:
         return
     filename = os.path.join(basedir, touched_file)
+    if not os.path.isfile(filename):
+        return
 
     try:
         out = subprocess.check_output([format_binary, '-style=file', filename],
