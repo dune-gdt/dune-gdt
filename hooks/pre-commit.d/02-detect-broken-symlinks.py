@@ -6,18 +6,17 @@ with status 1. If none are found exit with status 0.
 """
 import sys
 import os
+from pathlib import Path
 
-def _target(path):
-    """Resolve relative symlinks"""
+def _resolve(path):
     try:
-        from pathlib import Path
-        return Path(path).resolve()
-    except ImportError:
-        pass
-    target_path = os.readlink(path)
-    if not os.path.isabs(target_path):
-        target_path = os.path.join(os.path.dirname(path),target_path)
-    return str(target_path)
+        return path.resolve(False)
+    except TypeError:
+        # fallback for py < 3.6
+        try:
+            return path.resolve()
+        except FileNotFoundError:
+            return Path(os.readlink(str(path)))
 
 broken = []
 for root, dirs, files in os.walk('.'):
@@ -25,11 +24,12 @@ for root, dirs, files in os.walk('.'):
         # Ignore the .git directory.
         continue
     for filename in files:
-        path = os.path.join(root,filename)
-        if os.path.islink(path):
-            target_path = _target(path)
-            if not os.path.exists(target_path):
-                broken.append('{} --> {}'.format(path, target_path))
+        path = Path(os.path.join(root,filename))
+        if path.is_symlink():
+            target = _resolve(path)
+            # exists already checks if the pointed to file is there
+            if not path.exists():
+                broken.append('{} --> {}'.format(path, target))
         else:
             # If it's not a symlink we're not interested.
             continue
