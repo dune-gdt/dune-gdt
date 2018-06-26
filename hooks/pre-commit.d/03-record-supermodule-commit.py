@@ -7,18 +7,29 @@ import os
 from pathlib import Path
 import subprocess
 from configparser import ConfigParser
-
+from functools import partial
 
 root = Path(os.getcwd())
 supermod = Path(root, '..')
 modfile_fn = root / '.gitsuper'
+get_output = partial(subprocess.check_output, universal_newlines=True)
+
+def for_module(cf, mod, section=None):
+    os.chdir(mod)
+    remote = get_output(['git', 'remote', 'get-url', 'origin']).strip()
+    status = get_output(['git', 'submodule', 'status']).strip()
+    commit = get_output(['git', 'rev-parse', 'HEAD']).strip()
+    section = section or 'submodule.{}'.format(mod.name)
+    cf.add_section(section)
+    cf.set(section, 'remote', remote)
+    if status:
+        cf.set(section, 'status', status)
+    cf.set(section, 'commit', commit)
+
+cf = ConfigParser()
+for_module(cf, supermod, 'supermodule')
 os.chdir(supermod)
-remote = subprocess.check_output(['git', 'remote', 'get-url', 'origin'], universal_newlines=True)
-status = subprocess.check_output(['git', 'submodule', 'status'], universal_newlines=True)
-commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], universal_newlines=True)
-section = 'supermodule'
-cf = ConfigParser(default_section=section)
-cf.set(section, 'remote', remote)
-cf.set(section, 'status', status)
-cf.set(section, 'commit', commit)
+for s in [Path(s) for s in
+              get_output(['git', 'submodule', '--quiet', 'foreach', 'pwd']).split()]:
+    for_module(cf, s)
 cf.write(open(modfile_fn, 'wt'))
