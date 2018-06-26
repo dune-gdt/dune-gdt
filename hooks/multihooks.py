@@ -44,6 +44,7 @@ installed.
 """
 
 from sys import argv
+import os
 from logging import getLogger
 from subprocess import Popen, PIPE
 from os import access, listdir, X_OK, environ
@@ -127,9 +128,10 @@ def main():
     for h in hooks:
         hook_id = '{}.d/{}'.format(hook_type, basename(h))
         log.info('Running hook {}...'.format(hook_id))
-
+        cwd = os.getcwd()
         proc = Popen([h] + argv[1:], stdout=PIPE, stderr=PIPE)
         stdout_raw, stderr_raw = proc.communicate()
+        os.chdir(cwd)
 
         stdout = stdout_raw.decode('utf-8').strip()
         stderr = stderr_raw.decode('utf-8').strip()
