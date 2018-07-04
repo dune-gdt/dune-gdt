@@ -25,7 +25,6 @@ def get_env(mod):
 
 def for_module(cf, mod, section=None):
     mod = mod.resolve()
-    logging.error('entering {}'.format(mod))
     os.chdir(mod)
     env = get_env(mod)
     remote = get_output(['git', 'remote', 'get-url', 'origin'], env=env).strip()
