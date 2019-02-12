@@ -14,7 +14,6 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
 """
 Small delegating Python script to allow multiple hooks in a git repository.
 
@@ -50,7 +49,6 @@ from subprocess import Popen, PIPE
 from os import access, listdir, X_OK, environ
 from os.path import isfile, isdir, abspath, normpath, dirname, join, basename
 
-
 GIT_HOOKS = [
     'applypatch-msg',
     'commit-msg',
@@ -71,10 +69,7 @@ def setup_logging():
 
     from logging import basicConfig, DEBUG, ERROR
 
-    FORMAT = (
-        '  %(log_color)s%(levelname)-8s%(reset)s | '
-        '%(log_color)s%(message)s%(reset)s'
-    )
+    FORMAT = ('  %(log_color)s%(levelname)-8s%(reset)s | ' '%(log_color)s%(message)s%(reset)s')
 
     logging_kwargs = {
         'level': DEBUG if environ.get('GIT_HOOKS_DEBUG', False) else ERROR,
@@ -117,9 +112,7 @@ def main():
 
     # Gather scripts to call
     files = [join(hooks_dir, f) for f in listdir(hooks_dir)]
-    hooks = sorted(
-        [h for h in files if isfile(h) and access(h, X_OK)]
-    )
+    hooks = sorted([h for h in files if isfile(h) and access(h, X_OK)])
     if not hooks:
         log.warning('No sub-hooks found for {}.'.format(hook_type))
         exit(0)

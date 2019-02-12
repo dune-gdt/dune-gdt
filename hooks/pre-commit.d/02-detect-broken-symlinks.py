@@ -22,11 +22,10 @@ def _resolve(path):
 
 
 broken = []
-files = subprocess.check_output(['git', 'ls-files'],
-                                   universal_newlines=True)
+files = subprocess.check_output(['git', 'ls-files'], universal_newlines=True)
 root = os.getcwd()
 for filename in files.splitlines():
-    path = Path(os.path.join(root,filename))
+    path = Path(os.path.join(root, filename))
     if path.is_symlink():
         target = _resolve(path)
         # exists already checks if the pointed to file is there

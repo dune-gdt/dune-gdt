@@ -10,7 +10,6 @@ from configparser import ConfigParser
 from functools import partial
 import logging
 
-
 get_output = partial(subprocess.check_output, universal_newlines=True)
 root = Path(get_output(['git', 'rev-parse', '--show-toplevel']).strip())
 supermod = Path(root, '..')
@@ -61,9 +60,8 @@ def for_module(cf, mod, section=None):
 cf = ConfigParser()
 for_module(cf, supermod, 'supermodule')
 os.chdir(supermod)
-for s in [Path(s) for s in
-              get_output(['git', 'submodule', '--quiet', 'foreach', 'pwd'],
-                         env=get_env(supermod)).split()]:
+for s in [
+        Path(s) for s in get_output(['git', 'submodule', '--quiet', 'foreach', 'pwd'], env=get_env(supermod)).split()
+]:
     for_module(cf, s)
 _save_config(supermod_name, root.parts[-1], cf)
-
