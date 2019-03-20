@@ -48,14 +48,14 @@ jobs:
 
   - script: |
       python3 ./.ci/shared/make_env_file.py
-      $(docker.run) /home/dune-ci/src/dune-xt-common/.ci/shared/test_cpp.bash
+      $(docker.run) /home/dune-ci/src/${MY_MODULE}/.ci/shared/test_cpp.bash
     displayName: 'test cpp'
     env:
       CODECOV_TOKEN: $(codecov.token)
 
   - script: |
       python3 ./.ci/shared/make_env_file.py
-      $(docker.run) /home/dune-ci/src/dune-xt-common/.ci/shared/test_python.bash
+      $(docker.run) /home/dune-ci/src/${MY_MODULE}/.ci/shared/test_python.bash
     displayName: 'test python'
     env:
       CODECOV_TOKEN: $(codecov.token)
