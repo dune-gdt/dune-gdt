@@ -13,7 +13,6 @@
 #   Tobias Leibner  (2018)
 # ~~~
 
-
 set -e
 set -x
 
@@ -29,7 +28,9 @@ CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${CTEST}
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} headercheck
 
-# clang coverage currently disabled for being to mem hungry
+rsync -a ${DUNE_BUILD_DIR}/${MY_MODULE}/dune/xt/*/test/*xml /testresults
+
+# clang coverage currently disabled for being too mem hungry
 if [[ ${CC} == *"clang"* ]] ; then
     echo "Coverage reporting disabled with Clang"
     exit 0
