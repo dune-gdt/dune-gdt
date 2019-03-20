@@ -16,7 +16,7 @@ from os.path import expanduser
 from shlex import quote
 home = expanduser("~")
 
-prefixes = os.environ.get('ENV_PREFIXES', 'TRAVIS DRONE GITLAB CODECOV CI encrypt TOKEN TESTS').split(' ')
+prefixes = os.environ.get('ENV_PREFIXES', 'BUILD SYSTEM DRONE GITLAB CODECOV CI encrypt TOKEN TESTS').split(' ')
 blacklist = ['TRAVIS_COMMIT_MESSAGE']
 env_file = os.environ.get('DOCKER_ENVFILE', os.path.join(home, 'env'))
 with open(env_file, 'wt') as env:
