@@ -36,8 +36,8 @@ jobs:
       echo "##vso[task.setvariable variable=docker.image]$IMAGE"
       ENV_FILE=${HOME}/env
       echo "##vso[task.setvariable variable=docker.env]${ENV_FILE}"
-      mkdir ${HOME}/testresults
-      DOCKER_RUN="docker run -v ${HOME}/testresults:/home/dune-ci/testresults --env-file ${ENV_FILE} ${IMAGE}"
+      mkdir $(Agent.HomeDirectory)/testresults && chmod -R 777 $(Agent.HomeDirectory)/testresults
+      DOCKER_RUN="docker run -v $(Agent.HomeDirectory)/testresults:/home/dune-ci/testresults --env-file ${ENV_FILE} ${IMAGE}"
       echo "##vso[task.setvariable variable=docker.run]${DOCKER_RUN}"
     displayName: 'env setup'
 
@@ -68,5 +68,5 @@ jobs:
   - task: PublishTestResults@2
     inputs:
       testResultsFormat: 'JUnit'
-      testResultsFiles: '${HOME}/testresults/*xml'
+      testResultsFiles: '$(Agent.HomeDirectory)/testresults/*xml'
     condition: always()
