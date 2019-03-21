@@ -7,7 +7,7 @@ parameters:
 
 jobs:
 - job: ${{ parameters.jobname }}
-  timeoutInMinutes: 180
+  timeoutInMinutes: 240
   pool:
     vmImage: 'Ubuntu-16.04'
 
