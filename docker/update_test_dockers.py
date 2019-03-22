@@ -128,12 +128,14 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
     for tag, settings in tag_matrix.items():
         cc = settings['cc']
         cxx = settings['cxx']
+        vars = importlib.import_module(module)
         tmp_dir = path.join(path.dirname(path.abspath(__file__)), module, tag)
         logger = logging.getLogger('{} - {}'.format(module, tag))
         repo = 'dunecommunity/{}-testing_{}'.format(module, tag)
 
         with Timer('docker build ', logger.info):
             buildargs = {'COMMIT': commit, 'CC': cc, 'project_name': module,
+                         'modules_to_delete': vars.modules_to_delete,
                          'BASE': settings['base']}
             img = _docker_build(client, rm=False, buildargs=buildargs,
                     tag='{}:{}'.format(repo, commit), path=dockerdir)
