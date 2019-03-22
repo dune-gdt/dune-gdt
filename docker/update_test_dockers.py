@@ -108,7 +108,7 @@ def _build_base(scriptdir, distro, cc, cxx, commit, refname):
     base_postfix = '{}_{}'.format(distro, cc)
     slug_postfix = 'base_{}'.format(base_postfix)
     logger = logging.getLogger('{}'.format(slug_postfix))
-    dockerdir = path.join(scriptdir, 'dune-xt-docker_base')
+    dockerdir = path.join(scriptdir, 'shared_base')
     dockerfile = path.join(dockerdir, 'Dockerfile')
     repo = 'dunecommunity/dune-xt-docker_{}'.format(slug_postfix)
     with Timer('docker build ', logger.info):
@@ -128,12 +128,8 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
     for tag, settings in tag_matrix.items():
         cc = settings['cc']
         cxx = settings['cxx']
-        vars = importlib.import_module(module)
         tmp_dir = path.join(path.dirname(path.abspath(__file__)), module, tag)
-        modules = settings['deletes']
         logger = logging.getLogger('{} - {}'.format(module, tag))
-        modules_to_delete = '{} {}'.format(modules, vars.modules_to_delete)
-        logger.debug('delete: ' + modules_to_delete)
         repo = 'dunecommunity/{}-testing_{}'.format(module, tag)
 
         with Timer('docker build ', logger.info):
@@ -163,12 +159,12 @@ if __name__ == '__main__':
 
     module = arguments['MODULE_NAME']
 
-    if module == 'BASE'
+    if module == 'BASE':
         for base, cc, cxx in all_compilers:
             _build_base(scriptdir, base, cc, cxx, commit, refname)
     else:
         module_dir = os.path.join(superdir, module)
         _build_combination(tag_matrix=TAG_MATRIX,
-                            dockerdir=os.path.join(scriptdir, 'dune-xt-docker'),
+                            dockerdir=os.path.join(scriptdir, 'individual_base'),
                             module=module,
                             commit=commit, refname=refname)
