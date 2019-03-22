@@ -2,8 +2,9 @@ ARG BASE
 FROM dunecommunity/testing-base_${BASE}
 
 ARG COMMIT
+ARG SUPERURL
 
-RUN git clone https://github.com/dune-community/dune-xt-super.git ${SUPERDIR} && \
+RUN git clone ${SUPERURL} ${SUPERDIR} && \
     cd ${SUPERDIR} && \
     git checkout ${COMMIT} && \
     git submodule foreach git reset --hard && \

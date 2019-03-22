@@ -103,7 +103,7 @@ def _cmd(cmd, logger):
         raise cp
 
 
-def _build_base(scriptdir, distro, cc, cxx, commit, refname):
+def _build_base(scriptdir, distro, cc, cxx, commit, refname, superurl):
     client = docker.from_env(version='auto')
     base_postfix = '{}_{}'.format(distro, cc)
     slug_postfix = 'base_{}'.format(base_postfix)
@@ -112,7 +112,8 @@ def _build_base(scriptdir, distro, cc, cxx, commit, refname):
     dockerfile = path.join(dockerdir, 'Dockerfile')
     repo = 'dunecommunity/dune-xt-docker_{}'.format(slug_postfix)
     with Timer('docker build ', logger.info):
-        buildargs = {'COMMIT': commit, 'CC': cc, 'CXX': cxx, 'BASE': distro}
+        buildargs = {'COMMIT': commit, 'CC': cc, 'CXX': cxx,
+                    'SUPERURL': superurl, 'BASE': distro}
         img = _docker_build(client, rm=False, buildargs=buildargs, pull=True,
                             tag='{}:{}'.format(repo, commit), path=dockerdir)
         img.tag(repo, refname)
@@ -147,12 +148,21 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
     return imgs
 
 
+def _get_superurl(superdir):
+    superurl = os.environ.get('CI_REPOSITORY_URL', None)
+    if superurl:
+        return superurl
+    cmd = ['git', 'remote', 'get-url', 'origin']
+    return subprocess.check_output(cmd, universal_newlines=True)
+
+
 if __name__ == '__main__':
     arguments = docopt(__doc__)
     level = logging.DEBUG if arguments['--verbose'] else logging.INFO
     logging.basicConfig(level=level)
     scriptdir = path.dirname(path.abspath(__file__))
-    superdir = path.join(scriptdir, '..', '..')
+    superdir = path.join(scriptdir, '..', '..', '..')
+    superurl = _get_superurl(superdir)
 
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], universal_newlines=True).strip()
     commit = os.environ.get('CI_COMMIT_SHA', head)
@@ -163,7 +173,7 @@ if __name__ == '__main__':
 
     if module == 'BASE':
         for base, cc, cxx in all_compilers:
-            _build_base(scriptdir, base, cc, cxx, commit, refname)
+            _build_base(scriptdir, base, cc, cxx, commit, refname, superurl)
     else:
         module_dir = os.path.join(superdir, module)
         _build_combination(tag_matrix=TAG_MATRIX,
