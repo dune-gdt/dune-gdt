@@ -155,16 +155,18 @@ if __name__ == '__main__':
     logging.basicConfig(level=level)
     scriptdir = path.dirname(path.abspath(__file__))
     superdir = path.join(scriptdir, '..', '..')
-    names = ['common', 'functions', 'la', 'grid', 'data'] if 'XT_MODULE_NAME' not in os.environ else [os.environ['XT_MODULE_NAME']]
 
     head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], universal_newlines=True).strip()
     commit = os.environ.get('CI_COMMIT_SHA', head)
     refname = os.environ.get('CI_COMMIT_REF_NAME', 'master').replace('/', '_')
-
     all_compilers = {(f['base'], f['cc'], f['cxx']) for f in TAG_MATRIX.values()}
-    base_imgs = [_build_base(scriptdir, base, cc, cxx, commit, refname) for base, cc, cxx in all_compilers]
-    for i in names:
-        module = 'dune-xt-{}'.format(i)
+
+    module = arguments['MODULE_NAME']
+
+    if module == 'BASE'
+        for base, cc, cxx in all_compilers:
+            _build_base(scriptdir, base, cc, cxx, commit, refname)
+    else:
         module_dir = os.path.join(superdir, module)
         _build_combination(tag_matrix=TAG_MATRIX,
                             dockerdir=os.path.join(scriptdir, 'dune-xt-docker'),
