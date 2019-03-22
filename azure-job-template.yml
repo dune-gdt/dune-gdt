@@ -43,20 +43,20 @@ jobs:
     displayName: 'env setup'
 
   - script: |
-      docker build --build-arg BASE=$(docker.baseimage) -t $(docker.image) -f .ci/docker/Dockerfile .
+      docker build --build-arg BASE=$(docker.baseimage) -t $(docker.image) -f .ci/shared/ci_run/Dockerfile .
       docker inspect $(docker.image)
     displayName: 'build image'
 
   - script: |
-      python3 ./.ci/shared/make_env_file.py
-      $(docker.run) /home/dune-ci/src/${MY_MODULE}/.ci/shared/test_cpp.bash
+      python3 ./.ci/shared/scripts/make_env_file.py
+      $(docker.run) /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
     displayName: 'test cpp'
     env:
       CODECOV_TOKEN: $(codecov.token)
 
   - script: |
-      python3 ./.ci/shared/make_env_file.py
-      $(docker.run) /home/dune-ci/src/${MY_MODULE}/.ci/shared/test_python.bash
+      python3 ./.ci/shared/scripts/make_env_file.py
+      $(docker.run) /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_python.bash
     displayName: 'test python'
     env:
       CODECOV_TOKEN: $(codecov.token)
