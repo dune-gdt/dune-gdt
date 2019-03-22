@@ -134,7 +134,7 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
 
         with Timer('docker build ', logger.info):
             buildargs = {'COMMIT': commit, 'CC': cc, 'project_name': module,
-                         'modules_to_delete': modules_to_delete, 'BASE': settings['base']}
+                         'BASE': settings['base']}
             img = _docker_build(client, rm=False, buildargs=buildargs,
                     tag='{}:{}'.format(repo, commit), path=dockerdir)
             img.tag(repo, refname)
