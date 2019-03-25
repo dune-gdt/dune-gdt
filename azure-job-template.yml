@@ -43,7 +43,7 @@ jobs:
     displayName: 'env setup'
 
   - script: |
-      docker build --build-arg BASE=$(docker.baseimage) -t $(docker.image) -f .ci/shared/ci_run/Dockerfile .
+      docker build --build-arg BASE=$(docker.baseimage) -t $(docker.image) -f .ci/shared/docker/ci_run/Dockerfile .
       docker inspect $(docker.image)
     displayName: 'build image'
 
