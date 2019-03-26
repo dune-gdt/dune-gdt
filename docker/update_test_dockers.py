@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 """
 Update docker images and templated scripts in dune-xt-*
 
@@ -29,10 +28,27 @@ except ImportError:
     sys.exit(1)
 from docker.utils.json_stream import json_stream
 
-TAG_MATRIX = {'debian-unstable_gcc_full': {'cc': 'gcc', 'cxx': 'g++', 'deletes': "", 'base': 'debian-unstable'},
-        'debian_gcc_full': {'cc': 'gcc', 'cxx': 'g++', 'deletes': "", 'base': 'debian'},
-        'debian_clang_full': {'cc': 'clang', 'cxx': 'clang++', 'deletes':"", 'base': 'debian'},}
-        #'arch_gcc_full': {'cc': 'gcc', 'cxx': 'g++', 'deletes': "", 'base': 'arch'},}
+TAG_MATRIX = {
+    'debian-unstable_gcc_full': {
+        'cc': 'gcc',
+        'cxx': 'g++',
+        'deletes': "",
+        'base': 'debian-unstable'
+    },
+    'debian_gcc_full': {
+        'cc': 'gcc',
+        'cxx': 'g++',
+        'deletes': "",
+        'base': 'debian'
+    },
+    'debian_clang_full': {
+        'cc': 'clang',
+        'cxx': 'clang++',
+        'deletes': "",
+        'base': 'debian'
+    },
+}
+#'arch_gcc_full': {'cc': 'gcc', 'cxx': 'g++', 'deletes': "", 'base': 'arch'},}
 
 
 @contextlib.contextmanager
@@ -46,6 +62,7 @@ def remember_cwd(dirname):
 
 
 class Timer(object):
+
     def __init__(self, section, log):
         self._section = section
         self._start = 0
@@ -66,6 +83,7 @@ class Timer(object):
         self.stop()
         self._log('Execution of {} took {} (s)'.format(self._section, self.dt))
 
+
 def _docker_build(client, **kwargs):
     resp = client.api.build(**kwargs)
     if isinstance(resp, six.string_types):
@@ -79,10 +97,7 @@ def _docker_build(client, **kwargs):
             raise docker.errors.BuildError(msg, resp)
         if 'stream' in chunk:
             output.append(chunk['stream'])
-            match = re.search(
-                r'(^Successfully built |sha256:)([0-9a-f]+)$',
-                chunk['stream']
-            )
+            match = re.search(r'(^Successfully built |sha256:)([0-9a-f]+)$', chunk['stream'])
             if match:
                 image_id = match.group(2)
         last_event = chunk
@@ -112,10 +127,9 @@ def _build_base(scriptdir, distro, cc, cxx, commit, refname, superurl):
     dockerfile = path.join(dockerdir, 'Dockerfile')
     repo = 'dunecommunity/dune-xt-docker_{}'.format(slug_postfix)
     with Timer('docker build ', logger.info):
-        buildargs = {'COMMIT': commit, 'CC': cc, 'CXX': cxx,
-                    'SUPERURL': superurl, 'BASE': distro}
-        img = _docker_build(client, rm=False, buildargs=buildargs, pull=True,
-                            tag='{}:{}'.format(repo, commit), path=dockerdir)
+        buildargs = {'COMMIT': commit, 'CC': cc, 'CXX': cxx, 'SUPERURL': superurl, 'BASE': distro}
+        img = _docker_build(
+            client, rm=False, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
         img.tag(repo, refname)
     with Timer('docker push {}:{}|{}'.format(repo, refname, commit), logger.info):
         client.images.push(repo, tag=refname)
@@ -135,11 +149,15 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
         repo = 'dunecommunity/{}-testing_{}'.format(module, tag)
 
         with Timer('docker build ', logger.info):
-            buildargs = {'COMMIT': commit, 'CC': cc, 'project_name': module,
-                         'modules_to_delete': vars.modules_to_delete,
-                         'BASE': settings['base']}
-            img = _docker_build(client, rm=False, buildargs=buildargs, pull=True,
-                    tag='{}:{}'.format(repo, commit), path=dockerdir)
+            buildargs = {
+                'COMMIT': commit,
+                'CC': cc,
+                'project_name': module,
+                'modules_to_delete': vars.modules_to_delete,
+                'BASE': settings['base']
+            }
+            img = _docker_build(
+                client, rm=False, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
             img.tag(repo, refname)
         with Timer('docker push {}:{}|{}'.format(repo, refname, commit), logger.info):
             client.images.push(repo, tag=refname)
@@ -176,7 +194,9 @@ if __name__ == '__main__':
             _build_base(scriptdir, base, cc, cxx, commit, refname, superurl)
     else:
         module_dir = os.path.join(superdir, module)
-        _build_combination(tag_matrix=TAG_MATRIX,
-                            dockerdir=os.path.join(scriptdir, 'individual_base'),
-                            module=module,
-                            commit=commit, refname=refname)
+        _build_combination(
+            tag_matrix=TAG_MATRIX,
+            dockerdir=os.path.join(scriptdir, 'individual_base'),
+            module=module,
+            commit=commit,
+            refname=refname)
