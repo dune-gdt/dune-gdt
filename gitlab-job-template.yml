@@ -1,9 +1,8 @@
 # kate: indent-width 2;
 
 variables:
-  TRAVIS_BRANCH: $(Build.SourceBranchName)
-  TRAVIS_COMMIT: $(Build.SourceVersion)
-
+  TRAVIS_BRANCH: ${CI_COMMIT_REF_NAME}
+  TRAVIS_COMMIT: ${CI_COMMIT_SHA}
 
 .jobtpl:
   before_script: |
