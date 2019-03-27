@@ -3,9 +3,20 @@
 variables:
   TRAVIS_BRANCH: ${CI_COMMIT_REF_NAME}
   TRAVIS_COMMIT: ${CI_COMMIT_SHA}
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
 
 .jobtpl:
+  services:
+    - docker:dind
+  retry:
+      max: 2
+      when:
+          - always
+  image: docker:stable
   before_script: |
+    apk --update add openssh-client rsync git file bash python3
+    pip3 install -U docker jinja2 docopt
     export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_BRANCH/\//_}"
     export IMAGE="dunecommunity/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
     # get image with fallback to master branch of the super repo
