@@ -5,6 +5,7 @@ variables:
   TRAVIS_COMMIT: ${CI_COMMIT_SHA}
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
+  GIT_SUBMODULE_STRATEGY: recursive
 
 .jobtpl:
   services:
@@ -25,6 +26,7 @@ variables:
       export ENV_FILE=${HOME}/env
       mkdir ${CI_PROJECT_DIR}/testresults && chmod -R 777 ${CI_PROJECT_DIR}/testresults
       DOCKER_RUN="docker run -v ${CI_PROJECT_DIR}/testresults:/home/dune-ci/testresults --env-file ${ENV_FILE} ${IMAGE}"
+      git submodule update --init --recursive
       docker build --build-arg BASE=${BASEIMAGE} -t ${IMAGE} -f .ci/shared/docker/ci_run/Dockerfile .
       docker inspect ${IMAGE}
   script:
@@ -35,6 +37,7 @@ variables:
 
   after_script:
     - |
+      export IMAGE="dunecommunity/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
       echo $DOCKER_PW | docker login --username="$DOCKER_USER" --password-stdin
       docker push ${IMAGE}
 
