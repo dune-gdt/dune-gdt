@@ -28,7 +28,7 @@ CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${CTEST}
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} headercheck
 
-cp ${DUNE_BUILD_DIR}/${MY_MODULE}/${MY_MODULE/-/\/}/test/*xml ${HOME}/testresults/
+cp ${DUNE_BUILD_DIR}/${MY_MODULE}/${MY_MODULE//-/\/}/test/*xml ${HOME}/testresults/
 
 # clang coverage currently disabled for being too mem hungry
 if [[ ${CC} == *"clang"* ]] ; then
