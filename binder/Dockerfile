@@ -1,7 +1,6 @@
-FROM dunecommunity/xt-super_debian
+FROM dunecommunity/xt-super_debian:master
 MAINTAINER rene.fritze@wwu.de
 
-# binder wants to set the NB_ vars anyways, so we use it to service both setups
 ARG NB_USER
 ARG NB_UID
 ARG DXT_JUPYTER_TOKEN
