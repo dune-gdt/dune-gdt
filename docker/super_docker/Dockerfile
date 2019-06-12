@@ -6,6 +6,7 @@ ENV CC=gcc \
 
 USER root
 ADD . ${SUPERDIR}/
+COPY .ci/shared/docker/super_docker/build_bindings.bash /tmp
 WORKDIR ${SUPERDIR}
 RUN chown dune-ci -R ${SUPERDIR}
 USER dune-ci
@@ -15,3 +16,4 @@ RUN ./bin/download_external_libraries.py 1> /dev/null && \
     ./bin/build_external_libraries.py 1> /dev/null && \
     . environments/${DXT_ENVIRONMENT}/PATH.sh && \
     ${SRC_DCTRL} ${BLD} all
+RUN cd ${SUPERDIR} && /tmp/build_bindings.bash
