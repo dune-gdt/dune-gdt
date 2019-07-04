@@ -186,7 +186,7 @@ def _get_ci_setup():
     refname = azure_refname or gitlab_refname or 'master'
     return commit, refname.replace('/', '_')
 
-    
+
 if __name__ == '__main__':
     arguments = docopt(__doc__)
     level = logging.DEBUG if arguments['--verbose'] else logging.INFO
