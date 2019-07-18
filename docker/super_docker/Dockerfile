@@ -12,7 +12,7 @@ RUN chown dune-ci -R ${SUPERDIR}
 USER dune-ci
 
 # run our local scripts look for an OPTS env entry
-RUN cd ${SUPERDIR} && ls -l && ./bin/download_external_libraries.py 1> /dev/null && \
+RUN cd ${SUPERDIR} ; git submodule update --init --recursive  && ls -l bin/ && ./bin/download_external_libraries.py 1> /dev/null && \
     ./bin/build_external_libraries.py 1> /dev/null && \
     . environments/${DXT_ENVIRONMENT}/PATH.sh && \
     ${SRC_DCTRL} ${BLD} all
