@@ -17,6 +17,7 @@ set -x
 
 source ${SUPERDIR}/scripts/bash/retry_command.bash
 
+rm -rf ${DUNE_BUILD_DIR}/${MY_MODULE}
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} configure
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} bindings
