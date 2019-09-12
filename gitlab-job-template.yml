@@ -28,9 +28,9 @@ variables:
       DOCKER_RUN="docker run -v ${CI_PROJECT_DIR}/testresults:/home/dune-ci/testresults --env-file ${ENV_FILE} ${IMAGE}"
       git submodule update --init --recursive
       docker build --build-arg BASE=${BASEIMAGE} -t ${IMAGE} -f .ci/shared/docker/ci_run/Dockerfile .
-      docker inspect ${IMAGE}
   script:
     - |
+      [[ -f ./.gitsuper ]] && echo "Please remove .gitsuper from the repo" && exit 1
       python3 ./.ci/shared/scripts/make_env_file.py
       ${DOCKER_RUN} /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
       ${DOCKER_RUN} /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_python.bash
