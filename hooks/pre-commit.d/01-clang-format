@@ -7,6 +7,7 @@
 """
 
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -55,12 +56,12 @@ def check_file(touched_file, basedir, format_binary, extension_whitelist=CPP_EXT
     if os.path.splitext(touched_file)[1] not in extension_whitelist:
         return
     filename = os.path.join(basedir, touched_file)
-    if not os.path.isfile(filename):
+    if (not os.path.isfile(filename)) or re.search('.*gtest\.h$', filename):
         return
 
     try:
         out = subprocess.check_output([format_binary, '-style=file', filename],
-                                    universal_newlines=True)
+                                      universal_newlines=True)
     except subprocess.CalledProcessError as e:
         raise FormatRunException('Error executing {} on file\n{}'.format(format_binary, filename, e.output))
     tmp_filename = tempfile.NamedTemporaryFile(mode='wb', delete=False).name
