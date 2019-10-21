@@ -17,7 +17,7 @@ jobs:
     TRAVIS_BRANCH: $(Build.SourceBranchName)
     TRAVIS_COMMIT: $(Build.SourceVersion)
     MY_MODULE: ${{ parameters.module }}
-    MODULE_SUBDIR: ${{ parameters.subdir }}
+    TESTS_MODULE_SUBDIR: ${{ parameters.subdir }}
 
   steps:
   - checkout: self
