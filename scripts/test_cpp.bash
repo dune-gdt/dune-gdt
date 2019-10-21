@@ -17,17 +17,23 @@ set -e
 set -x
 
 source ${SUPERDIR}/scripts/bash/retry_command.bash
+source ${OPTS}
+CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 
 rm -rf ${DUNE_BUILD_DIR}
 ${SRC_DCTRL} ${BLD} all
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
-${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries
-
-source ${OPTS}
-CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
+if [[ x${MODULE_SUBDIR} == x"" ]] ;
+  ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries
+  HEADERCHECK="headercheck"
+else
+  ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} ${MODULE_SUBDIR}_test_binaries
+  CTEST="${CTEST} -L ${MODULE_SUBDIR}"
+  HEADERCHECK="${MODULE_SUBDIR}_headercheck"
+fi
 
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${CTEST}
-${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} headercheck
+${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} ${HEADERCHECK}
 
 cp ${DUNE_BUILD_DIR}/${MY_MODULE}/${MY_MODULE//-/\/}/test/*xml ${HOME}/testresults/
 
