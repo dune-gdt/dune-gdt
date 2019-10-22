@@ -23,7 +23,7 @@ CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 rm -rf ${DUNE_BUILD_DIR}
 ${SRC_DCTRL} ${BLD} all
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
-if [[ x${TESTS_MODULE_SUBDIR} == x"" ]] ; then
+if [ ! -z "${TESTS_MODULE_SUBDIR}" ] ; then
   ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries
   HEADERCHECK="headercheck"
 else
