@@ -1,10 +1,10 @@
 # kate: indent-width 2;
 
 parameters:
-  dockerimage: ''  # defaults for any parameters that aren't specified
-  module: ''
-  subdir: ''
-  jobname: ''
+  dockerimage: ""  # defaults for any parameters that aren't specified
+  module: ""
+  subdir: ""
+  jobname: ""
 
 jobs:
 - job: ${{ parameters.jobname }}
