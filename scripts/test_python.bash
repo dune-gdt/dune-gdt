@@ -18,7 +18,7 @@ set -x
 source ${SUPERDIR}/scripts/bash/retry_command.bash
 
 rm -rf ${DUNE_BUILD_DIR}
-${SRC_DCTRL} ${BLD} all
+${SRC_DCTRL} ${BLD} --module=${MY_MODULE} all
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} bindings
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_python
