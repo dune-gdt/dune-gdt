@@ -157,7 +157,7 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
                 'BASE': settings['base']
             }
             img = _docker_build(
-                client, rm=False, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
+                client, rm=True, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
             img.tag(repo, refname)
         with Timer('docker push {}:{}|{}'.format(repo, refname, commit), logger.info):
             client.images.push(repo, tag=refname)
