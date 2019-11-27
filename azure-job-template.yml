@@ -3,7 +3,7 @@
 parameters:
   dockerimage: ""  # defaults for any parameters that aren't specified
   module: ""
-  subdir: ""
+  subdir: "None"
   jobname: ""
 
 jobs:
