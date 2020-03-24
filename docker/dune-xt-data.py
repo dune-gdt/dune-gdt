@@ -1,4 +1,3 @@
-modules_to_delete = 'dune-xt-la dune-xt-grid dune-xt-functions'
 # ~~~
 # This file is part of the dune-xt project:
 #   https://github.com/dune-community/dune-xt
@@ -10,3 +9,5 @@ modules_to_delete = 'dune-xt-la dune-xt-grid dune-xt-functions'
 #   René Fritze    (2019)
 #   Tobias Leibner (2019 - 2020)
 # ~~~
+
+modules_to_delete = ''
