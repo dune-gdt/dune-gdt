@@ -11,7 +11,6 @@
 #   René Fritze    (2019)
 #   Tobias Leibner (2019 - 2020)
 # ~~~
-
 """
 Update docker images and templated scripts in dune-xt-*
 
