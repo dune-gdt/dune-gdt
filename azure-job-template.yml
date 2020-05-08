@@ -3,7 +3,6 @@
 parameters:
   dockerimage: ""  # defaults for any parameters that aren't specified
   module: ""
-  subdir: "None"
   jobname: ""
 
 jobs:
@@ -17,7 +16,6 @@ jobs:
     TRAVIS_BRANCH: $(Build.SourceBranchName)
     TRAVIS_COMMIT: $(Build.SourceVersion)
     MY_MODULE: ${{ parameters.module }}
-    TESTS_MODULE_SUBDIR: ${{ parameters.subdir }}
 
   steps:
   - checkout: self
@@ -51,7 +49,7 @@ jobs:
 
   - script: |
       python3 ./.ci/shared/scripts/make_env_file.py
-      $(docker.run) /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+      $(docker.run) /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp_azure.bash
     displayName: 'test cpp'
     env:
       CODECOV_TOKEN: $(codecov.token)
