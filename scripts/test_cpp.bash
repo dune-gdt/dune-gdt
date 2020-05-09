@@ -20,7 +20,7 @@ source ${OPTS}
 CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
-if [ "${TESTS_MODULE_SUBDIR}" = "None" ] ; then
+if [ "${TESTS_MODULE_SUBDIR}" = '"None"' ] ; then
   ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries
   HEADERCHECK="headercheck"
 else
