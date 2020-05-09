@@ -6,6 +6,7 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
   GIT_SUBMODULE_STRATEGY: recursive
+  TESTS_MODULE_SUBDIR: None
 
 .jobtpl:
   services:
