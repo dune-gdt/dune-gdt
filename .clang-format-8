@@ -1,0 +1,31 @@
+# This file is part of the dune-gdt project:
+#   https://github.com/dune-community/dune-gdt
+# Copyright 2010-2016 dune-gdt developers and contributors. All rights reserved.
+# License: BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# Authors:
+#   Felix Schindler (2010, 2013, 2016)
+#
+# See
+# https://releases.llvm.org/8.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+# for the available options, and
+# https://github.com/llvm/llvm-project/blob/release/8.x/clang/lib/Format/Format.cpp
+# for the Mozilla style definition
+BasedOnStyle: Mozilla
+AlignTrailingComments: false
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortFunctionsOnASingleLine: Empty
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+BreakBeforeBinaryOperators: NonAssignment
+ColumnLimit: 120
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: true
+FixNamespaceComments: true
+IndentPPDirectives: AfterHash
+Language: Cpp
+MaxEmptyLinesToKeep: 2
+PenaltyReturnTypeOnItsOwnLine: 60
+SortIncludes: false
+SpaceAfterTemplateKeyword: true
+Standard: Cpp11
+TabWidth: 2
