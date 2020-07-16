@@ -15,11 +15,11 @@ variables:
       max: 2
       when:
           - always
-  image: docker:stable
+  image: docker:19.03.12
   before_script:
     - |
-      apk --update add openssh-client rsync git file bash python3
-      pip3 install -U docker jinja2 docopt
+      apk --update add openssh-client rsync git file bash python3 py3-pip
+      pip install -U docker jinja2 docopt
       export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_BRANCH/\//_}"
       export IMAGE="dunecommunity/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
       # get image with fallback to master branch of the super repo
