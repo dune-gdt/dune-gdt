@@ -16,7 +16,7 @@ set -e
 set -x
 
 source ${SUPERDIR}/scripts/bash/retry_command.bash
-source ${OPTS}
+source ${SUPERDIR}/${OPTS}
 CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
