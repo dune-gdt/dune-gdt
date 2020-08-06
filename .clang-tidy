@@ -1,7 +1,18 @@
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-clang-analyzer-alpha*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,readability-*'
-HeaderFilterRegex: ''
+---
+Checks:          'modernize-use-using,
+    -clang-diagnostic-c++98-c++11-c++14-compat,
+    -clang-diagnostic-c++98-c++11-compat,
+    -clang-analyzer*'
+# unused form modernize*: 'modernize-use-nodiscard modernize-use-trailing-return-type'
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*/dune-xt/dune/.*'
 AnalyzeTemporaryDtors: false
-CheckOptions:    
+FormatStyle:     file
+CheckOptions:
+  - key:             cert-dcl16-c.NewSuffixes
+    value:           'L;LL;LU;LLU'
+  - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value:           '1'
   - key:             google-readability-braces-around-statements.ShortStatementLines
     value:           '1'
   - key:             google-readability-function-size.StatementThreshold
@@ -10,4 +21,16 @@ CheckOptions:
     value:           '10'
   - key:             google-readability-namespace-comments.SpacesBeforeComments
     value:           '2'
-
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           '16'
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
+  - key:             modernize-loop-convert.NamingStyle
+    value:           CamelCase
+  - key:             modernize-pass-by-value.IncludeStyle
+    value:           llvm
+  - key:             modernize-replace-auto-ptr.IncludeStyle
+    value:           llvm
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+...
