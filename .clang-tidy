@@ -1,5 +1,9 @@
 ---
-Checks:          'modernize-use-using,
+Checks: 'readability-else-after-return,modernize-use-emplace,
+    modernize-use-equals-delete,modernize-use-equals-default,
+    modernize-loop-convert,modernize-use-nullptr,
+    modernize-unary-static-assert,modernize-concat-nested-namespaces,
+    modernize-use-using,modernize-use-override,
     -clang-diagnostic-c++98-c++11-c++14-compat,
     -clang-diagnostic-c++98-c++11-compat,
     -clang-analyzer*'
