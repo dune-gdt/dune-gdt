@@ -7,6 +7,9 @@ variables:
   DOCKER_DRIVER: overlay2
   GIT_SUBMODULE_STRATEGY: recursive
   TESTS_MODULE_SUBDIR: None
+  CCACHE_BASEDIR: ${CI_PROJECT_DIR}
+  CCACHE_DIR: "${CI_PROJECT_DIR}/.ccache"
+  CCACHE_COMPILERCHECK: content
 
 .jobtpl:
   services:
@@ -16,9 +19,13 @@ variables:
       when:
           - always
   image: docker:19.03.12
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - .ccache
   before_script:
     - |
-      apk --update add openssh-client rsync git file bash python3 py3-pip
+      apk --update add openssh-client rsync git file bash python3 py3-pip ccache
       pip install -U docker jinja2 docopt
       export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_BRANCH/\//_}"
       export IMAGE="dunecommunity/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
@@ -26,7 +33,7 @@ variables:
       docker pull dunecommunity/${BASEIMAGE} || export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:master" ; docker pull dunecommunity/${BASEIMAGE}
       export ENV_FILE=${HOME}/env
       mkdir ${CI_PROJECT_DIR}/testresults && chmod -R 777 ${CI_PROJECT_DIR}/testresults
-      DOCKER_RUN="docker run -v ${CI_PROJECT_DIR}/testresults:/home/dune-ci/testresults --env-file ${ENV_FILE} ${IMAGE}"
+      DOCKER_RUN="docker run -v ${CI_PROJECT_DIR}/testresults:/home/dune-ci/testresults -v ${CI_PROJECT_DIR}/.ccache:/home/dune-ci/.ccache --env-file ${ENV_FILE} ${IMAGE}"
       git submodule update --init --recursive
       docker build --build-arg BASE=${BASEIMAGE} -t ${IMAGE} -f .ci/shared/docker/ci_run/Dockerfile .
   script:
@@ -35,13 +42,11 @@ variables:
       python3 ./.ci/shared/scripts/make_env_file.py
       ${DOCKER_RUN} /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
       ${DOCKER_RUN} /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_python.bash
-
   after_script:
     - |
       export IMAGE="dunecommunity/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
       echo $DOCKER_PW | docker login --username="$DOCKER_USER" --password-stdin
       docker push ${IMAGE}
-
   artifacts:
     reports:
       junit: '${CI_PROJECT_DIR}/testresults/*xml'
