@@ -23,8 +23,8 @@ else
   ASAN_LIB=""
 fi
 
-LD_PRELOAD=${ASAN_LIB} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
-LD_PRELOAD=${ASAN_LIB} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} bindings
+ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=print_stacktrace=1:report_error_type=1 LD_PRELOAD=${ASAN_LIB} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
+ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=print_stacktrace=1:report_error_type=1 LD_PRELOAD=${ASAN_LIB} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} bindings
 ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=print_stacktrace=1:report_error_type=1 LD_PRELOAD=${ASAN_LIB} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_python
 
 cp ${DUNE_BUILD_DIR}/${MY_MODULE}/python/pytest_results.xml ${HOME}/testresults/
