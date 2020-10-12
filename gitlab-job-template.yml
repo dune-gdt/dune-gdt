@@ -11,6 +11,8 @@ variables:
   CCACHE_DIR: "${CI_PROJECT_DIR}/.ccache"
   CCACHE_COMPILERCHECK: content
   CCACHE_COMPRESS: "true"
+  PYTEST_ADDOPTS: "-s"
+
 
 .jobtpl:
   services:
@@ -33,7 +35,7 @@ variables:
     - docker pull dunecommunity/${BASEIMAGE} || export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:master" ; docker pull dunecommunity/${BASEIMAGE}
     - export ENV_FILE=${HOME}/env
     - mkdir ${CI_PROJECT_DIR}/testresults && chmod -R 777 ${CI_PROJECT_DIR}/testresults
-    - mkdir ${CI_PROJECT_DIR}/.ccache && chmod -R 777 ${CI_PROJECT_DIR}/.ccache && ls -la ${CI_PROJECT_DIR}/.ccache
+    - mkdir -p ${CI_PROJECT_DIR}/.ccache && chmod -R 777 ${CI_PROJECT_DIR}/.ccache && ls -la ${CI_PROJECT_DIR}/.ccache
     - DOCKER_RUN="docker run -v ${CI_PROJECT_DIR}/testresults:/home/dune-ci/testresults -v ${CI_PROJECT_DIR}/.ccache:/home/dune-ci/.ccache --env-file ${ENV_FILE} ${IMAGE}"
     - git submodule update --init --recursive
     - docker build --build-arg BASE=${BASEIMAGE} -t ${IMAGE} -f .ci/shared/docker/ci_run/Dockerfile .
