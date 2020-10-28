@@ -13,7 +13,7 @@ ENV MY_MODULE=${project_name}
 # and removes xt-la, xt-grid, xt-functions for xt-common, etc
 RUN set -euxo pipefail && \
     ${SRC_DCTRL} ${BLD} all || (cat ${DUNE_BUILD_DIR}/*/CMakeFiles/CMakeError.log; false) && \
-    ${SRC_DCTRL} ${BLD} bexec "${BUILD_CMD} bindings || grep 'unknown target' " && \
+    ${SRC_DCTRL} ${BLD} bexec "${BUILD_CMD} bindings || echo no bindings" && \
     rm -rf ${MY_MODULE}  && \
     mkdir ${MY_MODULE}
 
