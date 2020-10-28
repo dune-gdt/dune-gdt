@@ -3,6 +3,7 @@ FROM dunecommunity/testing-base_${BASE}
 
 ARG COMMIT
 ARG SUPERURL
+SHELL ["/bin/bash", "-c"]
 
 RUN git clone ${SUPERURL} ${SUPERDIR} && \
     cd ${SUPERDIR} && \

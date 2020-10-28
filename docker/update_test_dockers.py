@@ -41,18 +41,18 @@ except ImportError:
 from docker.utils.json_stream import json_stream
 
 TAG_MATRIX = {
-    'debian-unstable_gcc_full': {
-        'cc': 'gcc',
-        'cxx': 'g++',
-        'deletes': "",
-        'base': 'debian-unstable'
-    },
-    'debian_gcc_full': {
-        'cc': 'gcc',
-        'cxx': 'g++',
-        'deletes': "",
-        'base': 'debian'
-    },
+    # 'debian-unstable_gcc_full': {
+    #     'cc': 'gcc',
+    #     'cxx': 'g++',
+    #     'deletes': "",
+    #     'base': 'debian-unstable'
+    # },
+    # 'debian_gcc_full': {
+    #     'cc': 'gcc',
+    #     'cxx': 'g++',
+    #     'deletes': "",
+    #     'base': 'debian'
+    # },
     'debian_clang_full': {
         'cc': 'clang',
         'cxx': 'clang++',
@@ -96,7 +96,7 @@ class Timer(object):
         self._log('Execution of {} took {} (s)'.format(self._section, self.dt))
 
 
-def _docker_build(client, **kwargs):
+def _docker_build(client, logger, **kwargs):
     resp = client.api.build(**kwargs)
     if isinstance(resp, six.string_types):
         return client.images.get(resp)
@@ -115,6 +115,7 @@ def _docker_build(client, **kwargs):
         last_event = chunk
     if image_id:
         return client.images.get(image_id)
+    logger.fatal(f"Failed docker build command: {kwargs}")
     raise docker.errors.BuildError(last_event or 'Unknown', resp)
 
 
@@ -141,7 +142,7 @@ def _build_base(scriptdir, distro, cc, cxx, commit, refname, superurl):
     with Timer('docker build ', logger.info):
         buildargs = {'COMMIT': commit, 'CC': cc, 'CXX': cxx, 'SUPERURL': superurl, 'BASE': distro}
         img = _docker_build(
-            client, rm=False, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
+            client, logger, rm=False, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
         img.tag(repo, refname)
     with Timer('docker push {}:{}|{}'.format(repo, refname, commit), logger.info):
         client.images.push(repo, tag=refname)
@@ -164,11 +165,10 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
                 'COMMIT': commit,
                 'CC': cc,
                 'project_name': module,
-                'modules_to_delete': vars.modules_to_delete,
                 'BASE': settings['base']
             }
             img = _docker_build(
-                client, rm=True, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
+                client, logger, rm=True, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
             img.tag(repo, refname)
         with Timer('docker push {}:{}|{}'.format(repo, refname, commit), logger.info):
             client.images.push(repo, tag=refname)
