@@ -29,7 +29,7 @@ ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries
 HEADERCHECK="headercheck"
 
-ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=print_stacktrace=1:report_error_type=1 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${CTEST}
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${CTEST}
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} ${HEADERCHECK}
 
 cp ${DUNE_BUILD_DIR}/${MY_MODULE}/${MY_MODULE//-/\/}/test/*xml ${HOME}/testresults/
