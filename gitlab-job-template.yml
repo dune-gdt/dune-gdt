@@ -12,6 +12,7 @@ variables:
   CCACHE_COMPILERCHECK: content
   CCACHE_COMPRESS: "true"
   PYTEST_ADDOPTS: "-s"
+  REGISTRY: zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/
 
 
 .jobtpl:
@@ -32,7 +33,7 @@ variables:
     - export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_BRANCH/\//_}"
     - export IMAGE="dunecommunity/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
     - "# get image with fallback to master branch of the super repo"
-    - docker pull dunecommunity/${BASEIMAGE} || export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:master" ; docker pull dunecommunity/${BASEIMAGE}
+    - docker pull ${REGISTRY}/${BASEIMAGE} || export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:master" ; docker pull ${REGISTRY}/${BASEIMAGE}
     - export ENV_FILE=${HOME}/env
     - mkdir ${CI_PROJECT_DIR}/testresults && chmod -R 777 ${CI_PROJECT_DIR}/testresults
     - mkdir -p ${CI_PROJECT_DIR}/.ccache && chmod -R 777 ${CI_PROJECT_DIR}/.ccache && ls -la ${CI_PROJECT_DIR}/.ccache

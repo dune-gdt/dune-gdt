@@ -1,5 +1,5 @@
 ARG BASE
-FROM dunecommunity/$BASE
+FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$BASE
 
 ADD . ${SUPERDIR}/${MY_MODULE}/
 RUN cd ${SUPERDIR} && \
