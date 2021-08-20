@@ -17,7 +17,8 @@ variables:
 
 .jobtpl:
   services:
-    - docker:dind
+    - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
+      alias: docker
   retry:
       max: 2
       when:
