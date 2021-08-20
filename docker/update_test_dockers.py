@@ -23,7 +23,7 @@ Options:
 """
 
 from docopt import docopt
-from os import path
+from os import path, environ
 import importlib
 import os
 import contextlib
@@ -61,6 +61,8 @@ TAG_MATRIX = {
     },
 }
 #'arch_gcc_full': {'cc': 'gcc', 'cxx': 'g++', 'deletes': "", 'base': 'arch'},}
+# updating gdt from not-ci now only works with this var properly set
+PROJECT = environ.get('CI_REGISTRY_IMAGE', 'zivgitlab.wwu.io/ag-ohlberger/dune-community/dune-xt-super')
 
 
 @contextlib.contextmanager
@@ -138,11 +140,11 @@ def _build_base(scriptdir, distro, cc, cxx, commit, refname, superurl):
     logger = logging.getLogger('{}'.format(slug_postfix))
     dockerdir = path.join(scriptdir, 'shared_base')
     dockerfile = path.join(dockerdir, 'Dockerfile')
-    repo = 'dunecommunity/dune-xt-docker_{}'.format(slug_postfix)
+    repo = f'{PROJECT}/{slug_postfix}'
     with Timer('docker build ', logger.info):
         buildargs = {'COMMIT': commit, 'CC': cc, 'CXX': cxx, 'SUPERURL': superurl, 'BASE': distro}
         img = _docker_build(
-            client, logger, rm=False, buildargs=buildargs, pull=True, tag='{}:{}'.format(repo, commit), path=dockerdir)
+            client, logger, rm=False, buildargs=buildargs, pull=True, tag=f'{repo}:{commit}', path=dockerdir)
         img.tag(repo, refname)
     with Timer('docker push {}:{}|{}'.format(repo, refname, commit), logger.info):
         client.images.push(repo, tag=refname)
@@ -158,7 +160,7 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
         cxx = settings['cxx']
         tmp_dir = path.join(path.dirname(path.abspath(__file__)), module, tag)
         logger = logging.getLogger('{} - {}'.format(module, tag))
-        repo = 'dunecommunity/{}-testing_{}'.format(module, tag)
+        repo = f'{PROJECT}/{module}-testing_{tag}'
 
         with Timer('docker build ', logger.info):
             buildargs = {'COMMIT': commit, 'CC': cc, 'project_name': module, 'BASE': settings['base']}
