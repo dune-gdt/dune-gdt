@@ -1,4 +1,4 @@
-FROM dunecommunity/xt-super_debian:master
+FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/dune-xt-super/super_debian:master
 MAINTAINER rene.fritze@wwu.de
 
 ARG NB_USER
