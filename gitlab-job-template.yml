@@ -31,7 +31,7 @@ variables:
     - apk --update add openssh-client rsync git file bash python3 py3-pip ccache
     - pip install -U docker jinja2 docopt
     - export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_BRANCH/\//_}"
-    - export IMAGE="dunecommunity/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
+    - export IMAGE="${CI_REGISTRY_IMAGE}/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
     - "# get image with fallback to master branch of the super repo"
     - docker pull ${REGISTRY}/${BASEIMAGE} || export BASEIMAGE="${MY_MODULE}-testing_${DOCKER_TAG}:master" ; docker pull ${REGISTRY}/${BASEIMAGE}
     - export ENV_FILE=${HOME}/env
@@ -46,7 +46,7 @@ variables:
     - ${DOCKER_RUN} /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
     - ${DOCKER_RUN} /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_python.bash
   after_script:
-    - export IMAGE="dunecommunity/ci_${MY_MODULE}-testing_${DOCKER_TAG}:${TRAVIS_COMMIT}"
+    - echo ${CI_REGISTRY_PASSWORD} | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
     - echo $DOCKER_PW | docker login --username="$DOCKER_USER" --password-stdin
     - docker push ${IMAGE}
   artifacts:
