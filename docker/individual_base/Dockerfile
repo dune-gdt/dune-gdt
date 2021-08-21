@@ -1,7 +1,7 @@
 ARG CC
 ARG COMMIT
 ARG BASE
-FROM dunecommunity/dune-xt-docker_base_${BASE}_${CC}:${COMMIT}
+FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/dune-xt-super/base_${BASE}_${CC}:${COMMIT}
 
 WORKDIR ${SUPERDIR}
 

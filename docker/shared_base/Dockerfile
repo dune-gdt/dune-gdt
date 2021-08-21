@@ -1,5 +1,5 @@
 ARG BASE
-FROM dunecommunity/testing-base_${BASE}
+FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/testing-base_${BASE}
 
 ARG COMMIT
 ARG SUPERURL
