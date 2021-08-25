@@ -41,7 +41,7 @@ variables:
     - mkdir -p ${CI_PROJECT_DIR}/.ccache && chmod -R 777 ${CI_PROJECT_DIR}/.ccache && ls -la ${CI_PROJECT_DIR}/.ccache
     - DOCKER_RUN="docker run -v ${CI_PROJECT_DIR}/testresults:/home/dune-ci/testresults -v ${CI_PROJECT_DIR}/.ccache:/home/dune-ci/.ccache --env-file ${ENV_FILE} ${IMAGE}"
     - git submodule update --init --recursive
-    - docker build --build-arg BASE=${BASEIMAGE} -t ${IMAGE} -f .ci/shared/docker/ci_run/Dockerfile .
+    - docker build --build-arg BASE=${BASEIMAGE} --build-arg REGISTRY=${REGISTRY} -t ${IMAGE} -f .ci/shared/docker/ci_run/Dockerfile .
   script:
     - "[[ -f ./.gitsuper ]] && echo 'Please remove .gitsuper from the repo' && exit 1"
     - python3 ./.ci/shared/scripts/make_env_file.py
