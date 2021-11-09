@@ -143,8 +143,13 @@ def _build_base(scriptdir, distro, cc, cxx, commit, refname, superurl):
     repo = f'{PROJECT}/{slug_postfix}'
     with Timer('docker build ', logger.info):
         buildargs = {'COMMIT': commit, 'CC': cc, 'CXX': cxx, 'SUPERURL': superurl, 'BASE': distro}
-        img = _docker_build(
-            client, logger, rm=False, buildargs=buildargs, pull=True, tag=f'{repo}:{commit}', path=dockerdir)
+        img = _docker_build(client,
+                            logger,
+                            rm=False,
+                            buildargs=buildargs,
+                            pull=True,
+                            tag=f'{repo}:{commit}',
+                            path=dockerdir)
         img.tag(repo, refname)
     with Timer('docker push {}:{}|{}'.format(repo, refname, commit), logger.info):
         client.images.push(repo, tag=refname)
@@ -170,14 +175,13 @@ def _build_combination(tag_matrix, dockerdir, module, commit, refname):
                 'BASE': settings['base'],
                 'PROJECT': PROJECT
             }
-            img = _docker_build(
-                client,
-                logger,
-                rm=True,
-                buildargs=buildargs,
-                pull=True,
-                tag='{}:{}'.format(repo, commit),
-                path=dockerdir)
+            img = _docker_build(client,
+                                logger,
+                                rm=True,
+                                buildargs=buildargs,
+                                pull=True,
+                                tag='{}:{}'.format(repo, commit),
+                                path=dockerdir)
             img.tag(repo, refname)
         with Timer('docker push {}:{}|{}'.format(repo, refname, commit), logger.info):
             client.images.push(repo, tag=refname)
@@ -225,9 +229,8 @@ if __name__ == '__main__':
             _build_base(scriptdir, base, cc, cxx, commit, refname, superurl)
     else:
         module_dir = os.path.join(superdir, module)
-        _build_combination(
-            tag_matrix=TAG_MATRIX,
-            dockerdir=os.path.join(scriptdir, 'individual_base'),
-            module=module,
-            commit=commit,
-            refname=refname)
+        _build_combination(tag_matrix=TAG_MATRIX,
+                           dockerdir=os.path.join(scriptdir, 'individual_base'),
+                           module=module,
+                           commit=commit,
+                           refname=refname)
