@@ -19,7 +19,7 @@ source ${SUPERDIR}/scripts/bash/retry_command.bash
 source ${SUPERDIR}/${OPTS}
 
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
-if [ "${TESTS_MODULE_SUBDIR}" = '"None"' ] ; then
+if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
   HEADERCHECK="headercheck"
 else
   HEADERCHECK="${TESTS_MODULE_SUBDIR}_headercheck"
