@@ -203,14 +203,13 @@ if __name__ == '__main__':
     superurl = _get_superurl()
 
     commit, refname = _get_ci_setup()
-    all_compilers = {(f['base'], f['cc'], f['cxx']) for f in TAG_MATRIX.values()}
 
     module = arguments['MODULE_NAME']
     image = arguments['IMAGE_NAME']
 
     if module == 'BASE':
-        for base, cc, cxx in all_compilers:
-            _build_base(scriptdir, base, cc, cxx, commit, refname, superurl)
+        f = TAG_MATRIX[image]
+        _build_base(scriptdir, f['base'], f['cc'], f['cxx'], commit, refname, superurl)
     else:
         module_dir = os.path.join(superdir, module)
         _build_image(image=image,
