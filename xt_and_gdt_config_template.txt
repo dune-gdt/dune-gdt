@@ -17,6 +17,8 @@ variables:
     CCACHE_COMPILERCHECK: content
     CCACHE_COMPRESS: "true"
     PYTEST_ADDOPTS: "-s"
+    MY_MODULE: DUNE_XT_OR_DUNE_GDT
+    BASE_PROJECT: zivgitlab.wwu.io/ag-ohlberger/dune-community/DUNE_XT_OR_DUNE_GDT-super
 
 .image_builder:
     tags:
