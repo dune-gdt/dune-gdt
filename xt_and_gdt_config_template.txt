@@ -130,7 +130,7 @@ lint:
     variables:
         CI_IMAGE: {{ image }}
         TESTS_MODULE_SUBDIR: {{ subdir }}
-    {%- if 'cpp' in kind %}
+    {%- if 'cpp' in kind or 'gdt' in subdir %}
     tags:
         - dustin
     {%- endif %}
@@ -149,7 +149,12 @@ lint:
     variables:
         CI_IMAGE: {{ image }}
     tags:
+    {%- if 'gdt' in subdir and 'clang' in image %}
+        - amm-only
+    {%- else %}
         - dustin
+    {%- endif %}
+
     stage: python
     needs: ["{{image}}"]
     script:
