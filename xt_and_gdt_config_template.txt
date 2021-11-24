@@ -149,12 +149,11 @@ lint:
     variables:
         CI_IMAGE: {{ image }}
     tags:
-    {%- if 'gdt' in subdir and 'clang' in image %}
+    {%- if 'gdt' in subdirs[0] and 'clang' in image %}
         - amm-only
     {%- else %}
         - dustin
     {%- endif %}
-
     stage: python
     needs: ["{{image}}"]
     script:
