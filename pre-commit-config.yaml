@@ -30,7 +30,7 @@ repos:
     -   id: cmake-format
         additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
         exclude: "config.h.cmake"
-        args: ["--config-files=.cmake_format.py"]
+        args: ["-i", "--config-files=.cmake_format.py"]
     # -   id: cmake-lint
     #     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
     #     exclude: "config.h.cmake"
