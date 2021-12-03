@@ -1,5 +1,28 @@
 ---
-Checks: 'readability-else-after-return,
+Checks: '##### readability checks #######
+         readability-else-after-return,
+         readability-const-return-type,
+         readability-container-data-pointer,
+         readability-container-size-empty,
+         readability-implicit-bool-conversion,
+         readability-inconsistent-declaration-parameter-name,
+         readability-make-member-function-const,
+         readability-non-const-parameter,
+         readability-qualified-auto,
+         readability-redundant-access-specifiers,
+         readability-redundant-control-flow,
+         readability-redundant-declaration,
+         readability-redundant-function-ptr-dereference,
+         readability-redundant-member-init,
+         readability-redundant-smartptr-get,
+         readability-redundant-string-cstr,
+         # readability-redundant-string-init,
+         readability-simplify-subscript-expr,
+         # readability-static-accessed-through-instance, # causes clang-tidy-12 segfaults
+         readability-static-definition-in-anonymous-namespace,
+         readability-string-compare,
+         readability-suspicious-call-argument,
+         readability-uniqueptr-delete-release,
          ###### modernize checks #######
          modernize-avoid-bind,
          modernize-avoid-c-arrays
@@ -33,21 +56,51 @@ Checks: 'readability-else-after-return,
          modernize-use-uncaught-exceptions,
          modernize-use-using,
          ###### misc checks #######
-         # misc-definitions-in-headers,
-         # misc-misleading-identifier
-         # misc-misplaced-const
-         # misc-new-delete-overloads
-         # misc-no-recursion
-         # misc-non-copyable-objects
+         misc-definitions-in-headers,
+         misc-misleading-identifier,
+         misc-misplaced-const,
+         misc-new-delete-overloads,
+         # misc-no-recursion,
+         misc-non-copyable-objects,
          # misc-non-private-member-variables-in-classes,
          misc-redundant-expression,
          misc-static-assert,
          # misc-throw-by-value-catch-by-reference,
          # misc-unconventional-assign-operator,
-         # misc-uniqueptr-reset-release,
+         misc-uniqueptr-reset-release,
          misc-unused-alias-decls,
          misc-unused-parameters,
-         misc-unused-using-decls'
+         misc-unused-using-decls
+         ###### bugprone checks ######
+         bugprone-argument-comment,
+         bugprone-bool-pointer-implicit-conversion,
+         bugprone-copy-constructor-init,
+         bugprone-implicit-widening-of-multiplication-result,
+         bugprone-inaccurate-erase,
+         # bugprone-macro-parentheses,
+         bugprone-misplaced-operator-in-strlen-in-alloc,
+         bugprone-misplaced-pointer-arithmetic-in-alloc,
+         bugprone-move-forwarding-reference,
+         bugprone-not-null-terminated-result,
+         bugprone-parent-virtual-call,
+         bugprone-posix-return,
+         bugprone-redundant-branch-condition,
+         # bugprone-reserved-identifier,
+         bugprone-string-constructor,
+         bugprone-string-integer-assignment,
+         bugprone-suspicious-memset-usage,
+         bugprone-suspicious-semicolon,
+         bugprone-suspicious-string-compare,
+         bugprone-swapped-arguments,
+         bugprone-terminating-continue,
+         bugprone-unused-raii,
+         bugprone-unused-return-value,
+         bugprone-use-after-move,
+         bugprone-virtual-near-miss,
+         bugprone-incorrect-roundings,
+         bugprone-infinite-loop,
+         bugprone-integer-division,
+         '
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*/(dune-xt/dune|python/dune/xt)/.*'
 AnalyzeTemporaryDtors: false
