@@ -14,29 +14,30 @@ import dune.gdt
 if sphinx.__version__ < "3.4":
     raise RuntimeError("Sphinx 3.4 or newer required")
 
-needs_sphinx = '3.4'
+needs_sphinx = "3.4"
 
 # -----------------------------------------------------------------------------
 # General configuration
 # -----------------------------------------------------------------------------
 
 this_dir = Path(__file__).resolve().parent
-src_dir = (this_dir / '..' / '..' / 'src').resolve()
+src_dir = (this_dir / ".." / ".." / "src").resolve()
 sys.path.insert(0, str(src_dir))
 sys.path.insert(0, str(this_dir))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc',
-              'sphinx.ext.coverage',
-              'sphinx.ext.autosummary',
-              'sphinx.ext.linkcode',
-              'sphinx.ext.intersphinx',
-              'try_on_binder',
-              'myst_nb',
-              'sphinx.ext.mathjax',
-              'sphinxcontrib.bibtex',
-              ]
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.coverage",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.linkcode",
+    "sphinx.ext.intersphinx",
+    "try_on_binder",
+    "myst_nb",
+    "sphinx.ext.mathjax",
+    "sphinxcontrib.bibtex",
+]
 # this enables:
 # substitutions-with-jinja2, direct-latex-math and definition-lists
 # ref: https://myst-parser.readthedocs.io/en/latest/using/syntax-optional.html
@@ -53,31 +54,32 @@ myst_enable_extensions = [
 myst_url_schemes = ["http", "https", "mailto"]
 # auto genereated link anchors
 myst_heading_anchors = 2
-import substitutions # noqa
+import substitutions  # noqa
+
 myst_substitutions = substitutions.myst_substitutions
 jupyter_execute_notebooks = "cache"
 execution_timeout = 120
 # print tracebacks to stdout
 execution_show_tb = True
 
-bibtex_bibfiles = ['bibliography.bib']
+bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.ipynb': 'myst-nb',
-    '.md': 'myst-nb',
+    ".rst": "restructuredtext",
+    ".ipynb": "myst-nb",
+    ".md": "myst-nb",
 }
 
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General substitutions.
-project = 'dune-gdt'
-copyright = '2013-2021 dune-gdt developers and contributors'
+project = "dune-gdt"
+copyright = "2013-2021 dune-gdt developers and contributors"
 
 rst_epilog = substitutions.substitutions
 
@@ -85,7 +87,7 @@ rst_epilog = substitutions.substitutions
 # non-false value, then it is used:
 # today = ''
 # Else, today_fmt is used as the format for a strftime call.
-today_fmt = '%B %d, %Y'
+today_fmt = "%B %d, %Y"
 
 # List of documents that shouldn't be included in the build.
 # unused_docs = []
@@ -109,7 +111,7 @@ add_function_parentheses = False
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 
 # -----------------------------------------------------------------------------
@@ -120,20 +122,20 @@ pygments_style = 'sphinx'
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
 
-on_gitlab_ci = os.environ.get('GITLAB_CI', 'nope') != 'nope'
+on_gitlab_ci = os.environ.get("GITLAB_CI", "nope") != "nope"
 
-html_theme = 'sphinx_material'
+html_theme = "sphinx_material"
 html_theme_options = {
-    'base_url': 'https://gh-docs.pymor.org/',
-    'html_minify': False,
-    'css_minify': on_gitlab_ci,
-    'nav_title': 'Documentation',
-    'globaltoc_depth': 5,
-    'theme_color': 'indigo',
-    'color_primary': 'indigo',
-    'color_accent': 'blue',
-    'version_dropdown': True,
-    'version_json': '/versions.json'
+    "base_url": "https://gh-docs.pymor.org/",
+    "html_minify": False,
+    "css_minify": on_gitlab_ci,
+    "nav_title": "Documentation",
+    "globaltoc_depth": 5,
+    "theme_color": "indigo",
+    "color_primary": "indigo",
+    "color_accent": "blue",
+    "version_dropdown": True,
+    "version_json": "/versions.json",
 }
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -150,11 +152,11 @@ html_title = "%s v%s Manual" % (project, version)
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
-html_last_updated_fmt = '%b %d, %Y'
+html_last_updated_fmt = "%b %d, %Y"
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
@@ -162,9 +164,7 @@ html_last_updated_fmt = '%b %d, %Y'
 
 # Custom sidebar templates, maps document names to template names.
 # all: "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
-html_sidebars = {
-    "**": ["logo-text.html", "globaltoc.html", "searchbox.html"]
-}
+html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "searchbox.html"]}
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 # html_additional_pages = {
@@ -189,7 +189,7 @@ html_use_modindex = True
 html_show_sourcelink = False
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pymor'
+htmlhelp_basename = "pymor"
 
 # Pngmath should try to align formulas properly.
 pngmath_use_preview = True
@@ -257,30 +257,33 @@ coverage_ignore_c_items = {}
 # autodoc_default_flags = ['members', 'undoc-members', 'show-inheritance']
 
 # PyQt5 inventory is only used internally, actual link targets PySide2
-intersphinx_mapping = {'python': ('https://docs.python.org/3', None),
-                       'numpy': ('https://numpy.org/doc/stable/', None),
-                       'PyQt5': ("https://www.riverbankcomputing.com/static/Docs/PyQt5", None),
-                       'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
-                       'matplotlib': ('https://matplotlib.org', None),
-                       'Sphinx': (' https://www.sphinx-doc.org/en/master/', None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+    "PyQt5": ("https://www.riverbankcomputing.com/static/Docs/PyQt5", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
+    "matplotlib": ("https://matplotlib.org", None),
+    "Sphinx": (" https://www.sphinx-doc.org/en/master/", None),
+}
 
-modindex_common_prefix = ['pymor.']
+modindex_common_prefix = ["pymor."]
 
 
 # make intersphinx link to pyside2 docs
-qt_documentation = 'PySide2'
+qt_documentation = "PySide2"
 
-branch = os.environ.get('CI_COMMIT_REF_NAME', 'main')
+branch = os.environ.get("CI_COMMIT_REF_NAME", "main")
 # this must match GDT_TUTORIALS_ROOT/.ci/gitlab/deploy_docs
-try_on_binder_branch = branch.replace('github/PUSH_', 'from_fork__')
-try_on_binder_slug = os.environ.get('CI_COMMIT_REF_SLUG', slugify.slugify(try_on_binder_branch))
+try_on_binder_branch = branch.replace("github/PUSH_", "from_fork__")
+try_on_binder_slug = os.environ.get(
+    "CI_COMMIT_REF_SLUG", slugify.slugify(try_on_binder_branch)
+)
 
 
 def linkcode_resolve(domain, info):
-    if domain == 'py':
-        if not info['module']:
+    if domain == "py":
+        if not info["module"]:
             return None
-        filename = info['module'].replace('.', '/')
-        return f'https://https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt-tutorials/-/tree/{branch}/src/{filename}.py'
+        filename = info["module"].replace(".", "/")
+        return f"https://https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt-tutorials/-/tree/{branch}/src/{filename}.py"
     return None
-

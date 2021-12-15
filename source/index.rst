@@ -16,4 +16,3 @@ provided for getting started quickly.
 .. toctree::
     tutorials
     bibliography
-

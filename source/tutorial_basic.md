@@ -25,7 +25,7 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
-# Tutorial: 
+# Tutorial:
 
 Some text.
 
@@ -34,8 +34,6 @@ Some text.
 ```{code-cell}
 from dune.xt import *
 from dune.gdt import *
-import dune.gdt 
+import dune.gdt
 dune.gdt.__version__
 ```
-
-
