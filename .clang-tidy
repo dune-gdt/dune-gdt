@@ -102,7 +102,7 @@ Checks: '##### readability checks #######
          bugprone-integer-division,
          '
 WarningsAsErrors: ''
-HeaderFilterRegex: '.*/(dune-xt/dune|python/dune/xt)/.*'
+HeaderFilterRegex: '.*/(dune-xt/dune|python/dune/xt)/.*&!(.*/dune/xt/functions/mathexpr/mathexpr.hh)/.*'
 AnalyzeTemporaryDtors: false
 FormatStyle:     file
 CheckOptions:
