@@ -8,6 +8,9 @@
 # -clang-analyzer-optin.cplusplus.VirtualCall,
 # Gives false positives, see https://github.com/llvm/llvm-project/issues/40486 and https://bugs.llvm.org/show_bug.cgi?id=44247
 # -clang-analyzer-cplusplus.NewDeleteLeaks,
+# These cause a lot of warnings for static inline functions in headerchecks because they are not used in that compilation unit
+# -clang-diagnostic-unneeded-internal-declaration
+# -clang-diagnostic-unused-function
 Checks: 'readability-else-after-return,
          readability-const-return-type,
          readability-container-data-pointer,
@@ -106,6 +109,8 @@ Checks: 'readability-else-after-return,
          bugprone-infinite-loop,
          bugprone-integer-division,
          -clang-analyzer-cplusplus.NewDeleteLeaks,
+         -clang-diagnostic-unneeded-internal-declaration,
+         -clang-diagnostic-unused-function,
          -clang-analyzer-optin.cplusplus.VirtualCall,
          '
 
