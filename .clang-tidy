@@ -1,6 +1,14 @@
 ---
-Checks: '##### readability checks #######
-         readability-else-after-return,
+# The checks starting with - are disabled. Most of them because we do not need/want them,
+# but following warnings are disabled as they cause errors or false warnings in our code.
+# Causes clang-tidy-12 internal segfaults:
+# -readability-static-accessed-through-instance
+# Gives warning in dune-alugrid/dune/alugrid/3d/grid_inline.hh:49:20 for dune/xt/test/grid/dgf_gridprovider.cc:
+# Call to virtual method ALU3dGrid::createALUGrid during construction bypasses virtual dispatch
+# -clang-analyzer-optin.cplusplus.VirtualCall,
+# Gives false positives, see https://github.com/llvm/llvm-project/issues/40486 and https://bugs.llvm.org/show_bug.cgi?id=44247
+# -clang-analyzer-cplusplus.NewDeleteLeaks,
+Checks: 'readability-else-after-return,
          readability-const-return-type,
          readability-container-data-pointer,
          readability-container-size-empty,
@@ -16,14 +24,13 @@ Checks: '##### readability checks #######
          readability-redundant-member-init,
          readability-redundant-smartptr-get,
          readability-redundant-string-cstr,
-         # readability-redundant-string-init,
+         -readability-redundant-string-init
          readability-simplify-subscript-expr,
-         # readability-static-accessed-through-instance, # causes clang-tidy-12 segfaults
+         -readability-static-accessed-through-instance,
          readability-static-definition-in-anonymous-namespace,
          readability-string-compare,
          readability-suspicious-call-argument,
          readability-uniqueptr-delete-release,
-         ###### modernize checks #######
          modernize-avoid-bind,
          modernize-avoid-c-arrays,
          modernize-concat-nested-namespaces,
@@ -47,37 +54,35 @@ Checks: '##### readability checks #######
          modernize-use-emplace,
          modernize-use-equals-default,
          modernize-use-equals-delete,
-         # modernize-use-nodiscard,
-         # modernize-use-noexcept,
+         -modernize-use-nodiscard,
+         -modernize-use-noexcept,
          modernize-use-nullptr,
          modernize-use-override,
-         # modernize-use-trailing-return-type,
+         -modernize-use-trailing-return-type,
          modernize-use-transparent-functors,
          modernize-use-uncaught-exceptions,
          modernize-use-using,
-         ###### misc checks #######
          misc-definitions-in-headers,
          misc-misleading-identifier,
          misc-misplaced-const,
          misc-new-delete-overloads,
-         # misc-no-recursion,
+         -misc-no-recursion,
          misc-non-copyable-objects,
-         # misc-non-private-member-variables-in-classes,
+         -misc-non-private-member-variables-in-classes,
          misc-redundant-expression,
          misc-static-assert,
-         # misc-throw-by-value-catch-by-reference,
-         # misc-unconventional-assign-operator,
+         -misc-throw-by-value-catch-by-reference,
+         -misc-unconventional-assign-operator,
          misc-uniqueptr-reset-release,
          misc-unused-alias-decls,
          misc-unused-parameters,
          misc-unused-using-decls,
-         ###### bugprone checks ######
          bugprone-argument-comment,
          bugprone-bool-pointer-implicit-conversion,
          bugprone-copy-constructor-init,
          bugprone-implicit-widening-of-multiplication-result,
          bugprone-inaccurate-erase,
-         # bugprone-macro-parentheses,
+         -bugprone-macro-parentheses,
          bugprone-misplaced-operator-in-strlen-in-alloc,
          bugprone-misplaced-pointer-arithmetic-in-alloc,
          bugprone-move-forwarding-reference,
@@ -85,7 +90,7 @@ Checks: '##### readability checks #######
          bugprone-parent-virtual-call,
          bugprone-posix-return,
          bugprone-redundant-branch-condition,
-         # bugprone-reserved-identifier,
+         -bugprone-reserved-identifier,
          bugprone-string-constructor,
          bugprone-string-integer-assignment,
          bugprone-suspicious-memset-usage,
@@ -100,13 +105,10 @@ Checks: '##### readability checks #######
          bugprone-incorrect-roundings,
          bugprone-infinite-loop,
          bugprone-integer-division,
-         ###### The following checks are disabled due to false positives/warnings outside our own code ########
-         # See https://github.com/llvm/llvm-project/issues/40486 and https://bugs.llvm.org/show_bug.cgi?id=44247
          -clang-analyzer-cplusplus.NewDeleteLeaks,
-         # Gives warning in dune-alugrid/dune/alugrid/3d/grid_inline.hh:49:20 for dune/xt/test/grid/dgf_gridprovider.cc:
-         # Call to virtual method ALU3dGrid::createALUGrid during construction bypasses virtual dispatch
          -clang-analyzer-optin.cplusplus.VirtualCall,
          '
+
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*/(dune-xt/dune|python/dune/xt)/.*&!(.*/dune/xt/functions/mathexpr/mathexpr.hh)/.*'
 AnalyzeTemporaryDtors: false
