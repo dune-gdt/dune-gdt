@@ -25,7 +25,7 @@ Checks: '##### readability checks #######
          readability-uniqueptr-delete-release,
          ###### modernize checks #######
          modernize-avoid-bind,
-         modernize-avoid-c-arrays
+         modernize-avoid-c-arrays,
          modernize-concat-nested-namespaces,
          modernize-deprecated-headers,
          modernize-deprecated-ios-base-aliases,
@@ -70,7 +70,7 @@ Checks: '##### readability checks #######
          misc-uniqueptr-reset-release,
          misc-unused-alias-decls,
          misc-unused-parameters,
-         misc-unused-using-decls
+         misc-unused-using-decls,
          ###### bugprone checks ######
          bugprone-argument-comment,
          bugprone-bool-pointer-implicit-conversion,
@@ -100,6 +100,12 @@ Checks: '##### readability checks #######
          bugprone-incorrect-roundings,
          bugprone-infinite-loop,
          bugprone-integer-division,
+         ###### The following checks are disabled due to false positives/warnings outside our own code ########
+         # See https://github.com/llvm/llvm-project/issues/40486 and https://bugs.llvm.org/show_bug.cgi?id=44247
+         -clang-analyzer-cplusplus.NewDeleteLeaks,
+         # Gives warning in dune-alugrid/dune/alugrid/3d/grid_inline.hh:49:20 for dune/xt/test/grid/dgf_gridprovider.cc:
+         # Call to virtual method ALU3dGrid::createALUGrid during construction bypasses virtual dispatch
+         -clang-analyzer-optin.cplusplus.VirtualCall,
          '
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*/(dune-xt/dune|python/dune/xt)/.*&!(.*/dune/xt/functions/mathexpr/mathexpr.hh)/.*'
