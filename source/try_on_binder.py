@@ -20,7 +20,7 @@ class TryOnBinder(Directive):
         # directories which are slugs to avoid slashes and such
         node[
             "target"
-        ] = f"https://binderhub.uni-muenster.de/v2/zg/ag-ohlberger/dune-community/dune-gdt-tutorials/{slug}?filepath={generated_nb}"
+        ] = f"https://mybinder.org/v2/gh/dune-community/dune-gdt-tutorials-pages/{slug}?filepath={generated_nb}"
         node["badge"] = "https://mybinder.org/badge_logo.svg"
         return [node]
 
@@ -29,8 +29,8 @@ def html_visit_binder_link_node(self, node):
     html = f"""
 <div class="admonition">
 <p class="admonition-title">Run this tutorial</p>
-    <a href=\"{node['target']}\">Click here</a> to run this tutorial on binderhub.wwu.de: <a href=\"{node['target']}\">
-        <img src=\"{node['badge']}\" alt=\"try on binderhub.wwu.de\">
+    <a href=\"{node['target']}\">Click here</a> to run this tutorial on mybinder.org: <a href=\"{node['target']}\">
+        <img src=\"{node['badge']}\" alt=\"try on mybinder.org\">
     </a><br/>
     <emph>Please note that starting the notebook server may take a couple of minutes.</emph>
 </div>

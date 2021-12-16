@@ -37,3 +37,7 @@ from dune.gdt import *
 import dune.gdt
 dune.gdt.__version__
 ```
+
+Download the code:
+{download}`tutorial_basic.md`
+{nb-download}`tutorial_basic.ipynb`
