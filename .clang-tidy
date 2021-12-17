@@ -115,7 +115,7 @@ Checks: 'readability-else-after-return,
          '
 
 WarningsAsErrors: ''
-HeaderFilterRegex: '.*/(dune-xt/dune|python/dune/xt)/.*&!(.*/dune/xt/functions/mathexpr/mathexpr.hh)/.*'
+HeaderFilterRegex: '.*/(dune-xt/dune|python/dune/xt|dune-gdt/dune|python/dune/gdt)/.*&!(.*/dune/xt/functions/mathexpr/mathexpr.hh)/.*'
 AnalyzeTemporaryDtors: false
 FormatStyle:     file
 CheckOptions:
