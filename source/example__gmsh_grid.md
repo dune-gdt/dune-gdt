@@ -72,7 +72,7 @@ fom.visualize(fom.solve())
 # 3: using the gmsh grid in dune
 
 `dune-grid` [only supports](https://gitlab.dune-project.org/core/dune-grid/issues/85) `gmsh` version 2 files, and only a subset of the specification.
-This virtualenv includes the `gmsh` version 2.16 (as visible in the output of the `discretize_gmsh` command above), but we still need to clean up the mesh file for `dune-grid` to correctly parse it.
+This virtualenv includes the `gmsh` version 2.16 (as visible in the output of the `discretize_gmsh` command above), but we still need to clean up the mesh file for `dune-grid` to [correctly parse](https://gitlab.dune-project.org/core/dune-grid/-/issues/89) it.
 In particular, we need to remove the boundary type definition (which we do not require, we have our own boundary info), which is achieved by the following bash code (**Note** that you have to provide the same filename here as in the call to `discretize_gmsh`):
 
 ```python

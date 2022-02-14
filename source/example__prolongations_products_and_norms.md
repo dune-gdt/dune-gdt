@@ -134,7 +134,7 @@ print(f'|| u ||_L2 = {np.sqrt(L2_product.apply2())}')
 
 H1_semi_product = BilinearForm(grid, u, u)
 H1_semi_product += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(GF(grid, 1, dim_range=(Dim(d), Dim(d)))))
-print(f'| u |_H1 = {np.sqrt(H1_semi_product.apply2())}')
+print(f' | u |_H1  = {np.sqrt(H1_semi_product.apply2())}')
 
 H1_product = BilinearForm(grid, u, u)
 H1_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))

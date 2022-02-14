@@ -158,7 +158,7 @@ source = GF(grid, ParametricExpressionFunction(
     order=2, name='source'))
 ```
 
-Use the same `m_h` and `a_h` as above, but we need to assemble `l_h` anew for each time point. We coul either directly create a new stationary `source` in each time step as an `ExpressionFunction` (like `u_0`), but we demonstrate the parametric assembly here. Computational demand is the same ...
+Use the same `m_h` and `a_h` as above, but we need to assemble `l_h` anew for each time point. We could either directly create a new stationary `source` in each time step as an `ExpressionFunction` (like `u_0`), but we demonstrate the parametric assembly here. Computational demand is the same ...
 
 ```python
 l_h = VectorFunctional(grid, V_h)

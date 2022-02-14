@@ -101,7 +101,7 @@ h = ExpressionFunction(dim_domain=Dim(d), variable='x', order=10, expression='ex
 
 ## 1.3: discrete functions
 
-Which often result from a discretization scheme, see the *tutorial on continuous Finite Elements for the stationary heat equation*.
+Which often result from a discretization scheme, see the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
 
 ```python
 from dune.gdt import DiscontinuousLagrangeSpace, DiscreteFunction
@@ -250,22 +250,22 @@ We should use a finer grid to obtain some representative timings.
 Choosing a `Cube` grid, on the other hand, would give us an instance of `dune-grid`s structured `YaspGrid` with nearly no memory footprint, at the price of lower runtime performance.
 
 ```python
-from time import time
+from timeit import default_timer as timer
 
-t = time()
+tic = timer()
 grid = make_cube_grid(Dim(d), Simplex(), lower_left=omega[0], upper_right=omega[1], num_elements=[512, 512])
 grid.global_refine(1)
-t = time() - t
+toc = timer() - tic
 
-print(f'grid has {grid.size(0)} elements, {grid.size(d - 1)} edges and {grid.size(d)} vertices (took {t}s)')
+print(f'grid has {grid.size(0)} elements, {grid.size(d - 1)} edges and {grid.size(d)} vertices (took {toc}s)')
 ```
 
 ```python
-t = time()
-
+tic = timer()
 V_h = DiscontinuousLagrangeSpace(grid, order=3)
+toc = timer() - tic
 
-print(f'space has {V_h.num_DoFs} DoFs')
+print(f'space has {V_h.num_DoFs} DoFs (took {toc}s)')
 ```
 
 ## 5.1: interpolation test
@@ -273,19 +273,19 @@ print(f'space has {V_h.num_DoFs} DoFs')
 One measure of performance is the time it takes to interpolate a data function. Note that the comparison greatly depends on the grid and the polynomial order of `V_h`.
 
 ```python
-t = time()
+tic = timer()
 
 h_dune_expression =  GridFunction(grid,
                                   ExpressionFunction(dim_domain=Dim(d), variable='x', order=10, expression='exp(x[0]*x[1])'))
 
 h_dune_expression_h = default_interpolation(h_dune_expression, V_h)
 
-t_dune = time() - t
+t_dune = timer() - tic
 print(f'interpolating h_dune_expression took {t_dune}s')
 ```
 
 ```python
-t = time()
+tic = timer()
 
 h_python_lambda = GF(grid,
                      order=10, evaluate_lambda=lambda x, _: [np.exp(x[0]*x[1])],
@@ -293,7 +293,7 @@ h_python_lambda = GF(grid,
 
 h_python_lambda_h = default_interpolation(h_python_lambda, V_h)
 
-t_python = time() - t
+t_python = timer() - tic
 print(f'interpolating h_python_lambda took {t_python}s')
 ```
 
@@ -303,25 +303,25 @@ print(f'using a lambda expression in an interpolation test is {t_python/t_dune} 
 
 ## 5.2: discretization test
 
-For a mor realistic comparison, we use the `discretize_elliptic_cg_dirichlet_zero` function as explained in the *tutorial on continuous Finite Elements for the stationary heat equation*.
+For a mor realistic comparison, we use the `discretize_elliptic_cg_dirichlet_zero` function as explained in the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
 
 ```python
 from discretize_elliptic_cg import discretize_elliptic_cg_dirichlet_zero
 
-t = time()
+tic = timer()
 
 u_h_dune = discretize_elliptic_cg_dirichlet_zero(grid, h_dune_expression, 1)
 
-t_dune = time() - t
+t_dune = timer() - tic
 print(f'discretizing using h_dune_expression took {t_dune}s')
 ```
 
 ```python
-t = time()
+tic = timer()
 
 u_h_dune = discretize_elliptic_cg_dirichlet_zero(grid, h_python_lambda, 1)
 
-t_python = time() - t
+t_python = timer() - tic
 print(f'discretizing using h_python_lambda took {t_python}s')
 ```
 
