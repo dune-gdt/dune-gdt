@@ -25,6 +25,8 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
+# Example: Grid adaptation
+
 ```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer

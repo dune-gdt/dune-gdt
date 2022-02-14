@@ -25,7 +25,7 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
-# 1: creating a gmsh file
+# Example 1: creating a gmsh file
 
 We use pyMORs `PolygonalDomain`description and `discretize_gmsh` to obtain a grid file that `gmsh` can read. **Note** that `dune-grid` can only handle `gmsh` version 2 files, we have thus installed `gmsh` version `2.16` in this virtualenv. For newer versions of `gmsh`,  you need to follow [these instructions](https://gitlab.dune-project.org/core/dune-grid/issues/85).
 
