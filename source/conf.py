@@ -58,7 +58,7 @@ import substitutions  # noqa
 
 myst_substitutions = substitutions.myst_substitutions
 jupyter_execute_notebooks = "cache"
-execution_timeout = 120
+execution_timeout = 240  # there is an interpolation test
 # print tracebacks to stdout
 execution_show_tb = True
 
