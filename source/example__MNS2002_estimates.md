@@ -1,18 +1,31 @@
 ---
+jupytext:
+  text_representation:
+   format_name: myst
 jupyter:
   jupytext:
+    cell_metadata_filter: -all
+    formats: ipynb,myst
+    main_language: python
     text_representation:
+      format_name: myst
       extension: .md
-      format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.5.0
-  kernelspec:
-    display_name: Python 3
-    language: python
-    name: python3
+      format_version: '1.3'
+      jupytext_version: 1.11.2
+kernelspec:
+  display_name: Python 3
+  name: python3
 ---
 
-```python
+```{try_on_binder}
+```
+
+```{code-cell}
+:tags: [remove-cell]
+:load: myst_code_init.py
+```
+
+```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
 %matplotlib notebook
@@ -23,7 +36,7 @@ np.warnings.filterwarnings('ignore') # silence numpys warnings
 
 # 1: inspect grid properties and relations between elements and intersections
 
-```python
+```{code-cell}
 from dune.xt.grid import Dim, Simplex, make_cube_grid, AllDirichletBoundaryInfo, visualize_grid
 
 d = 2
@@ -37,7 +50,7 @@ boundary_info = AllDirichletBoundaryInfo(grid)
 _ = visualize_grid(grid)
 ```
 
-```python
+```{code-cell}
 intersection_centers = np.array(grid.centers(1), copy=False)
 
 inner_intersections = np.array(grid.inner_intersection_indices(), copy=False)
@@ -47,7 +60,7 @@ print(f'  and centers:')
 print(intersection_centers[inner_intersections])
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import ApplyOnCustomBoundaryIntersections, DirichletBoundary
 
 dirichlet_intersections = np.array(
@@ -59,7 +72,7 @@ print(f'  and centers:')
 print(intersection_centers[dirichlet_intersections])
 ```
 
-```python
+```{code-cell}
 element_centers = np.array(grid.centers(0), copy=False)
 
 inner_element_indices = np.array(grid.inside_element_indices(), copy=False)
@@ -70,14 +83,14 @@ for intersection_index, element_index in enumerate(inner_element_indices):
     print(f'    has inside element {element_index} with center {element_centers[element_index]}')
 ```
 
-```python
+```{code-cell}
 outside_element_indices = np.array(grid.outside_element_indices(), copy=False)
 print(f'index of each intersections outside element: {outside_element_indices}')
 ```
 
 The large numbers are invalid indices and represent intersections which do not have an outside element, e.g. boundary intersections. We should thus restrict the lookup to inner intersections:
 
-```python
+```{code-cell}
 print(f'index of each inner intersections outside element: {outside_element_indices[inner_intersections]}')
 print('this means that')
 for intersection_index, element_index in enumerate(outside_element_indices[inner_intersections]):
@@ -87,7 +100,7 @@ for intersection_index, element_index in enumerate(outside_element_indices[inner
 
 # 2: solving an elliptic PDE
 
-```python
+```{code-cell}
 from dune.xt.functions import ExpressionFunction, GridFunction as GF
 
 A = GF(grid, 1., dim_range=(Dim(d), Dim(d)), name='A')
@@ -95,7 +108,7 @@ f = GF(grid,
        ExpressionFunction(dim_domain=Dim(d), variable='x', expression='exp(x[0]*x[1])', order=7, name='f'))
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import AllDirichletBoundaryInfo, Dim, Walker
 
 from dune.gdt import (
@@ -114,7 +127,7 @@ from dune.gdt import (
 V_h = ContinuousLagrangeSpace(grid, order=1)
 ```
 
-```python
+```{code-cell}
 l_h = VectorFunctional(grid, source_space=V_h)
 l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(f))
 
@@ -133,7 +146,7 @@ walker.walk()
 dirichlet_constraints.apply(a_h.matrix, l_h.vector)
 ```
 
-```python
+```{code-cell}
 from dune.gdt import visualize_function
 
 u_h = DiscreteFunction(V_h, 'u_h')
@@ -170,7 +183,7 @@ where $h_\Gamma := \text{diam}(\Gamma)$ for all $\Gamma \in \mathcal{F}_h$, $h|_
   $$\begin{align}
   [[v]] := \begin{cases}v^- - v^+, &\Gamma\text{ is an inner intersection and}\\v^-,&\Gamma\text{ is a boundary intersection}\end{cases}
   \end{align}$$
-  
+
   where $v^- := v|_{K^-}$ and $v^+ := v|_{K^+}$; and
 
 * the patch
@@ -178,7 +191,7 @@ where $h_\Gamma := \text{diam}(\Gamma)$ for all $\Gamma \in \mathcal{F}_h$, $h|_
   $$\begin{align}
   \omega_\Gamma := \begin{cases}K^- \cup K^+, &\Gamma\text{ is an inner intersection and}\\K^-,&\Gamma\text{ is a boundary intersection}\end{cases}
   \end{align}$$
-  
+
 To compute the first contribution to the indicator, we use an operator mapping the flux $A \nabla u_h$ to the vector
 $\underline{\eta_\text{flux}} \in \mathbb{R}^{|\mathcal{F}_h|}$, where the $i$-the entry of the vector is the squared indicator contribution associated with the respective intersection, i.e.
 
@@ -188,7 +201,7 @@ $$\begin{align}
 
 We use a `RaviartThomasSpace` to represent the flux space (only for its dimensions, the flux need not be an actual element of the space), and `FiniteVolumeSkeletonSpace` to represent numbers associated with intersections.
 
-```python
+```{code-cell}
 from dune.xt.grid import ApplyOnInnerIntersectionsOnce, ApplyOnCustomBoundaryIntersections, DirichletBoundary
 
 from dune.xt.functions import gradient
@@ -225,7 +238,7 @@ eta_flux_2 = np.array(eta_flux_op.apply(flux).dofs.vector, copy=False)
 print(f'flux jump indicators = {eta_flux_2}')
 ```
 
-```python
+```{code-cell}
 # individual entries may contain negative values due to numerical inaccuracies, which we set to zero here
 negative_entries = np.where(eta_flux_2 < 0)[0]
 if len(negative_entries)> 0:
@@ -236,7 +249,7 @@ del negative_entries
 
 For the second contribution we first compute $\|h f\|_{L^2(K)}^2$ for all $K \in \mathcal{T}_h$ and combine them to obtain the intersection patch indicators.
 
-```python
+```{code-cell}
 from dune.xt.functions import ElementwiseDiameterFunction
 
 from dune.gdt import (
@@ -255,7 +268,7 @@ eta_f_2_per_element = np.array(eta_f_op.apply(h*f).dofs.vector, copy=False)
 print(eta_f_2_per_element)
 ```
 
-```python
+```{code-cell}
 eta_f_2_per_intersection = np.zeros(intersection_indices.num_DoFs)
 
 eta_f_2_per_intersection += eta_f_2_per_element[inner_element_indices]
@@ -264,13 +277,13 @@ eta_f_2_per_intersection[inner_intersections] += eta_f_2_per_element[outside_ele
 
 We can now obtain the indicators simply by combining the two contributions.
 
-```python
+```{code-cell}
 eta_2_per_intersection = eta_flux_2 + eta_f_2_per_intersection
 ```
 
 Since `eta_2_per_intersection` contains the squared contributions, we obtain the estimate as the square root of the sum.
 
-```python
+```{code-cell}
 eta = np.sqrt(np.linalg.norm(eta_2_per_intersection, ord=1))
 
 print(f'estimated error: {eta}')
@@ -280,13 +293,13 @@ print(f'estimated error: {eta}')
 
 We compute the data oscillation on a finer grid, for visualization. **Note** that all quantities from above are now invalid!
 
-```python
+```{code-cell}
 grid.global_refine(4)
 
 V_h = ContinuousLagrangeSpace(grid, order=1)
 ```
 
-```python
+```{code-cell}
 # f_h is the piecewise constant average value on each element
 p0_space = FiniteVolumeSpace(grid)
 f_h = default_interpolation(f, p0_space)
@@ -305,7 +318,7 @@ osc_2 = oscillation_op.apply(h*(f - f_h))
 _ = visualize_function(osc_2)
 ```
 
-```python
+```{code-cell}
 # we obtain ||h(f - f_h)||_{L^2(\Omega)} by the L^1-norm since the indicators are already squared
 print(np.sqrt(osc_2.dofs.vector.l1_norm()))
 ```

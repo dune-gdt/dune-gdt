@@ -1,16 +1,29 @@
 ---
+jupytext:
+  text_representation:
+   format_name: myst
 jupyter:
   jupytext:
+    cell_metadata_filter: -all
+    formats: ipynb,myst
+    main_language: python
     text_representation:
+      format_name: myst
       extension: .md
-      format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.5.0
-  kernelspec:
-    display_name: Python 3
-    language: python
-    name: python3
+      format_version: '1.3'
+      jupytext_version: 1.11.2
+kernelspec:
+  display_name: Python 3
+  name: python3
 ---
+
+```{try_on_binder}
+```
+
+```{code-cell}
+:tags: [remove-cell]
+:load: myst_code_init.py
+```
 
 # Example [WIP]: SIPDG for the instationary heat equation
 
@@ -18,7 +31,7 @@ jupyter:
 
 * explanations
 
-```python
+```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
 %matplotlib notebook
@@ -27,7 +40,7 @@ import numpy as np
 np.warnings.filterwarnings('ignore') # silence numpys warnings
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import Dim, Simplex, make_cube_grid, AllDirichletBoundaryInfo, visualize_grid
 
 d = 2
@@ -41,7 +54,7 @@ boundary_info = AllDirichletBoundaryInfo(grid)
 
 # stationary data functions
 
-```python
+```{code-cell}
 from dune.xt.functions import GridFunction as GF
 
 diffusion = GF(grid, 1., dim_range=(Dim(d), Dim(d)), name='diffusion')
@@ -49,7 +62,7 @@ source = GF(grid, 1., name='source')
 u_0 = GF(grid, 0., name='u_0')
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import (
     ApplyOnCustomBoundaryIntersections,
     ApplyOnInnerIntersectionsOnce,
@@ -80,7 +93,7 @@ from dune.gdt import (
 V_h = DiscontinuousLagrangeSpace(grid, order=1)
 ```
 
-```python
+```{code-cell}
 weight = GF(grid, 1., dim_range=(Dim(d), Dim(d)), name='weight')
 penalty_parameter = 16
 symmetry_factor = 1
@@ -117,7 +130,7 @@ m_h(u^{n + 1},v) - m_h(u^n, v) + \Delta t \cdot a_h(u^{n + 1}, v) &= \Delta t \c
 m_h(u^{n + 1},v) + \Delta t \cdot a_h(u^{n + 1}, v) &= m_h(u^n, v) + \Delta t \cdot l_h(v)
 \end{align}$$
 
-```python
+```{code-cell}
 from dune.gdt import default_interpolation
 from dune.xt.la import make_solver
 
@@ -130,10 +143,10 @@ while time < T_end + dt:
     time += dt
     u_n = u_h[-1]
     u_n_plus_one = (m_h + dt*a_h).apply_inverse(m_h.apply(u_n) + dt*l_h.vector)
-    u_h.append(u_n_plus_one)    
+    u_h.append(u_n_plus_one)
 ```
 
-```python
+```{code-cell}
 for ii, vec in enumerate(u_h):
     DiscreteFunction(V_h, vec, 'solution').visualize(f'solution_{ii}')
 ```
@@ -143,7 +156,7 @@ Start `paraview` in a terminal to visualize the time series.
 
 # timedependent right hand side
 
-```python
+```{code-cell}
 from dune.xt.functions import ExpressionFunction, ParametricExpressionFunction
 
 u_str = '0.1*sin(20*pi*_t)*exp(-10*(x[0]*x[0]+x[1]*x[1]))'
@@ -160,11 +173,11 @@ source = GF(grid, ParametricExpressionFunction(
 
 Use the same `m_h` and `a_h` as above, but we need to assemble `l_h` anew for each time point. We could either directly create a new stationary `source` in each time step as an `ExpressionFunction` (like `u_0`), but we demonstrate the parametric assembly here. Computational demand is the same ...
 
-```python
+```{code-cell}
 l_h = VectorFunctional(grid, V_h)
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import ApplyOnAllElements
 
 u_h = [default_interpolation(u_0, V_h).dofs.vector]
@@ -178,13 +191,13 @@ while time < T_end + dt:
     l_h += (LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source)),
             {'_t': [time]},
             ApplyOnAllElements(grid))
-    l_h.assemble()    
+    l_h.assemble()
     u_n = u_h[-1]
     u_n_plus_one = (m_h + dt*a_h).apply_inverse(m_h.apply(u_n) + dt*l_h.vector)
-    u_h.append(u_n_plus_one)    
+    u_h.append(u_n_plus_one)
 ```
 
-```python
+```{code-cell}
 for ii, vec in enumerate(u_h):
     DiscreteFunction(V_h, vec, 'solution').visualize(f'solution_timedep_data_{ii}')
 ```

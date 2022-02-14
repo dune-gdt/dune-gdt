@@ -1,16 +1,29 @@
 ---
+jupytext:
+  text_representation:
+   format_name: myst
 jupyter:
   jupytext:
+    cell_metadata_filter: -all
+    formats: ipynb,myst
+    main_language: python
     text_representation:
+      format_name: myst
       extension: .md
-      format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.5.0
-  kernelspec:
-    display_name: Python 3
-    language: python
-    name: python3
+      format_version: '1.3'
+      jupytext_version: 1.11.2
+kernelspec:
+  display_name: Python 3
+  name: python3
 ---
+
+```{try_on_binder}
+```
+
+```{code-cell}
+:tags: [remove-cell]
+:load: myst_code_init.py
+```
 
 # Tutorial 10 [WIP]: continuous FEM for the stationary heat equation
 
@@ -21,7 +34,7 @@ This tutorial shows how to solve the stationary heat equation with homogeneous D
 * Neumann boundary values
 * Robin boundary values
 
-```python
+```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
 %matplotlib notebook
@@ -65,7 +78,7 @@ Consider for example $(1)$ with:
 * $\kappa = 1$
 * $f = \exp(x_0 x_1)$
 
-```python
+```{code-cell}
 from dune.xt.grid import Dim
 from dune.xt.functions import ConstantFunction, ExpressionFunction
 
@@ -144,7 +157,7 @@ $$\begin{align}
 
 We consider for example a structured simplicial grid with 16 triangles.
 
-```python
+```{code-cell}
 from dune.xt.grid import Simplex, make_cube_grid, AllDirichletBoundaryInfo, visualize_grid
 
 grid = make_cube_grid(Dim(d), Simplex(), lower_left=omega[0], upper_right=omega[1], num_elements=[2, 2])
@@ -157,7 +170,7 @@ boundary_info = AllDirichletBoundaryInfo(grid)
 _ = visualize_grid(grid)
 ```
 
-```python
+```{code-cell}
 from dune.gdt import ContinuousLagrangeSpace
 
 V_h = ContinuousLagrangeSpace(grid, order=1)
@@ -201,7 +214,7 @@ This leads us to the definition of a local functional in `dune-gdt`: ignoring th
   l_h^K(\psi_i) := \sum_{q = 1}^Q |\text{det}\nabla F_K(\hat{x}_q)|\,\omega_q\,\Xi^{1,K}(\hat{\psi}_\hat{i}, \hat{x}_q) \approx \int_\hat{K} \Xi^{1,K}(\hat{\psi}_\hat{i}, \hat{x})\,\text{d}\hat{x} = l^K(\psi_i),
   \end{align}$$
   which is modelled by `LocalElementIntegralFunctional` in `dune-gdt` (see below).
-  
+
   Note that the order of the quadrature is determined automatically, since the integrand computes its polynomial degree given all data functions and basis functions (in the above example, the polynomial order of $f^K$ is 3 by our construction and the polynomial order of $\hat{\psi}$ is 1, since we are using piecewise linear shape functions, yielding a polynomial order of 4 for $\Xi_\text{prod}^{1,K}$).
 
 Given local functionals, the purpose of the `VectorFunctional` in `dune-gdt` is to assemble $\underline{l_h}$ from $(6)$ by
@@ -214,7 +227,7 @@ Given local functionals, the purpose of the `VectorFunctional` in `dune-gdt` is 
 
 In our example, we define $l_{\text{src}, h}$ as:
 
-```python
+```{code-cell}
 from dune.xt.functions import GridFunction as GF
 
 from dune.gdt import (
@@ -245,7 +258,7 @@ A few notes regarding the above code:
 
 * the above code creates the vector $\underline{l_h}$ (available as the `vector` attribute of `l_h`) filled with `0`, but does not yet assemble the functional into it, which we can check by:
 
-```python
+```{code-cell}
 assert len(l_h.vector) == V_h.num_DoFs
 
 print(l_h.vector.sup_norm())
@@ -275,7 +288,7 @@ Similar to local fucntionals, a **local bilinear form** is determined
   \Xi_\text{laplace}^{2, K}: \mathbb{P}^k(\hat{K}) \times \mathbb{P}^k(\hat{K}) \times \hat{K} &\to \mathbb{R}\\
   \hat{\varphi}, \hat{\xi}, \hat{x} &\mapsto \big(\kappa^K(\hat{x})\,\nabla_K\hat{\varphi}(\hat{x})\big)\cdot\nabla_K\hat{\psi}(\hat{x})
   \end{align}$$
-  and  
+  and
 * an approximation of the integral by a numerical **quadrature**: given any binary element integrand $\Xi^{2, K}$, and $Q \in \mathbb{N}$ quadrature points $\hat{x}_1, \dots, \hat{x}_Q$ and weights $\omega_1, \dots, \omega_Q \in \mathbb{R}$, we approximate
   $$\begin{align}
   a_h^K(\psi_i, \varphi_j) := \sum_{q = 1}^Q |\text{det}\nabla F_K(\hat{x}_q)|\,\omega_q\,\Xi^{2,K}(\hat{\psi}_\hat{i}, \hat{\varphi}_\hat{j}, \hat{x}_q) \approx \int_\hat{K} \Xi^{2,K}(\hat{\psi}_\hat{i}, \hat{\varphi}_\hat{j}, \hat{x})\,\text{d}\hat{x} = a^K(\psi_i, \varphi_i),
@@ -289,7 +302,7 @@ Given local bilinear forms, the purpose of the `MatrixOperator` in `dune-gdt` is
 * evaluating the local bilinear form $a_h^K$ for each combination localized ansatz and test basis functions
 * adding the results to the respective entry of $\underline{a_h}$, determined by the DoF-mapping of the discrete function space `ContinuousLagrangeSpace`
 
-```python
+```{code-cell}
 from dune.gdt import (
     MatrixOperator,
     make_element_sparsity_pattern,
@@ -308,7 +321,7 @@ A few notes regarding the above code:
 
 * the above code creates the matrix $\underline{a_h}$ (available as the `matrix` attribute of `a_h`) with sparse `0` entries, but does not yet assemble the bilinear form into it, which we can check by:
 
-```python
+```{code-cell}
 assert a_h.matrix.rows == a_h.matrix.cols == V_h.num_DoFs
 
 print(a_h.matrix.sup_norm())
@@ -319,7 +332,7 @@ print(a_h.matrix.sup_norm())
 As noted above, we handle the Dirichlet boundary condition on the algebraic level by modifying the assembled matrices and vector.
 We therefore require a means to identify all DoFs of $V_h$ associated with the Dirichlet boundary modelled by `boundary_info`.
 
-```python
+```{code-cell}
 from dune.gdt import DirichletConstraints
 
 dirichlet_constraints = DirichletConstraints(boundary_info, V_h)
@@ -327,7 +340,7 @@ dirichlet_constraints = DirichletConstraints(boundary_info, V_h)
 
 Similar to the bilinear forms and functionals above, the `dirichlet_constraints` are not yet assembled, which we can check as follows:
 
-```python
+```{code-cell}
 print(dirichlet_constraints.dirichlet_DoFs)
 ```
 
@@ -339,7 +352,7 @@ Internally, this is realized by means of the `Walker` from `dune-xt-grid`, which
 
 Thus, we may assemble everything in one grid walk:
 
-```python
+```{code-cell}
 from dune.xt.grid import Walker
 
 walker = Walker(grid)
@@ -351,7 +364,7 @@ walker.walk()
 
 We can check that the assembled bilinear form and functional as well as the Dirichlet constraints actually contain some data:
 
-```python
+```{code-cell}
 print(f'a_h = {a_h.matrix.__repr__()}')
 print()
 print(f'l_h = {l_h.vector.__repr__()}')
@@ -363,13 +376,13 @@ print(f'Dirichlet DoFs: {dirichlet_constraints.dirichlet_DoFs}')
 
 After walking the grid, the bilinra form and linear functional are assembled w.r.t. $V_h$ and we constrain them to include the handling of the Dirichlet boundary condition.
 
-```python
+```{code-cell}
 dirichlet_constraints.apply(a_h.matrix, l_h.vector)
 ```
 
 Since the bilinear form is implemented as a `MatrixOperator`, we may simply invert the operator to obtain the DoF vector of the solution of $(9)$.
 
-```python
+```{code-cell}
 u_h_vector = a_h.apply_inverse(l_h.vector)
 ```
 
@@ -381,7 +394,7 @@ All discrete functions are in particular grid functions and can thus be compared
 
 **Note:** if visualization fails for some reason, call `paraview` on the command line and open `u_h.vtu`!
 
-```python
+```{code-cell}
 from dune.gdt import DiscreteFunction, visualize_function
 
 u_h = DiscreteFunction(V_h, u_h_vector, name='u_h')
@@ -392,7 +405,7 @@ _ = visualize_function(u_h)
 
 For a better overview, the above discretization code is also available in a single function in the file `discretize_elliptic_cg.py`:
 
-```python
+```{code-cell}
 import inspect
 from discretize_elliptic_cg import discretize_elliptic_cg_dirichlet_zero
 
@@ -401,7 +414,7 @@ print(inspect.getsource(discretize_elliptic_cg_dirichlet_zero))
 
 Calling it gives the same solution as above:
 
-```python
+```{code-cell}
 u_h = discretize_elliptic_cg_dirichlet_zero(grid, kappa, f)
 _ = visualize_function(u_h)
 ```
@@ -410,7 +423,7 @@ _ = visualize_function(u_h)
 
 ## 2.1: analytical problem
 
-Consider problem $(1)$ from above, but with non-homogeneous Dirichlet boundary values. That is: 
+Consider problem $(1)$ from above, but with non-homogeneous Dirichlet boundary values. That is:
 
 
 Let $\Omega \subset \mathbb{R}^d$ for $1 \leq d \leq 3$ be a bounded connected domain with Lipschitz-boundary $\partial\Omega$. We seek the solution $u \in H^1(\Omega)$ of the linear diffusion equation (with a **non-homogeneous Dirichlet boundary condition**)
@@ -475,7 +488,7 @@ Except for $g_\text{D}$, we may thus use the same grid, boundary info and data f
 
 To obtain $\hat{g}_\text{D} \in H^1(\Omega)$, we use the Lagrange interpolation of $g_\text{D}$ and set all DoFs associated with inner Lagrange nodes to zero. This is realized by the `boundary_interpolation`.
 
-```python
+```{code-cell}
 from dune.xt.grid import DirichletBoundary
 from dune.gdt import boundary_interpolation
 
@@ -493,7 +506,7 @@ As we observe, the values on all boundary DoFs are $x_0 x_1$ and on all inner Do
 
 * We assemble the unconstrained matrix- and vector representation of $a_h$ and $l_h$ w.r.t. $V_h$ similarly as above.
 
-```python
+```{code-cell}
 l_h = VectorFunctional(grid, source_space=V_h)
 l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(GF(grid, f)))
 
@@ -509,25 +522,25 @@ walker.walk()
 
 * We then obtain the shifted system by directly modifying the right hand side vector.
 
-```python
+```{code-cell}
 rhs_vector = l_h.vector - a_h.matrix@g_D_hat.dofs.vector
 ```
 
 * *Afterwards*, we constrain the shifted system to $V_h \cap H^1_0(\Omega)$.
 
-```python
+```{code-cell}
 dirichlet_constraints.apply(a_h.matrix, rhs_vector)
 ```
 
 * Then, we solve the shifted and constrained system for the DoF vector of $u_{0, h}$.
 
-```python
+```{code-cell}
 u_0_h_vector = a_h.apply_inverse(rhs_vector)
 ```
 
 * We may then obtain the solution by shifting it back.
 
-```python
+```{code-cell}
 u_h = DiscreteFunction(V_h, u_0_h_vector + g_D_hat.dofs.vector)
 
 _ = visualize_function(u_h)
@@ -537,7 +550,7 @@ _ = visualize_function(u_h)
 
 As above, solving with non-homogeneous Dirichlet values is also available in a single function.
 
-```python
+```{code-cell}
 from discretize_elliptic_cg import discretize_elliptic_cg_dirichlet
 
 u_h = discretize_elliptic_cg_dirichlet(grid, kappa, f, g_D)

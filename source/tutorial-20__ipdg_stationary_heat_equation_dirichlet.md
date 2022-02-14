@@ -1,17 +1,29 @@
 ---
+jupytext:
+  text_representation:
+   format_name: myst
 jupyter:
   jupytext:
+    cell_metadata_filter: -all
+    formats: ipynb,myst
+    main_language: python
     text_representation:
+      format_name: myst
       extension: .md
-      format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.5.0
-  kernelspec:
-    display_name: Python 3
-    language: python
-    name: python3
+      format_version: '1.3'
+      jupytext_version: 1.11.2
+kernelspec:
+  display_name: Python 3
+  name: python3
 ---
 
+```{try_on_binder}
+```
+
+```{code-cell}
+:tags: [remove-cell]
+:load: myst_code_init.py
+```
 # Tutorial 20 [WIP]: discontinuous IPDG for the stationary heat equation
 
 This tutorial shows how to solve the stationary heat equation with homogeneous Dirichlet boundary conditions using interior penalty (IP) discontinuous Galerkin (DG) Finite Elmenets with `dune-gdt`.
@@ -24,7 +36,7 @@ This tutorial shows how to solve the stationary heat equation with homogeneous D
 * Neumann boundary values
 * Robin boundary values
 
-```python
+```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
 %matplotlib notebook
@@ -33,7 +45,7 @@ import numpy as np
 np.warnings.filterwarnings('ignore') # silence numpys warnings
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import Dim
 from dune.xt.functions import ConstantFunction, ExpressionFunction
 
@@ -45,7 +57,7 @@ kappa = ConstantFunction(dim_domain=Dim(d), dim_range=Dim(1), value=[1.], name='
 f = ExpressionFunction(dim_domain=Dim(d), variable='x', expression='exp(x[0]*x[1])', order=3, name='f')
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import Simplex, make_cube_grid, visualize_grid
 
 grid = make_cube_grid(Dim(d), Simplex(), lower_left=omega[0], upper_right=omega[1], num_elements=[2, 2])
@@ -60,14 +72,14 @@ _ = visualize_grid(grid)
 
 For a better overview, the above discretization code is also available in a single function in the file `discretize_elliptic_ipdg.py`.
 
-```python
+```{code-cell}
 import inspect
 from discretize_elliptic_ipdg import discretize_elliptic_ipdg_dirichlet_zero
 
 print(inspect.getsource(discretize_elliptic_ipdg_dirichlet_zero))
 ```
 
-```python
+```{code-cell}
 from dune.gdt import visualize_function
 
 u_h = discretize_elliptic_ipdg_dirichlet_zero(

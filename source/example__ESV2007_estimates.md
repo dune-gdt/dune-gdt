@@ -1,18 +1,31 @@
 ---
+jupytext:
+  text_representation:
+   format_name: myst
 jupyter:
   jupytext:
+    cell_metadata_filter: -all
+    formats: ipynb,myst
+    main_language: python
     text_representation:
+      format_name: myst
       extension: .md
-      format_name: markdown
-      format_version: '1.2'
-      jupytext_version: 1.5.0
-  kernelspec:
-    display_name: Python 3
-    language: python
-    name: python3
+      format_version: '1.3'
+      jupytext_version: 1.11.2
+kernelspec:
+  display_name: Python 3
+  name: python3
 ---
 
-```python
+```{try_on_binder}
+```
+
+```{code-cell}
+:tags: [remove-cell]
+:load: myst_code_init.py
+```
+
+```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
 %matplotlib notebook
@@ -21,7 +34,7 @@ import numpy as np
 np.warnings.filterwarnings('ignore') # silence numpys warnings
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import Dim, Simplex, make_cube_grid, AllDirichletBoundaryInfo, visualize_grid
 
 d = 2
@@ -33,7 +46,7 @@ print(f'grid has {grid.size(0)} elements, {grid.size(d - 1)} edges and {grid.siz
 boundary_info = AllDirichletBoundaryInfo(grid)
 ```
 
-```python
+```{code-cell}
 from dune.xt.functions import ExpressionFunction, GridFunction as GF
 
 diffusion = GF(grid, 1., dim_range=(Dim(d), Dim(d)), name='diffusion')
@@ -42,7 +55,7 @@ source = GF(grid, ExpressionFunction(
     expression='0.5*pi*pi*cos(0.5*pi*x[0])*cos(0.5*pi*x[1])', order=4, name='source'))
 ```
 
-```python
+```{code-cell}
 from dune.xt.grid import (
     ApplyOnCustomBoundaryIntersections,
     ApplyOnInnerIntersectionsOnce,
@@ -73,7 +86,7 @@ from dune.gdt import (
 V_h = DiscontinuousLagrangeSpace(grid, order=1)
 ```
 
-```python
+```{code-cell}
 weight = diffusion
 penalty_parameter = 16
 symmetry_factor = 1
@@ -98,7 +111,7 @@ walker.append(l_h)
 walker.walk()
 ```
 
-```python
+```{code-cell}
 from dune.gdt import visualize_function
 
 u_h = DiscreteFunction(V_h, 'u_h')
@@ -108,7 +121,7 @@ a_h.apply_inverse(l_h.vector, u_h.dofs.vector)
 _ = visualize_function(u_h)
 ```
 
-```python
+```{code-cell}
 from dune.gdt import oswald_interpolation
 
 s_h = oswald_interpolation(u_h, V_h)
@@ -116,7 +129,7 @@ s_h = oswald_interpolation(u_h, V_h)
 _ = visualize_function(u_h - s_h, grid)
 ```
 
-```python
+```{code-cell}
 from dune.gdt import LaplaceIpdgFluxReconstructionOperator, RaviartThomasSpace
 
 RT_0 = RaviartThomasSpace(grid, order=0)
@@ -129,7 +142,7 @@ t_h = DiscreteFunction(RT_0, 't_h')
 flux_reconstruction.apply(u_h.dofs.vector, t_h.dofs.vector)
 ```
 
-```python
+```{code-cell}
 from dune.gdt import FiniteVolumeSpace, Operator, LocalElementBilinearFormIndicatorOperator
 
 fv_space = FiniteVolumeSpace(grid)
@@ -142,7 +155,7 @@ _ = visualize_function(eta_nc_2)
 print(np.sqrt(eta_nc_2.dofs.vector.l1_norm()))
 ```
 
-```python
+```{code-cell}
 from dune.xt.functions import divergence, ElementwiseMinimumFunction, ElementwiseDiameterFunction, inverse
 
 h = ElementwiseDiameterFunction(grid)
@@ -157,7 +170,7 @@ print(np.sqrt(eta_r_2.dofs.vector.l1_norm()))
 _ = visualize_function(eta_r_2)
 ```
 
-```python
+```{code-cell}
 from dune.xt.functions import gradient
 
 eta_df_op = Operator(grid, RT_0, fv_space)
