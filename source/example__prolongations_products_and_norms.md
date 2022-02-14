@@ -25,7 +25,7 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
-# Example [WIP]: prolongations and computing products and norms
+# Example: prolongations and computing products and norms
 
 ## This is work in progress (WIP), still missing:
 
@@ -84,7 +84,7 @@ f_h = prolong(f_H, V_h)
 print(f'f_h has {len(f_h.dofs.vector)} DoFs')
 ```
 
-# 2: computing products and norms
+## 2: computing products and norms
 
 ```{code-cell}
 u = GF(grid,
@@ -155,7 +155,7 @@ H1_product += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(GF(grid, 1,
 print(f'|| u ||_H1 = {np.sqrt(H1_product.apply2())}')
 ```
 
-# 3: computing errors w.r.t. a known reference solution
+## 3: computing errors w.r.t. a known reference solution
 
 ```{code-cell}
 # suppose we have a DiscreteFunction on a coarse grid, usually the solution of a discretization

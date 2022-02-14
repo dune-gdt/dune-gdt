@@ -25,7 +25,7 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
-# Example: Error estimation
+# Example: a posteriori error estimates based on flux reconstruction
 
 ```{code-cell}
 # wurlitzer: display dune's output in the notebook

@@ -25,7 +25,7 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
-# Example: more error estimation
+# Example: residual-based a posteriori error estimates
 
 ```{code-cell}
 # wurlitzer: display dune's output in the notebook
@@ -36,7 +36,7 @@ import numpy as np
 np.warnings.filterwarnings('ignore') # silence numpys warnings
 ```
 
-# 1: inspect grid properties and relations between elements and intersections
+## 1: inspect grid properties and relations between elements and intersections
 
 ```{code-cell}
 from dune.xt.grid import Dim, Simplex, make_cube_grid, AllDirichletBoundaryInfo, visualize_grid
@@ -100,7 +100,7 @@ for intersection_index, element_index in enumerate(outside_element_indices[inner
     print(f'    has outside element {element_index} with center {element_centers[element_index]}')
 ```
 
-# 2: solving an elliptic PDE
+## 2: solving an elliptic PDE
 
 ```{code-cell}
 from dune.xt.functions import ExpressionFunction, GridFunction as GF
@@ -158,7 +158,7 @@ a_h.apply_inverse(l_h.vector, u_h.dofs.vector)
 _ = visualize_function(u_h)
 ```
 
-# 3: computing the a posterior error estimates and indicators from [MNS2002]
+## 3: computing the a posterior error estimates and indicators from [MNS2002]
 
 We consider the set of all faces (or sides) of the grid, $\mathcal{F}_h$, with a face denoted by $\Gamma \in \mathcal{F}_h$.
 Each face $\Gamma \in \mathcal{F}_h$ is either
@@ -291,7 +291,7 @@ eta = np.sqrt(np.linalg.norm(eta_2_per_intersection, ord=1))
 print(f'estimated error: {eta}')
 ```
 
-# 4: data oscialltion
+## 4: data oscialltion
 
 We compute the data oscillation on a finer grid, for visualization. **Note** that all quantities from above are now invalid!
 

@@ -114,7 +114,7 @@ markers = np.array(adaptation_helper.markers, copy=False)
 print(markers)
 ```
 
-# keeping track of refined elements
+## keeping track of refined elements
 
 We can also tell the helper to keep track of those elements which have been refined. Therefore we mark the elements in the left half again. **Note that we also need to wrap the centers again!**
 

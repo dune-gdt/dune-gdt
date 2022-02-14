@@ -25,7 +25,9 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
-# Example 1: creating a gmsh file
+# Example: working with gmsh grids
+
+## 1: creating a gmsh file
 
 We use pyMORs `PolygonalDomain`description and `discretize_gmsh` to obtain a grid file that `gmsh` can read. **Note** that `dune-grid` can only handle `gmsh` version 2 files, we have thus installed `gmsh` version `2.16` in this virtualenv. For newer versions of `gmsh`,  you need to follow [these instructions](https://gitlab.dune-project.org/core/dune-grid/issues/85).
 
@@ -57,7 +59,7 @@ from pymor.discretizers.builtin.domaindiscretizers.gmsh import discretize_gmsh
 grid, bi = discretize_gmsh(L_shaped_domain, msh_file_path='L_shaped_domain.msh')
 ```
 
-# 2: discretization using pyMOR
+## 2: discretization using pyMOR
 
 We may use pyMOR to solve an elliptic PDE on this grid.
 
@@ -82,7 +84,7 @@ fom, fom_data = discretize_stationary_cg(problem, grid=grid, boundary_info=bi)
 fom.visualize(fom.solve())
 ```
 
-# 3: using the gmsh grid in dune
+## 3: using the gmsh grid in dune
 
 `dune-grid` [only supports](https://gitlab.dune-project.org/core/dune-grid/issues/85) `gmsh` version 2 files, and only a subset of the specification.
 This virtualenv includes the `gmsh` version 2.16 (as visible in the output of the `discretize_gmsh` command above), but we still need to clean up the mesh file for `dune-grid` to [correctly parse](https://gitlab.dune-project.org/core/dune-grid/-/issues/89) it.

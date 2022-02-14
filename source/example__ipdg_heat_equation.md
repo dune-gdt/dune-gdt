@@ -25,7 +25,7 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
-# Example [WIP]: SIPDG for the instationary heat equation
+# Example: SIPDG for the instationary heat equation
 
 ## This is work in progress (WIP), still missing:
 
@@ -52,7 +52,7 @@ print(f'grid has {grid.size(0)} elements, {grid.size(d - 1)} edges and {grid.siz
 boundary_info = AllDirichletBoundaryInfo(grid)
 ```
 
-# stationary data functions
+## stationary data functions
 
 ```{code-cell}
 from dune.xt.functions import GridFunction as GF
@@ -154,7 +154,7 @@ for ii, vec in enumerate(u_h):
 Start `paraview` in a terminal to visualize the time series.
 
 
-# timedependent right hand side
+## timedependent right hand side
 
 ```{code-cell}
 from dune.xt.functions import ExpressionFunction, ParametricExpressionFunction
