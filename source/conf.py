@@ -121,19 +121,8 @@ pygments_style = "sphinx"
 
 on_gitlab_ci = os.environ.get("GITLAB_CI", "nope") != "nope"
 
-html_theme = "sphinx_material"
-html_theme_options = {
-    "base_url": f"https://tutorials.dune-community.ovh/{branch}",
-    "html_minify": False,
-    "css_minify": on_gitlab_ci,
-    "nav_title": "Documentation",
-    "globaltoc_depth": 5,
-    "theme_color": "indigo",
-    "color_primary": "indigo",
-    "color_accent": "blue",
-    "version_dropdown": True,
-    "version_json": "/versions.json",
-}
+html_theme = "alabaster"
+html_theme_options = {}
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 version = dune.gdt.__version__
@@ -162,6 +151,15 @@ html_last_updated_fmt = "%b %d, %Y"
 # Custom sidebar templates, maps document names to template names.
 # all: "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
 html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "searchbox.html"]}
+html_sidebars = {
+    "**": [
+        "about.html",
+        "navigation.html",
+        "relations.html",
+        "searchbox.html",
+        "globaltoc.html",
+    ]
+}
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
 # html_additional_pages = {
