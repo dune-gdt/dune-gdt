@@ -1,4 +1,4 @@
-# dune-gdt Examples
+# Examples
 
 ```{toctree}
 example__prolongations_products_and_norms
