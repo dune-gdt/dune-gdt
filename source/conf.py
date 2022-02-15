@@ -150,14 +150,14 @@ html_last_updated_fmt = "%b %d, %Y"
 
 # Custom sidebar templates, maps document names to template names.
 # all: "**": ["logo-text.html", "globaltoc.html", "localtoc.html", "searchbox.html"]
-html_sidebars = {"**": ["logo-text.html", "globaltoc.html", "searchbox.html"]}
+# refer to https://github.com/pradyunsg/furo/blob/main/src/furo/theme/furo/theme.conf
+# for available ones
 html_sidebars = {
     "**": [
-        "about.html",
-        "navigation.html",
+        "sidebar/navigation.html",
         "relations.html",
         "searchbox.html",
-        "globaltoc.html",
+        "localtoc.html",
     ]
 }
 # Additional templates that should be rendered to pages, maps page names to
