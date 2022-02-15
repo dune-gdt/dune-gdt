@@ -121,7 +121,7 @@ pygments_style = "sphinx"
 
 on_gitlab_ci = os.environ.get("GITLAB_CI", "nope") != "nope"
 
-html_theme = "alabaster"
+html_theme = "furo"
 html_theme_options = {}
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
