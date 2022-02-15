@@ -1,7 +1,3 @@
-# This file is part of the pyMOR project (https://www.pymor.org).
-# Copyright 2013-2021 pyMOR developers and contributors. All rights reserved.
-# License: BSD 2-Clause License (https://opensource.org/licenses/BSD-2-Clause)
-
 import sys
 import os
 import slugify
@@ -24,6 +20,7 @@ this_dir = Path(__file__).resolve().parent
 src_dir = (this_dir / ".." / ".." / "src").resolve()
 sys.path.insert(0, str(src_dir))
 sys.path.insert(0, str(this_dir))
+branch = os.environ.get("CI_COMMIT_REF_NAME", "main")
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -126,7 +123,7 @@ on_gitlab_ci = os.environ.get("GITLAB_CI", "nope") != "nope"
 
 html_theme = "sphinx_material"
 html_theme_options = {
-    "base_url": "https://gh-docs.pymor.org/",
+    "base_url": f"https://tutorials.dune-community.ovh/{branch}",
     "html_minify": False,
     "css_minify": on_gitlab_ci,
     "nav_title": "Documentation",
@@ -189,7 +186,7 @@ html_use_modindex = True
 html_show_sourcelink = False
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "pymor"
+htmlhelp_basename = "dune-gdt"
 
 # Pngmath should try to align formulas properly.
 pngmath_use_preview = True
@@ -266,13 +263,12 @@ intersphinx_mapping = {
     "Sphinx": (" https://www.sphinx-doc.org/en/master/", None),
 }
 
-modindex_common_prefix = ["pymor."]
+modindex_common_prefix = ["dune."]
 
 
 # make intersphinx link to pyside2 docs
 qt_documentation = "PySide2"
 
-branch = os.environ.get("CI_COMMIT_REF_NAME", "main")
 # this must match GDT_TUTORIALS_ROOT/.ci/gitlab/deploy_docs
 try_on_binder_branch = branch.replace("github/PUSH_", "from_fork__")
 try_on_binder_slug = os.environ.get(
