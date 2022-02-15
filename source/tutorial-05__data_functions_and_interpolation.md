@@ -344,3 +344,7 @@ print(f'using a lambda expression in a discretization test is {t_python/t_dune} 
 
 This test is much more realistic than the pure interpolation one. Since evaluating the diffusion is only a small part of the overall computation, the performance loss using the Python lambda is much smaller.
 Overall, the gain in flexibility outweights the loss in performance (at least for quick tests).
+
+Download the code:
+{download}`tutorial-05__data_functions_and_interpolation.md`
+{nb-download}`tutorial-05__data_functions_and_interpolation.ipynb`

@@ -160,3 +160,7 @@ adaptation_helper.post_adapt(indicate_new_elements=True)
 ```{code-cell}
 _ = visualize_grid(grid)
 ```
+
+Download the code:
+{download}`example__simple_grid_adaptation.md`
+{nb-download}`example__simple_grid_adaptation.ipynb`

@@ -182,3 +182,8 @@ eta_df_2 = eta_df_op.apply(diffusion*gradient(u_h) + t_h)
 print(eta_df_2.dofs.vector.l1_norm())
 _ = visualize_function(eta_df_2)
 ```
+
+
+Download the code:
+{download}`example__ESV2007_estimates.md`
+{nb-download}`example__ESV2007_estimates.ipynb`

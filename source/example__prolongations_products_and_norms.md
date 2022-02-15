@@ -174,3 +174,7 @@ L2_product = BilinearForm(reference_grid, error, error)
 L2_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
 print(f'|| error ||_L2 = {np.sqrt(L2_product.apply2())}')
 ```
+
+Download the code:
+{download}`example__prolongations_products_and_norms.md`
+{nb-download}`example__prolongations_products_and_norms.ipynb`

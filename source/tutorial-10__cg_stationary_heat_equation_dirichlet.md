@@ -557,3 +557,7 @@ u_h = discretize_elliptic_cg_dirichlet(grid, kappa, f, g_D)
 
 _ = visualize_function(u_h)
 ```
+
+Download the code:
+{download}`tutorial-10__cg_stationary_heat_equation_dirichlet.md`
+{nb-download}`tutorial-10__cg_stationary_heat_equation_dirichlet.ipynb`

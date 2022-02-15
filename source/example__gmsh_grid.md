@@ -120,3 +120,7 @@ from discretize_elliptic_cg import discretize_elliptic_cg_dirichlet_zero
 u_h = discretize_elliptic_cg_dirichlet_zero(grid, diffusion=1, source=1)
 _ = visualize_function(u_h)
 ```
+
+Download the code:
+{download}`example__gmsh_grid.md`
+{nb-download}`example__gmsh_grid.ipynb`

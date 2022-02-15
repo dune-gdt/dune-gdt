@@ -88,3 +88,7 @@ u_h = discretize_elliptic_ipdg_dirichlet_zero(
 
 _ = visualize_function(u_h)
 ```
+
+Download the code:
+{download}`tutorial-20__ipdg_stationary_heat_equation_dirichlet.md`
+{nb-download}`tutorial-20__ipdg_stationary_heat_equation_dirichlet.ipynb`

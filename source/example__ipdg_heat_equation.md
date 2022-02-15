@@ -201,3 +201,7 @@ while time < T_end + dt:
 for ii, vec in enumerate(u_h):
     DiscreteFunction(V_h, vec, 'solution').visualize(f'solution_timedep_data_{ii}')
 ```
+
+Download the code:
+{download}`example__ipdg_heat_equation.md`
+{nb-download}`example__ipdg_heat_equation.ipynb`

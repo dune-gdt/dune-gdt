@@ -324,3 +324,7 @@ _ = visualize_function(osc_2)
 # we obtain ||h(f - f_h)||_{L^2(\Omega)} by the L^1-norm since the indicators are already squared
 print(np.sqrt(osc_2.dofs.vector.l1_norm()))
 ```
+
+Download the code:
+{download}`example__MNS2002_estimates.md`
+{nb-download}`example__MNS2002_estimates.ipynb`
