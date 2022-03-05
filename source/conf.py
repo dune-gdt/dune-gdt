@@ -157,7 +157,6 @@ html_sidebars = {
         "sidebar/navigation.html",
         "relations.html",
         "searchbox.html",
-        "localtoc.html",
     ]
 }
 # Additional templates that should be rendered to pages, maps page names to
