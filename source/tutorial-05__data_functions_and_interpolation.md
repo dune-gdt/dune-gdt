@@ -25,9 +25,9 @@ kernelspec:
 :load: myst_code_init.py
 ```
 
-# Tutorial 05 [WIP]: data functions and interpolation
+# Tutorial: data functions and interpolation
 
-## This is work in progress (WIP), still missing:
+This is work in progress [WIP], still missing:
 
 * visualization in 1d
 * visualization in 3d?
@@ -76,7 +76,7 @@ or discrete functions $v_h \in V_h$, where $V_h$ is some finite-dimensional disc
 Let's create some of these functions.
 
 
-## 1.1: using the `ConstantFunction`
+### 1.1: using the `ConstantFunction`
 
 For constant functions.
 
@@ -91,7 +91,7 @@ A = [[1, 0], [0, 1]]
 g = ConstantFunction(dim_domain=Dim(d), dim_range=(Dim(d), Dim(d)), value=A, name='g')
 ```
 
-## 1.2: using the `ExpressionFunction`
+### 1.2: using the `ExpressionFunction`
 
 For functions given by an expression, where we have to specify the polynomial order of the expression (or the approximation order for non-polynomial functions).
 
@@ -112,7 +112,7 @@ h = ExpressionFunction(dim_domain=Dim(d), variable='x', order=10, expression='ex
                        gradient_expressions=['x[1]*exp(x[0]*x[1])', 'x[0]*exp(x[0]*x[1])'], name='h')
 ```
 
-## 1.3: discrete functions
+### 1.3: discrete functions
 
 Which often result from a discretization scheme, see the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
 
@@ -125,9 +125,9 @@ v_h = DiscreteFunction(V_h, name='v_h')
 print(v_h.dofs.vector.sup_norm())
 ```
 
-# 2: visualizing functions
+## 2: visualizing functions
 
-## 2.1: visualizing scalar functions in 2d
+### 2.1: visualizing scalar functions in 2d
 
 We can easily visualize functions mapping from $\mathbb{R}^2 \to \mathbb{R}$. Internally, this is achieved by writing a vtk file to disk and displaying the file using K3D.
 
@@ -155,13 +155,13 @@ _ = visualize_function(h, grid, subsampling=True)
 Subsampling may thus be a means to obtain pretty pictures, but it can also be misleading.
 
 
-## 2.2: visualizing functions in other dimensions
+### 2.2: visualizing functions in other dimensions
 
 Functions mapping from and to other dimensions can still be written to disk to be viewed with external viewers such as `paraview`.
 Therefore, they need to be wrapped as a `GridFunction`, as explained in the next section.
 
 
-# 3: The `GridFunction`
+## 3: The `GridFunction`
 
 No matter the type of data function, we want to be able to use all of these in a discretization scheme without changing the discretization code (e.g., we should be able to pass them all to one of the `discretize_...` functions in `discretize_elliptic_cg.py`).
 As explained in *tutorial on continuous Finite Elements for the stationary heat equation*, these functions thus need to be localizable w.r.t. a grid.
@@ -197,7 +197,7 @@ h_grid_lambda = GF(grid,
 **Note** that using a Python lambda might not yield be the most efficient code, but it is a great way to quickliy implement data functions.
 
 
-## 3.1: visualizing grid functions in all dimension
+### 3.1: visualizing grid functions in all dimension
 
 To continue *2.2*, we can also write any grid function or discrete function to disk.
 
@@ -223,12 +223,12 @@ v_h.visualize('v_h') # writes v_h.vtu
 !ls -l v_h.vtu
 ```
 
-# 4: interpolation
+## 4: interpolation
 
 It is often desirable to interpolate data functions in a given discrete function space.
 
 
-## 4.1: using `dune-gdt`s interpolation
+### 4.1: using `dune-gdt`s interpolation
 
 For most discrete function space, the `default_interpolation` will do the right thing, e.g. perform an $L^2$- or Lagrange-Interpolation. There are more specialized interpolations for special cases, e.g. for Raviart-Thomas spaces.
 
@@ -239,7 +239,7 @@ h_h = default_interpolation(h_grid, V_h)
 _ = visualize_function(h_h, subsampling=False)
 ```
 
-## 4.2: using vectorized Python code
+### 4.2: using vectorized Python code
 
 For Lagrangian discrete function spaces the interpolation can be performed by point evaluation.
 We can extract the correct Lagrange-points from the discrete function space and wrap them into a `numpy`-array (without copying them). We can then perform the usual vectorized `numpy` operations and store the result in the DoF-vector of a discrete function (by again wrapping the vector without a copy into a `numpy`-array).
@@ -254,7 +254,7 @@ h_h_numpy_vec[:] = np.exp(interpolation_points[..., 0]*interpolation_points[...,
 _ = visualize_function(h_h_numpy)
 ```
 
-# 5: performance considerations
+## 5: performance considerations
 
 The way a function is constructed may have a large impact on its performance. Let us consider the function $h(x) = exp(x_0\,x_1)$ from above.
 We should use a finer grid to obtain some representative timings.
@@ -281,7 +281,7 @@ toc = timer() - tic
 print(f'space has {V_h.num_DoFs} DoFs (took {toc}s)')
 ```
 
-## 5.1: interpolation test
+### 5.1: interpolation test
 
 One measure of performance is the time it takes to interpolate a data function. Note that the comparison greatly depends on the grid and the polynomial order of `V_h`.
 
@@ -314,7 +314,7 @@ print(f'interpolating h_python_lambda took {t_python}s')
 print(f'using a lambda expression in an interpolation test is {t_python/t_dune} times slower')
 ```
 
-## 5.2: discretization test
+### 5.2: discretization test
 
 For a more realistic comparison, we use the `discretize_elliptic_cg_dirichlet_zero` function as explained in the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
 
