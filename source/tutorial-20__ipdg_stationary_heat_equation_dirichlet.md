@@ -26,7 +26,7 @@ kernelspec:
 ```
 # Tutorial 20 [WIP]: discontinuous IPDG for the stationary heat equation
 
-This tutorial shows how to solve the stationary heat equation with homogeneous Dirichlet boundary conditions using interior penalty (IP) discontinuous Galerkin (DG) Finite Elmenets with `dune-gdt`.
+This tutorial shows how to solve the stationary heat equation with homogeneous Dirichlet boundary conditions using interior penalty (IP) discontinuous Galerkin (DG) Finite Elements with `dune-gdt`.
 
 ## This is work in progress (WIP), still missing:
 
