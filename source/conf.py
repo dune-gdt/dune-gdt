@@ -154,9 +154,11 @@ html_last_updated_fmt = "%b %d, %Y"
 # for available ones
 html_sidebars = {
     "**": [
+        "sidebar/search.html",
+        "sidebar/scroll-start.html",
         "sidebar/navigation.html",
-        "relations.html",
-        "searchbox.html",
+        "sidebar/scroll-end.html",
+        "sidebar/variant-selector.html",
     ]
 }
 # Additional templates that should be rendered to pages, maps page names to
