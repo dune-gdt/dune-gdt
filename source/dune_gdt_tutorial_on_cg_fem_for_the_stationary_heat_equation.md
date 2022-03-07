@@ -559,5 +559,5 @@ _ = visualize_function(u_h)
 ```
 
 Download the code:
-{download}`tutorial-10__cg_stationary_heat_equation_dirichlet.md`
-{nb-download}`tutorial-10__cg_stationary_heat_equation_dirichlet.ipynb`
+{download}`dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.md`
+{nb-download}`dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.ipynb`
