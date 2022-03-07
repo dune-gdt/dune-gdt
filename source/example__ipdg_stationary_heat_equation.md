@@ -90,5 +90,5 @@ _ = visualize_function(u_h)
 ```
 
 Download the code:
-{download}`tutorial-20__ipdg_stationary_heat_equation_dirichlet.md`
-{nb-download}`tutorial-20__ipdg_stationary_heat_equation_dirichlet.ipynb`
+{download}`example__ipdg_stationary_heat_equation.md`
+{nb-download}`example__ipdg_stationary_heat_equation.ipynb`
