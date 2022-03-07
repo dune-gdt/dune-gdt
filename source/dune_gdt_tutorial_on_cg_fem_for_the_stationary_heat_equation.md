@@ -43,9 +43,9 @@ import numpy as np
 np.warnings.filterwarnings('ignore') # silence numpys warnings
 ```
 
-## 1: diffusion with homogeneous Dirichlet boundary condition
+## diffusion with homogeneous Dirichlet boundary condition
 
-### 1.1: analytical problem
+### analytical problem
 
 Let $\Omega \subset \mathbb{R}^d$ for $1 \leq d \leq 3$ be a bounded connected domain with Lipschitz-boundary $\partial\Omega$. We seek the solution $u \in H^1_0(\Omega)$ of the **linear diffusion equation** (with a homogeneous Dirichlet boundary condition)
 
@@ -65,13 +65,13 @@ a(u, v) &= l(v) &&\text{for all }v \in V,\tag{2}\label{eq:diff:variational_probl
 where the bilinear form $a: H^1(\Omega) \times H^1(\Omega) \to \mathbb{R}$ and the linear functional $l \in H^{-1}(\Omega)$ are given by
 
 $$\begin{align}
-a_(u, v) := \int_\Omega (\kappa\nabla u)\cdot v \,\text{d}x &&\text{and}&& l(v) := \int_\Omega f\,\,\text{d}x,\tag{3}\label{eq:diff:a_and_l}
+a(u, v) := \int_\Omega (\kappa\nabla u)\cdot v \,\text{d}x &&\text{and}&& l(v) := \int_\Omega f\,\,\text{d}x,\tag{3}\label{eq:diff:a_and_l}
 \end{align}$$
 
 respectively.
 
 
-Consider for example $(1)$ with:
+Consider for example $\eqref{eq:diff:pde}$ with:
 
 * $d = 2$
 * $\Omega = [0, 1]^2$
@@ -90,7 +90,7 @@ kappa = ConstantFunction(dim_domain=Dim(d), dim_range=Dim(1), value=[1.], name='
 f = ExpressionFunction(dim_domain=Dim(d), variable='x', expression='exp(x[0]*x[1])', order=3, name='f')
 ```
 
-### 1.2: continuous Finite Elements
+### continuous Finite Elements
 
 Let us for simplicity consider a simplicial **grid** $\mathcal{T}_h$ (other types of elements work analogously) as a partition of $\Omega$ into elements $K \in \mathcal{T}_h$ with $h := \max_{K \in \mathcal{T}_h} \text{diam}(K)$, we consider the discrete space of continuous piecewise polynomial functions of order $k \in \mathbb{N}$,
 
@@ -98,7 +98,7 @@ $$\begin{align}
 V_h := \big\{ v \in C^0(\Omega) \;\big|\; v|_K \in \mathbb{P}^k(K) \big\}\tag{4}\label{eq:V_h}
 \end{align}$$
 
-where $\mathbb{P}^k(K)$ denotes the space of polynomials of (total) degree up to $k$ (*note that $V_h \subset H^1(\Omega)$ and $V_h$ does not include the Dirichlet boundary condition, thus $V_h \not\subset H^1_0(\Omega$.*). We obtain a finite-dimensional variational problem by Galerkin-projection of $(2)$ onto $V_h$, thas is: we seek the approximate solution $u_h \in V_h \cap H^1_0(\Omega)$, such that
+where $\mathbb{P}^k(K)$ denotes the space of polynomials of (total) degree up to $k$ (*note that $V_h \subset H^1(\Omega)$ and $V_h$ does not include the Dirichlet boundary condition, thus $V_h \not\subset H^1_0(\Omega$.*). We obtain a finite-dimensional variational problem by Galerkin-projection of $\eqref{eq:diff:variational_problem}$ onto $V_h$, thas is: we seek the approximate solution $u_h \in V_h \cap H^1_0(\Omega)$, such that
 
 $$\begin{align}
 a(u_h, v_h) &= l(v_h) &&\text{for all }v_h \in V_h \cap H^1_0(\Omega).\tag{5}\label{eq:diff:discrete_variational_problem}
@@ -180,7 +180,7 @@ print(f'V_h has {V_h.num_DoFs} DoFs')
 assert V_h.num_DoFs == grid.size(d)
 ```
 
-### 1.3: approximate functionals
+### approximate functionals
 
 Since the application of the functional to a *global* basis function $\psi_i$ is localizable w.r.t. the grid, e.g.
 
@@ -264,7 +264,7 @@ assert len(l_h.vector) == V_h.num_DoFs
 print(l_h.vector.sup_norm())
 ```
 
-### 1.4: approximate bilinear forms
+### approximate bilinear forms
 
 The approximation of the application of the bilinear form $a$ to two *global* basis function $\psi_i, \varphi_j$ follows in a similar manner. We obtain by localization
 
@@ -327,7 +327,7 @@ assert a_h.matrix.rows == a_h.matrix.cols == V_h.num_DoFs
 print(a_h.matrix.sup_norm())
 ```
 
-### 1.5: handling the Dirichlet boundary condition
+### handling the Dirichlet boundary condition
 
 As noted above, we handle the Dirichlet boundary condition on the algebraic level by modifying the assembled matrices and vector.
 We therefore require a means to identify all DoFs of $V_h$ associated with the Dirichlet boundary modelled by `boundary_info`.
@@ -344,7 +344,7 @@ Similar to the bilinear forms and functionals above, the `dirichlet_constraints`
 print(dirichlet_constraints.dirichlet_DoFs)
 ```
 
-### 1.6: walking the grid
+### walking the grid
 
 Until now, we constructed a bilinear form `a_h`, a linear functional `l_h` and Dirichlet constrinaints `dirichlet_constraints`, which are all localizable w.r.t. the grid, that is: i order to compute their application or to assemble them, it is sufficient to apply them to each element of the grid.
 
@@ -386,7 +386,7 @@ Since the bilinear form is implemented as a `MatrixOperator`, we may simply inve
 u_h_vector = a_h.apply_inverse(l_h.vector)
 ```
 
-### 1.8: postprocessing the solution
+### postprocessing the solution
 
 To make use of the DoF vector of the approximate solution, $\underline{u_h} \in \mathbb{R}^N$, it is convenient to interpert it as a discrete function again, $u_h \in V_h$ by means of the Galerkin isomorphism. This can be achieved by the `DiscreteFunction` in `dune-gdt`.
 
@@ -401,7 +401,7 @@ u_h = DiscreteFunction(V_h, u_h_vector, name='u_h')
 _ = visualize_function(u_h)
 ```
 
-### 1.9: everything in a single function
+### everything in a single function
 
 For a better overview, the above discretization code is also available in a single function in the file `discretize_elliptic_cg.py`:
 
@@ -419,11 +419,11 @@ u_h = discretize_elliptic_cg_dirichlet_zero(grid, kappa, f)
 _ = visualize_function(u_h)
 ```
 
-## 2: diffusion with non-homogeneous Dirichlet boundary condition
+## diffusion with non-homogeneous Dirichlet boundary condition
 
-### 2.1: analytical problem
+### analytical problem
 
-Consider problem $(1)$ from above, but with non-homogeneous Dirichlet boundary values. That is:
+Consider problem $\eqref{eq:diff:pde}$ from above, but with non-homogeneous Dirichlet boundary values. That is:
 
 
 Let $\Omega \subset \mathbb{R}^d$ for $1 \leq d \leq 3$ be a bounded connected domain with Lipschitz-boundary $\partial\Omega$. We seek the solution $u \in H^1(\Omega)$ of the linear diffusion equation (with a **non-homogeneous Dirichlet boundary condition**)
@@ -441,10 +441,10 @@ $$\begin{align}
 a(u, v) &= l(v) &&\text{for all }v \in V,\tag{13}\label{eq:diff_dir:variational_problem}
 \end{align}$$
 
-with the same bilinear form $a$ and linear functional $l$ as above in $(3)$.
+with the same bilinear form $a$ and linear functional $l$ as above in $\eqref{eq:diff:a_and_l}$.
 <!-- #endregion -->
 
-### 2.2: Dirichlet shift
+### Dirichlet shift
 
 Suppose $\hat{g}_\text{D} \in H^1(\Omega)$ is an extension of the Dirichlet boundary values to $\Omega$, such that
 
@@ -473,7 +473,7 @@ a(u_0, v) &= l(v) - a(\hat{g}_\text{D}, v) &&\text{for all }v \in V.\tag{14}\lab
 We have thus shifted problem $(13)$ to be of familiar form, i.e., similarly to above we consider a linear diffusion equation with **homogeneous** Dirichlet boundary conditions, but a **modified source** term.
 
 
-Consider for example $(1)$ with:
+Consider for example $\eqref{eq:diff:pde}$ with:
 
 * $d = 2$
 * $\Omega = [0, 1]^2$
@@ -484,7 +484,7 @@ Consider for example $(1)$ with:
 Except for $g_\text{D}$, we may thus use the same grid, boundary info and data functions as above.
 
 
-### 2.3: Dirichlet interpolation
+### Dirichlet interpolation
 
 To obtain $\hat{g}_\text{D} \in H^1(\Omega)$, we use the Lagrange interpolation of $g_\text{D}$ and set all DoFs associated with inner Lagrange nodes to zero. This is realized by the `boundary_interpolation`.
 
@@ -502,7 +502,7 @@ _ = visualize_function(g_D_hat)
 As we observe, the values on all boundary DoFs are $x_0 x_1$ and on all inner DoFs $0$.
 
 
-### 2.4: assembling the shifted system
+### assembling the shifted system
 
 * We assemble the unconstrained matrix- and vector representation of $a_h$ and $l_h$ w.r.t. $V_h$ similarly as above.
 
@@ -546,7 +546,7 @@ u_h = DiscreteFunction(V_h, u_0_h_vector + g_D_hat.dofs.vector)
 _ = visualize_function(u_h)
 ```
 
-### 2.5: everything in a single function
+### everything in a single function
 
 As above, solving with non-homogeneous Dirichlet values is also available in a single function.
 
