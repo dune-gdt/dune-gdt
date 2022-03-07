@@ -98,7 +98,7 @@ g = ConstantFunction(dim_domain=Dim(d), dim_range=(Dim(d), Dim(d)), value=A, nam
 
 For functions given by an expression, where we have to specify the polynomial order of the expression (or the approximation order for non-polynomial functions).
 
-Note that if the name of the variable is `Foo`, the components `Foo[0]`, ... `Foo[d - 1]` are availabble to be used in the expression.
+Note that if the name of the variable is `Foo`, the components `Foo[0]`, ... `Foo[d - 1]` are available to be used in the expression.
 
 *  We have functions which do not provide a gradient ...
 
@@ -109,7 +109,7 @@ h = ExpressionFunction(
         dim_domain=Dim(d), variable='x', order=10, expression='exp(x[0]*x[1])', name='h')
 ```
 
-* ... and functions which provide a gradient, usefull for analytical solutions to compare to and compute $H^1$ errors
+* ... and functions which provide a gradient, useful for analytical solutions to compare to and compute $H^1$ errors
 
 ```{code-cell}
 h = ExpressionFunction(
@@ -214,7 +214,7 @@ f_grid.visualize(grid, 'f') # writes f.vtu
 !ls -l f.vtu
 ```
 
-Note that the grid function `f_grid` is associated with the *type* of the grid `grid`, but not with the actual obejct `grid`.
+Note that the grid function `f_grid` is associated with the *type* of the grid `grid`, but not with the actual object `grid`.
 The function can thus be localized w.r.t. all grids of the same type as `grid`.
 For visualization, for instance, we still need to pass an actual `grid` object with respect to which the visualization is to be carried out.
 
