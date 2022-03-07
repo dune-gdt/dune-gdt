@@ -119,7 +119,7 @@ h = ExpressionFunction(
 
 ### discrete functions
 
-These often result from a discretization scheme, see the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
+These often result from a discretization scheme, see the [tutorial on continuous Finite Elements for the stationary heat equation](dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.md).
 
 ```{code-cell}
 from dune.gdt import DiscontinuousLagrangeSpace, DiscreteFunction
@@ -169,7 +169,7 @@ Therefore, they need to be wrapped as a `GridFunction`, as explained in the next
 ## The `GridFunction`
 
 No matter the type of data function, we want to be able to use all of these in a discretization scheme without changing the discretization code (e.g., we should be able to pass them all to one of the `discretize_...` functions in `discretize_elliptic_cg.py`).
-As explained in [the tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md), these functions thus need to be localizable w.r.t. a grid.
+As explained in [the tutorial on continuous Finite Elements for the stationary heat equation](dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.md), these functions thus need to be localizable w.r.t. a grid.
 While the discrete function $v_h$ is already associated with a grid (namely the `grid` used to create `V_h`), the analytical functions $f$, $g$ and $h$ are not, which poses some problems when writing generic discretization schemes.
 
 Exactly for this purpose, `dune.xt.functions` contains a `GridFunction`, which is a quite powerful means to wrap all kinds of things into a function associated with a grid.
@@ -328,7 +328,7 @@ print(f'using a lambda expression in an interpolation test is {t_python/t_dune} 
 
 ### discretization test
 
-For a more realistic comparison, we use the `discretize_elliptic_cg_dirichlet_zero` function as explained in the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
+For a more realistic comparison, we use the `discretize_elliptic_cg_dirichlet_zero` function as explained in the [tutorial on continuous Finite Elements for the stationary heat equation](dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.md).
 
 ```{code-cell}
 from discretize_elliptic_cg import discretize_elliptic_cg_dirichlet_zero
