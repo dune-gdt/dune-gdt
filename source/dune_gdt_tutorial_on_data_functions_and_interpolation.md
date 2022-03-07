@@ -358,5 +358,5 @@ This test is more realistic than the pure interpolation one. Since evaluating th
 Overall, the gain in flexibility outweighs the loss in performance (at least for quick tests).
 
 Download the code:
-{download}`tutorial-05__data_functions_and_interpolation.md`
-{nb-download}`tutorial-05__data_functions_and_interpolation.ipynb`
+{download}`dune_gdt_tutorial_on_data_functions_and_interpolation.md`
+{nb-download}`dune_gdt_tutorial_on_data_functions_and_interpolation.ipynb`
