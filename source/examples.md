@@ -1,5 +1,7 @@
 # Examples
 
+The examples each highlight a specific aspect, possibly without much explanation.
+
 ```{toctree}
 example__prolongations_products_and_norms
 example__simple_grid_adaptation
