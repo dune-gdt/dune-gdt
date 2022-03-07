@@ -27,23 +27,23 @@ kernelspec:
 
 # Tutorial: data functions and interpolation
 
-This is work in progress [WIP], still missing:
+This is work in progress, still missing:
 
 * visualization in 1d
 * visualization in 3d?
 
 ```{code-cell}
 # wurlitzer: display dune's output in the notebook
-%load_ext wurlitzer
+#%load_ext wurlitzer
 %matplotlib notebook
 
 import numpy as np
 np.warnings.filterwarnings('ignore') # silence numpys warnings
 ```
 
-## 1: creating functions
+## creating functions
 
-We'll work in 2d in this tutorial since scalar functions in 2d can be best visualized within the notebook.
+We'll work mostly in 2d in this tutorial since scalar functions in 2d can be best visualized within the notebook.
 Let's set up a 2d grid first, as seen in other tutorials and examples.
 
 ```{code-cell}
@@ -52,9 +52,11 @@ from dune.xt.functions import ConstantFunction, ExpressionFunction, GridFunction
 
 d = 2
 omega = ([0, 0], [1, 1])
-grid = make_cube_grid(Dim(d), Simplex(), lower_left=omega[0], upper_right=omega[1], num_elements=[1, 1])
+grid = make_cube_grid(Dim(d), Simplex(),
+                      lower_left=omega[0], upper_right=omega[1], num_elements=[1, 1])
 
-print(f'grid has {grid.size(0)} elements, {grid.size(d - 1)} edges and {grid.size(d)} vertices')
+print(f'grid has {grid.size(0)} elements, '
+      f'{grid.size(d - 1)} edges and {grid.size(d)} vertices')
 ```
 
 Some examples of data functions include analytical functions, such as
@@ -76,7 +78,7 @@ or discrete functions $v_h \in V_h$, where $V_h$ is some finite-dimensional disc
 Let's create some of these functions.
 
 
-### 1.1: using the `ConstantFunction`
+### using the `ConstantFunction`
 
 For constant functions.
 
@@ -85,13 +87,14 @@ from dune.xt.functions import ConstantFunction
 
 alpha = 0.5
 f = ConstantFunction(dim_domain=Dim(d), dim_range=Dim(1), value=[alpha], name='f')
-# note that we have to provide [alpha], since scalar constant functions expect a vector of length 1
+# note that we have to provide [alpha],
+# since scalar constant functions expect a vector of length 1
 
 A = [[1, 0], [0, 1]]
 g = ConstantFunction(dim_domain=Dim(d), dim_range=(Dim(d), Dim(d)), value=A, name='g')
 ```
 
-### 1.2: using the `ExpressionFunction`
+### using the `ExpressionFunction`
 
 For functions given by an expression, where we have to specify the polynomial order of the expression (or the approximation order for non-polynomial functions).
 
@@ -102,34 +105,36 @@ Note that if the name of the variable is `Foo`, the components `Foo[0]`, ... `Fo
 ```{code-cell}
 from dune.xt.functions import ExpressionFunction
 
-h = ExpressionFunction(dim_domain=Dim(d), variable='x', order=10, expression='exp(x[0]*x[1])', name='h')
+h = ExpressionFunction(
+        dim_domain=Dim(d), variable='x', order=10, expression='exp(x[0]*x[1])', name='h')
 ```
 
 * ... and functions which provide a gradient, usefull for analytical solutions to compare to and compute $H^1$ errors
 
 ```{code-cell}
-h = ExpressionFunction(dim_domain=Dim(d), variable='x', order=10, expression='exp(x[0]*x[1])',
-                       gradient_expressions=['x[1]*exp(x[0]*x[1])', 'x[0]*exp(x[0]*x[1])'], name='h')
+h = ExpressionFunction(
+        dim_domain=Dim(d), variable='x', order=10, expression='exp(x[0]*x[1])',
+        gradient_expressions=['x[1]*exp(x[0]*x[1])', 'x[0]*exp(x[0]*x[1])'], name='h')
 ```
 
-### 1.3: discrete functions
+### discrete functions
 
-Which often result from a discretization scheme, see the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
+These often result from a discretization scheme, see the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
 
 ```{code-cell}
 from dune.gdt import DiscontinuousLagrangeSpace, DiscreteFunction
 
 V_h = DiscontinuousLagrangeSpace(grid, order=1)
-v_h = DiscreteFunction(V_h, name='v_h')
+v_h = DiscreteFunction(V_h, name='v_h')  # initialized with a zero DoF vector
 
 print(v_h.dofs.vector.sup_norm())
 ```
 
-## 2: visualizing functions
+## visualizing functions
 
-### 2.1: visualizing scalar functions in 2d
+### visualizing scalar functions in 2d
 
-We can easily visualize functions mapping from $\mathbb{R}^2 \to \mathbb{R}$. Internally, this is achieved by writing a vtk file to disk and displaying the file using K3D.
+We can easily visualize functions mapping from $\mathbb{R}^2 \to \mathbb{R}$. Internally, this is achieved by writing a `.vtk` file to disk and displaying the file using [K3D](https://github.com/K3D-tools/K3D-jupyter).
 
 ```{code-cell}
 from dune.xt.functions import visualize_function
@@ -155,19 +160,19 @@ _ = visualize_function(h, grid, subsampling=True)
 Subsampling may thus be a means to obtain pretty pictures, but it can also be misleading.
 
 
-### 2.2: visualizing functions in other dimensions
+### visualizing functions in other dimensions
 
-Functions mapping from and to other dimensions can still be written to disk to be viewed with external viewers such as `paraview`.
+Functions mapping from and to other dimensions can still be written to disk to be viewed with external viewers such as [Paraview](https://www.paraview.org/).
 Therefore, they need to be wrapped as a `GridFunction`, as explained in the next section.
 
 
-## 3: The `GridFunction`
+## The `GridFunction`
 
 No matter the type of data function, we want to be able to use all of these in a discretization scheme without changing the discretization code (e.g., we should be able to pass them all to one of the `discretize_...` functions in `discretize_elliptic_cg.py`).
-As explained in *tutorial on continuous Finite Elements for the stationary heat equation*, these functions thus need to be localizable w.r.t. a grid.
+As explained in [the tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md), these functions thus need to be localizable w.r.t. a grid.
 While the discrete function $v_h$ is already associated with a grid (namely the `grid` used to create `V_h`), the analytical functions $f$, $g$ and $h$ are not, which poses some problems when writing generic discretization schemes.
 
-Exactly for this purpose, `dune.xt.functions` contains a `GridFunction`, which is a quite powerful means to wrap all kinds of things into a function assocaited with a grid.
+Exactly for this purpose, `dune.xt.functions` contains a `GridFunction`, which is a quite powerful means to wrap all kinds of things into a function associated with a grid.
 
 For instance, we can wrap any existing function.
 
@@ -194,12 +199,12 @@ h_grid_lambda = GF(grid,
                    dim_range=Dim(1), name='h')
 ```
 
-**Note** that using a Python lambda might not yield be the most efficient code, but it is a great way to quickliy implement data functions.
+**Note** that using a Python lambda might not yield be the most efficient code, but it is a great way to quickly implement data functions.
 
 
-### 3.1: visualizing grid functions in all dimension
+### visualizing grid functions in all dimension
 
-To continue *2.2*, we can also write any grid function or discrete function to disk.
+To continue the visualization example from above, we can also write any grid function or discrete function to disk.
 
 ```{code-cell}
 f_grid.visualize(grid, 'f') # writes f.vtu
@@ -209,9 +214,9 @@ f_grid.visualize(grid, 'f') # writes f.vtu
 !ls -l f.vtu
 ```
 
-Note that the grid functions `f_grid` is associated with the *type* of the grid `grid`, but not with the actual obejct `grid`.
+Note that the grid function `f_grid` is associated with the *type* of the grid `grid`, but not with the actual obejct `grid`.
 The function can thus be localized w.r.t. all grids of the same type as `grid`.
-For visualization, for instance, we still need to pass an actual `grid` object to visualize w.r.t.
+For visualization, for instance, we still need to pass an actual `grid` object with respect to which the visualization is to be carried out.
 
 The discrete function, on the other hand, is defined w.r.t. an actual grid object (namely the one used to construct the corresponding discrete function space `V_h`).
 
@@ -223,23 +228,26 @@ v_h.visualize('v_h') # writes v_h.vtu
 !ls -l v_h.vtu
 ```
 
-## 4: interpolation
+## interpolation
 
 It is often desirable to interpolate data functions in a given discrete function space.
 
 
-### 4.1: using `dune-gdt`s interpolation
+### using `dune-gdt`s interpolation
 
 For most discrete function space, the `default_interpolation` will do the right thing, e.g. perform an $L^2$- or Lagrange-Interpolation. There are more specialized interpolations for special cases, e.g. for Raviart-Thomas spaces.
 
 ```{code-cell}
-from dune.gdt import default_interpolation, visualize_function # can also visualize discrete functions
+from dune.gdt import (
+    default_interpolation,
+    visualize_function,  # can also visualize discrete functions
+)
 
 h_h = default_interpolation(h_grid, V_h)
 _ = visualize_function(h_h, subsampling=False)
 ```
 
-### 4.2: using vectorized Python code
+### using vectorized Python code
 
 For Lagrangian discrete function spaces the interpolation can be performed by point evaluation.
 We can extract the correct Lagrange-points from the discrete function space and wrap them into a `numpy`-array (without copying them). We can then perform the usual vectorized `numpy` operations and store the result in the DoF-vector of a discrete function (by again wrapping the vector without a copy into a `numpy`-array).
@@ -254,7 +262,7 @@ h_h_numpy_vec[:] = np.exp(interpolation_points[..., 0]*interpolation_points[...,
 _ = visualize_function(h_h_numpy)
 ```
 
-## 5: performance considerations
+## performance considerations
 
 The way a function is constructed may have a large impact on its performance. Let us consider the function $h(x) = exp(x_0\,x_1)$ from above.
 We should use a finer grid to obtain some representative timings.
@@ -266,11 +274,13 @@ Choosing a `Cube` grid, on the other hand, would give us an instance of `dune-gr
 from timeit import default_timer as timer
 
 tic = timer()
-grid = make_cube_grid(Dim(d), Simplex(), lower_left=omega[0], upper_right=omega[1], num_elements=[512, 512])
+grid = make_cube_grid(Dim(d), Simplex(),
+                      lower_left=omega[0], upper_right=omega[1], num_elements=[512, 512])
 grid.global_refine(1)
 toc = timer() - tic
 
-print(f'grid has {grid.size(0)} elements, {grid.size(d - 1)} edges and {grid.size(d)} vertices (took {toc}s)')
+print(f'grid has {grid.size(0)} elements, '
+      f'{grid.size(d - 1)} edges and {grid.size(d)} vertices (took {toc}s)')
 ```
 
 ```{code-cell}
@@ -281,15 +291,17 @@ toc = timer() - tic
 print(f'space has {V_h.num_DoFs} DoFs (took {toc}s)')
 ```
 
-### 5.1: interpolation test
+### interpolation test
 
 One measure of performance is the time it takes to interpolate a data function. Note that the comparison greatly depends on the grid and the polynomial order of `V_h`.
 
 ```{code-cell}
 tic = timer()
 
-h_dune_expression =  GridFunction(grid,
-                                  ExpressionFunction(dim_domain=Dim(d), variable='x', order=10, expression='exp(x[0]*x[1])'))
+h_dune_expression = GridFunction(
+    grid,
+    ExpressionFunction(dim_domain=Dim(d), variable='x', order=10,
+                       expression='exp(x[0]*x[1])'))
 
 h_dune_expression_h = default_interpolation(h_dune_expression, V_h)
 
@@ -314,7 +326,7 @@ print(f'interpolating h_python_lambda took {t_python}s')
 print(f'using a lambda expression in an interpolation test is {t_python/t_dune} times slower')
 ```
 
-### 5.2: discretization test
+### discretization test
 
 For a more realistic comparison, we use the `discretize_elliptic_cg_dirichlet_zero` function as explained in the [tutorial on continuous Finite Elements for the stationary heat equation](tutorial-10__cg_stationary_heat_equation_dirichlet.md).
 
@@ -342,7 +354,7 @@ print(f'discretizing using h_python_lambda took {t_python}s')
 print(f'using a lambda expression in a discretization test is {t_python/t_dune} times slower')
 ```
 
-This test is much more realistic than the pure interpolation one. Since evaluating the diffusion is only a small part of the overall computation, the performance loss using the Python lambda is much smaller.
+This test is more realistic than the pure interpolation one. Since evaluating the diffusion is only a small part of the overall computation, the performance loss using the Python lambda is much smaller.
 Overall, the gain in flexibility outweighs the loss in performance (at least for quick tests).
 
 Download the code:
