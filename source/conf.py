@@ -154,6 +154,7 @@ html_last_updated_fmt = "%b %d, %Y"
 # for available ones
 html_sidebars = {
     "**": [
+        "sidebar/brand.html",
         "sidebar/search.html",
         "sidebar/scroll-start.html",
         "sidebar/navigation.html",
