@@ -27,7 +27,7 @@ kernelspec:
 
 # Tutorial: continuous FEM for the stationary heat equation
 
-This tutorial shows how to solve the stationary heat equation with homogeneous Dirichlet boundary conditions using continuous Finite Elmenets with `dune-gdt`.
+This tutorial shows how to solve the stationary heat equation using continuous Finite Elements with `dune-gdt`.
 
 This is work in progress [WIP], still missing:
 
@@ -86,8 +86,10 @@ d = 2
 omega = ([0, 0], [1, 1])
 
 kappa = ConstantFunction(dim_domain=Dim(d), dim_range=Dim(1), value=[1.], name='kappa')
-# note that we need to prescribe the approximation order, which determines the quadrature on each element
-f = ExpressionFunction(dim_domain=Dim(d), variable='x', expression='exp(x[0]*x[1])', order=3, name='f')
+# note that we need to prescribe the approximation order,
+# which determines the quadrature on each element
+f = ExpressionFunction(
+    dim_domain=Dim(d), variable='x', expression='exp(x[0]*x[1])', order=3, name='f')
 ```
 
 ### continuous Finite Elements
@@ -110,30 +112,23 @@ $$\begin{align}
 \varPhi := \big\{\varphi_1, \dots, \varphi_N\big\}\tag{5}\label{eq:lagrangian_basis}
 \end{align}$$
 
-of order $k$ (e.g., the usual hat-functions for $k = 1$), with $N := \text{dim}(V_h)$. As usual, each of these *global* basis functions, if restricted to a grid element, is given by the concatenation of a *local* shape function and the reference map: given
+of order $k$ (e.g., the usual hat-functions for $k = 1$, which we consider from here on), with $N := \text{dim}(V_h)$. As usual, each of these *global* basis functions, if restricted to a grid element, is given by the concatenation of a *local* shape function and the reference map: given
 
-* the invertible affine **reference map**
-  $$\begin{align}
-  F_K: \hat{K} &\to K,&&\text{for all }K \in \mathcal{T}_h, \text{ such that}\\
-  \hat{x} &\mapsto x := F_K(\hat{x}),
-  \end{align}$$
-  where $\hat{K}$ is the reference element associated with $K$,
+* the invertible affine **reference map** $F_K: \hat{K} \to K$ for all $K \in \mathcal{T}_h$, such that $\hat{x} \mapsto x := F_K(\hat{x})$, where $\hat{K}$ is the reference element associated with $K$,
 * a set of Lagrangian **shape functions** $\{\hat{\varphi}_1, \dots, \hat{\varphi}_{d + 1}\} \in \mathbb{P}^1(K)$, each associated with a vertex $\hat{a}_1, \dots, \hat{a}_{d + 1}$ of the reference element $\hat{K}$ and
 * a **DoF mapping** $\sigma_K: \{1, \dots, d + 1\} \to \{1, \dots, N\}$ for all $K \in \mathcal{T}_h$, which associates the *local* index $\hat{i} \in \{1, \dots, d + 1\}$ of a vertex $\hat{a}_{\hat{i}}$ of the reference element $\hat{K}$ with the *global* index $i \in \{1, \dots, N\}$ of the vertex $a_i := F_K(\hat{a}_\hat{i})$ in the grid $\mathcal{T}_h$.
 
 The DoF mapping as well as a localizable global basis is provided by a **discrete function space** in `dune-gdt`.
 We thus have
 
-* $$\begin{align}
-  \varphi_i|_K = \hat{\varphi}_\hat{i}\circ F_K^{-1} &&\text{with } i := \sigma_K(\hat{i})\text{ for all } 1 \leq \hat{i} \leq d+1\text{ and all }K \in \mathcal{T}_h\tag{6}
-  \end{align}$$
-and
-* $$\begin{align}
-  (\nabla\varphi_i)|_K = \nabla\big(\hat{\varphi}_\hat{i}\circ F_K^{-1}\big) = \nabla F_K^{-1} \cdot \big(\nabla\hat{\varphi}_\hat{i}\circ F_K^{-1}\big) &&\text{with } i := \sigma_K(\hat{i})\text{ for all } 1 \leq \hat{i} \leq d+1\text{ and all }K \in \mathcal{T}_h\tag{7}
-  \end{align}$$
-owing to the chain rule.
+$$\begin{align}
+\varphi_i|_K &= \hat{\varphi}_\hat{i}\circ F_K^{-1} &&\text{and}\tag{6}\\
+(\nabla\varphi_i)|_K &= \nabla\big(\hat{\varphi}_\hat{i}\circ F_K^{-1}\big) = \nabla F_K^{-1} \cdot \big(\nabla\hat{\varphi}_\hat{i}\circ F_K^{-1}\big),\tag{7}
+\end{align}$$
 
-To obtain the algebraic analogue to $\eqref{eq:diff:discrete_variational_problem}$, we first substitute the bilinear form and functional by discrete coutnerparts acting on $V_h$, namely $a_h: V_h \times V_h \to \mathbb{R}$ and $l_h \in V_h'$ (the construction of which is detailed further below in **1.3** and **1.4**) and
+owing to the chain rule, with $i := \sigma_K(\hat{i})$ for all $1 \leq \hat{i} \leq d+1$ and all $K \in \mathcal{T}_h$.
+
+To obtain the algebraic analogue to $\eqref{eq:diff:discrete_variational_problem}$, we first replace the bilinear form and functional by discrete counterparts acting on $V_h$, namely $a_h: V_h \times V_h \to \mathbb{R}$ and $l_h \in V_h'$ (the construction of which is detailed further below) and
 
 * assemble the respective basis representations of $a_h$ and $l_h$ w.r.t. the basis of $V_h$ into a matrix $\underline{a_h} \in \mathbb{R}^{N \times N}$ and vector $\underline{l_h} \in \mathbb{R}^N$, given by
 
@@ -160,10 +155,12 @@ We consider for example a structured simplicial grid with 16 triangles.
 ```{code-cell}
 from dune.xt.grid import Simplex, make_cube_grid, AllDirichletBoundaryInfo, visualize_grid
 
-grid = make_cube_grid(Dim(d), Simplex(), lower_left=omega[0], upper_right=omega[1], num_elements=[2, 2])
-grid.global_refine(1) # we need to refine once to obtain a symmetric grid
+grid = make_cube_grid(Dim(d), Simplex(),
+                      lower_left=omega[0], upper_right=omega[1], num_elements=[2, 2])
+grid.global_refine(1)  # we need to refine once to obtain a symmetric grid
 
-print(f'grid has {grid.size(0)} elements, {grid.size(d - 1)} edges and {grid.size(d)} vertices')
+print(f'grid has {grid.size(0)} elements, '
+      f'{grid.size(d - 1)} edges and {grid.size(d)} vertices')
 
 boundary_info = AllDirichletBoundaryInfo(grid)
 
@@ -372,7 +369,7 @@ print()
 print(f'Dirichlet DoFs: {dirichlet_constraints.dirichlet_DoFs}')
 ```
 
-### 1.7: solving the linear system
+### solving the linear system
 
 After walking the grid, the bilinra form and linear functional are assembled w.r.t. $V_h$ and we constrain them to include the handling of the Dirichlet boundary condition.
 
