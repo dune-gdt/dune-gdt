@@ -57,7 +57,7 @@ in a weak sense, where $\kappa \in [L^\infty(\Omega)]^{d \times d}$ denotes a gi
 The variational problem associated with $\eqref{pde}$ reads: find $u \in H^1_0(\Omega)$, such that
 
 $$\begin{align}
-a(u, v) &= l(v) &&\text{for all }v \in V,\tag{2}\label{weak_formulation}
+a(u, v) &= l(v) &&\text{for all }v \in H^1_0(\Omega),\tag{2}\label{weak_formulation}
 \end{align}$$
 
 where the bilinear form $a: H^1(\Omega) \times H^1(\Omega) \to \mathbb{R}$ and the linear functional $l \in H^{-1}(\Omega)$ are given by
@@ -130,11 +130,7 @@ To obtain the algebraic analogue to $\eqref{discrete_variational_problem}$, we
 
 * replace the bilinear form and functional by discrete counterparts acting on $V_h$, namely $a_h: V_h \times V_h \to \mathbb{R}$ and $l_h \in V_h'$ (the construction of which is detailed further below) and
 
-* assemble the respective basis representations of $a_h$ and $l_h$ w.r.t. the basis of $V_h$ into a matrix $\underline{a_h} \in \mathbb{R}^{N \times N}$ and vector $\underline{l_h} \in \mathbb{R}^N$, given by
-  $$\begin{align}
-  (\underline{a_h})_{i, j} := a_h(\varphi_j, \varphi_i) &&\text{and}&& (\underline{l_h})_i := l_h(\varphi_i),
-  \end{align}$$
-  respectively, for $1 \leq i, j \leq N$;
+* assemble the respective basis representations of $a_h$ and $l_h$ w.r.t. the basis of $V_h$ into a matrix $\underline{a_h} \in \mathbb{R}^{N \times N}$ and vector $\underline{l_h} \in \mathbb{R}^N$, given by $(\underline{a_h})_{i, j} := a_h(\varphi_j, \varphi_i)$ and $(\underline{l_h})_i := l_h(\varphi_i)$, respectively, for $1 \leq i, j \leq N$;
 * and obtain the restrictions of $\underline{a_h}$ and $\underline{l_h}$ to $V_h \cap H^1_0(\Omega)$ by modifying all entries associated with basis functions defined on the Dirichlet boundary: for each index $i \in \{1, \dots N\}$, where the Lagrange-point defining the basis function $\varphi_i$ lies on the Dirichlet boundary $\partial\Omega$, we set
   the $i$th row of $\underline{a_h}$ to a unit row and clear the $i$th entry of $\underline{l_h}$.
 
@@ -142,7 +138,7 @@ To obtain the algebraic analogue to $\eqref{discrete_variational_problem}$, we
 The algebraic version of $\eqref{discrete_variational_problem}$ then reads: find the vector of degrees of freedom (DoF) $\underline{u_h} \in \mathbb{R}^N$, such that
 
 $$\begin{align}
-\underline{a_h}\;\underline{u_h} = \underline{l_h}.
+\underline{a_h}\;\underline{u_h} = \underline{l_h}.\tag{7}\tabel{algebraic_problem}
 \end{align}$$
 
 After solving the above linear system, we recover the solution of $\eqref{discrete_variational_problem}$ from its basis representation $u_h = \sum_{i=1}^{N}\underline{u_h}_i \varphi_i$.
@@ -181,14 +177,14 @@ assert V_h.num_DoFs == grid.size(d)
 Since the application of the functional to a *global* basis function $\psi_i$ is localizable w.r.t. the grid, e.g.
 
 $$\begin{align}
-l(\psi_i) = \sum_{K \in \mathcal{T}_h} \underbrace{\int_K f \psi_i\,\text{d}x}_{=: l^K(\psi_i)},\tag{7}\label{localized_rhs}
+l(\psi_i) = \sum_{K \in \mathcal{T}_h} \underbrace{\int_K f \psi_i\,\text{d}x}_{=: l^K(\psi_i)},\tag{8}\label{localized_rhs}
 \end{align}$$
 
 we first consider local functionals (such as $l^K \in L^2(K)'$), where *local* means: *with respect to a grid element $K$*. Using the reference map $F_K$ and $\eqref{basis_transformation}$ from above, we transform the evaluation of $l^K(\psi_i)$ to the reference element,
 
 $$\begin{align}
 l^K(\psi_i) &= \int_K f\psi_i\,\text{d}x = \int_{\hat{K}} |\text{det}\nabla F_K| \underbrace{(f\circ F_K)}_{=: f^K} (\hat{\psi}_\hat{i}\circ F_K^{-1}\circ F_K) \text{d}\hat{x}\\
-&=\int_{\hat{K}} |\text{det}\nabla F_K| f^K \hat{\psi}_\hat{i} \,\text{d}\hat{x},\tag{8}\label{transformed_localized_rhs}
+&=\int_{\hat{K}} |\text{det}\nabla F_K| f^K \hat{\psi}_\hat{i} \,\text{d}\hat{x},\tag{9}\label{transformed_localized_rhs}
 \end{align}$$
 
 where $f^K: \hat{K} \to \mathbb{R}$ is the *local function* associated with $f$, $i = \sigma_K(\hat{i})$ and $\hat{\psi}_\hat{i}$ is the corresponding shape function.
@@ -207,7 +203,7 @@ This leads us to the definition of a local functional in `dune-gdt`: ignoring th
 
   Note that the order of the quadrature is determined automatically, since the integrand computes its polynomial degree given all data functions and basis functions (in the above example, the polynomial order of $f^K$ is 3 by our construction and the polynomial order of $\hat{\psi}$ is 1, since we are using piecewise linear shape functions, yielding a polynomial order of 4 for $\Xi_\text{prod}^{1,K}$).
 
-Given local functionals, the purpose of the `VectorFunctional` in `dune-gdt` is to assemble $\underline{l_h}$ from $\eqref{6}$ by
+Given local functionals, the purpose of the `VectorFunctional` in `dune-gdt` is to assemble $\underline{l_h}$ from $\eqref{algebraic_problem}$ by
 * creating an appropriate vector of length $N$
 * iterating over all grid elements $K \in \mathcal{T}_h$
 * localizing the basis of $V_h$ w.r.t. each grid element $K$
@@ -234,6 +230,7 @@ l_h += LocalElementIntegralFunctional(
 A few notes regarding the above code:
 
 * there exists a large variety of data functions, but in order to all handle them in `dune-gdt` we require them to be localizable w.r.t. a grid (i.e. to have *local functions* as above). This is achieved by wrapping them into a `GridFunction`, which accepts all kind of functions, discrete functions or numbers. Thus `GF(grid, 1)` creates a grid function which is localizable w.r.t. each grid elements and evaluates to 1, whenever evaluated; whereas `GF(grid, f)`, when localized to a grid element $K$ and evaluated at a point on the associated reference element, $\hat{x}$, evaluates to $f(F_K(\hat{x}))$.
+  See also the [tutorial on data functions](dune_gdt_tutorial_on_data_functions_and_interpolation.md).
 
 * the `LocalElementProductIntegrand` is actually a **binary element integrand** modelling a weighted product, as in: with a weight function $w: \Omega \to \mathbb{R}$, given an ansatz function $\hat{\varphi}$, a test function $\hat{\psi}$ and a point $\hat{x} \in \hat{K}$, this integrand is determined by
   $\Xi_\text{prod}^{2,K}: \mathbb{P}^k(\hat{K}) \times \mathbb{P}^k(\hat{K}) \times \hat{K} \to \mathbb{R}$, $\hat{\varphi}, \hat{\psi}, \hat{x} \mapsto w^K(\hat{x})\,\hat{\varphi}(\hat{x})\,\hat{\psi}(\hat{x})$.
@@ -280,7 +277,7 @@ Similar to local fucntionals, a **local bilinear form** is determined
 \end{align}$$
 which is modelled by `LocalElementIntegralBilinearForm` in `dune-gdt` (see below).
 
-Given local bilinear forms, the purpose of the `MatrixOperator` in `dune-gdt` is to assemble $\underline{a_h}$ from $\eqref{6}$ by
+Given local bilinear forms, the purpose of the `MatrixOperator` in `dune-gdt` is to assemble $\underline{a_h}$ from $\eqref{algebraic_problem}$ by
 * creating an appropriate (sparse) matrix of size $N \times N$
 * iterating over all grid elements $K \in \mathcal{T}_h$
 * localizing the basis of $V_h$ w.r.t. each grid element $K$
@@ -414,7 +411,7 @@ Consider problem $\eqref{pde}$ from above, but with non-homogeneous Dirichlet bo
 Let $\Omega \subset \mathbb{R}^d$ for $1 \leq d \leq 3$ be a bounded connected domain with Lipschitz-boundary $\partial\Omega$. We seek the solution $u \in H^1(\Omega)$ of the linear diffusion equation (with a **non-homogeneous Dirichlet boundary condition**)
 
 $$\begin{align}
-- \nabla\cdot(\kappa\nabla u) &= f &&\text{in } \Omega,\tag{9}\label{inhomogeneous_pde}\\
+- \nabla\cdot(\kappa\nabla u) &= f &&\text{in } \Omega,\tag{10}\label{inhomogeneous_pde}\\
 u &= g_\text{D} &&\text{on } \partial\Omega,
 \end{align}$$
 
@@ -423,7 +420,7 @@ in a weak sense, where $\kappa \in [L^\infty(\Omega)]^{d \times d}$ denotes a gi
 The variational problem associated with $\eqref{inhomogeneous_pde}$ reads: find $u \in H^1(\Omega)$, such that
 
 $$\begin{align}
-a(u, v) &= l(v) &&\text{for all }v \in V,
+a(u, v) &= l(v) &&\text{for all }v \in H^1_0(\Omega),\tag{11}\label{inhomogeneous_weak_formulation}
 \end{align}$$
 
 with the same bilinear form $a$ and linear functional $l$ as above in $\eqref{a_and_l}$.
@@ -437,25 +434,25 @@ $$\begin{align}
 \hat{g}_\text{D}|_{\partial\Omega} = g_\text{D}
 \end{align}$$
 
-in the sense of traces. We then have for the solution $u \in H^1(\Omega)$ of $(13)$, that
+in the sense of traces. We then have for the solution $u \in H^1(\Omega)$ of $\eqref{inhomogeneous_weak_formulation}$, that
 
 $$\begin{align}
 u = u_0 + \hat{g}_\text{D}
 \end{align}$$
 
-for some $u_0 \in H^1_0(\Omega)$. Thus, we may reformulate $(13)$ as follows: Find $u_0 \in H^1_0(\Omega)$, such that
+for some $u_0 \in H^1_0(\Omega)$. Thus, we may reformulate $\eqref{inhomogeneous_weak_formulation}$ as follows: Find $u_0 \in H^1_0(\Omega)$, such that
 
 $$\begin{align}
-a(u_0 + \hat{g}_\text{D}, v) &= l(v) &&\text{for all }v \in V,
+a(u_0 + \hat{g}_\text{D}, v) &= l(v) &&\text{for all }v \in H^1_0(\Omega),
 \end{align}$$
 
 or equivalently
 
 $$\begin{align}
-a(u_0, v) &= l(v) - a(\hat{g}_\text{D}, v) &&\text{for all }v \in V.
+a(u_0, v) &= l(v) - a(\hat{g}_\text{D}, v) &&\text{for all }v \in H^1_0(\Omega).
 \end{align}$$
 
-We have thus shifted problem $(13)$ to be of familiar form, i.e., similarly to above we consider a linear diffusion equation with **homogeneous** Dirichlet boundary conditions, but a **modified source** term.
+We have thus shifted problem $\eqref{inhomogeneous_weak_formulation}$ to be of familiar form, i.e., similarly to above we consider a linear diffusion equation with **homogeneous** Dirichlet boundary conditions, but a **modified source** term.
 
 
 Consider for example $\eqref{pde}$ with:
@@ -477,7 +474,8 @@ To obtain $\hat{g}_\text{D} \in H^1(\Omega)$, we use the Lagrange interpolation 
 from dune.xt.grid import DirichletBoundary
 from dune.gdt import boundary_interpolation
 
-g_D = ExpressionFunction(dim_domain=Dim(d), variable='x', expression='x[0]*x[1]', order=2, name='g_D')
+g_D = ExpressionFunction(dim_domain=Dim(d),
+                         variable='x', expression='x[0]*x[1]', order=2, name='g_D')
 
 g_D_hat = boundary_interpolation(GF(grid, g_D), V_h, boundary_info, DirichletBoundary())
 
@@ -493,11 +491,13 @@ As we observe, the values on all boundary DoFs are $x_0 x_1$ and on all inner Do
 
 ```{code-cell}
 l_h = VectorFunctional(grid, source_space=V_h)
-l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(GF(grid, f)))
+l_h += LocalElementIntegralFunctional(
+        LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(GF(grid, f)))
 
 a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h,
                      sparsity_pattern=make_element_sparsity_pattern(V_h))
-a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(GF(grid, kappa, dim_range=(Dim(d), Dim(d)))))
+a_h += LocalElementIntegralBilinearForm(
+        LocalLaplaceIntegrand(GF(grid, kappa, dim_range=(Dim(d), Dim(d)))))
 
 walker = Walker(grid)
 walker.append(a_h)
