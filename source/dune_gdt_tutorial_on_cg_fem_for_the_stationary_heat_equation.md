@@ -138,7 +138,7 @@ To obtain the algebraic analogue to $\eqref{discrete_variational_problem}$, we
 The algebraic version of $\eqref{discrete_variational_problem}$ then reads: find the vector of degrees of freedom (DoF) $\underline{u_h} \in \mathbb{R}^N$, such that
 
 $$\begin{align}
-\underline{a_h}\;\underline{u_h} = \underline{l_h}.\tag{7}\tabel{algebraic_problem}
+\underline{a_h}\;\underline{u_h} = \underline{l_h}.\tag{7}\label{algebraic_problem}
 \end{align}$$
 
 After solving the above linear system, we recover the solution of $\eqref{discrete_variational_problem}$ from its basis representation $u_h = \sum_{i=1}^{N}\underline{u_h}_i \varphi_i$.
@@ -263,7 +263,7 @@ a^K(\psi_i, \varphi_j) &= \int_{\hat{K}} |\text{det}\nabla F_K| \big(\underbrace
 
 where $\kappa^K$ denote the *local function* of $\kappa$ as above, and where $\nabla_K\hat{\varphi}_\hat{j}$ denote suitably transformed *global* gradients of the *local* shape functions, for the integrand to reflect the same structure as above.
 
-Similar to local fucntionals, a **local bilinear form** is determined
+Similar to local functionals, a **local bilinear form** is determined
 
 * by a **binary element integrand**, in our case the `LocalLaplaceIntegrand` (see below)
   $$\begin{align}
@@ -272,10 +272,10 @@ Similar to local fucntionals, a **local bilinear form** is determined
   \end{align}$$
   and
 * an approximation of the integral by a numerical **quadrature**: given any binary element integrand $\Xi^{2, K}$, and $Q \in \mathbb{N}$ quadrature points $\hat{x}_1, \dots, \hat{x}_Q$ and weights $\omega_1, \dots, \omega_Q \in \mathbb{R}$, we approximate
-  $$\begin{align}
+  $\begin{align}
   a_h^K(\psi_i, \varphi_j) := \sum_{q = 1}^Q |\text{det}\nabla F_K(\hat{x}_q)|\,\omega_q\,\Xi^{2,K}(\hat{\psi}_\hat{i}, \hat{\varphi}_\hat{j}, \hat{x}_q) \approx \int_\hat{K} \Xi^{2,K}(\hat{\psi}_\hat{i}, \hat{\varphi}_\hat{j}, \hat{x})\,\text{d}\hat{x} = a^K(\psi_i, \varphi_i),
-\end{align}$$
-which is modelled by `LocalElementIntegralBilinearForm` in `dune-gdt` (see below).
+  \end{align}$
+  which is modelled by `LocalElementIntegralBilinearForm` in `dune-gdt` (see below).
 
 Given local bilinear forms, the purpose of the `MatrixOperator` in `dune-gdt` is to assemble $\underline{a_h}$ from $\eqref{algebraic_problem}$ by
 * creating an appropriate (sparse) matrix of size $N \times N$
@@ -294,7 +294,8 @@ from dune.gdt import (
 
 a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h,
                      sparsity_pattern=make_element_sparsity_pattern(V_h))
-a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(GF(grid, kappa, dim_range=(Dim(d), Dim(d)))))
+a_h += LocalElementIntegralBilinearForm(
+        LocalLaplaceIntegrand(GF(grid, kappa, dim_range=(Dim(d), Dim(d)))))
 ```
 
 A few notes regarding the above code:
