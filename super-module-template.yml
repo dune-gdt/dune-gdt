@@ -30,12 +30,12 @@ variables:
         name: unsafe
     script: .ci/shared/docker/update_test_dockers.py ${MODULE_NAME} ${IMAGE_NAME}
 
-base_debian-unstable_gcc:
-    extends: .docker-in-docker
-    stage: base
-    variables:
-      MODULE_NAME: BASE
-      IMAGE_NAME: debian-unstable_gcc_full
+# base_debian-unstable_gcc:
+#     extends: .docker-in-docker
+#     stage: base
+#     variables:
+#       MODULE_NAME: BASE
+#       IMAGE_NAME: debian-unstable_gcc_full
 
 base_debian_gcc:
     extends: .docker-in-docker
@@ -51,13 +51,13 @@ base_debian_clang:
       MODULE_NAME: BASE
       IMAGE_NAME: debian_clang_full
 
-debian-unstable_gcc_full:
-    extends: .docker-in-docker
-    stage: modules
-    needs: ["base_debian-unstable_gcc"]
-    variables:
-      MODULE_NAME: ${DUNE_XT_OR_DUNE_GDT}
-      IMAGE_NAME: debian-unstable_gcc_full
+# debian-unstable_gcc_full:
+#     extends: .docker-in-docker
+#     stage: modules
+#     needs: ["base_debian-unstable_gcc"]
+#     variables:
+#       MODULE_NAME: ${DUNE_XT_OR_DUNE_GDT}
+#       IMAGE_NAME: debian-unstable_gcc_full
 
 debian_gcc_full:
     extends: .docker-in-docker
