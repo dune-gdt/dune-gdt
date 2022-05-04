@@ -10,6 +10,7 @@ from dune.xt.grid import (
     Walker,
 )
 from dune.xt.functions import GridFunction as GF
+
 # -
 
 from dune.gdt import (
@@ -33,9 +34,10 @@ from dune.gdt import (
 )
 
 
-def discretize_elliptic_ipdg_dirichlet_zero(grid, diffusion, source,
-                                            symmetry_factor=1, penalty_parameter=None, weight=1):
-    
+def discretize_elliptic_ipdg_dirichlet_zero(
+    grid, diffusion, source, symmetry_factor=1, penalty_parameter=None, weight=1
+):
+
     """
     Discretizes the stationary heat equation with homogeneous Dirichlet boundary values everywhere
     with dune-gdt using an interior penalty (IP) discontinuous Galerkin (DG) method based on first
@@ -52,7 +54,7 @@ def discretize_elliptic_ipdg_dirichlet_zero(grid, diffusion, source,
     * with `weight=diffusion`, we obtain
 
     - `symmetry_factor==1`: symmetric weighted interior penalty scheme (SWIPDG)
-    
+
     Parameters
     ----------
     grid
@@ -82,42 +84,58 @@ def discretize_elliptic_ipdg_dirichlet_zero(grid, diffusion, source,
     diffusion = GF(grid, diffusion, dim_range=(Dim(d), Dim(d)))
     source = GF(grid, source)
     weight = GF(grid, weight, dim_range=(Dim(d), Dim(d)))
-    
+
     boundary_info = AllDirichletBoundaryInfo(grid)
-    
+
     V_h = DiscontinuousLagrangeSpace(grid, order=1)
     if not penalty_parameter:
         # TODO: check if we need to include diffusion for the coercivity here!
         # TODO: each is a grid walk, compute this in one grid walk with the sparsity pattern
         C_G = estimate_element_to_intersection_equivalence_constant(grid)
-        C_M_times_1_plus_C_T = estimate_combined_inverse_trace_inequality_constant(space)
-        penalty_parameter = C_G*C_M_times_1_plus_C_T
+        C_M_times_1_plus_C_T = estimate_combined_inverse_trace_inequality_constant(
+            space
+        )
+        penalty_parameter = C_G * C_M_times_1_plus_C_T
         if symmetry_factor == 1:
             penalty_parameter *= 4
     assert isinstance(penalty_parameter, Number)
     assert penalty_parameter > 0
 
     l_h = VectorFunctional(grid, source_space=V_h)
-    l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source))
-    
-    a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h,
-                         sparsity_pattern=make_element_and_intersection_sparsity_pattern(V_h))
+    l_h += LocalElementIntegralFunctional(
+        LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source)
+    )
+
+    a_h = MatrixOperator(
+        grid,
+        source_space=V_h,
+        range_space=V_h,
+        sparsity_pattern=make_element_and_intersection_sparsity_pattern(V_h),
+    )
     a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
-    a_h += (LocalCouplingIntersectionIntegralBilinearForm(
-                LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
-                + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)),
-            {}, ApplyOnInnerIntersectionsOnce(grid))
-    a_h += (LocalIntersectionIntegralBilinearForm(
-                LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
-                + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)),
-           {}, ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()))
+    a_h += (
+        LocalCouplingIntersectionIntegralBilinearForm(
+            LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
+            + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)
+        ),
+        {},
+        ApplyOnInnerIntersectionsOnce(grid),
+    )
+    a_h += (
+        LocalIntersectionIntegralBilinearForm(
+            LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
+            + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)
+        ),
+        {},
+        ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()),
+    )
 
     walker = Walker(grid)
     walker.append(a_h)
     walker.append(l_h)
     walker.walk()
-    
-    u_h = DiscreteFunction(V_h, name='u_h')
+
+    u_h = DiscreteFunction(V_h, name="u_h")
     a_h.apply_inverse(l_h.vector, u_h.dofs.vector)
-    
+
     return u_h
