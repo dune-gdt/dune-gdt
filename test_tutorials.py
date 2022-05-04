@@ -15,9 +15,9 @@ import pytest
 
 
 TUT_DIR = Path(os.path.dirname(__file__)).resolve() / "source"
-_exclude_files = ["tutorial_external_solver.rst"]
+_exclude_files = ['']
 EXCLUDE = [TUT_DIR / t for t in _exclude_files]
-TUTORIALS = [t for t in TUT_DIR.glob("tutorial_*rst") if t not in EXCLUDE]
+TUTORIALS = [t for t in TUT_DIR.glob('tutorial_*md') if t not in EXCLUDE]
 
 
 def runmodule(filename):
@@ -66,31 +66,14 @@ def _test_demo(demo):
     except ImportError:
         pass
 
-    # reset default RandomState
-    import pymor.tools.random
 
-    pymor.tools.random._default_random_state = None
+    result = demo()
 
-    result = None
     try:
-        result = demo()
-    except (QtMissing, GmshMissing, MeshioMissing, TorchMissing) as e:
-        if os.environ.get("DOCKER_PYMOR", False):
-            # these are all installed in our CI env so them missing is a grave error
-            raise e
-        else:
-            miss = str(type(e)).replace("Missing", "")
-            pytest.xfail(f"{miss} not installed")
-    finally:
-        from pymor.parallel.default import _cleanup
-
-        _cleanup()
-        try:
-            from matplotlib import pyplot
-
-            pyplot.close("all")
-        except ImportError:
-            pass
+        from matplotlib import pyplot
+        pyplot.close('all')
+    except ImportError:
+        pass
 
     return result
 

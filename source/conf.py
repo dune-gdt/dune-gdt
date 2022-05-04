@@ -281,5 +281,6 @@ def linkcode_resolve(domain, info):
         if not info["module"]:
             return None
         filename = info["module"].replace(".", "/")
-        return f"https://https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt-tutorials/-/tree/{branch}/src/{filename}.py"
+        baseurl = "https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt-tutorials/"
+        return f"{baseurl}/-/tree/{branch}/src/{filename}.py"
     return None
