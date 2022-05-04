@@ -15,9 +15,9 @@ import pytest
 
 
 TUT_DIR = Path(os.path.dirname(__file__)).resolve() / "source"
-_exclude_files = ['']
+_exclude_files = [""]
 EXCLUDE = [TUT_DIR / t for t in _exclude_files]
-TUTORIALS = [t for t in TUT_DIR.glob('tutorial_*md') if t not in EXCLUDE]
+TUTORIALS = [t for t in TUT_DIR.glob("tutorial_*md") if t not in EXCLUDE]
 
 
 def runmodule(filename):
@@ -66,12 +66,12 @@ def _test_demo(demo):
     except ImportError:
         pass
 
-
     result = demo()
 
     try:
         from matplotlib import pyplot
-        pyplot.close('all')
+
+        pyplot.close("all")
     except ImportError:
         pass
 
