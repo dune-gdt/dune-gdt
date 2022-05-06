@@ -122,9 +122,9 @@ def discretize_elliptic_ipdg_dirichlet_zero(
     a_h += (
         LocalIntersectionIntegralBilinearForm(
             LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
-            + LocalLaplaceIPDGDirichletCouplingIntegrand(
+            + LocalLaplaceIPDGDirichletCouplingIntegrand(  # noqa:W503
                 symmetry_factor, diffusion
-            )  # noqa:W503
+            )
         ),
         {},
         ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()),
