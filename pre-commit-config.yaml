@@ -20,7 +20,7 @@ repos:
     -   id: clang-format
         exclude: "^(dune/xt/test/gtest/|pybind11)"
 -   repo: https://github.com/pre-commit/mirrors-yapf
-    rev: 'v0.25.0'
+    rev: 'v0.32.0'
     hooks:
     -   id: yapf
         args: ["--style=.vcsetup/.style.yapf"]
