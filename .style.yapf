@@ -12,5 +12,6 @@ each_dict_entry_on_separate_line = True
 indent_dictionary_value = True
 join_multiple_lines = false
 spaces_before_comment = 2
+split_before_arithmetic_operator = True
 split_before_dot = True
 split_complex_comprehension = True
