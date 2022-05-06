@@ -78,8 +78,8 @@ def discretize_elliptic_cg_dirichlet_zero(grid, diffusion, source):
 def discretize_elliptic_cg_dirichlet(grid, diffusion, source, dirichlet_values):
 
     """
-    Discretizes the stationary heat equation with non-homogeneous Dirichlet boundary values everywhere
-    with dune-gdt using continuous Lagrange finite elements.
+    Discretizes the stationary heat equation with non-homogeneous Dirichlet
+    boundary values everywhere with dune-gdt using continuous Lagrange finite elements.
 
     Parameters
     ----------

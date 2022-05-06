@@ -89,10 +89,13 @@ class CodeCell(Directive):
     def run(self):
         self.assert_has_content()
         if "raises" in self.options:
-            text = (
-                "try:\n    "
-                + "\n    ".join(self.content)
-                + "\nexcept:\n    import traceback; traceback.print_exc()"
+            text = """
+try:
+    {content}
+except:
+    import traceback; traceback.print_exc()
+""".format(
+                content="\n    ".join(self.content)
             )
         else:
             text = "\n".join(self.content)
