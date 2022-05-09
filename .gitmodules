@@ -1,0 +1,56 @@
+[submodule "dune-common"]
+	path = deps/dune-common
+	url = https://github.com/dune-mirrors/dune-common.git
+        ignore = dirty
+[submodule "dune-grid"]
+	path = deps/dune-grid
+	url = https://github.com/dune-mirrors/dune-grid.git
+        ignore = dirty
+[submodule "dune-geometry"]
+	path = deps/dune-geometry
+	url = https://github.com/dune-mirrors/dune-geometry.git
+        ignore = dirty
+[submodule "local/bin"]
+	path = deps/bin
+	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/local-bin.git
+        ignore = untracked
+[submodule "dune-localfunctions"]
+	path = deps/dune-localfunctions
+	url = https://github.com/dune-mirrors/dune-localfunctions.git
+        ignore = dirty
+[submodule "dune-gdt"]
+	path = deps/dune-gdt
+	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt.git
+[submodule "dune-istl"]
+	path = deps/dune-istl
+	url = https://github.com/dune-mirrors/dune-istl.git
+[submodule "dune-typetree"]
+	path = deps/dune-typetree
+	url = https://github.com/dune-mirrors/dune-typetree.git
+[submodule "configs"]
+	path = deps/config.opts
+	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/config-opts.git
+[submodule "scripts"]
+	path = deps/scripts
+	url = https://github.com/wwu-numerik/scripts.git
+[submodule "dune-testtools"]
+	path = deps/dune-testtools
+	url = https://github.com/dune-community/dune-testtools.git
+[submodule "dune-alugrid"]
+	path = deps/dune-alugrid
+	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-alugrid.git
+[submodule "dune-uggrid"]
+	path = deps/dune-uggrid
+	url = https://github.com/dune-community/dune-uggrid.git
+[submodule "dune-functions"]
+	path = deps/dune-functions
+	url = https://github.com/dune-mirrors/dune-functions.git
+[submodule "dune-grid-glue"]
+	path = deps/dune-grid-glue
+	url = https://github.com/dune-mirrors/dune-grid-glue.git
+[submodule ".ci/shared"]
+	path = deps/.ci/shared
+	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt-ci.git
+[submodule "dune-xt"]
+	path = deps/dune-xt
+	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt.git
