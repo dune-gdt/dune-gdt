@@ -55,7 +55,7 @@ variables:
     script:
       - |
         git submodule update --init --recursive
-        docker build --build-arg DEBIAN_BASE=${CI_IMAGE} -t ${IMAGE} -f deps/Dockerfile deps/
+        docker build --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg CONFIG_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile deps/
         docker push ${IMAGE}
     services:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
@@ -132,6 +132,7 @@ lint:
     variables:
         CI_IMAGE: {{ image }}
         COMPILER: {{ compiler }}
+        OPTS: {{compiler}}-debug.ninja
 {% endfor %}
 
 {% for compiler, image, subdir, kind in matrix %}
@@ -142,7 +143,7 @@ lint:
         CI_IMAGE: {{ image }}
         COMPILER: {{ compiler }}
         TESTS_MODULE_SUBDIR: {{ subdir }}
-        OPTS: deps/config.opts/{{compiler}}-debug.ninja
+        OPTS: {{compiler}}-debug.ninja
     {%- if 'cpp' in kind or 'gdt' in subdir %}
     tags:
         - dustin

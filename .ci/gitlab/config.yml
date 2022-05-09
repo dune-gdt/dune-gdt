@@ -54,7 +54,7 @@ variables:
     script:
       - |
         git submodule update --init --recursive
-        docker build --build-arg DEBIAN_BASE=${CI_IMAGE} -t ${IMAGE} -f deps/Dockerfile deps/
+        docker build --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg CONFIG_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile deps/
         docker push ${IMAGE}
     services:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
@@ -130,11 +130,13 @@ debian gcc:
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
+        OPTS: gcc-debug.ninja
 debian clang:
     extends: .image_builder
     variables:
         CI_IMAGE: debian
         COMPILER: clang
+        OPTS: clang-debug.ninja
 
 
 
@@ -144,7 +146,7 @@ xt/common gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/common
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -158,7 +160,7 @@ xt/common gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/common
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -170,7 +172,7 @@ xt/grid gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/grid
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -184,7 +186,7 @@ xt/grid gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/grid
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -197,7 +199,7 @@ xt/functions gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/functions
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -209,7 +211,7 @@ xt/functions1 gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/functions1
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -224,7 +226,7 @@ xt/functions2 gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/functions2
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -239,7 +241,7 @@ xt/la gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/la
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -253,7 +255,7 @@ xt/la gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/la
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -265,7 +267,7 @@ gdt gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: gdt
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -279,7 +281,7 @@ gdt gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: gdt
-        OPTS: deps/config.opts/gcc-debug.ninja
+        OPTS: gcc-debug.ninja
     tags:
         - dustin
     stage: headercheck
@@ -293,7 +295,7 @@ xt/common clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/common
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -307,7 +309,7 @@ xt/common clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/common
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     stage: headercheck
     needs: ["debian clang"]
     script:
@@ -319,7 +321,7 @@ xt/grid clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/grid
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -333,7 +335,7 @@ xt/grid clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/grid
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     stage: headercheck
     needs: ["debian clang"]
     script:
@@ -346,7 +348,7 @@ xt/functions clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/functions
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     stage: headercheck
     needs: ["debian clang"]
     script:
@@ -358,7 +360,7 @@ xt/functions1 clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/functions1
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -373,7 +375,7 @@ xt/functions2 clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/functions2
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -388,7 +390,7 @@ xt/la clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/la
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -402,7 +404,7 @@ xt/la clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/la
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     stage: headercheck
     needs: ["debian clang"]
     script:
@@ -414,7 +416,7 @@ gdt clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: gdt
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     tags:
         - dustin
     stage: cpp
@@ -428,7 +430,7 @@ gdt clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: gdt
-        OPTS: deps/config.opts/clang-debug.ninja
+        OPTS: clang-debug.ninja
     tags:
         - dustin
     stage: headercheck
