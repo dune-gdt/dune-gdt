@@ -1,0 +1,9 @@
+PATH.sh
+demos
+demos-*
+build-*
+build/*
+*~
+.vscode
+tags
+*.code-workspace
