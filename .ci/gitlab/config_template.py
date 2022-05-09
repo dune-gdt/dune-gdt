@@ -12,7 +12,7 @@ with open(template_filename, 'r') as f:
 tpl = jinja2.Template(tpl)
 # images = ['debian-unstable_gcc_full', 'debian_gcc_full', 'debian_clang_full']
 compilers = ('gcc', 'clang')
-images = ('debian-full',)
+images = ('debian',)
 compiler_images = product(compilers, images)
 subdirs = ['xt/common', 'xt/grid', 'xt/functions', 'xt/functions1', 'xt/functions2', 'xt/la', 'gdt']
 kinds = ['cpp', 'headercheck']

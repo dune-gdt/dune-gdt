@@ -142,6 +142,7 @@ lint:
         CI_IMAGE: {{ image }}
         COMPILER: {{ compiler }}
         TESTS_MODULE_SUBDIR: {{ subdir }}
+        OPTS: deps/config.opts/{{compiler}}-debug.ninja
     {%- if 'cpp' in kind or 'gdt' in subdir %}
     tags:
         - dustin

@@ -125,292 +125,314 @@ lint:
         - ${PRECOMMIT} check-yaml
 
 
-debian-full gcc:
+debian gcc:
     extends: .image_builder
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
-debian-full clang:
+debian clang:
     extends: .image_builder
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
 
 
 
-xt/common gcc full cpp:
+xt/common gcc  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/common
+        OPTS: deps/config.opts/gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
-xt/common gcc full headercheck:
+xt/common gcc  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/common
+        OPTS: deps/config.opts/gcc-debug.ninja
     stage: headercheck
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
-xt/grid gcc full cpp:
+xt/grid gcc  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/grid
+        OPTS: deps/config.opts/gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
-xt/grid gcc full headercheck:
+xt/grid gcc  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/grid
+        OPTS: deps/config.opts/gcc-debug.ninja
     stage: headercheck
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
 
-xt/functions gcc full headercheck:
+xt/functions gcc  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/functions
+        OPTS: deps/config.opts/gcc-debug.ninja
     stage: headercheck
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
-xt/functions1 gcc full cpp:
+xt/functions1 gcc  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/functions1
+        OPTS: deps/config.opts/gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
 
-xt/functions2 gcc full cpp:
+xt/functions2 gcc  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/functions2
+        OPTS: deps/config.opts/gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
 
-xt/la gcc full cpp:
+xt/la gcc  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/la
+        OPTS: deps/config.opts/gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
-xt/la gcc full headercheck:
+xt/la gcc  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: xt/la
+        OPTS: deps/config.opts/gcc-debug.ninja
     stage: headercheck
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
-gdt gcc full cpp:
+gdt gcc  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: gdt
+        OPTS: deps/config.opts/gcc-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
-gdt gcc full headercheck:
+gdt gcc  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: gdt
+        OPTS: deps/config.opts/gcc-debug.ninja
     tags:
         - dustin
     stage: headercheck
-    needs: ["debian-full gcc"]
+    needs: ["debian gcc"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
-xt/common clang full cpp:
+xt/common clang  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/common
+        OPTS: deps/config.opts/clang-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
-xt/common clang full headercheck:
+xt/common clang  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/common
+        OPTS: deps/config.opts/clang-debug.ninja
     stage: headercheck
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
-xt/grid clang full cpp:
+xt/grid clang  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/grid
+        OPTS: deps/config.opts/clang-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
-xt/grid clang full headercheck:
+xt/grid clang  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/grid
+        OPTS: deps/config.opts/clang-debug.ninja
     stage: headercheck
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
 
-xt/functions clang full headercheck:
+xt/functions clang  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/functions
+        OPTS: deps/config.opts/clang-debug.ninja
     stage: headercheck
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
-xt/functions1 clang full cpp:
+xt/functions1 clang  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/functions1
+        OPTS: deps/config.opts/clang-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
 
-xt/functions2 clang full cpp:
+xt/functions2 clang  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/functions2
+        OPTS: deps/config.opts/clang-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
 
-xt/la clang full cpp:
+xt/la clang  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/la
+        OPTS: deps/config.opts/clang-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
-xt/la clang full headercheck:
+xt/la clang  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: xt/la
+        OPTS: deps/config.opts/clang-debug.ninja
     stage: headercheck
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 
-gdt clang full cpp:
+gdt clang  cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: gdt
+        OPTS: deps/config.opts/clang-debug.ninja
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_cpp.bash
 
-gdt clang full headercheck:
+gdt clang  headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-full
+        CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: gdt
+        OPTS: deps/config.opts/clang-debug.ninja
     tags:
         - dustin
     stage: headercheck
-    needs: ["debian-full clang"]
+    needs: ["debian clang"]
     script:
           - ./.ci/shared/scripts/test_headercheck.bash
 

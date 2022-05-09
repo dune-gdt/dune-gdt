@@ -12,20 +12,21 @@
 #   Tobias Leibner (2019 - 2020)
 # ~~~
 
-set -e
-set -x
+set -eux
 
-source ./deps/${OPTS}
+source ${OPTS}
 CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
+# BUILD_CMD="ninja -v -j2 -k 10000"
+BUILD_CMD="ninja -v -j2"
 
-dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
+dunecontrol --only=${MY_MODULE} bexec ${BUILD_CMD}
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
-  dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries
+  dunecontrol --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries
 else
-  dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} ${TESTS_MODULE_SUBDIR}_test_binaries
+  dunecontrol --only=${MY_MODULE} bexec ${BUILD_CMD} ${TESTS_MODULE_SUBDIR}_test_binaries
   CTEST="${CTEST} -L ${TESTS_MODULE_SUBDIR}"
 fi
 
-ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} dunecontrol ${BLD} --only=${MY_MODULE} bexec ${CTEST}
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} dunecontrol --only=${MY_MODULE} bexec ${CTEST}
 
 cp ${DUNE_BUILD_DIR}/${MY_MODULE}/${MY_MODULE//-/\/}/test/*xml ${HOME}/testresults/
