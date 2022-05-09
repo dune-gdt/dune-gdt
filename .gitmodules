@@ -10,17 +10,10 @@
 	path = deps/dune-geometry
 	url = https://github.com/dune-mirrors/dune-geometry.git
         ignore = dirty
-[submodule "local/bin"]
-	path = deps/bin
-	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/local-bin.git
-        ignore = untracked
 [submodule "dune-localfunctions"]
 	path = deps/dune-localfunctions
 	url = https://github.com/dune-mirrors/dune-localfunctions.git
         ignore = dirty
-[submodule "dune-gdt"]
-	path = deps/dune-gdt
-	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt.git
 [submodule "dune-istl"]
 	path = deps/dune-istl
 	url = https://github.com/dune-mirrors/dune-istl.git
@@ -48,9 +41,3 @@
 [submodule "dune-grid-glue"]
 	path = deps/dune-grid-glue
 	url = https://github.com/dune-mirrors/dune-grid-glue.git
-[submodule ".ci/shared"]
-	path = deps/.ci/shared
-	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt-ci.git
-[submodule "dune-xt"]
-	path = deps/dune-xt
-	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt.git
