@@ -1,14 +1,14 @@
 ```
-# This file is part of the dune-xt project:
-#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt
-# Copyright 2009-2021 dune-xt developers and contributors. All rights reserved.
+# This file is part of the dune-gdt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+# Copyright 2010-2021 dune-gdt developers and contributors. All rights reserved.
 # License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 #      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 #          with "runtime exception" (http://www.dune-project.org/license.html)
 # Authors:
-#   Felix Schindler (2013 - 2014, 2016 - 2017, 2019)
-#   René Fritze     (2009, 2015, 2019)
-#   Tobias Leibner  (2020 - 2021)
+#   Felix Schindler (2010, 2013 - 2014, 2016 - 2017)
+#   Rene Milk       (2017 - 2018)
+#   Tobias Leibner  (2021)
 ```
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![pipeline status](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/badges/master/pipeline.svg)](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/-/commits/master)
@@ -27,12 +27,19 @@ Archive of Numerical Software, 5:193-216, 2017
 https://www.doi.org/10.11588/ans.2017.1.27720
 ```
 
-New users may best try out this module by using the git supermodule
-[dune-xt-super](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt-super), experienced
-DUNE users may go ahead.
+dune-gdt is a [DUNE](http://www.dune-project.org/) module which provides a generic
+discretization toolbox for grid-based numerical methods. It contains building blocks - like
+local operators, local evaluations, local assemblers - for discretization methods and suitable
+discrete function spaces.
 
-Please see our [gitlab page](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt)
-for issue tracking and further information. If you want to start hacking, go
-ahead and fork us on gitlab (or fork the [github mirror](https://github.com/dune-community/dune-xt)) and
-have a look at the
-[CONTRIBUTING.md](https://github.com/dune-community/dune-xt/blob/master/CONTRIBUTING.md).
+
+New users may best try out this module by using the git supermodule
+[dune-gdt-super](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt-super). Experienced DUNE users
+may go ahead. As usual, you will have to use
+[dunecontrol](https://www.dune-project.org/doc/installation/), working examples are located
+in 'dune/gdt/test/'...
+
+If you want to start hacking go ahead and
+[fork us on github](https://github.com/dune-community/dune-gdt/)
+or [gitlab](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt)!
+

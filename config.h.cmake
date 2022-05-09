@@ -1,31 +1,30 @@
-// This file is part of the dune-xt project:
-//   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt
-// Copyright 2009-2021 dune-xt developers and contributors. All rights reserved.
+// This file is part of the dune-gdt project:
+//   https://github.com/dune-community/dune-gdt
+// Copyright 2010-2018 dune-gdt developers and contributors. All rights reserved.
 // License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 //      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 //          with "runtime exception" (http://www.dune-project.org/license.html)
 // Authors:
-//   Felix Schindler (2013 - 2018, 2020)
-//   René Fritze     (2013 - 2020)
-//   Tobias Leibner  (2014, 2016 - 2021)
+//   Felix Schindler (2017 - 2018)
+//   René Fritze     (2016 - 2018)
 
-/* begin dune-xt */
+/* begin dune-gdt */
 // NEVER delete/alter above comment, dune's cmake relies on it
 
 // this precludes clang-tidy and co. from issuing warnings for this file
 #pragma GCC system_header
 
-/* Define to the version of dune-xt */
-#define DUNE_XT_VERSION ${DUNE_XT_VERSION}
+/* Define to the version of dune-gdt */
+#define DUNE_GDT_VERSION ${DUNE_GDT_VERSION}
 
-/* Define to the major version of dune-xt */
-#define DUNE_XT_VERSION_MAJOR ${DUNE_XT_VERSION_MAJOR}
+/* Define to the major version of dune-gdt */
+#define DUNE_GDT_VERSION_MAJOR ${DUNE_GDT_VERSION_MAJOR}
 
-/* Define to the minor version of dune-xt */
-#define DUNE_XT_VERSION_MINOR ${DUNE_XT_VERSION_MINOR}
+/* Define to the minor version of dune-gdt */
+#define DUNE_GDT_VERSION_MINOR ${DUNE_GDT_VERSION_MINOR}
 
-/* Define to the revision of dune-xt */
-#define DUNE_XT_VERSION_REVISION ${DUNE_XT_VERSION_REVISION}
+/* Define to the revision of dune-gdt */
+#define DUNE_GDT_VERSION_REVISION ${DUNE_GDT_VERSION_REVISION}
 
 #ifndef HAVE_CBLAS
 #cmakedefine01 HAVE_CBLAS
@@ -218,5 +217,13 @@
 // This is an unfortunate hack, see the header for an explanation.
 #include <dune/xt/common/fix-ambiguous-std-math-overloads.hh>
 
-/* end dune-xt */
+// alberta and lpsolve both define a clashing get_max_level
+#ifdef HAVE_LPSOLVE
+#if HAVE_LPSOLVE
+#if HAVE_ALBERTA
+#undef HAVE_LPSOLVE
+#endif
+
+
+/* end dune-gdt */
 // NEVER delete/alter above comment, dune's cmake relies on it

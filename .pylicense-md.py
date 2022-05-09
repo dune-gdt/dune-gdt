@@ -20,5 +20,5 @@ prefix = '#'
 lead_in = '```'
 lead_out = '```'
 
-include_patterns = ('*.md',)
+include_patterns = ('*.md', )
 exclude_patterns = ()
