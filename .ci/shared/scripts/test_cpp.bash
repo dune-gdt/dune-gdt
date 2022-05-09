@@ -12,10 +12,11 @@
 #   Tobias Leibner (2019 - 2020)
 # ~~~
 
-set -eux
+set -ex
 
 OPTS_PATH=./deps/config.opts/${OPTS}
 source ${OPTS_PATH}
+set -u
 CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 # BUILD_CMD="ninja -v -j2 -k 10000"
 BUILD_CMD="ninja -v -j2"
