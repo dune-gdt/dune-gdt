@@ -132,7 +132,9 @@ lint:
     variables:
         CI_IMAGE: {{ image }}
         COMPILER: {{ compiler }}
-        OPTS: {{compiler}}-debug.ninja
+        CC: {{ compiler }}
+        CXX: {{ compiler }}
+        OPTS: travis.ninja
 {% endfor %}
 
 {% for compiler, image, subdir, kind in matrix %}
@@ -143,7 +145,9 @@ lint:
         CI_IMAGE: {{ image }}
         COMPILER: {{ compiler }}
         TESTS_MODULE_SUBDIR: {{ subdir }}
-        OPTS: {{compiler}}-debug.ninja
+        CC: {{ compiler }}
+        CXX: {{ compiler }}
+        OPTS: travis.ninja
     {%- if 'cpp' in kind or 'gdt' in subdir %}
     tags:
         - dustin
@@ -161,6 +165,9 @@ lint:
     variables:
         CI_IMAGE: {{ image }}
         COMPILER: {{ compiler }}
+        CC: {{ compiler }}
+        CXX: {{ compiler }}
+        OPTS: travis.ninja
     tags:
     {%- if 'gdt' in subdirs[0] and 'clang' in image %}
         - lucas
