@@ -36,7 +36,7 @@ list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} ${PROJECT_SOURCE_DIR}/c
 # include the dune macros
 include(DuneMacros)
 include(DuneUtils)
-add_subdirectory(${dune-xt_MODULE_PATH}/../../pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
+add_subdirectory(${dune-gdt_MODULE_PATH}/../../pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
 
 # start a dune project with information from dune.module
 dune_project()
@@ -48,16 +48,16 @@ endif()
 
 # (re-)set version info from git if available
 include(DuneXtVersionHelper)
-dune_xt_module_version_from_git(dune-xt)
+dune_xt_module_version_from_git(dune-gdt)
 
-# dune-xt cmake includes
+# dune-gdt cmake includes
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
 add_subdirectory(pybind11)
 dune_enable_all_packages(
   INCLUDE_DIRS
-  ${dune-xt_SOURCE_DIR}/dune
+  ${dune-gdt_SOURCE_DIR}/dune
   ${Python3_INCLUDE_DIRS}
   MODULE_LIBRARIES
   dunepybindxi
@@ -96,7 +96,6 @@ dune_pybindxi_install_python_package(PATH python)
 include_dependent_binary_python_dirs()
 # do not change order here
 add_subdirectory(python)
-dxt_add_make_dependent_bindings(dune-xt)
 make_dependent_modules_sys_included()
 
 # enable headercheck

@@ -1,7 +1,7 @@
 # ~~~
-# This file is part of the dune-xt project:
-#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt
-# Copyright 2009-2021 dune-xt developers and contributors. All rights reserved.
+# This file is part of the dune-gdt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+# Copyright 2009-2021 dune-gdt developers and contributors. All rights reserved.
 # License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 #      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 #          with "runtime exception" (http://www.dune-project.org/license.html)
@@ -14,8 +14,8 @@ macro(DUNE_XT_MODULE_VERSION_FROM_GIT target_module)
 
   dune_module_to_uppercase(TARGET_MODULE_UPPER ${target_module})
 
-  if(dune-xt_MODULE_PATH)
-    set(VERSIONEER_DIR ${dune-xt_MODULE_PATH})
+  if(dune-gdt_MODULE_PATH)
+    set(VERSIONEER_DIR ${dune-gdt_MODULE_PATH})
   else()
     set(VERSIONEER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
   endif()

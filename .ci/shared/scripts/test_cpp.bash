@@ -21,7 +21,7 @@ CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 # BUILD_CMD="ninja -v -j2 -k 10000"
 BUILD_CMD="ninja -v -j2"
 
-DUNECONTROL=dunecontrol --opts=OPTS_PATH
+DUNECONTROL=dunecontrol --opts=${OPTS_PATH}
 ${DUNECONTROL} --only=${MY_MODULE} bexec ${BUILD_CMD}
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
   ${DUNECONTROL} --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries

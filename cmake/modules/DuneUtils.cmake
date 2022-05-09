@@ -1,7 +1,7 @@
 # ~~~
-# This file is part of the dune-xt project:
-#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt
-# Copyright 2009-2021 dune-xt developers and contributors. All rights reserved.
+# This file is part of the dune-gdt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+# Copyright 2009-2021 dune-gdt developers and contributors. All rights reserved.
 # License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 #      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 #          with "runtime exception" (http://www.dune-project.org/license.html)
@@ -28,16 +28,16 @@ function(to_list_spaces list_name output_var)
       PARENT_SCOPE)
 endfunction()
 
-if(DEFINED dune-xt_DIR)
-  set(dune-xt-path ${dune-xt_DIR})
-else(DEFINED dune-xt_DIR)
-  set(dune-xt-path ${dune-xt_SOURCE_DIR})
-endif(DEFINED dune-xt_DIR)
-if(DEFINED dune-xt_MODULE_PATH) # dependent modules
-  set(dune-xt-module-path ${dune-xt_MODULE_PATH})
-else(DEFINED dune-xt_MODULE_PATH) # dune-xt itself
-  set(dune-xt-module-path ${PROJECT_SOURCE_DIR}/cmake/modules)
-endif(DEFINED dune-xt_MODULE_PATH)
+if(DEFINED dune-gdt_DIR)
+  set(dune-gdt-path ${dune-gdt_DIR})
+else(DEFINED dune-gdt_DIR)
+  set(dune-gdt-path ${dune-gdt_SOURCE_DIR})
+endif(DEFINED dune-gdt_DIR)
+if(DEFINED dune-gdt_MODULE_PATH) # dependent modules
+  set(dune-gdt-module-path ${dune-gdt_MODULE_PATH})
+else(DEFINED dune-gdt_MODULE_PATH) # dune-gdt itself
+  set(dune-gdt-module-path ${PROJECT_SOURCE_DIR}/cmake/modules)
+endif(DEFINED dune-gdt_MODULE_PATH)
 
 enable_testing()
 
