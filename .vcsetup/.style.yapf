@@ -1,0 +1,17 @@
+[style]
+# https://github.com/google/yapf#knobs
+allow_multiline_lambdas = True
+arithmetic_precedence_indication = True
+based_on_style = pep8
+blank_line_before_nested_class_or_def = True
+blank_lines_around_top_level_definition = 2
+blank_lines_between_top_level_imports_and_variables = 1
+coalesce_brackets = True
+column_limit = 119
+each_dict_entry_on_separate_line = True
+indent_dictionary_value = True
+join_multiple_lines = false
+spaces_before_comment = 2
+split_before_arithmetic_operator = True
+split_before_dot = True
+split_complex_comprehension = True
