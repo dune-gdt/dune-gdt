@@ -7,6 +7,7 @@ stages:
   - headercheck
   - python
   - wheels
+  - test
   - publish
 
 variables:
@@ -20,6 +21,10 @@ variables:
     PYTEST_ADDOPTS: "-s"
     MY_MODULE: dune-gdt
     BASE_PROJECT: zivgitlab.wwu.io/ag-ohlberger/dune-community/dune-xt-super
+    ML_TAG: 4c42d22a2aefc41ab1d52f2c4b9df09cb3b8a6af
+    WHEEL_DIR: ${CI_PROJECT_DIR}/wheelhouse
+    DUNE_BUILD_DIR: ${CI_PROJECT_DIR}/build
+    DUNE_SRC_DIR: ${CI_PROJECT_DIR}
 
 .image_builder:
     tags:
@@ -413,65 +418,268 @@ gdt clang full headercheck:
 
 
 
+
 .wheels_base:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
+    LOCAL_UID: 0
     TWINE_PASSWORD: ${CI_JOB_TOKEN}
     TWINE_USERNAME: gitlab-ci-token
+    GITLAB_PYPI: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi/
   stage: wheels
+  image: zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2014_py${GDT_PYTHON_VERSION}:${ML_TAG}
   needs: []
-  extends: .image_builder
+  cache:
+    paths:
+      - ccache
+    when: 'always'
+    key: ${GDT_PYTHON_VERSION}_${ML_TAG}
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - ninja_log_*.tar.gz
+      - ${WHEEL_DIR}/final/dune*whl
+  after_script:
+    - tar cfz ninja_log_${STEP}_${GDT_PYTHON_VERSION}.tar.gz ${DUNE_BUILD_DIR}/dune-*/.ninja_log || true
+
+.test_base:
+  image: harbor.uni-muenster.de/proxy-docker/library/python:${GDT_PYTHON_VERSION}-slim
+  stage: test
   script:
-    - ./make_docker_wheels.bash
-    - python3 -m twine check docker/wheelhouse/final/*.whl
+    - pip install ${WHEEL_DIR}/final/dune*whl
+    - python -c 'from dune.xt import *'
+    - python -c 'from dune.gdt import *'
+xt 3.7:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "3.7"
+    STEP: xt
+  needs:
+  - all 3.7
+  dependencies: ["all 3.7"]
+  script: ./.ci/make_wheels.bash xt
+  after_script:
+  - ccache --show-stats
+gdt 3.7:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "3.7"
+    STEP: gdt
+  needs:
+  - all 3.7
+  - xt 3.7
+  dependencies: ["all 3.7"]
+  script: ./.ci/make_wheels.bash gdt
+  after_script:
+  - ccache --show-stats
+all 3.7:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "3.7"
+    STEP: all
+  script: ./.ci/make_wheels.bash all
+  after_script:
+  - ccache --show-stats
+
   artifacts:
     paths:
-      - docker/wheelhouse/final/*.whl
+      - ${DUNE_BUILD_DIR}
 
 
-wheels 3.7:
+
+
+wheel collect 3.7:
+  stage: wheels
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  dependencies:
+    - "xt 3.7"
+    - "gdt 3.7"
+  needs:
+    - "xt 3.7"
+    - "gdt 3.7"
+  image: harbor.uni-muenster.de/proxy-docker/library/alpine:3.15
+  script:
+    - rm -rf ${DUNE_BUILD_DIR}
+  artifacts:
+    paths:
+      - ${WHEEL_DIR}/final/dune*whl
+
+test wheels 3.7:
+  extends: .test_base
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+    GDT_PYTHON_VERSION: "3.7"
+  needs: ["wheel collect 3.7",]
+  dependencies: ["wheel collect 3.7",]
+xt 3.8:
   extends: .wheels_base
   variables:
-    GDT_PYTHON_VERSION: "{py}"
-
-wheels 3.8:
+    GDT_PYTHON_VERSION: "3.8"
+    STEP: xt
+  needs:
+  - all 3.8
+  dependencies: ["all 3.8"]
+  script: ./.ci/make_wheels.bash xt
+  after_script:
+  - ccache --show-stats
+gdt 3.8:
   extends: .wheels_base
   variables:
-    GDT_PYTHON_VERSION: "{py}"
-
-wheels 3.9:
+    GDT_PYTHON_VERSION: "3.8"
+    STEP: gdt
+  needs:
+  - all 3.8
+  - xt 3.8
+  dependencies: ["all 3.8"]
+  script: ./.ci/make_wheels.bash gdt
+  after_script:
+  - ccache --show-stats
+all 3.8:
   extends: .wheels_base
   variables:
-    GDT_PYTHON_VERSION: "{py}"
+    GDT_PYTHON_VERSION: "3.8"
+    STEP: all
+  script: ./.ci/make_wheels.bash all
+  after_script:
+  - ccache --show-stats
 
+  artifacts:
+    paths:
+      - ${DUNE_BUILD_DIR}
+
+
+
+
+wheel collect 3.8:
+  stage: wheels
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  dependencies:
+    - "xt 3.8"
+    - "gdt 3.8"
+  needs:
+    - "xt 3.8"
+    - "gdt 3.8"
+  image: harbor.uni-muenster.de/proxy-docker/library/alpine:3.15
+  script:
+    - rm -rf ${DUNE_BUILD_DIR}
+  artifacts:
+    paths:
+      - ${WHEEL_DIR}/final/dune*whl
+
+test wheels 3.8:
+  extends: .test_base
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+    GDT_PYTHON_VERSION: "3.8"
+  needs: ["wheel collect 3.8",]
+  dependencies: ["wheel collect 3.8",]
+xt 3.9:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "3.9"
+    STEP: xt
+  needs:
+  - all 3.9
+  dependencies: ["all 3.9"]
+  script: ./.ci/make_wheels.bash xt
+  after_script:
+  - ccache --show-stats
+gdt 3.9:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "3.9"
+    STEP: gdt
+  needs:
+  - all 3.9
+  - xt 3.9
+  dependencies: ["all 3.9"]
+  script: ./.ci/make_wheels.bash gdt
+  after_script:
+  - ccache --show-stats
+all 3.9:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "3.9"
+    STEP: all
+  script: ./.ci/make_wheels.bash all
+  after_script:
+  - ccache --show-stats
+
+  artifacts:
+    paths:
+      - ${DUNE_BUILD_DIR}
+
+
+
+
+wheel collect 3.9:
+  stage: wheels
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  dependencies:
+    - "xt 3.9"
+    - "gdt 3.9"
+  needs:
+    - "xt 3.9"
+    - "gdt 3.9"
+  image: harbor.uni-muenster.de/proxy-docker/library/alpine:3.15
+  script:
+    - rm -rf ${DUNE_BUILD_DIR}
+  artifacts:
+    paths:
+      - ${WHEEL_DIR}/final/dune*whl
+
+test wheels 3.9:
+  extends: .test_base
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+    GDT_PYTHON_VERSION: "3.9"
+  needs: ["wheel collect 3.9",]
+  dependencies: ["wheel collect 3.9",]
 
 .publish:
-  image: alpine:3.12
+  image: alpine:3.15
   dependencies:
-
-    - wheels 3.7
-
-    - wheels 3.8
-
-    - wheels 3.9
-
+  -  "wheel collect 3.7"
+  -  "wheel collect 3.8"
+  -  "wheel collect 3.9"
+  needs:
+  -  "wheel collect 3.7"
+  -  "test wheels 3.7"
+  -  "wheel collect 3.8"
+  -  "test wheels 3.8"
+  -  "wheel collect 3.9"
+  -  "test wheels 3.9"
   stage: publish
   before_script:
       - apk --update add py3-pip git file bash python3 py3-cffi py3-cryptography
       - pip3 install -U twine
+  variables:
+    TWINE_PASSWORD: ${TWINE_PASSWORD}
+    TWINE_USERNAME: ${TWINE_USERNAME}
+  script:
+    - cd ${MOD_DIR}
+    - pwd
+    - git describe --tags HEAD
+    - git tag --list
+    # upload only if a tag points to checked out commit
+    - (git describe --exact-match --tags HEAD && python3 -m twine upload ${WHEEL_DIR}/final/${MOD_WHEEL_PREFIX}*whl) || echo "not uploading untagged wheels"
+    - git checkout 2021.1.9
+    - (git describe --exact-match --tags HEAD ) || echo "still not a tag"
+  artifacts:
+    paths:
+      - ${WHEEL_DIR}/final/${MOD_WHEEL_PREFIX}*whl
 
 publish dune-xt:
   extends: .publish
-  script:
-    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python3 -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi docker/wheelhouse/final/dune_xt*.whl
-  artifacts:
-    paths:
-      - docker/wheelhouse/final/dune_xt*.whl
+  variables:
+    MOD_WHEEL_PREFIX: dune_xt
+    MOD_DIR: dune-xt
 
 publish dune-gdt:
   extends: .publish
-  script:
-    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python3 -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi docker/wheelhouse/final/dune_gdt*.whl
-  artifacts:
-    paths:
-      - docker/wheelhouse/final/dune_gdt*.whl
+  variables:
+    MOD_WHEEL_PREFIX: dune_gdt
+    MOD_DIR: dune-gdt

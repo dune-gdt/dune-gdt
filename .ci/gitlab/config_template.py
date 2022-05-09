@@ -17,7 +17,9 @@ compiler_images = product(compilers, images)
 subdirs = ['xt/common', 'xt/grid', 'xt/functions', 'xt/functions1', 'xt/functions2', 'xt/la', 'gdt']
 kinds = ['cpp', 'headercheck']
 matrix = product(compilers, images, subdirs, kinds)
-wheel_pythons = [f'3.{i}' for i in range(7, 10)]
+pythons = [f'3.{i}' for i in range(7, 10)]
+wheel_steps_no_all = ["xt", "gdt"]
+wheel_steps = wheel_steps_no_all + ["all", ]
 config = THIS_DIR / 'config.yml'
 with open(config, 'wt') as yml:
     yml.write(tpl.render(**locals()))
