@@ -10,7 +10,7 @@ shift
 python3 -m pip install -q twine
 PIP_CONFIG_FILE=${PIP_CONFIG_FILE:-${HOME}/.config/pip/pip.conf}
 [[ -d $(dirname ${PIP_CONFIG_FILE})  ]]  || mkdir -p $(dirname ${PIP_CONFIG_FILE})
-sed "s;PYPI_INDEX_URL;${GITLAB_PYPI}/simple;g" ${THISDIR}../.ci/pip.conf > ${PIP_CONFIG_FILE}
+sed "s;PYPI_INDEX_URL;${GITLAB_PYPI}/simple;g" ${THISDIR}/pip.conf > ${PIP_CONFIG_FILE}
 
 build-wheels.sh ${md}
 

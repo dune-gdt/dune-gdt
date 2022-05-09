@@ -120,8 +120,8 @@ lint:
     extends: .pre-commit
     script:
         - ${PRECOMMIT} check-added-large-files
-
-
+        
+        
         - ${PRECOMMIT} debug-statements
         - ${PRECOMMIT} check-yaml
 
