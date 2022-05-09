@@ -14,7 +14,7 @@
 
 # cmake-lint: disable=C0103
 include(CheckCXXSourceCompiles)
-include(DuneXtMacros)
+include(DuneGdtMacros)
 include(CTest)
 include(DunePybindxiInstallPythonPackage)
 

@@ -36,7 +36,7 @@ list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} ${PROJECT_SOURCE_DIR}/c
 # include the dune macros
 include(DuneMacros)
 include(DuneUtils)
-add_subdirectory(${dune-gdt_MODULE_PATH}/../../pybind11 ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
+add_subdirectory(pybind11)
 
 # start a dune project with information from dune.module
 dune_project()
