@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 # kate: indent-width 2;
 
-import os
+from pathlib import Path
 import jinja2
 from itertools import product
 
-template_filename = '../shared/xt_and_gdt_config_template.txt'
+THIS_DIR = Path(__file__).resolve().absolute().parent
+template_filename = THIS_DIR.parent / 'shared/xt_and_gdt_config_template.txt'
 with open(template_filename, 'r') as f:
     tpl = f.read().replace('DUNE_XT_OR_DUNE_GDT', 'dune-xt')
-    print(tpl)
 tpl = jinja2.Template(tpl)
-images = ['debian-unstable_gcc_full', 'debian_gcc_full', 'debian_clang_full']
-subdirs = ['common', 'grid', 'functions', 'functions1', 'functions2', 'la']
+# images = ['debian-unstable_gcc_full', 'debian_gcc_full', 'debian_clang_full']
+compilers = ('gcc', 'clang')
+images = ('debian-full',)
+compiler_images = product(compilers, images)
+subdirs = ['xt/common', 'xt/grid', 'xt/functions', 'xt/functions1', 'xt/functions2', 'xt/la', 'gdt']
 kinds = ['cpp', 'headercheck']
-matrix = product(images, subdirs, kinds)
-with open(os.path.join(os.path.dirname(__file__), 'config.yml'), 'wt') as yml:
-    yml.write(tpl.render(matrix=matrix, images=images, kinds=kinds, subdirs=subdirs))
+matrix = product(compilers, images, subdirs, kinds)
+wheel_pythons = [f'3.{i}' for i in range(7, 10)]
+config = THIS_DIR / 'config.yml'
+with open(config, 'wt') as yml:
+    yml.write(tpl.render(**locals()))

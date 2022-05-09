@@ -1,4 +1,5 @@
-FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/debian-full:latest
+ARG DEBIAN_BASE=debian-full
+FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$DEBIAN_BASE:latest
 
 ARG OPTS=clang-debug
 

@@ -6,6 +6,8 @@ stages:
   - cpp
   - headercheck
   - python
+  - wheels
+  - publish
 
 variables:
     GIT_SUBMODULE_STRATEGY: recursive
@@ -16,7 +18,7 @@ variables:
     CCACHE_COMPILERCHECK: content
     CCACHE_COMPRESS: "true"
     PYTEST_ADDOPTS: "-s"
-    MY_MODULE: dune-xt
+    MY_MODULE: dune-gdt
     BASE_PROJECT: zivgitlab.wwu.io/ag-ohlberger/dune-community/dune-xt-super
 
 .image_builder:
@@ -38,27 +40,20 @@ variables:
     variables:
         DOCKER_HOST: tcp://docker:2375/
         DOCKER_DRIVER: overlay2
-        IMAGE: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}:${CI_COMMIT_SHORT_SHA}
+        IMAGE: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}_${COMPILER}:${CI_COMMIT_SHA}
     before_script:
       - |
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
         apk --update add py3-pip openssh-client rsync git file bash python3 curl
         pip3 install -U docker jinja2 docopt
-
-        export BASEIMAGE="${MY_MODULE}-testing_${CI_IMAGE}:${CI_COMMIT_REF_NAME/\//_}"
-        # get image with fallback to master branch of the super repo
-        docker pull ${BASE_PROJECT}/${BASEIMAGE} || export BASEIMAGE="${MY_MODULE}-testing_${CI_IMAGE}:master"
-        docker pull ${BASE_PROJECT}/${BASEIMAGE}
     script:
       - |
         git submodule update --init --recursive
-        docker build --build-arg BASE=${BASEIMAGE} -t ${IMAGE} -f .ci/gitlab/Dockerfile .
+        docker build --build-arg DEBIAN_BASE=${CI_IMAGE} -t ${IMAGE} -f deps/Dockerfile deps/
         docker push ${IMAGE}
     services:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
           alias: docker
-    environment:
-        name: unsafe
 
 .subdir-test:
     tags:
@@ -74,7 +69,7 @@ variables:
             - runner_system_failure
             - stuck_or_timeout_failure
             - api_failure
-    image: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    image: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}_${COMPILER}:${CI_COMMIT_SHA}
     cache:
       key: "$CI_JOB_NAME"
       paths:
@@ -89,8 +84,6 @@ variables:
     artifacts:
       reports:
         junit: '/home/dune-ci/testresults/*xml'
-    environment:
-        name: unsafe
 
 .pre-commit:
     stage: sanity
@@ -116,372 +109,369 @@ format_check:
         - ${PRECOMMIT} clang-format
         - ${PRECOMMIT} yapf
         - ${PRECOMMIT} trailing-whitespace
+        - ${PRECOMMIT} cmake-format
 
 lint:
     extends: .pre-commit
     script:
         - ${PRECOMMIT} check-added-large-files
-        #- ${PRECOMMIT} flake8 disabled for now, finds lots of issue
+
+
         - ${PRECOMMIT} debug-statements
         - ${PRECOMMIT} check-yaml
 
 
-debian-unstable_gcc_full:
+debian-full gcc:
     extends: .image_builder
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-debian_gcc_full:
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+debian-full clang:
     extends: .image_builder
     variables:
-        CI_IMAGE: debian_gcc_full
-debian_clang_full:
-    extends: .image_builder
-    variables:
-        CI_IMAGE: debian_clang_full
+        CI_IMAGE: debian-full
+        COMPILER: clang
 
 
 
-common unstable_gcc_full cpp:
+xt/common gcc full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: common
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/common
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
-common unstable_gcc_full headercheck:
+xt/common gcc full headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: common
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/common
     stage: headercheck
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
-grid unstable_gcc_full cpp:
+xt/grid gcc full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: grid
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/grid
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
-grid unstable_gcc_full headercheck:
+xt/grid gcc full headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: grid
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/grid
     stage: headercheck
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
 
-functions unstable_gcc_full headercheck:
+xt/functions gcc full headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: functions
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/functions
     stage: headercheck
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
-functions1 unstable_gcc_full cpp:
+xt/functions1 gcc full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: functions1
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/functions1
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
 
-functions2 unstable_gcc_full cpp:
+xt/functions2 gcc full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: functions2
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/functions2
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
 
-la unstable_gcc_full cpp:
+xt/la gcc full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: la
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/la
     tags:
         - dustin
     stage: cpp
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
-la unstable_gcc_full headercheck:
+xt/la gcc full headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian-unstable_gcc_full
-        TESTS_MODULE_SUBDIR: la
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: xt/la
     stage: headercheck
-    needs: ["debian-unstable_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
-common gcc_full cpp:
+gdt gcc full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: common
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: gdt
     tags:
         - dustin
     stage: cpp
-    needs: ["debian_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
-common gcc_full headercheck:
+gdt gcc full headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: common
+        CI_IMAGE: debian-full
+        COMPILER: gcc
+        TESTS_MODULE_SUBDIR: gdt
+    tags:
+        - dustin
     stage: headercheck
-    needs: ["debian_gcc_full"]
+    needs: ["debian-full gcc"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
-grid gcc_full cpp:
+xt/common clang full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: grid
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/common
     tags:
         - dustin
     stage: cpp
-    needs: ["debian_gcc_full"]
+    needs: ["debian-full clang"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
-grid gcc_full headercheck:
+xt/common clang full headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: grid
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/common
     stage: headercheck
-    needs: ["debian_gcc_full"]
+    needs: ["debian-full clang"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
-
-functions gcc_full headercheck:
+xt/grid clang full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: functions
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/grid
+    tags:
+        - dustin
+    stage: cpp
+    needs: ["debian-full clang"]
+    script:
+          - ./.ci/shared/scripts/test_cpp.bash
+
+xt/grid clang full headercheck:
+    extends: .subdir-test
+    variables:
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/grid
     stage: headercheck
-    needs: ["debian_gcc_full"]
+    needs: ["debian-full clang"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
-functions1 gcc_full cpp:
+
+xt/functions clang full headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: functions1
-    tags:
-        - dustin
-    stage: cpp
-    needs: ["debian_gcc_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
-
-
-functions2 gcc_full cpp:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: functions2
-    tags:
-        - dustin
-    stage: cpp
-    needs: ["debian_gcc_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
-
-
-la gcc_full cpp:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: la
-    tags:
-        - dustin
-    stage: cpp
-    needs: ["debian_gcc_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
-
-la gcc_full headercheck:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_gcc_full
-        TESTS_MODULE_SUBDIR: la
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/functions
     stage: headercheck
-    needs: ["debian_gcc_full"]
+    needs: ["debian-full clang"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
-common clang_full cpp:
+xt/functions1 clang full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: common
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/functions1
     tags:
         - dustin
     stage: cpp
-    needs: ["debian_clang_full"]
+    needs: ["debian-full clang"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
-common clang_full headercheck:
+
+xt/functions2 clang full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: common
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/functions2
+    tags:
+        - dustin
+    stage: cpp
+    needs: ["debian-full clang"]
+    script:
+          - ./.ci/shared/scripts/test_cpp.bash
+
+
+xt/la clang full cpp:
+    extends: .subdir-test
+    variables:
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/la
+    tags:
+        - dustin
+    stage: cpp
+    needs: ["debian-full clang"]
+    script:
+          - ./.ci/shared/scripts/test_cpp.bash
+
+xt/la clang full headercheck:
+    extends: .subdir-test
+    variables:
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: xt/la
     stage: headercheck
-    needs: ["debian_clang_full"]
+    needs: ["debian-full clang"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
-grid clang_full cpp:
+gdt clang full cpp:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: grid
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: gdt
     tags:
         - dustin
     stage: cpp
-    needs: ["debian_clang_full"]
+    needs: ["debian-full clang"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
+          - ./.ci/shared/scripts/test_cpp.bash
 
-grid clang_full headercheck:
+gdt clang full headercheck:
     extends: .subdir-test
     variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: grid
+        CI_IMAGE: debian-full
+        COMPILER: clang
+        TESTS_MODULE_SUBDIR: gdt
+    tags:
+        - dustin
     stage: headercheck
-    needs: ["debian_clang_full"]
+    needs: ["debian-full clang"]
     script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
-
-
-functions clang_full headercheck:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: functions
-    stage: headercheck
-    needs: ["debian_clang_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
-
-functions1 clang_full cpp:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: functions1
-    tags:
-        - dustin
-    stage: cpp
-    needs: ["debian_clang_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
-
-
-functions2 clang_full cpp:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: functions2
-    tags:
-        - dustin
-    stage: cpp
-    needs: ["debian_clang_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
-
-
-la clang_full cpp:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: la
-    tags:
-        - dustin
-    stage: cpp
-    needs: ["debian_clang_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_cpp.bash
-
-la clang_full headercheck:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_clang_full
-        TESTS_MODULE_SUBDIR: la
-    stage: headercheck
-    needs: ["debian_clang_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_headercheck.bash
+          - ./.ci/shared/scripts/test_headercheck.bash
 
 
 
-unstable_gcc_full python:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian-unstable_gcc_full
-    tags:
-        - dustin
-    stage: python
-    needs: ["debian-unstable_gcc_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_python.bash
 
-gcc_full python:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_gcc_full
-    tags:
-        - dustin
-    stage: python
-    needs: ["debian_gcc_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_python.bash
+.wheels_base:
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+    TWINE_PASSWORD: ${CI_JOB_TOKEN}
+    TWINE_USERNAME: gitlab-ci-token
+  stage: wheels
+  needs: []
+  extends: .image_builder
+  script:
+    - ./make_docker_wheels.bash
+    - python3 -m twine check docker/wheelhouse/final/*.whl
+  artifacts:
+    paths:
+      - docker/wheelhouse/final/*.whl
 
-clang_full python:
-    extends: .subdir-test
-    variables:
-        CI_IMAGE: debian_clang_full
-    tags:
-        - dustin
-    stage: python
-    needs: ["debian_clang_full"]
-    script:
-          - /home/dune-ci/src/${MY_MODULE}/.ci/shared/scripts/test_python.bash
 
+wheels 3.7:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "{py}"
+
+wheels 3.8:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "{py}"
+
+wheels 3.9:
+  extends: .wheels_base
+  variables:
+    GDT_PYTHON_VERSION: "{py}"
+
+
+.publish:
+  image: alpine:3.12
+  dependencies:
+
+    - wheels 3.7
+
+    - wheels 3.8
+
+    - wheels 3.9
+
+  stage: publish
+  before_script:
+      - apk --update add py3-pip git file bash python3 py3-cffi py3-cryptography
+      - pip3 install -U twine
+
+publish dune-xt:
+  extends: .publish
+  script:
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python3 -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi docker/wheelhouse/final/dune_xt*.whl
+  artifacts:
+    paths:
+      - docker/wheelhouse/final/dune_xt*.whl
+
+publish dune-gdt:
+  extends: .publish
+  script:
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python3 -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi docker/wheelhouse/final/dune_gdt*.whl
+  artifacts:
+    paths:
+      - docker/wheelhouse/final/dune_gdt*.whl
