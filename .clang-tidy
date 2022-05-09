@@ -1,1 +1,146 @@
-.vcsetup/.clang-tidy
+---
+# The checks starting with - are disabled. Most of them because we do not need/want them,
+# but following warnings are disabled as they cause errors or false warnings in our code.
+# Causes clang-tidy-12 internal segfaults:
+# -readability-static-accessed-through-instance
+# Gives warning in dune-alugrid/dune/alugrid/3d/grid_inline.hh:49:20 for dune/xt/test/grid/dgf_gridprovider.cc:
+# Call to virtual method ALU3dGrid::createALUGrid during construction bypasses virtual dispatch
+# -clang-analyzer-optin.cplusplus.VirtualCall,
+# Gives false positives, see https://github.com/llvm/llvm-project/issues/40486 and https://bugs.llvm.org/show_bug.cgi?id=44247
+# -clang-analyzer-cplusplus.NewDeleteLeaks,
+# These cause a lot of warnings for static inline functions in headerchecks because they are not used in that compilation unit
+# -clang-diagnostic-unneeded-internal-declaration
+# -clang-diagnostic-unused-function
+Checks: 'readability-else-after-return,
+         readability-const-return-type,
+         readability-container-data-pointer,
+         readability-container-size-empty,
+         readability-implicit-bool-conversion,
+         readability-inconsistent-declaration-parameter-name,
+         readability-make-member-function-const,
+         readability-non-const-parameter,
+         readability-qualified-auto,
+         readability-redundant-access-specifiers,
+         readability-redundant-control-flow,
+         readability-redundant-declaration,
+         readability-redundant-function-ptr-dereference,
+         readability-redundant-member-init,
+         readability-redundant-smartptr-get,
+         readability-redundant-string-cstr,
+         -readability-redundant-string-init
+         readability-simplify-subscript-expr,
+         -readability-static-accessed-through-instance,
+         readability-static-definition-in-anonymous-namespace,
+         readability-string-compare,
+         readability-suspicious-call-argument,
+         readability-uniqueptr-delete-release,
+         modernize-avoid-bind,
+         modernize-avoid-c-arrays,
+         modernize-concat-nested-namespaces,
+         modernize-deprecated-headers,
+         modernize-deprecated-ios-base-aliases,
+         modernize-loop-convert,
+         modernize-make-shared,
+         modernize-make-unique,
+         modernize-pass-by-value,
+         modernize-raw-string-literal,
+         modernize-redundant-void-arg,
+         modernize-replace-auto-ptr,
+         modernize-replace-disallow-copy-and-assign-macro,
+         modernize-replace-random-shuffle,
+         modernize-return-braced-init-list,
+         modernize-shrink-to-fit,
+         modernize-unary-static-assert,
+         modernize-use-auto,
+         modernize-use-bool-literals,
+         modernize-use-default-member-init,
+         modernize-use-emplace,
+         modernize-use-equals-default,
+         modernize-use-equals-delete,
+         -modernize-use-nodiscard,
+         -modernize-use-noexcept,
+         modernize-use-nullptr,
+         modernize-use-override,
+         -modernize-use-trailing-return-type,
+         modernize-use-transparent-functors,
+         modernize-use-uncaught-exceptions,
+         modernize-use-using,
+         misc-definitions-in-headers,
+         misc-misleading-identifier,
+         misc-misplaced-const,
+         misc-new-delete-overloads,
+         -misc-no-recursion,
+         misc-non-copyable-objects,
+         -misc-non-private-member-variables-in-classes,
+         misc-redundant-expression,
+         misc-static-assert,
+         -misc-throw-by-value-catch-by-reference,
+         -misc-unconventional-assign-operator,
+         misc-uniqueptr-reset-release,
+         misc-unused-alias-decls,
+         misc-unused-parameters,
+         misc-unused-using-decls,
+         bugprone-argument-comment,
+         bugprone-bool-pointer-implicit-conversion,
+         bugprone-copy-constructor-init,
+         bugprone-implicit-widening-of-multiplication-result,
+         bugprone-inaccurate-erase,
+         -bugprone-macro-parentheses,
+         bugprone-misplaced-operator-in-strlen-in-alloc,
+         bugprone-misplaced-pointer-arithmetic-in-alloc,
+         bugprone-move-forwarding-reference,
+         bugprone-not-null-terminated-result,
+         bugprone-parent-virtual-call,
+         bugprone-posix-return,
+         bugprone-redundant-branch-condition,
+         -bugprone-reserved-identifier,
+         bugprone-string-constructor,
+         bugprone-string-integer-assignment,
+         bugprone-suspicious-memset-usage,
+         bugprone-suspicious-semicolon,
+         bugprone-suspicious-string-compare,
+         bugprone-swapped-arguments,
+         bugprone-terminating-continue,
+         bugprone-unused-raii,
+         bugprone-unused-return-value,
+         bugprone-use-after-move,
+         bugprone-virtual-near-miss,
+         bugprone-incorrect-roundings,
+         bugprone-infinite-loop,
+         bugprone-integer-division,
+         -clang-analyzer-cplusplus.NewDeleteLeaks,
+         -clang-diagnostic-unneeded-internal-declaration,
+         -clang-diagnostic-unused-function,
+         -clang-analyzer-optin.cplusplus.VirtualCall,
+         '
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*/(dune-xt/dune|python/dune/xt|dune-gdt/dune|python/dune/gdt)/.*&!(.*/dune/xt/functions/mathexpr/mathexpr.hh)/.*'
+AnalyzeTemporaryDtors: false
+FormatStyle:     file
+CheckOptions:
+  - key:             cert-dcl16-c.NewSuffixes
+    value:           'L;LL;LU;LLU'
+  - key:             cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value:           '1'
+  - key:             google-readability-braces-around-statements.ShortStatementLines
+    value:           '1'
+  - key:             google-readability-function-size.StatementThreshold
+    value:           '800'
+  - key:             google-readability-namespace-comments.ShortNamespaceLines
+    value:           '10'
+  - key:             google-readability-namespace-comments.SpacesBeforeComments
+    value:           '2'
+  - key:             modernize-loop-convert.MaxCopySize
+    value:           '16'
+  - key:             modernize-loop-convert.MinConfidence
+    value:           reasonable
+  - key:             modernize-loop-convert.NamingStyle
+    value:           CamelCase
+  - key:             modernize-pass-by-value.IncludeStyle
+    value:           llvm
+  - key:             modernize-replace-auto-ptr.IncludeStyle
+    value:           llvm
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+...
