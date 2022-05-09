@@ -3,8 +3,8 @@ set -exu
 
 cd ${DUNE_SRC_DIR}
 
-# TODO why was this here again?
-rm -rf dune-uggrid dune-testtools
+# testtools will not build w/o a virtualenv
+rm -rf deps/{dune-uggrid,dune-testtools}
 
 pwd
 ls -l ${DUNE_SRC_DIR}/deps/*
