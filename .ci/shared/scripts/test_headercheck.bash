@@ -15,8 +15,7 @@
 set -e
 set -x
 
-source ${SUPERDIR}/scripts/bash/retry_command.bash
-source ${SUPERDIR}/${OPTS}
+source ./deps/${OPTS}
 
 ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
@@ -25,5 +24,5 @@ else
   HEADERCHECK="${TESTS_MODULE_SUBDIR}_headercheck"
 fi
 
-${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} ${HEADERCHECK}
+dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} ${HEADERCHECK}
 

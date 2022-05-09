@@ -82,14 +82,13 @@ variables:
         - .ccache
     before_script:
       - |
-        mkdir /home/dune-ci/testresults && chmod -R 777 /home/dune-ci/testresults
-        [[ -f ./.gitsuper ]] && echo "Please remove .gitsuper from the repo" && exit 1
+        mkdir ./testresults && chmod -R 777 ./testresults
         ccache --zero-stats || true
     after_script:
       - ccache --show-stats
     artifacts:
       reports:
-        junit: '/home/dune-ci/testresults/*xml'
+        junit: './testresults/*xml'
 
 .pre-commit:
     stage: sanity

@@ -15,8 +15,7 @@
 set -e
 set -x
 
-source ${SUPERDIR}/scripts/bash/retry_command.bash
-source ${SUPERDIR}/${OPTS}
+source ./deps/${OPTS}
 
 if [[ ${CC} == *"clang"* ]] ; then
   ASAN_LIB=$(${CC} -print-file-name=libclang_rt.asan-x86_64.so)
@@ -24,8 +23,8 @@ else
   ASAN_LIB=""
 fi
 
-ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
-ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} bindings
-ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_python
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} bindings
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_python
 
 cp ${DUNE_BUILD_DIR}/${MY_MODULE}/python/pytest_results.xml ${HOME}/testresults/
