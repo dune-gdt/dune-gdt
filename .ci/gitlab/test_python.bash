@@ -21,6 +21,8 @@ set -u
 DUNECONTROL=dunecontrol
 BUILD_CMD="ninja -v -j2"
 
+${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} all
+
 if [[ ${CC} == *"clang"* ]] ; then
   ASAN_LIB=$(${CC} -print-file-name=libclang_rt.asan-x86_64.so)
 else

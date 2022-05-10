@@ -21,6 +21,7 @@ set -u
 DUNECONTROL=dunecontrol
 BUILD_CMD="ninja -v -j2"
 
+${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} all
 ${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD}
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
   HEADERCHECK="headercheck"
