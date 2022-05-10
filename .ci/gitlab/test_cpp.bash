@@ -14,7 +14,8 @@
 
 set -ex
 
-OPTS_PATH=./deps/config.opts/${OPTS}
+THIS_DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P )"
+OPTS_PATH=${THIS_DIR}/../../deps/config.opts/${OPTS}
 source ${OPTS_PATH}
 set -u
 
@@ -23,16 +24,16 @@ CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 BUILD_CMD="ninja -v -j2"
 DUNECONTROL=dunecontrol
 
-${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} all
-${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD}
+${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
+${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD}
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
-  ${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD} test_binaries
+  ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} test_binaries
 else
-  ${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD} ${TESTS_MODULE_SUBDIR}_test_binaries
+  ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} ${TESTS_MODULE_SUBDIR}_test_binaries
   CTEST="${CTEST} -L ${TESTS_MODULE_SUBDIR}"
 fi
 
-ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} ${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${CTEST}
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${CTEST}
 
 # TODO
-# cp ${DUNE_BUILD_DIR}/${MY_MODULE}/${MY_MODULE//-/\/}/test/*xml ${HOME}/testresults/
+# cp ${DUNE_BUILD_DIR}/dune-gdt/${MY_MODULE//-/\/}/test/*xml ${HOME}/testresults/
