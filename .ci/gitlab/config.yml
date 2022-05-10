@@ -107,22 +107,10 @@ variables:
         - pip install pre-commit
         - pre-commit install --install-hooks
 
-format_check:
-    extends: .pre-commit
-    script:
-        - ${PRECOMMIT} clang-format
-        - ${PRECOMMIT} yapf
-        - ${PRECOMMIT} trailing-whitespace
-        - ${PRECOMMIT} cmake-format
 
-lint:
-    extends: .pre-commit
-    script:
-        - ${PRECOMMIT} check-added-large-files
-        
         
         - ${PRECOMMIT} debug-statements
-        - ${PRECOMMIT} check-yaml
+        - ${PRECOMMIT} check-yaml #}
 
 
 debian gcc:
