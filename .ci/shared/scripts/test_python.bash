@@ -12,10 +12,14 @@
 #   Tobias Leibner (2019 - 2020)
 # ~~~
 
-set -e
-set -x
+set -ex
 
-source ./deps/${OPTS}
+OPTS_PATH=./deps/config.opts/${OPTS}
+source ${OPTS_PATH}
+set -u
+
+DUNECONTROL=dunecontrol
+BUILD_CMD="ninja -v -j2"
 
 if [[ ${CC} == *"clang"* ]] ; then
   ASAN_LIB=$(${CC} -print-file-name=libclang_rt.asan-x86_64.so)
@@ -23,8 +27,9 @@ else
   ASAN_LIB=""
 fi
 
-ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
-ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} bindings
-ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} test_python
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD}
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD} bindings
+ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD} test_python
 
-cp ${DUNE_BUILD_DIR}/${MY_MODULE}/python/pytest_results.xml ${HOME}/testresults/
+# TODO
+# cp ${DUNE_BUILD_DIR}/${MY_MODULE}/python/pytest_results.xml ${HOME}/testresults/

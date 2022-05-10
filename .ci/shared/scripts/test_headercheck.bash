@@ -12,17 +12,21 @@
 #   Tobias Leibner (2019 - 2020)
 # ~~~
 
-set -e
-set -x
+set -ex
 
-source ./deps/${OPTS}
+OPTS_PATH=./deps/config.opts/${OPTS}
+source ${OPTS_PATH}
+set -u
 
-${SRC_DCTRL} ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD}
+DUNECONTROL=dunecontrol
+BUILD_CMD="ninja -v -j2"
+
+${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD}
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
   HEADERCHECK="headercheck"
 else
   HEADERCHECK="${TESTS_MODULE_SUBDIR}_headercheck"
 fi
 
-dunecontrol ${BLD} --only=${MY_MODULE} bexec ${BUILD_CMD} ${HEADERCHECK}
+${DUNECONTROL} --opts=${OPTS_PATH} --only=${MY_MODULE} bexec ${BUILD_CMD} ${HEADERCHECK}
 
