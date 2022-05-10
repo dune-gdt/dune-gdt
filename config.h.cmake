@@ -219,10 +219,10 @@
 
 // alberta and lpsolve both define a clashing get_max_level
 #ifdef HAVE_LPSOLVE
-#if HAVE_LPSOLVE
 #if HAVE_ALBERTA
 #undef HAVE_LPSOLVE
-#endif
+#endif // HAVE_ALBERTA
+#endif // HAVE_LPSOLVE
 
 
 /* end dune-gdt */
