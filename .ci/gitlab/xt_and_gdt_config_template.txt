@@ -155,7 +155,7 @@ lint:
     stage: {{kind}}
     needs: ["{{ image }} {{ compiler }}"]
     script:
-          - ./.ci/shared/scripts/test_{{kind}}.bash
+          - ./.ci/gitlab/test_{{kind}}.bash
 {%- endif %}
 {% endfor %}
 
@@ -177,7 +177,7 @@ lint:
     stage: python
     needs: ["{{ image }} {{ compiler }}"]
     script:
-          - ./.ci/shared/scripts/test_python.bash
+          - ./.ci/gitlab/test_python.bash
 {% endfor %}
 
 
