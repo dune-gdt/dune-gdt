@@ -34,4 +34,3 @@ add_subdir_tests(grid)
 add_subdir_tests(la)
 add_subdir_tests(functions)
 
-finalize_test_setup()
