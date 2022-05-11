@@ -55,7 +55,7 @@ variables:
     script:
       - |
         git submodule update --init --recursive
-        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg CONFIG_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile deps/
+        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg BUILD_CXX=${CXX} --build-arg BUILD_CC=${CC} --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg BUILD_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile deps/
         docker push ${IMAGE}
     services:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
@@ -142,9 +142,6 @@ common gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: common
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -158,9 +155,6 @@ common gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: common
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -172,9 +166,6 @@ grid gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: grid
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -188,9 +179,6 @@ grid gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: grid
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -203,9 +191,6 @@ functions gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: functions
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -217,9 +202,6 @@ functions1 gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: functions1
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -234,9 +216,6 @@ functions2 gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: functions2
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -251,9 +230,6 @@ la gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: la
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -267,9 +243,6 @@ la gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: la
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -281,9 +254,6 @@ gdt gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: gdt
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -297,9 +267,6 @@ gdt gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: gdt
-        CC: gcc
-        CXX: g++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: headercheck
@@ -313,9 +280,6 @@ common clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: common
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -329,9 +293,6 @@ common clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: common
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     stage: headercheck
     needs: ["debian clang"]
     script:
@@ -343,9 +304,6 @@ grid clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: grid
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -359,9 +317,6 @@ grid clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: grid
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     stage: headercheck
     needs: ["debian clang"]
     script:
@@ -374,9 +329,6 @@ functions clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: functions
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     stage: headercheck
     needs: ["debian clang"]
     script:
@@ -388,9 +340,6 @@ functions1 clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: functions1
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -405,9 +354,6 @@ functions2 clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: functions2
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -422,9 +368,6 @@ la clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: la
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -438,9 +381,6 @@ la clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: la
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     stage: headercheck
     needs: ["debian clang"]
     script:
@@ -452,9 +392,6 @@ gdt clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: gdt
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: cpp
@@ -468,9 +405,6 @@ gdt clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: gdt
-        CC: clang
-        CXX: clang++
-        OPTS: travis.ninja
     tags:
         - dustin
     stage: headercheck

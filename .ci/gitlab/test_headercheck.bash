@@ -15,7 +15,7 @@
 set -ex
 
 THIS_DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P )"
-OPTS_PATH=${THIS_DIR}/../../deps/config.opts/${OPTS}
+OPTS_PATH=${THIS_DIR}/../../deps/config.opts/${CONFIG_OPTS}
 source ${OPTS_PATH}
 set -u
 
