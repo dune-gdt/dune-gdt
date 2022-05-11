@@ -11,7 +11,7 @@ with open(template_filename, 'r') as f:
     tpl = f.read().replace('DUNE_XT_OR_DUNE_GDT', 'dune-xt')
 tpl = jinja2.Template(tpl)
 # images = ['debian-unstable_gcc_full', 'debian_gcc_full', 'debian_clang_full']
-compilers = ('gcc', 'clang')
+compilers = (('gcc', 'g++'), ('clang', 'clang++'))
 images = ('debian',)
 compiler_images = product(compilers, images)
 subdirs = ['xt/common', 'xt/grid', 'xt/functions', 'xt/functions1', 'xt/functions2', 'xt/la', 'gdt']

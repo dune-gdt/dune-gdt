@@ -129,47 +129,47 @@ lint:
         - ${PRECOMMIT} check-yaml #}
 
 
-{% for compiler, image in compiler_images -%}
-{{ image }} {{ compiler }}:
+{% for (cc, cxx), image in compiler_images -%}
+{{ image }} {{ cc }}:
     extends: .image_builder
     variables:
         CI_IMAGE: {{ image }}
-        COMPILER: {{ compiler }}
-        CC: {{ compiler }}
-        CXX: {{ compiler }}
+        COMPILER: {{ cc }}
+        CC: {{ cc }}
+        CXX: {{ cxx }}
         OPTS: travis.ninja
 {% endfor %}
 
-{% for compiler, image, subdir, kind in matrix %}
+{% for (cc, cxx), image, subdir, kind in matrix %}
 {%- if ('cpp' in kind and subdir != 'xt/functions') or ('headercheck' in kind and subdir not in ('xt/functions1', 'xt/functions2')) %}
-{{subdir}} {{ compiler }} {{ image[image.find('debian')+1+6:] }} {{kind}}:
+{{subdir}} {{ cc }} {{ image[image.find('debian')+1+6:] }} {{kind}}:
     extends: .subdir-test
     variables:
         CI_IMAGE: {{ image }}
-        COMPILER: {{ compiler }}
+        COMPILER: {{ cc }}
         TESTS_MODULE_SUBDIR: {{ subdir }}
-        CC: {{ compiler }}
-        CXX: {{ compiler }}
+        CC: {{ cc }}
+        CXX: {{ cxx }}
         OPTS: travis.ninja
     {%- if 'cpp' in kind or 'gdt' in subdir %}
     tags:
         - dustin
     {%- endif %}
     stage: {{kind}}
-    needs: ["{{ image }} {{ compiler }}"]
+    needs: ["{{ image }} {{ cc }}"]
     script:
           - ./.ci/gitlab/test_{{kind}}.bash
 {%- endif %}
 {% endfor %}
 
-{% for compiler, image in compiler_images %}
-{{ image[image.find('debian')+1+6:] }} {{ compiler }} python:
+{% for (cc, cxx), image in compiler_images %}
+{{ image[image.find('debian')+1+6:] }} {{ cc }} python:
     extends: .subdir-test
     variables:
         CI_IMAGE: {{ image }}
-        COMPILER: {{ compiler }}
-        CC: {{ compiler }}
-        CXX: {{ compiler }}
+        COMPILER: {{ cc }}
+        CC: {{ cc }}
+        CXX: {{ cxx }}
         OPTS: travis.ninja
     tags:
     {%- if 'gdt' in subdirs[0] and 'clang' in image %}
@@ -178,7 +178,7 @@ lint:
         - dustin
     {%- endif %}
     stage: python
-    needs: ["{{ image }} {{ compiler }}"]
+    needs: ["{{ image }} {{ cc }}"]
     script:
           - ./.ci/gitlab/test_python.bash
 {% endfor %}
