@@ -1,0 +1,8 @@
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+NAME="$(basename ${BASH_SOURCE[0]})"
+
+CXXFLAGS="'-DNDEBUG -g -w -funroll-loops -m64 -mfpmath=sse -falign-loops -mtune=native -march=native  -pipe -fomit-frame-pointer -O4 '"
+
+TYPE=RelWithDebInfo
+
+source ${DIR}/clang_base

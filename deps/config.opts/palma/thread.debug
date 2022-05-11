@@ -1,0 +1,6 @@
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+NAME="$(basename ${BASH_SOURCE[0]})"
+
+CXXFLAGS="'-DDEBUG -g3 -ggdb -std=c++17  -O0 -fsanitize=thread -ftemplate-backtrace-limit=0'"
+
+source ${DIR}/gcc_common

@@ -1,0 +1,7 @@
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+NAME="$(basename ${BASH_SOURCE[0]})"
+
+CXXFLAGS="-DDXT_DISABLE_LARGE_TESTS=1 -DDEBUG -g3 -ggdb -O0"
+
+CMAKE_EXTRA="${CMAKE_EXTRA} -DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=mold -DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=mold -DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=mold"
+source ${DIR}/clang_base

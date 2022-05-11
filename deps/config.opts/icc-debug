@@ -1,0 +1,16 @@
+# This file is part of the dune-config-opts project:
+#   http://users.dune-project.org/projects/dune-config-opts
+# Copyright holders: Rene Milk, Felix Schindler
+# License: BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+NAME="$(basename ${BASH_SOURCE[0]})"
+
+TYPE=Debug
+CXXFLAGS="-O1 -w2 -Wcheck -wd1011 -wd2282 -wd654 -wd11074 -wd11076"
+
+CXX=${CXX:-icpc}
+CC=${CC:-icc}
+F77=${F77:-ifort}
+
+source ${DIR}/base/common

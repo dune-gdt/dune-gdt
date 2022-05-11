@@ -1,0 +1,8 @@
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+NAME="$(basename ${BASH_SOURCE[0]})"
+CC=/usr/lib/gcc-snapshot/bin/gcc
+CXX=/usr/lib/gcc-snapshot/bin/g++
+F77=/usr/lib/gcc-snapshot/bin/gfortran
+CXXFLAGS="'-fno-strict-aliasing -DDEBUG -g3 -ggdb -std=c++0x -Wextra -Wall'"
+
+source ${DIR}/gcc_base

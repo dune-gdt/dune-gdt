@@ -1,0 +1,12 @@
+# This file is part of the dune-config-opts project:
+#   http://users.dune-project.org/projects/dune-config-opts
+# Copyright holders: Rene Milk, Felix Schindler
+# License: BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+NAME="$(basename ${BASH_SOURCE[0]})"
+
+TYPE=RelWithDebInfo
+CXXFLAGS="-g3 -ggdb -O0 -fno-strict-aliasing -fsanitize=thread -fno-optimize-sibling-calls -fno-omit-frame-pointer -DDEBUG -DDUNE_FMatrix_WITH_CHECKING=1 -Wunused-variable -Winline -Wall -Wextra -Wc++0x-compat -Wparentheses -pedantic -Wredundant-decls -Wshadow -Wundef -Wnon-virtual-dtor -Wnon-literal-null-conversion -Wused-but-marked-unused -Wno-tautological-compare -Wfloat-equal -Wdisabled-macro-expansion -Wcovered-switch-default -Wswitch-enum -Wunreachable-code -Wshorten-64-to-32"
+
+source ${DIR}/base/clang
