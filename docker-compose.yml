@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+  dune_gdt:
+    build:
+      context: ./deps
+      dockerfile: Dockerfile
+      args:
+        DEBIAN_BASE: ${DUNE_GDT_IMAGE_BASE:-debian}
+        BUILD_OPTS: ${DUNE_GDT_CONFIG_OPTS:-travis.ninja}
+        BUILD_CC: ${DUNE_GDT_CC:-clang}
+        BUILD_CXX: ${DUNE_GDT_CC:-clang++}
+    environment:
+      TESTS_MODULE_SUBDIR: gdt
+    restart: "no"
+    working_dir: /src
+    command: /src/.ci/gitlab/test_cpp.bash
+    volumes:
+      - ./:/src
