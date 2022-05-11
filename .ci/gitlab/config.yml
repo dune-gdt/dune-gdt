@@ -76,9 +76,12 @@ variables:
             - api_failure
     image: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}_${COMPILER}:${CI_COMMIT_SHA}
     cache:
-      key: "$CI_JOB_NAME"
-      paths:
-        - .ccache
+      - key: "${CI_IMAGE}_${COMPILER}"
+        paths:
+          - .ccache
+      - key: "${CI_IMAGE}"
+        paths:
+          - .cache/
     before_script:
       - |
         mkdir ./testresults && chmod -R 777 ./testresults

@@ -14,6 +14,7 @@ RUN apt update \
 
 COPY . /src/
 RUN . /venv/bin/activate \
+    && pip install --no-cache pre-commit mpi4py \
     && cd /src/ \
     && ./dune-common/bin/dunecontrol --opts=config.opts/${CONFIG_OPTS} all \
     && ./dune-common/bin/dunecontrol --opts=config.opts/${CONFIG_OPTS} make install \
