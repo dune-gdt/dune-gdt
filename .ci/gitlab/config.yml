@@ -135,12 +135,12 @@ debian clang:
 
 
 
-xt/common gcc  cpp:
+common gcc  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/common
+        TESTS_MODULE_SUBDIR: common
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -151,12 +151,12 @@ xt/common gcc  cpp:
     script:
           - ./.ci/gitlab/test_cpp.bash
 
-xt/common gcc  headercheck:
+common gcc  headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/common
+        TESTS_MODULE_SUBDIR: common
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -165,12 +165,12 @@ xt/common gcc  headercheck:
     script:
           - ./.ci/gitlab/test_headercheck.bash
 
-xt/grid gcc  cpp:
+grid gcc  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/grid
+        TESTS_MODULE_SUBDIR: grid
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -181,12 +181,12 @@ xt/grid gcc  cpp:
     script:
           - ./.ci/gitlab/test_cpp.bash
 
-xt/grid gcc  headercheck:
+grid gcc  headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/grid
+        TESTS_MODULE_SUBDIR: grid
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -196,12 +196,12 @@ xt/grid gcc  headercheck:
           - ./.ci/gitlab/test_headercheck.bash
 
 
-xt/functions gcc  headercheck:
+functions gcc  headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/functions
+        TESTS_MODULE_SUBDIR: functions
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -210,12 +210,12 @@ xt/functions gcc  headercheck:
     script:
           - ./.ci/gitlab/test_headercheck.bash
 
-xt/functions1 gcc  cpp:
+functions1 gcc  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/functions1
+        TESTS_MODULE_SUBDIR: functions1
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -227,12 +227,12 @@ xt/functions1 gcc  cpp:
           - ./.ci/gitlab/test_cpp.bash
 
 
-xt/functions2 gcc  cpp:
+functions2 gcc  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/functions2
+        TESTS_MODULE_SUBDIR: functions2
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -244,12 +244,12 @@ xt/functions2 gcc  cpp:
           - ./.ci/gitlab/test_cpp.bash
 
 
-xt/la gcc  cpp:
+la gcc  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/la
+        TESTS_MODULE_SUBDIR: la
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -260,12 +260,12 @@ xt/la gcc  cpp:
     script:
           - ./.ci/gitlab/test_cpp.bash
 
-xt/la gcc  headercheck:
+la gcc  headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: gcc
-        TESTS_MODULE_SUBDIR: xt/la
+        TESTS_MODULE_SUBDIR: la
         CC: gcc
         CXX: g++
         OPTS: travis.ninja
@@ -306,12 +306,12 @@ gdt gcc  headercheck:
     script:
           - ./.ci/gitlab/test_headercheck.bash
 
-xt/common clang  cpp:
+common clang  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/common
+        TESTS_MODULE_SUBDIR: common
         CC: clang
         CXX: clang++
         OPTS: travis.ninja
@@ -322,12 +322,12 @@ xt/common clang  cpp:
     script:
           - ./.ci/gitlab/test_cpp.bash
 
-xt/common clang  headercheck:
+common clang  headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/common
+        TESTS_MODULE_SUBDIR: common
         CC: clang
         CXX: clang++
         OPTS: travis.ninja
@@ -336,12 +336,12 @@ xt/common clang  headercheck:
     script:
           - ./.ci/gitlab/test_headercheck.bash
 
-xt/grid clang  cpp:
+grid clang  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/grid
+        TESTS_MODULE_SUBDIR: grid
         CC: clang
         CXX: clang++
         OPTS: travis.ninja
@@ -352,12 +352,12 @@ xt/grid clang  cpp:
     script:
           - ./.ci/gitlab/test_cpp.bash
 
-xt/grid clang  headercheck:
+grid clang  headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/grid
+        TESTS_MODULE_SUBDIR: grid
         CC: clang
         CXX: clang++
         OPTS: travis.ninja
@@ -367,12 +367,12 @@ xt/grid clang  headercheck:
           - ./.ci/gitlab/test_headercheck.bash
 
 
-xt/functions clang  headercheck:
+functions clang  headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/functions
+        TESTS_MODULE_SUBDIR: functions
         CC: clang
         CXX: clang++
         OPTS: travis.ninja
@@ -381,12 +381,12 @@ xt/functions clang  headercheck:
     script:
           - ./.ci/gitlab/test_headercheck.bash
 
-xt/functions1 clang  cpp:
+functions1 clang  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/functions1
+        TESTS_MODULE_SUBDIR: functions1
         CC: clang
         CXX: clang++
         OPTS: travis.ninja
@@ -398,12 +398,12 @@ xt/functions1 clang  cpp:
           - ./.ci/gitlab/test_cpp.bash
 
 
-xt/functions2 clang  cpp:
+functions2 clang  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/functions2
+        TESTS_MODULE_SUBDIR: functions2
         CC: clang
         CXX: clang++
         OPTS: travis.ninja
@@ -415,12 +415,12 @@ xt/functions2 clang  cpp:
           - ./.ci/gitlab/test_cpp.bash
 
 
-xt/la clang  cpp:
+la clang  cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/la
+        TESTS_MODULE_SUBDIR: la
         CC: clang
         CXX: clang++
         OPTS: travis.ninja
@@ -431,12 +431,12 @@ xt/la clang  cpp:
     script:
           - ./.ci/gitlab/test_cpp.bash
 
-xt/la clang  headercheck:
+la clang  headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
         COMPILER: clang
-        TESTS_MODULE_SUBDIR: xt/la
+        TESTS_MODULE_SUBDIR: la
         CC: clang
         CXX: clang++
         OPTS: travis.ninja

@@ -141,7 +141,7 @@ lint:
 {% endfor %}
 
 {% for (cc, cxx), image, subdir, kind in matrix %}
-{%- if ('cpp' in kind and subdir != 'xt/functions') or ('headercheck' in kind and subdir not in ('xt/functions1', 'xt/functions2')) %}
+{%- if ('cpp' in kind and subdir != 'functions') or ('headercheck' in kind and subdir not in ('functions1', 'functions2')) %}
 {{subdir}} {{ cc }} {{ image[image.find('debian')+1+6:] }} {{kind}}:
     extends: .subdir-test
     variables:
