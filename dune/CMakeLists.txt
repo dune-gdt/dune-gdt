@@ -11,6 +11,8 @@
 #   Tobias Leibner  (2018)
 # ~~~
 
+enable_testing()
+
 add_subdirectory(xt)
 add_subdirectory(pybindxi)
 install(
@@ -19,3 +21,5 @@ install(
   FILES_MATCHING
   PATTERN "*.hh")
 add_subdirectory(gdt)
+
+finalize_test_setup()

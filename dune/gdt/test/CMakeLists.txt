@@ -11,8 +11,6 @@
 #   Tobias Leibner  (2016 - 2018)
 # ~~~
 
-enable_testing()
-
 set(DXT_TEST_TIMEOUT 1000)
 
 add_subdir_tests(burgers)
@@ -30,5 +28,3 @@ add_subdir_tests(spaces)
 add_subdir_tests(stationary-eocstudies)
 add_subdir_tests(stationary-heat-equation)
 add_subdir_tests(stokes)
-
-finalize_test_setup()
