@@ -155,3 +155,13 @@ set(DXT_TEST_PROCS
 set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
 
 include(DunePybindxiUtils)
+
+# TODO there's no real way to require packages present at configure time? - jinja2 is needed for test templating
+dune_execute_process(
+  COMMAND
+  ${CMAKE_BINARY_DIR}/run-in-dune-env
+  python3
+  -m
+  pip
+  install
+  jinja2)
