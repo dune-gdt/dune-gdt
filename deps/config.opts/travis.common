@@ -19,6 +19,7 @@ TRAVIS=1
 ASAN_OPTIONS=detect_leaks=0:check_initialization_order=1
 UBSAN_OPTIONS=print_stacktrace=1:report_error_type=1
 
+# manually specifying interpreter is necessary if venv making is disabled
 CMAKE_FLAGS="\
   -Wno-dev \
   ${GENERATOR} \
@@ -41,10 +42,12 @@ CMAKE_FLAGS="\
       -fPIC \
       -DDXT_DISABLE_LARGE_TESTS=1' \
     -DENABLE_HEADERCHECK=1 \
-    -DDISABLE_UBUNTU_WORKAROUND=1 \
-    -DDUNE_PYTHON_INSTALL_USER=travis \
     -DPDELAB_DISABLE_CXX_VERSION_CHECK=1 \
     -DDXT_TEST_TIMEOUT=${DXT_TEST_TIMEOUT} \
-    -DDUNE_PYTHON_ALLOW_GET_PIP=TRUE \
-    -DDUNE_PYTHON_VIRTUALENV_SETUP=TRUE \
+    -DDUNE_PYTHON_ALLOW_GET_PIP=FALSE \
+    -DDUNE_PYTHON_VIRTUALENV_PATH=/venv \
+    -DPython3_EXECUTABLE=/venv/bin/python3 \
+    -DDUNE_ENABLE_PYTHONBINDINGS=0 \
+    -DDUNE_PYTHON_SYSTEM_IS_VIRTUALENV=1 \
+    -DDUNE_PYTHON_VIRTUALENV_SETUP=FALSE \
     -DDXT_TEST_PROCS=${DXT_TEST_PROCS}"
