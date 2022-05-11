@@ -20,9 +20,6 @@
 [submodule "dune-typetree"]
 	path = deps/dune-typetree
 	url = https://github.com/dune-mirrors/dune-typetree.git
-[submodule "configs"]
-	path = deps/config.opts
-	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/config-opts.git
 [submodule "scripts"]
 	path = deps/scripts
 	url = https://github.com/wwu-numerik/scripts.git
