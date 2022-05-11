@@ -46,6 +46,7 @@ variables:
     variables:
         DOCKER_HOST: tcp://docker:2375/
         DOCKER_DRIVER: overlay2
+        IMAGE_NAME: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}_${COMPILER}
         IMAGE: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}_${COMPILER}:${CI_COMMIT_SHA}
     before_script:
       - |
@@ -55,7 +56,7 @@ variables:
     script:
       - |
         git submodule update --init --recursive
-        docker build --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg CONFIG_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile deps/
+        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg CONFIG_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile deps/
         docker push ${IMAGE}
     services:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
