@@ -11,7 +11,8 @@ stages:
   - publish
 
 variables:
-    GIT_SUBMODULE_STRATEGY: recursive
+    # only the image builder needs the subdirs checked out
+    GIT_SUBMODULE_STRATEGY: none
     TRAVIS_BRANCH: ${CI_COMMIT_REF_NAME}
     TRAVIS_COMMIT: ${CI_COMMIT_SHA}
     CCACHE_BASEDIR: ${CI_PROJECT_DIR}
@@ -47,6 +48,7 @@ variables:
         DOCKER_DRIVER: overlay2
         IMAGE_NAME: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}_${COMPILER}
         IMAGE: ${CI_REGISTRY_IMAGE}/ci_testing_${CI_IMAGE}_${COMPILER}:${CI_COMMIT_SHA}
+        GIT_SUBMODULE_STRATEGY: recursive
     before_script:
       - |
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
