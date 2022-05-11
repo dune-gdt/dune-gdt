@@ -1,6 +1,0 @@
-[submodule ".vcsetup"]
-	path = .vcsetup
-	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/vcsetup.git
-[submodule ".ci/shared"]
-	path = .ci/shared
-	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt-ci.git
