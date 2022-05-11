@@ -24,6 +24,9 @@ CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 BUILD_CMD="ninja -v -j2"
 DUNECONTROL=dunecontrol
 
+# TODO this is should be baked into the entrypoint
+. /venv/bin/activate
+
 ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
 ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD}
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then

@@ -22,6 +22,9 @@ set -u
 DUNECONTROL=dunecontrol
 BUILD_CMD="ninja -v -j2"
 
+# TODO this is should be baked into the entrypoint
+. /venv/bin/activate
+
 ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
 
 if [[ ${CC} == *"clang"* ]] ; then
