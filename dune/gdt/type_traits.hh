@@ -56,7 +56,8 @@ enum class Stencil
 {
   element,
   intersection,
-  element_and_intersection
+  element_and_intersection,
+  automatic
 };
 
 
@@ -68,6 +69,8 @@ inline std::ostream& operator<<(std::ostream& out, const Stencil& stencil)
     out << "intersection";
   else if (stencil == Stencil::element_and_intersection)
     out << "element_and_intersection";
+  else if (stencil == Stencil::automatic)
+    out << "automatic";
   else
     out << "Stencil(" << int(stencil) << ")";
   return out;

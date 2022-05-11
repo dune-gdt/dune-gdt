@@ -12,6 +12,7 @@
 
 #include <dune/grid/common/rangegenerators.hh>
 
+#include <dune/xt/common/timedlogging.hh>
 #include <dune/xt/functions/grid-function.hh>
 
 #include <dune/gdt/discretefunction/default.hh>
@@ -25,25 +26,29 @@ namespace GDT {
 /**
  * \note source is averaged on intersections
  */
-template <class VectorType, class GV, class R, class IGV>
-std::enable_if_t<
-    XT::LA::is_vector<VectorType>::value
-        && std::is_same<XT::Grid::extract_entity_t<GV>, typename IGV::Grid::template Codim<0>::Entity>::value,
-    DiscreteFunction<VectorType, GV, GV::dimension, 1, R>>
-raviart_thomas_interpolation(
-    const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_t<GV>, GV::dimension, 1, R>& source,
-    const RaviartThomasSpace<GV, R>& target_space,
-    const GridView<IGV>& interpolation_grid_view)
+template <class E, size_t d, class R, class V, class GV, class IGV>
+void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
+                                  DiscreteFunction<V, GV, d, 1, R>& target,
+                                  const GridView<IGV>& interpolation_grid_view,
+                                  const XT::Common::Parameter& param = {})
 {
+  static_assert(std::is_same_v<E, XT::Grid::extract_entity_t<GV>>, "");
+  static_assert(std::is_same_v<E, XT::Grid::extract_entity_t<GridView<IGV>>>, "");
+  static_assert(d == GV::dimension, "");
+  XT::Common::DefaultLogger logger("raviart_thomas_interpolation");
+  LOG(debug) << "(source=" << &source << ", target=" << &target
+             << ", interpolation_grid_view=" << &interpolation_grid_view << ", param=" << print(param) << ")"
+             << std::endl;
+  if (target.space().type() != SpaceType::raviart_thomas)
+    LOG(warn) << "target.space().type() is " << target.space().type() << ", not raviart_thomas! Continuing anyway ..."
+              << std::endl;
   using D = typename GridView<IGV>::ctype;
-  static constexpr size_t d = GridView<IGV>::dimension;
   // some preparations
   const FiniteVolumeMapper<GridView<IGV>> element_mapper(interpolation_grid_view);
-  auto target_function = make_discrete_function<VectorType>(target_space);
-  auto local_target = target_function.local_discrete_function();
+  auto local_target = target.local_discrete_function();
   auto local_source_element = source.local_function();
   auto local_source_neighbor = source.local_function();
-  auto rt_basis = target_space.basis().localize();
+  auto rt_basis = target.space().basis().localize();
   for (auto&& element : elements(interpolation_grid_view)) {
     local_target->bind(element);
     local_source_element->bind(element);
@@ -80,7 +85,7 @@ raviart_thomas_interpolation(
             for (auto&& quadrature_point : QuadratureRules<D, d - 1>::rule(
                      intersection.type(),
                      std::max(rt_basis->order() + intersection_Pk_basis.order(),
-                              std::max(local_source_element->order(), local_source_neighbor->order())
+                              std::max(local_source_element->order(param), local_source_neighbor->order(param))
                                   + intersection_Pk_basis.order()))) {
               const auto point_on_reference_intersection = quadrature_point.position();
               const auto point_in_reference_element =
@@ -93,8 +98,8 @@ raviart_thomas_interpolation(
                   intersection.geometry().integrationElement(point_on_reference_intersection);
               const auto rt_basis_values = rt_basis->evaluate_set(point_in_reference_element);
               const auto intersection_Pk_basis_values = intersection_Pk_basis.evaluate(point_on_reference_intersection);
-              const auto local_source_values = (local_source_element->evaluate(point_in_reference_element)
-                                                + local_source_neighbor->evaluate(point_in_reference_neighbor))
+              const auto local_source_values = (local_source_element->evaluate(point_in_reference_element, param)
+                                                + local_source_neighbor->evaluate(point_in_reference_neighbor, param))
                                                * 0.5;
               for (size_t ii = 0; ii < local_keys_assosiated_with_intersection.size(); ++ii) {
                 const size_t local_key_index = local_keys_assosiated_with_intersection[ii];
@@ -124,7 +129,7 @@ raviart_thomas_interpolation(
           for (auto&& quadrature_point : QuadratureRules<D, d - 1>::rule(
                    intersection.type(),
                    std::max(rt_basis->order() + intersection_Pk_basis.order(),
-                            local_source_element->order() + intersection_Pk_basis.order()))) {
+                            local_source_element->order(param) + intersection_Pk_basis.order()))) {
             const auto point_on_reference_intersection = quadrature_point.position();
             const auto point_in_reference_element =
                 intersection.geometryInInside().global(point_on_reference_intersection);
@@ -133,7 +138,7 @@ raviart_thomas_interpolation(
             const auto integration_factor = intersection.geometry().integrationElement(point_on_reference_intersection);
             const auto rt_basis_values = rt_basis->evaluate_set(point_in_reference_element);
             const auto intersection_Pk_basis_values = intersection_Pk_basis.evaluate(point_on_reference_intersection);
-            const auto local_source_values = local_source_element->evaluate(point_in_reference_element);
+            const auto local_source_values = local_source_element->evaluate(point_in_reference_element, param);
             for (size_t ii = 0; ii < local_keys_assosiated_with_intersection.size(); ++ii) {
               const size_t local_key_index = local_keys_assosiated_with_intersection[ii];
               for (size_t jj = 0; jj < intersection_Pk_basis.size(); ++jj)
@@ -169,7 +174,7 @@ raviart_thomas_interpolation(
     const auto element_to_local_key_map = rt_fe.coefficients().local_key_indices(0);
     const auto& local_keys_assosiated_with_element = element_to_local_key_map[0];
     if (local_keys_assosiated_with_element.size() > 0) {
-      DUNE_THROW_IF(rt_basis->order() < 1,
+      DUNE_THROW_IF(rt_basis->order(param) < 1,
                     Exceptions::interpolation_error,
                     "DoFs associated with the element only make sense for orders >= 1!");
       const auto element_fe = make_local_orthonormal_finite_element<D, d, R, d>(element.type(), rt_fe.order() - 1);
@@ -185,13 +190,13 @@ raviart_thomas_interpolation(
       for (auto&& quadrature_point :
            QuadratureRules<D, d>::rule(element.type(),
                                        std::max(rt_basis->order() + element_Pkminus1_basis.order(),
-                                                local_source_element->order() + element_Pkminus1_basis.order()))) {
+                                                local_source_element->order(param) + element_Pkminus1_basis.order()))) {
         const auto point_in_reference_element = quadrature_point.position();
         const auto quadrature_weight = quadrature_point.weight();
         const auto integration_factor = element.geometry().integrationElement(point_in_reference_element);
         const auto rt_basis_values = rt_basis->evaluate_set(point_in_reference_element);
         const auto element_Pkminus1_basis_values = element_Pkminus1_basis.evaluate(point_in_reference_element);
-        const auto local_source_values = local_source_element->evaluate(point_in_reference_element);
+        const auto local_source_values = local_source_element->evaluate(point_in_reference_element, param);
         for (size_t ii = 0; ii < local_keys_assosiated_with_element.size(); ++ii) {
           const size_t local_key_index = local_keys_assosiated_with_element[ii];
           for (size_t jj = 0; jj < element_Pkminus1_basis.size(); ++jj)
@@ -225,8 +230,65 @@ raviart_thomas_interpolation(
                         << "\n   local DoF index: " << ii
                         << "\n   associated local_key: " << rt_fe.coefficients().local_key(ii));
   }
-  return target_function;
 } // ... raviart_thomas_interpolation()
+
+
+template <class E, size_t d, class R, class V, class GV>
+void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
+                                  const DiscreteFunction<V, GV, d, 1, R>& target,
+                                  const XT::Common::Parameter& param = {})
+{
+  raviart_thomas_interpolation(source, target, target.space().grid_view(), param);
+}
+
+
+template <class VectorType, // <- has to be specified manually
+          class GV,
+          size_t d,
+          class R,
+          class E,
+          class IGV>
+DiscreteFunction<VectorType, GV, d, 1, R>
+raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
+                             const SpaceInterface<GV, d, 1, R>& target_space,
+                             const GridView<IGV>& interpolation_grid_view,
+                             const XT::Common::Parameter& param = {})
+{
+  static_assert(XT::LA::is_vector<VectorType>::value, "");
+  DiscreteFunction<VectorType, GV, d, 1, R> target(target_space);
+  raviart_thomas_interpolation(source, target, interpolation_grid_view, param);
+  return target;
+}
+
+template <class GV, size_t d, class R, class E, class IGV>
+auto raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
+                                  const SpaceInterface<GV, d, 1, R>& target_space,
+                                  const GridView<IGV>& interpolation_grid_view,
+                                  const XT::Common::Parameter& param = {})
+{
+  return raviart_thomas_interpolation<XT::LA::IstlDenseVector<R>>(source, target_space, interpolation_grid_view, param);
+}
+
+
+template <class VectorType, // <- has to be specified manually
+          class GV,
+          size_t d,
+          class R,
+          class E>
+auto raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
+                                  const SpaceInterface<GV, d, 1, R>& target_space,
+                                  const XT::Common::Parameter& param = {})
+{
+  return raviart_thomas_interpolation<VectorType>(source, target_space, target_space.grid_view(), param);
+}
+
+template <class GV, size_t d, class R, class E>
+auto raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
+                                  const SpaceInterface<GV, d, 1, R>& target_space,
+                                  const XT::Common::Parameter& param = {})
+{
+  return raviart_thomas_interpolation<XT::LA::IstlDenseVector<R>>(source, target_space, param);
+}
 
 
 } // namespace GDT

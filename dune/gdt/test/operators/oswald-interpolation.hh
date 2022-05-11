@@ -36,7 +36,6 @@
 #include <dune/gdt/local/integrands/abs.hh>
 #include <dune/gdt/local/integrands/laplace.hh>
 #include <dune/gdt/local/integrands/product.hh>
-#include <dune/gdt/operators/localizable-operator.hh>
 #include <dune/gdt/operators/oswald-interpolation.hh>
 #include <dune/gdt/spaces/l2/finite-volume.hh>
 #include <dune/gdt/spaces/l2/discontinuous-lagrange.hh>
@@ -105,8 +104,8 @@ struct OswaldInterpolationOperatorOnLeafViewTest : public ::testing::Test
   void fulfills_l2_interpolation_estimate()
   {
     auto& self = *this;
-    OswaldInterpolationOperator<M, GV> oswald_interpolation(
-        self.grid_provider->leaf_view(), *self.space, *self.space, *self.boundary_info);
+    OswaldInterpolationOperator<GV> oswald_interpolation{
+        self.grid_provider->leaf_view(), *self.space, *self.boundary_info};
     oswald_interpolation.assemble();
     auto range = make_discrete_function<V>(*self.space);
     oswald_interpolation.apply(*self.source, range);
@@ -227,8 +226,8 @@ struct OswaldInterpolationOperatorOnLeafViewTest : public ::testing::Test
   void fulfills_h1_interpolation_estimate()
   {
     auto& self = *this;
-    OswaldInterpolationOperator<M, GV> oswald_interpolation(
-        self.grid_provider->leaf_view(), *self.space, *self.space, *self.boundary_info);
+    OswaldInterpolationOperator<GV> oswald_interpolation{
+        self.grid_provider->leaf_view(), *self.space, *self.boundary_info};
     oswald_interpolation.assemble();
     auto range = make_discrete_function<V>(*self.space);
     oswald_interpolation.apply(*self.source, range);
@@ -403,8 +402,8 @@ struct OswaldInterpolationOperatorOnCubicLeafViewTest : public OswaldInterpolati
   void applies_correctly_on_cubic_grids()
   {
     auto& self = *this;
-    OswaldInterpolationOperator<M, GV> oswald_interpolation(
-        self.grid_provider->leaf_view(), *self.space, *self.space, *self.boundary_info);
+    OswaldInterpolationOperator<GV> oswald_interpolation{
+        self.grid_provider->leaf_view(), *self.space, *self.boundary_info};
     oswald_interpolation.assemble();
     auto range = make_discrete_function<V>(*self.space);
     oswald_interpolation.apply(*self.source, range);

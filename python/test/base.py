@@ -11,15 +11,14 @@
 #   Tobias Leibner  (2019 - 2020)
 # ~~~
 
-import pytest
 from dune.xt.test import grid_types as types
 
 
 def test_load_all():
-    import dune.xt.common
-    import dune.xt.la
-    import dune.xt.grid
-    import dune.xt.functions
+    import dune.xt.common  # noqa:F401
+    import dune.xt.la  # noqa:F401
+    import dune.xt.grid  # noqa:F401
+    import dune.xt.functions  # noqa:F401
 
 
 def test_empty():
@@ -32,6 +31,7 @@ def test_empty():
     assert ter.getName() == 'Berti'
     assert pet.getName() == 'Bello'
     assert ter.bark() == 'woof!'
+    assert dog.bark() == 'woof!'
 
 
 def test_logging():

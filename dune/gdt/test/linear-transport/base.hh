@@ -99,8 +99,9 @@ public:
                      std::min(this->T_end_, this->time_points_from_vector_array(solution.dof_vectors()).back());
                  for (size_t ii = 0; ii < this->visualization_steps_; ++ii) {
                    const double time = ii * (end_time / this->visualization_steps_);
-                   solution.evaluate(time).visualize(XT::Common::Test::get_unique_test_name() + "__" + prefix
-                                                     + "_solution_" + XT::Common::to_string(ii));
+                   GDT::visualize(solution.evaluate(time),
+                                  XT::Common::Test::get_unique_test_name() + "__" + prefix + "_solution_"
+                                      + XT::Common::to_string(ii));
                  }
                })
     , visualization_steps_(0)
@@ -147,7 +148,9 @@ protected:
     double time = 0.;
     while (time < self.T_end_ + dt) {
       auto u_t = Problem::access().template make_exact_solution__periodic_boundaries<V>(*self.reference_space_, time);
-      self.reference_solution_on_reference_grid_->append(u_t.dofs().vector(), {"_t", time});
+      // no copy in append: without the std::move below, the vector array would hold a reference to a temporary
+      // see https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/-/issues/40
+      self.reference_solution_on_reference_grid_->append(std::move(u_t.dofs().vector()), {"_t", time});
       time += dt;
     }
     // visualize
@@ -178,7 +181,7 @@ protected:
 
   XT::LA::ListVectorArray<V> solve(const S& space, const double T_end) override
   {
-    const auto u_0 = this->make_initial_values(space);
+    auto u_0 = this->make_initial_values(space);
     const auto op = this->make_lhs_operator(space);
     const auto dt = this->current_data_["target"]["h"];
     this->current_data_["quantity"]["dt"] = dt;
