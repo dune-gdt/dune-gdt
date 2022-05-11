@@ -12,4 +12,4 @@
 #   Tobias Leibner  (2019 - 2020)
 # ~~~
 
-__version__ = "${dune-xt_VERSION}"
+__version__ = "${dune-gdt_VERSION}"
