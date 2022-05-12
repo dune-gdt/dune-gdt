@@ -127,7 +127,7 @@ if(HAVE_MPI)
     # this only works in dune-gdt itself
     include_directories(SYSTEM "${MPI4PY_INCLUDE_DIR}" ${PYTHON_INCLUDE_DIRS})
   else()
-    message(FATAL_ERROR kaput)
+    message(FATAL_ERROR "mpi4py is required, but could not be installed")
   endif()
 endif()
 # end library checks  #####################################################################
@@ -156,7 +156,8 @@ set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
 
 include(DunePybindxiUtils)
 
-# TODO there's no real way to require packages present at configure time? - jinja2 is needed for test templating
+# TODO there's no real way to require packages present at configure time? - jinja2,pyparsing is needed for test
+# templating
 dune_execute_process(
   COMMAND
   ${CMAKE_BINARY_DIR}/run-in-dune-env
@@ -164,4 +165,5 @@ dune_execute_process(
   -m
   pip
   install
-  jinja2)
+  jinja2
+  pyparsing)
