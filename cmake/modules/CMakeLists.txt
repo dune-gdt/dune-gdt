@@ -16,7 +16,7 @@ install(
         DunePybindxiUtils.cmake
         DuneTBB.cmake
         DuneUtils.cmake
-        DuneXtMacros.cmake
+        DuneGdtMacros.cmake
         DuneXTTesting.cmake
         DuneXtVersionHelper.cmake
         FindCBLAS.cmake
