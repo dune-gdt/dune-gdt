@@ -33,6 +33,10 @@ endif()
 find_package(dune-common REQUIRED)
 list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
 
+# TODO discover this script at configure time set(RUN_IN_ENV_SCRIPT ${CMAKE_BINARY_DIR}/gdt-run-in-dune-env) this is a
+# global install with the script in PATH
+set(RUN_IN_ENV_SCRIPT /usr/local/bin/gdt-run-in-dune-env)
+execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)
 # include the dune macros
 include(DuneMacros)
 include(DuneUtils)

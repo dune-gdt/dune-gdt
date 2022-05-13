@@ -116,7 +116,7 @@ if(HAVE_MPI)
 
   else()
     execute_process(
-      COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env pip install mpi4py
+      COMMAND ${RUN_IN_ENV_SCRIPT} pip install mpi4py
       ERROR_VARIABLE shell_error
       OUTPUT_STRIP_TRAILING_WHITESPACE)
     myfind_mpi4py()
@@ -160,7 +160,7 @@ include(DunePybindxiUtils)
 # templating
 dune_execute_process(
   COMMAND
-  ${CMAKE_BINARY_DIR}/run-in-dune-env
+  ${RUN_IN_ENV_SCRIPT}
   python3
   -m
   pip

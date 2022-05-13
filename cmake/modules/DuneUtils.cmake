@@ -92,7 +92,7 @@ macro(ADD_PYLICENSE)
     list(APPEND cfg_targets ${cfg_target})
     add_custom_target(
       ${cfg_target}
-      ${CMAKE_BINARY_DIR}/run-in-dune-env pylicense "--cfg=${cfg}" "${PROJECT_SOURCE_DIR}"
+      ${RUN_IN_ENV_SCRIPT} pylicense "--cfg=${cfg}" "${PROJECT_SOURCE_DIR}"
       VERBATIM USES_TERMINAL)
   endforeach(cfg ${configs})
   add_custom_target(license DEPENDS ${cfg_targets})

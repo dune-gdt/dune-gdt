@@ -18,7 +18,7 @@
 macro(MYFIND_MPI4PY)
   if(NOT MPI4PY_INCLUDE_DIR)
     execute_process(
-      COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "-c" "import mpi4py; print(mpi4py.get_include())"
+      COMMAND ${RUN_IN_ENV_SCRIPT} python -c "import mpi4py; print(mpi4py.get_include())"
       OUTPUT_VARIABLE MPI4PY_INCLUDE_DIR
       RESULT_VARIABLE MPI4PY_COMMAND_RESULT
       OUTPUT_STRIP_TRAILING_WHITESPACE)

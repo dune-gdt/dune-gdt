@@ -94,7 +94,7 @@ macro(ADD_SUBDIR_TESTS subdir)
         ${GRID_LIBS}
         gtest_dune_xt
         COMMAND
-        ${CMAKE_BINARY_DIR}/run-in-dune-env
+        ${RUN_IN_ENV_SCRIPT}
         CMD_ARGS
         ${CMAKE_CURRENT_BINARY_DIR}/${target}
         --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${target}.xml
@@ -127,7 +127,7 @@ macro(ADD_SUBDIR_TESTS subdir)
 
     dune_execute_process(
       COMMAND
-      ${CMAKE_BINARY_DIR}/run-in-dune-env
+      ${RUN_IN_ENV_SCRIPT}
       dxt_code_generation.py
       "${config_fn}"
       "${template}"
@@ -143,8 +143,8 @@ macro(ADD_SUBDIR_TESTS subdir)
     endif()
     add_custom_command(
       OUTPUT "${generated_sources}"
-      COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env dxt_code_generation.py "${config_fn}" "${template}"
-              "${CMAKE_BINARY_DIR}" "${out_fn}" "${last_dep_bindir}"
+      COMMAND ${RUN_IN_ENV_SCRIPT} dxt_code_generation.py "${config_fn}" "${template}" "${CMAKE_BINARY_DIR}" "${out_fn}"
+              "${last_dep_bindir}"
       DEPENDS "${config_fn}" "${template}"
       VERBATIM USES_TERMINAL)
     foreach(gen_source ${generated_sources})
@@ -167,7 +167,7 @@ macro(ADD_SUBDIR_TESTS subdir)
         ${GRID_LIBS}
         gtest_dune_xt
         COMMAND
-        ${CMAKE_BINARY_DIR}/run-in-dune-env
+        ${RUN_IN_ENV_SCRIPT}
         CMD_ARGS
         ${CMAKE_CURRENT_BINARY_DIR}/${target}
         --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${target}.xml
@@ -272,7 +272,7 @@ endmacro(DXT_EXCLUDE_FROM_HEADERCHECK)
 macro(DXT_ADD_PYTHON_TESTS)
   add_custom_target(
     xt_test_python
-    "${CMAKE_BINARY_DIR}/run-in-dune-env" "py.test" "${CMAKE_BINARY_DIR}/python" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${RUN_IN_ENV_SCRIPT}" "py.test" "${CMAKE_BINARY_DIR}/python" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
     "--junitxml=pytest_results.xml"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python"
     DEPENDS bindings
