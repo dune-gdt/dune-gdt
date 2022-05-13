@@ -125,10 +125,11 @@ macro(ADD_SUBDIR_TESTS subdir)
       endif()
     endforeach(mod DEPENDENCIES)
 
+    # TODO dxt_code_geneartion.py should be avail in the venv when called from this target
     dune_execute_process(
       COMMAND
       ${RUN_IN_ENV_SCRIPT}
-      dxt_code_generation.py
+      ${PROJECT_SOURCE_DIR}/python/scripts/dxt_code_generation.py
       "${config_fn}"
       "${template}"
       "${CMAKE_BINARY_DIR}"
@@ -143,8 +144,8 @@ macro(ADD_SUBDIR_TESTS subdir)
     endif()
     add_custom_command(
       OUTPUT "${generated_sources}"
-      COMMAND ${RUN_IN_ENV_SCRIPT} dxt_code_generation.py "${config_fn}" "${template}" "${CMAKE_BINARY_DIR}" "${out_fn}"
-              "${last_dep_bindir}"
+      COMMAND ${RUN_IN_ENV_SCRIPT} ${PROJECT_SOURCE_DIR}/python/scripts/dxt_code_generation.py "${config_fn}"
+              "${template}" "${CMAKE_BINARY_DIR}" "${out_fn}" "${last_dep_bindir}"
       DEPENDS "${config_fn}" "${template}"
       VERBATIM USES_TERMINAL)
     foreach(gen_source ${generated_sources})
