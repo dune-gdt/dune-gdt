@@ -16,7 +16,8 @@ include(XtTooling)
 
 macro(GET_HEADERCHECK_TARGETS subdir)
   file(GLOB_RECURSE bindir_header "${CMAKE_BINARY_DIR}/*.hh")
-  list(APPEND dxt_ignore_header ${bindir_header})
+  file(GLOB_RECURSE deps_header "${CMAKE_SOURCE_DIR}/deps/*.hh")
+  list(APPEND dxt_ignore_header ${bindir_header} ${deps_header})
   if(ENABLE_HEADERCHECK)
     if(NOT subdir STREQUAL "gdt")
       file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/xt/${subdir}/*.hh"
