@@ -11,8 +11,6 @@
 #   Tobias Leibner  (2016 - 2018)
 # ~~~
 
-set(DXT_TEST_TIMEOUT 1000)
-
 add_subdir_tests(burgers)
 add_subdir_tests(discretefunction)
 add_subdir_tests(instationary-eocstudies)

@@ -37,6 +37,9 @@ find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE
                                                          ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED)
 
 execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)
+set(DXT_TEST_TIMEOUT
+    1000
+    CACHE STRING "gtest timeout in seconds")
 # include the dune macros
 include(DuneMacros)
 include(DuneUtils)

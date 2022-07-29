@@ -48,15 +48,7 @@ macro(ADD_SUBDIR_TESTS subdir)
   set_property(GLOBAL PROPERTY dxt_test_dirs_prop "${dxt_test_dirs}")
 endmacro()
 
-macro(_PROCESS_SUBDIR_TESTS fullpath)
-  set(link_xt_libs dunext)
-
-  get_filename_component(subdir ${fullpath} NAME)
-  file(GLOB_RECURSE test_sources "${fullpath}/*.cc")
-
-  if(NOT test_sources)
-    message(AUTHOR_WARNING "called add_subdir_test(${subdir}), but no sources were found")
-  endif()
+macro(_process_sources test_sources)
   foreach(source ${test_sources})
     set(ranks "1")
     if(source MATCHES "mpi")
@@ -119,6 +111,24 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
       set_tests_properties(${target} PROPERTIES LABELS ${subdir})
     endif(EXISTS ${minifile})
   endforeach(source)
+endmacro()
+
+macro(_PROCESS_SUBDIR_TESTS fullpath)
+  set(link_xt_libs dunext)
+
+  if(NOT DXT_TEST_TIMEOUT)
+    set(DXT_TEST_TIMEOUT 1000)
+  endif()
+
+  get_filename_component(subdir ${fullpath} NAME)
+  file(GLOB_RECURSE test_sources "${fullpath}/*.cc")
+
+  if(NOT test_sources)
+    message(AUTHOR_WARNING "called add_subdir_test(${subdir}), but no sources were found")
+  endif()
+
+  _process_sources(${test_sources})
+
   file(GLOB_RECURSE test_templates "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.tpl")
   foreach(template ${test_templates})
     set(ranks "1")
