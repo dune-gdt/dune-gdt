@@ -43,9 +43,20 @@ endmacro(GET_HEADERCHECK_TARGETS)
 
 # cmake-lint: disable=R0915
 macro(ADD_SUBDIR_TESTS subdir)
+  get_property(dxt_test_dirs GLOBAL PROPERTY dxt_test_dirs_prop)
+  set(dxt_test_dirs ${dxt_test_dirs} ${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
+  set_property(GLOBAL PROPERTY dxt_test_dirs_prop "${dxt_test_dirs}")
+endmacro()
+
+macro(_PROCESS_SUBDIR_TESTS fullpath)
   set(link_xt_libs dunext)
-  list(APPEND dxt_test_dirs ${subdir})
-  file(GLOB_RECURSE test_sources "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.cc")
+
+  get_filename_component(subdir ${fullpath} NAME)
+  file(GLOB_RECURSE test_sources "${fullpath}/*.cc")
+
+  if(NOT test_sources)
+    message(AUTHOR_WARNING "called add_subdir_test(${subdir}), but no sources were found")
+  endif()
   foreach(source ${test_sources})
     set(ranks "1")
     if(source MATCHES "mpi")
@@ -224,18 +235,24 @@ macro(ADD_SUBDIR_TESTS subdir)
   endforeach()
   set(${subdir}_dxt_headercheck_targets "")
   get_headercheck_targets(${subdir})
-endmacro(ADD_SUBDIR_TESTS)
+endmacro(_PROCESS_SUBDIR_TESTS)
 
 macro(FINALIZE_TEST_SETUP)
+  get_property(dxt_test_dirs GLOBAL PROPERTY dxt_test_dirs_prop)
   set(combine_targets test_templates test_binaries check recheck)
+
   foreach(target ${combine_targets})
     add_custom_target(${target})
-    foreach(subdir ${dxt_test_dirs})
-      add_dependencies(${target} ${subdir}_${target})
-    endforeach()
   endforeach()
 
-  foreach(subdir ${dxt_test_dirs})
+  foreach(fullpath ${dxt_test_dirs})
+    _process_subdir_tests(${fullpath})
+    get_filename_component(subdir ${fullpath} NAME)
+
+    foreach(target ${combine_targets})
+      add_dependencies(${target} ${subdir}_${target})
+    endforeach()
+
     set(dxt_test_binaries "${dxt_test_binaries} ${${subdir}_dxt_test_binaries}")
   endforeach()
   # set(${subdir}_dxt_headercheck_targets "")
@@ -259,7 +276,7 @@ macro(FINALIZE_TEST_SETUP)
       endif()
     endforeach()
   endif()
-endmacro()
+endmacro(FINALIZE_TEST_SETUP)
 
 macro(DXT_EXCLUDE_FROM_HEADERCHECK)
   exclude_from_headercheck(${ARGV0}) # make this robust to argument being passed with or without ""
