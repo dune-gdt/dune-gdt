@@ -11,7 +11,7 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists \
     && python3 -m venv /venv \
     && . /venv/bin/activate \
-    && pip install --no-cache pre-commit mpi4py jinja2 numpy scipy
+    && pip install --no-cache wheel pre-commit mpi4py jinja2 numpy scipy
 
 ARG BUILD_OPTS=clang-debug
 ARG BUILD_CXX=g++
@@ -28,7 +28,9 @@ RUN . /venv/bin/activate \
     && ./dune-common/bin/dunecontrol --opts=config.opts/${CONFIG_OPTS} make install \
     && mv entrypoint.bash /usr/local/bin/entrypoint.bash \
     && cd / \
-    && rm -rf /src /root/*
+    && rm -rf /src /root/* \
+    && ls -l /venv/bin/ \
+    && ls -l /usr/local/bin
 
 WORKDIR /home/dune-ci/
 ENTRYPOINT [ "/usr/local/bin/entrypoint.bash" ]
