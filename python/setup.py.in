@@ -13,6 +13,8 @@
 # ~~~
 
 import sys
+from pathlib import Path
+
 from setuptools import setup, find_packages
 from setuptools.dist import Distribution
 from setuptools.command.install import install
@@ -46,6 +48,8 @@ class InstallPlatlib(install):
         install.finalize_options(self)
         self.install_lib = self.install_platlib
 
+scripts = [str(p) for p in Path('./scripts').glob('*.py')]
+scripts.append('./wrapper/dune_xt_execute.py')
 
 setup(name='dune.gdt',
       version='${DUNE_GDT_VERSION}',
@@ -63,6 +67,5 @@ setup(name='dune.gdt',
       distclass=BinaryDistribution,
       install_requires=requires,
       extras_require=extras_require,
-      scripts=['./scripts/generate_compare_functions.py',
-               './scripts/dxt_code_generation.py',
-               './wrapper/dune_xt_execute.py'])
+      scripts=scripts,
+      )
