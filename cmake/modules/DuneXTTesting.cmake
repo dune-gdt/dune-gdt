@@ -127,7 +127,7 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
     message(AUTHOR_WARNING "called add_subdir_test(${subdir}), but no sources were found")
   endif()
 
-  _process_sources(${test_sources})
+  _process_sources("${test_sources}")
 
   file(GLOB_RECURSE test_templates "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.tpl")
   foreach(template ${test_templates})
