@@ -65,7 +65,7 @@ variables:
 
 .subdir-test:
     tags:
-      - long execution time
+      - amm-only
     stage: test
     rules:
         - if: '$CI_COMMIT_REF_NAME =~ /^staging.*/'
@@ -144,8 +144,6 @@ common gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: common
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian gcc"]
     script:
@@ -168,8 +166,6 @@ grid gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: grid
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian gcc"]
     script:
@@ -204,8 +200,6 @@ functions1 gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: functions1
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian gcc"]
     script:
@@ -218,8 +212,6 @@ functions2 gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: functions2
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian gcc"]
     script:
@@ -232,8 +224,6 @@ la gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: la
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian gcc"]
     script:
@@ -256,8 +246,6 @@ gdt gcc  cpp:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: gdt
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian gcc"]
     script:
@@ -269,8 +257,6 @@ gdt gcc  headercheck:
         CI_IMAGE: debian
         COMPILER: gcc
         TESTS_MODULE_SUBDIR: gdt
-    tags:
-        - dustin
     stage: headercheck
     needs: ["debian gcc"]
     script:
@@ -282,8 +268,6 @@ common clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: common
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian clang"]
     script:
@@ -306,8 +290,6 @@ grid clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: grid
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian clang"]
     script:
@@ -342,8 +324,6 @@ functions1 clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: functions1
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian clang"]
     script:
@@ -356,8 +336,6 @@ functions2 clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: functions2
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian clang"]
     script:
@@ -370,8 +348,6 @@ la clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: la
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian clang"]
     script:
@@ -394,8 +370,6 @@ gdt clang  cpp:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: gdt
-    tags:
-        - dustin
     stage: cpp
     needs: ["debian clang"]
     script:
@@ -407,8 +381,6 @@ gdt clang  headercheck:
         CI_IMAGE: debian
         COMPILER: clang
         TESTS_MODULE_SUBDIR: gdt
-    tags:
-        - dustin
     stage: headercheck
     needs: ["debian clang"]
     script:
