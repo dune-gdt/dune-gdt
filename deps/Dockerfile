@@ -21,15 +21,15 @@ ENV CONFIG_OPTS=${BUILD_OPTS} \
     CXX=${BUILD_CXX} \
     CC=${BUILD_CC}
 
-COPY . /src/
+COPY . /deps/
 RUN . /venv/bin/activate \
-    && cd /src/ \
+    && cd /deps/ \
     && ./dune-common/bin/dunecontrol --opts=config.opts/${CONFIG_OPTS} all \
-    && ./dune-common/bin/dunecontrol --opts=config.opts/${CONFIG_OPTS} make install \
     && mv entrypoint.bash /usr/local/bin/entrypoint.bash \
     && cd / \
-    && rm -rf /src /root/* \
+    && rm -rf /root/* \
     && ls -l /venv/bin/ \
+    && ls -l /build/ \
     && ls -l /usr/local/bin
 
 WORKDIR /home/dune-ci/

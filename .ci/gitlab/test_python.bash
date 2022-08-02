@@ -19,7 +19,7 @@ OPTS_PATH=${THIS_DIR}/../../deps/config.opts/${CONFIG_OPTS}
 source ${OPTS_PATH}
 set -u
 
-DUNECONTROL=dunecontrol
+DUNECONTROL=/deps/dune-common/bin/dunecontrol
 BUILD_CMD="ninja -v -j2"
 
 # TODO this is should be baked into the entrypoint

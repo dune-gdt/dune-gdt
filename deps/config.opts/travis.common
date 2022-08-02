@@ -19,6 +19,8 @@ TRAVIS=1
 ASAN_OPTIONS=detect_leaks=0:check_initialization_order=1
 UBSAN_OPTIONS=print_stacktrace=1:report_error_type=1
 
+BUILDDIR=/build
+
 # manually specifying interpreter is necessary if venv making is disabled
 CMAKE_FLAGS="\
   -Wno-dev \
