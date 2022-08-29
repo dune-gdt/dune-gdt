@@ -19,7 +19,7 @@ OPTS_PATH=${THIS_DIR}/../../deps/config.opts/${CONFIG_OPTS}
 source ${OPTS_PATH}
 set -u
 
-CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2} -L ${TESTS_MODULE_SUBDIR}"
+CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2} -L subdir_${TESTS_MODULE_SUBDIR}"
 
 DUNECONTROL=/deps/dune-common/bin/dunecontrol
 
