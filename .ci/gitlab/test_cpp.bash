@@ -27,6 +27,7 @@ DUNECONTROL=/deps/dune-common/bin/dunecontrol
 . /venv/bin/activate
 BUILD_CMD="ninja -v -j2 -k 10000"
 
+cd /deps
 ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
 
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
