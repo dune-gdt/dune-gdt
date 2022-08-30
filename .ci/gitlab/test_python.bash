@@ -19,12 +19,13 @@ OPTS_PATH=${THIS_DIR}/../../deps/config.opts/${CONFIG_OPTS}
 source ${OPTS_PATH}
 set -u
 
-DUNECONTROL=/deps/dune-common/bin/dunecontrol
+DUNECONTROL=/src/deps/dune-common/bin/dunecontrol
 BUILD_CMD="ninja -v -j2"
 
 # TODO this is should be baked into the entrypoint
 . /venv/bin/activate
 
+cd /src
 ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
 
 if [[ ${CC} == *"clang"* ]] ; then

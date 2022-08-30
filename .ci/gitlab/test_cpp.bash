@@ -21,13 +21,14 @@ set -u
 
 CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2} -L subdir_${TESTS_MODULE_SUBDIR}"
 
-DUNECONTROL=/deps/dune-common/bin/dunecontrol
+DUNECONTROL=/src/deps/dune-common/bin/dunecontrol
 
 # TODO this is should be baked into the entrypoint
 . /venv/bin/activate
 BUILD_CMD="ninja -v -j2 -k 10000"
 
-cd /deps
+cd /src
+
 ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
 
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then

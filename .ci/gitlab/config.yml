@@ -56,7 +56,7 @@ variables:
     script:
       - |
         git submodule update --init --recursive
-        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg BUILD_CXX=${CXX} --build-arg BUILD_CC=${CC} --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg BUILD_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile deps/
+        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg BUILD_CXX=${CXX} --build-arg BUILD_CC=${CC} --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg BUILD_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile .
         docker push ${IMAGE}
     services:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
@@ -65,6 +65,8 @@ variables:
 .subdir-test:
     tags:
       - amm-only
+    variables:
+      GIT_STRATEGY: none
     stage: test
     rules:
         - if: '$CI_COMMIT_REF_NAME =~ /^staging.*/'
@@ -146,7 +148,7 @@ common gcc  cpp:
     stage: cpp
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 common gcc  headercheck:
     extends: .subdir-test
@@ -157,7 +159,7 @@ common gcc  headercheck:
     stage: headercheck
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 grid gcc  cpp:
     extends: .subdir-test
@@ -168,7 +170,7 @@ grid gcc  cpp:
     stage: cpp
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 grid gcc  headercheck:
     extends: .subdir-test
@@ -179,7 +181,7 @@ grid gcc  headercheck:
     stage: headercheck
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 
 functions gcc  headercheck:
@@ -191,7 +193,7 @@ functions gcc  headercheck:
     stage: headercheck
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 functions1 gcc  cpp:
     extends: .subdir-test
@@ -202,7 +204,7 @@ functions1 gcc  cpp:
     stage: cpp
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 
 functions2 gcc  cpp:
@@ -214,7 +216,7 @@ functions2 gcc  cpp:
     stage: cpp
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 
 la gcc  cpp:
@@ -226,7 +228,7 @@ la gcc  cpp:
     stage: cpp
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 la gcc  headercheck:
     extends: .subdir-test
@@ -237,7 +239,7 @@ la gcc  headercheck:
     stage: headercheck
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 gdt gcc  cpp:
     extends: .subdir-test
@@ -248,7 +250,7 @@ gdt gcc  cpp:
     stage: cpp
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 gdt gcc  headercheck:
     extends: .subdir-test
@@ -259,7 +261,7 @@ gdt gcc  headercheck:
     stage: headercheck
     needs: ["debian gcc"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 common clang  cpp:
     extends: .subdir-test
@@ -270,7 +272,7 @@ common clang  cpp:
     stage: cpp
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 common clang  headercheck:
     extends: .subdir-test
@@ -281,7 +283,7 @@ common clang  headercheck:
     stage: headercheck
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 grid clang  cpp:
     extends: .subdir-test
@@ -292,7 +294,7 @@ grid clang  cpp:
     stage: cpp
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 grid clang  headercheck:
     extends: .subdir-test
@@ -303,7 +305,7 @@ grid clang  headercheck:
     stage: headercheck
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 
 functions clang  headercheck:
@@ -315,7 +317,7 @@ functions clang  headercheck:
     stage: headercheck
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 functions1 clang  cpp:
     extends: .subdir-test
@@ -326,7 +328,7 @@ functions1 clang  cpp:
     stage: cpp
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 
 functions2 clang  cpp:
@@ -338,7 +340,7 @@ functions2 clang  cpp:
     stage: cpp
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 
 la clang  cpp:
@@ -350,7 +352,7 @@ la clang  cpp:
     stage: cpp
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 la clang  headercheck:
     extends: .subdir-test
@@ -361,7 +363,7 @@ la clang  headercheck:
     stage: headercheck
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 gdt clang  cpp:
     extends: .subdir-test
@@ -372,7 +374,7 @@ gdt clang  cpp:
     stage: cpp
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_cpp.bash
+          - /src/.ci/gitlab/test_cpp.bash
 
 gdt clang  headercheck:
     extends: .subdir-test
@@ -383,7 +385,7 @@ gdt clang  headercheck:
     stage: headercheck
     needs: ["debian clang"]
     script:
-          - ./.ci/gitlab/test_headercheck.bash
+          - /src/.ci/gitlab/test_headercheck.bash
 
 
 

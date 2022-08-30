@@ -57,7 +57,7 @@ variables:
     script:
       - |
         git submodule update --init --recursive
-        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg BUILD_CXX=${CXX} --build-arg BUILD_CC=${CC} --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg BUILD_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile deps/
+        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg BUILD_CXX=${CXX} --build-arg BUILD_CC=${CC} --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg BUILD_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile .
         docker push ${IMAGE}
     services:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
@@ -66,6 +66,8 @@ variables:
 .subdir-test:
     tags:
       - amm-only
+    variables:
+      GIT_STRATEGY: none
     stage: test
     rules:
         - if: '$CI_COMMIT_REF_NAME =~ /^staging.*/'
@@ -153,7 +155,7 @@ lint:
     stage: {{kind}}
     needs: ["{{ image }} {{ cc }}"]
     script:
-          - ./.ci/gitlab/test_{{kind}}.bash
+          - /src/.ci/gitlab/test_{{kind}}.bash
 {%- endif %}
 {% endfor %}
 
@@ -166,7 +168,7 @@ lint:
     stage: python
     needs: ["{{ image }} {{ cc }}"]
     script:
-          - ./.ci/gitlab/test_python.bash
+          - /src/.ci/gitlab/test_python.bash
 {% endfor %}
 
 
