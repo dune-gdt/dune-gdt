@@ -20,7 +20,7 @@ macro(MYFIND_MPI4PY)
     set(_include_cmd
         "import mpi4py,pathlib; incl=str(mpi4py.get_include()).strip();print(pathlib.Path(incl).resolve().absolute())")
     execute_process(
-      COMMAND "${RUN_IN_ENV_SCRIPT}" "python" "-c" "${_include_cmd}"
+      COMMAND "${RUN_IN_ENV_SCRIPT}" "python3" "-c" "${_include_cmd}"
       OUTPUT_VARIABLE MPI4PY_INCLUDE_DIR
       RESULT_VARIABLE MPI4PY_COMMAND_RESULT
       OUTPUT_STRIP_TRAILING_WHITESPACE)
