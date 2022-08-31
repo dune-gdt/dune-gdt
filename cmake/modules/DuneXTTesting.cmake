@@ -18,13 +18,15 @@ macro(GET_HEADERCHECK_TARGETS subdir)
   file(GLOB_RECURSE bindir_header "${CMAKE_BINARY_DIR}/*.hh")
   list(APPEND dxt_ignore_header ${bindir_header})
   if(ENABLE_HEADERCHECK)
-    if(NOT subdir STREQUAL "gdt")
-      file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/xt/${subdir}/*.hh"
-           "${CMAKE_SOURCE_DIR}/dune/xt/test/${subdir}/*.hh" "${CMAKE_SOURCE_DIR}/python/dune/xt/${subdir}/*.hh")
-    else()
+    if(${subdir} STREQUAL "gdt")
       file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/gdt/*.hh" "${CMAKE_SOURCE_DIR}/dune/gdt/test/*.hh"
            "${CMAKE_SOURCE_DIR}/python/dune/gdt/*.hh")
+
+    else()
+      file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/xt/${subdir}/*.hh"
+           "${CMAKE_SOURCE_DIR}/dune/xt/test/${subdir}/*.hh" "${CMAKE_SOURCE_DIR}/python/dune/xt/${subdir}/*.hh")
     endif()
+
     add_custom_target(${subdir}_headercheck)
     list(FILTER headerlist EXCLUDE REGEX ".*\/deps\/.*")
     foreach(header ${headerlist})
@@ -266,6 +268,9 @@ macro(FINALIZE_TEST_SETUP)
     set(dxt_test_binaries "${dxt_test_binaries} ${${subdir}_dxt_test_binaries}")
   endforeach()
   # set(${subdir}_dxt_headercheck_targets "")
+
+  # this isn't generated automatically due to the test subdirs not reflecting headers
+  get_headercheck_targets("gdt")
 
   if(ALBERTA_FOUND)
     foreach(test ${dxt_test_binaries})

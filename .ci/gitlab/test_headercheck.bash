@@ -27,11 +27,5 @@ BUILD_CMD="ninja -v -j2"
 
 cd /src
 
-if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
-  HEADERCHECK="headercheck"
-else
-  HEADERCHECK="${TESTS_MODULE_SUBDIR}_headercheck"
-fi
-
-${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} ${HEADERCHECK}
+${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} "${TESTS_MODULE_SUBDIR}_headercheck"
 
