@@ -84,7 +84,7 @@ public:
     return std::make_unique<ReinterpretLocalfunction>(*source_, source_grid_view_);
   }
 
-  std::string name() const
+  std::string name() const override
   {
     return source_->name();
   }
