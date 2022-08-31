@@ -7,6 +7,8 @@ THISDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd -P )"
 md=${1}
 shift
 
+[[ -f /usr/local/bin/pybin.sh ]] && source /usr/local/bin/pybin.sh
+
 python3 -m pip install -q twine
 PIP_CONFIG_FILE=${PIP_CONFIG_FILE:-${HOME}/.config/pip/pip.conf}
 [[ -d $(dirname ${PIP_CONFIG_FILE})  ]]  || mkdir -p $(dirname ${PIP_CONFIG_FILE})

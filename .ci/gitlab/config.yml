@@ -21,7 +21,7 @@ variables:
     CCACHE_COMPRESS: "true"
     PYTEST_ADDOPTS: "-s"
     MY_MODULE: dune-gdt
-    ML_TAG: 7c6a18ee717f76033db438e66d1f4aab5e7f4050
+    ML_TAG: 9cb83e2bb6d7ffb7dd4073797546b0eef559d5b2
     WHEEL_DIR: ${CI_PROJECT_DIR}/wheelhouse
     DUNE_BUILD_DIR: ${CI_PROJECT_DIR}/build
     DUNE_SRC_DIR: ${CI_PROJECT_DIR}
