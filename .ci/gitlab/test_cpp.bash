@@ -29,8 +29,6 @@ BUILD_CMD="ninja -v -j2 -k 10000"
 
 cd /src
 
-${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
-
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
   # TODO this builds too much
   ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} test_binaries

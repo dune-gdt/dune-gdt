@@ -26,7 +26,6 @@ BUILD_CMD="ninja -v -j2"
 . /venv/bin/activate
 
 cd /src
-${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
 
 if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
   HEADERCHECK="headercheck"

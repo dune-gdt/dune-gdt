@@ -26,7 +26,6 @@ BUILD_CMD="ninja -v -j2"
 . /venv/bin/activate
 
 cd /src
-${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt all
 
 if [[ ${CC} == *"clang"* ]] ; then
   ASAN_LIB=$(${CC} -print-file-name=libclang_rt.asan-x86_64.so)
