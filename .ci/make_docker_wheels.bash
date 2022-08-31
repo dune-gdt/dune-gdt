@@ -4,9 +4,9 @@
 
 set -exo pipefail
 
-ML_TAG=9cb83e2bb6d7ffb7dd4073797546b0eef559d5b2
-
 THISDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd -P )"
+
+source ${THIS_DIR}/../.env
 
 md=${1}
 shift

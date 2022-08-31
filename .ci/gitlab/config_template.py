@@ -5,7 +5,11 @@ from pathlib import Path
 import jinja2
 from itertools import product
 
+from dotenv import dotenv_values
+
 THIS_DIR = Path(__file__).resolve().absolute().parent
+env_path = THIS_DIR / '..' / '..' / '.env'
+env = dotenv_values(env_path)
 template_filename = THIS_DIR / 'xt_and_gdt_config_template.jinja'
 with open(template_filename, 'r') as f:
     tpl = f.read().replace('DUNE_XT_OR_DUNE_GDT', 'dune-xt')
@@ -21,5 +25,6 @@ pythons = [f'3.{i}' for i in range(8, 11)]
 wheel_steps_no_all = ["xt", "gdt"]
 wheel_steps = wheel_steps_no_all + ["all", ]
 config = THIS_DIR / 'config.yml'
+ml_tag = env['ML_TAG']
 with open(config, 'wt') as yml:
     yml.write(tpl.render(**locals()))
