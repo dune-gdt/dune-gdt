@@ -59,7 +59,7 @@ dune_xt_module_version_from_git(dune-gdt)
 # dune-gdt cmake includes
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 COMPONENTS Interpreter Development)
 add_subdirectory(pybind11)
 dune_enable_all_packages(
   INCLUDE_DIRS
