@@ -421,58 +421,13 @@ gdt clang  headercheck:
     - pip install ${WHEEL_DIR}/final/dune*whl
     - python -c 'from dune.xt import *'
     - python -c 'from dune.gdt import *'
-xt 3.8:
+wheels 3.8:
   extends: .wheels_base
   variables:
     GDT_PYTHON_VERSION: "3.8"
-    STEP: xt
-  needs:
-  - all 3.8
-  dependencies: ["all 3.8"]
-  script: ./.ci/make_wheels.bash xt
+  script: ./.ci/make_wheels.bash
   after_script:
   - ccache --show-stats
-gdt 3.8:
-  extends: .wheels_base
-  variables:
-    GDT_PYTHON_VERSION: "3.8"
-    STEP: gdt
-  needs:
-  - all 3.8
-  - xt 3.8
-  dependencies: ["all 3.8"]
-  script: ./.ci/make_wheels.bash gdt
-  after_script:
-  - ccache --show-stats
-all 3.8:
-  extends: .wheels_base
-  variables:
-    GDT_PYTHON_VERSION: "3.8"
-    STEP: all
-  script: ./.ci/make_wheels.bash all
-  after_script:
-  - ccache --show-stats
-
-  artifacts:
-    paths:
-      - ${DUNE_BUILD_DIR}
-
-
-
-
-wheel collect 3.8:
-  stage: wheels
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
-  dependencies:
-    - "xt 3.8"
-    - "gdt 3.8"
-  needs:
-    - "xt 3.8"
-    - "gdt 3.8"
-  image: harbor.uni-muenster.de/proxy-docker/library/alpine:3.15
-  script:
-    - rm -rf ${DUNE_BUILD_DIR}
   artifacts:
     paths:
       - ${WHEEL_DIR}/final/dune*whl
@@ -482,60 +437,15 @@ test wheels 3.8:
   variables:
     GIT_SUBMODULE_STRATEGY: none
     GDT_PYTHON_VERSION: "3.8"
-  needs: ["wheel collect 3.8",]
-  dependencies: ["wheel collect 3.8",]
-xt 3.9:
+  needs: ["wheels 3.8",]
+  dependencies: ["wheels 3.8",]
+wheels 3.9:
   extends: .wheels_base
   variables:
     GDT_PYTHON_VERSION: "3.9"
-    STEP: xt
-  needs:
-  - all 3.9
-  dependencies: ["all 3.9"]
-  script: ./.ci/make_wheels.bash xt
+  script: ./.ci/make_wheels.bash
   after_script:
   - ccache --show-stats
-gdt 3.9:
-  extends: .wheels_base
-  variables:
-    GDT_PYTHON_VERSION: "3.9"
-    STEP: gdt
-  needs:
-  - all 3.9
-  - xt 3.9
-  dependencies: ["all 3.9"]
-  script: ./.ci/make_wheels.bash gdt
-  after_script:
-  - ccache --show-stats
-all 3.9:
-  extends: .wheels_base
-  variables:
-    GDT_PYTHON_VERSION: "3.9"
-    STEP: all
-  script: ./.ci/make_wheels.bash all
-  after_script:
-  - ccache --show-stats
-
-  artifacts:
-    paths:
-      - ${DUNE_BUILD_DIR}
-
-
-
-
-wheel collect 3.9:
-  stage: wheels
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
-  dependencies:
-    - "xt 3.9"
-    - "gdt 3.9"
-  needs:
-    - "xt 3.9"
-    - "gdt 3.9"
-  image: harbor.uni-muenster.de/proxy-docker/library/alpine:3.15
-  script:
-    - rm -rf ${DUNE_BUILD_DIR}
   artifacts:
     paths:
       - ${WHEEL_DIR}/final/dune*whl
@@ -545,60 +455,15 @@ test wheels 3.9:
   variables:
     GIT_SUBMODULE_STRATEGY: none
     GDT_PYTHON_VERSION: "3.9"
-  needs: ["wheel collect 3.9",]
-  dependencies: ["wheel collect 3.9",]
-xt 3.10:
+  needs: ["wheels 3.9",]
+  dependencies: ["wheels 3.9",]
+wheels 3.10:
   extends: .wheels_base
   variables:
     GDT_PYTHON_VERSION: "3.10"
-    STEP: xt
-  needs:
-  - all 3.10
-  dependencies: ["all 3.10"]
-  script: ./.ci/make_wheels.bash xt
+  script: ./.ci/make_wheels.bash
   after_script:
   - ccache --show-stats
-gdt 3.10:
-  extends: .wheels_base
-  variables:
-    GDT_PYTHON_VERSION: "3.10"
-    STEP: gdt
-  needs:
-  - all 3.10
-  - xt 3.10
-  dependencies: ["all 3.10"]
-  script: ./.ci/make_wheels.bash gdt
-  after_script:
-  - ccache --show-stats
-all 3.10:
-  extends: .wheels_base
-  variables:
-    GDT_PYTHON_VERSION: "3.10"
-    STEP: all
-  script: ./.ci/make_wheels.bash all
-  after_script:
-  - ccache --show-stats
-
-  artifacts:
-    paths:
-      - ${DUNE_BUILD_DIR}
-
-
-
-
-wheel collect 3.10:
-  stage: wheels
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
-  dependencies:
-    - "xt 3.10"
-    - "gdt 3.10"
-  needs:
-    - "xt 3.10"
-    - "gdt 3.10"
-  image: harbor.uni-muenster.de/proxy-docker/library/alpine:3.15
-  script:
-    - rm -rf ${DUNE_BUILD_DIR}
   artifacts:
     paths:
       - ${WHEEL_DIR}/final/dune*whl
@@ -608,21 +473,21 @@ test wheels 3.10:
   variables:
     GIT_SUBMODULE_STRATEGY: none
     GDT_PYTHON_VERSION: "3.10"
-  needs: ["wheel collect 3.10",]
-  dependencies: ["wheel collect 3.10",]
+  needs: ["wheels 3.10",]
+  dependencies: ["wheels 3.10",]
 
 .publish:
   image: alpine:3.15
   dependencies:
-  -  "wheel collect 3.8"
-  -  "wheel collect 3.9"
-  -  "wheel collect 3.10"
+  -  "wheels 3.8"
+  -  "wheels 3.9"
+  -  "wheels 3.10"
   needs:
-  -  "wheel collect 3.8"
+  -  "wheels 3.8"
   -  "test wheels 3.8"
-  -  "wheel collect 3.9"
+  -  "wheels 3.9"
   -  "test wheels 3.9"
-  -  "wheel collect 3.10"
+  -  "wheels 3.10"
   -  "test wheels 3.10"
   stage: publish
   before_script:

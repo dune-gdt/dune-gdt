@@ -4,8 +4,7 @@ set -exo pipefail
 
 
 THISDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd -P )"
-md=${1}
-shift
+md=gdt
 
 [[ -f /usr/local/bin/pybin.sh ]] && source /usr/local/bin/pybin.sh
 
@@ -16,12 +15,10 @@ sed "s;PYPI_INDEX_URL;${GITLAB_PYPI}/simple;g" ${THISDIR}/pip.conf > ${PIP_CONFI
 
 ${THISDIR}/build-wheels.sh ${md}
 
-if [[ "${md}" != "all" ]] ; then
-  echo '************************************'
-  echo Wheels are in ${WHEEL_DIR}/final
-  python3 -m twine check ${WHEEL_DIR}/final/*${md}*.whl
-  python3 -m twine upload --repository-url ${GITLAB_PYPI} ${WHEEL_DIR}/final/*${md}*.whl
-  echo '************************************'
-fi
+echo '************************************'
+echo Wheels are in ${WHEEL_DIR}/final
+python3 -m twine check ${WHEEL_DIR}/final/*${md}*.whl
+python3 -m twine upload --repository-url ${GITLAB_PYPI} ${WHEEL_DIR}/final/*${md}*.whl
+echo '************************************'
 
 du -sch ${DUNE_BUILD_DIR}/*

@@ -22,8 +22,6 @@ subdirs = ['common', 'grid', 'functions', 'functions1', 'functions2', 'la', 'gdt
 kinds = ['cpp', 'headercheck']
 matrix = product(compilers, images, subdirs, kinds)
 pythons = [f'3.{i}' for i in range(8, 11)]
-wheel_steps_no_all = ["xt", "gdt"]
-wheel_steps = wheel_steps_no_all + ["all", ]
 config = THIS_DIR / 'config.yml'
 ml_tag = env['ML_TAG']
 with open(config, 'wt') as yml:

@@ -204,51 +204,14 @@ lint:
     - python -c 'from dune.gdt import *'
 
 {%- for py in pythons %}
-
-{%- for md in wheel_steps %}
-{{md}} {{py}}:
+wheels {{py}}:
   extends: .wheels_base
   variables:
     GDT_PYTHON_VERSION: "{{py}}"
-    STEP: {{md}}
-{%- if md != "all" %}
-  needs:
-  - all {{py}}
-{%- if md == "gdt" %}
-  - xt {{py}}
-{%- endif %}
-  dependencies: ["all {{py}}"]
-{%- endif %}
   {#- this can only be one script exactly, to make skipping from within itself possible #}
-  script: ./.ci/make_wheels.bash {{md}}
+  script: ./.ci/make_wheels.bash
   after_script:
   - ccache --show-stats
-{%- if md == "all" %}
-{# only the 'make all' output needs to be available in xt+gdt steps #}
-  artifacts:
-    paths:
-      - ${DUNE_BUILD_DIR}
-{%- endif %}
-{%- endfor %}
-
-
-{# this step serves to propagate _only_ the wheel instead of the build dir #}
-{# Otherwise we'd have the combined build output of xt+gdt wheel steps at some point #}
-wheel collect {{py}}:
-  stage: wheels
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
-  dependencies:
-  {%- for md in wheel_steps_no_all %}
-    - "{{md}} {{py}}"
-  {%- endfor %}
-  needs:
-  {%- for md in wheel_steps_no_all %}
-    - "{{md}} {{py}}"
-  {%- endfor %}
-  image: harbor.uni-muenster.de/proxy-docker/library/alpine:3.15
-  script:
-    - rm -rf ${DUNE_BUILD_DIR}
   artifacts:
     paths:
       - ${WHEEL_DIR}/final/dune*whl
@@ -258,19 +221,19 @@ test wheels {{py}}:
   variables:
     GIT_SUBMODULE_STRATEGY: none
     GDT_PYTHON_VERSION: "{{py}}"
-  needs: ["wheel collect {{py}}",]
-  dependencies: ["wheel collect {{py}}",]
+  needs: ["wheels {{py}}",]
+  dependencies: ["wheels {{py}}",]
 {%- endfor %}
 
 .publish:
   image: alpine:3.15
   dependencies:
 {%- for py in pythons %}
-  -  "wheel collect {{py}}"
+  -  "wheels {{py}}"
 {%- endfor %}
   needs:
 {%- for py in pythons %}
-  -  "wheel collect {{py}}"
+  -  "wheels {{py}}"
   -  "test wheels {{py}}"
 {%- endfor %}
   stage: publish
