@@ -11,9 +11,12 @@ source /usr/local/bin/pybin.sh
 export CCACHE_DIR=${WHEEL_DIR}/../cache
 mkdir ${WHEEL_DIR}/{tmp,final} -p || true
 
+python3 -m venv ${WHEEL_DIR}/venv
+. ${WHEEL_DIR}/venv/bin/activate
+
 cd ${DUNE_SRC_DIR}
 DUNE_CTRL=./deps/dune-common/bin/dunecontrol
-${DUNE_CTRL}  --opts=${OPTS} configure
+${DUNE_CTRL} --opts=${OPTS} all
 ${DUNE_CTRL}  --opts=${OPTS} make -j $(nproc --ignore 1) -l $(nproc --ignore 1)
 
 for md in xt gdt ; do

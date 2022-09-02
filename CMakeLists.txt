@@ -71,8 +71,10 @@ dune_enable_all_packages(
   dunext)
 
 target_link_libraries(dunepybindxi PRIVATE pybind11::module)
-target_link_libraries(dunepybindxi PRIVATE ${Python3_LIBRARIES})
-target_link_libraries(dunext INTERFACE ${Python3_LIBRARIES})
+if(NOT DXT_DONT_LINK_PYTHON_LIB)
+  target_link_libraries(dunepybindxi PRIVATE ${Python3_LIBRARIES})
+  target_link_libraries(dunext INTERFACE ${Python3_LIBRARIES})
+endif()
 target_include_directories(dunepybindxi PRIVATE pybind11::module)
 
 # ----------------------------------------------------------------------------------------------------

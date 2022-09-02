@@ -1,5 +1,5 @@
 ARG DEBIAN_BASE=debian
-FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$DEBIAN_BASE-full:517eb0fc771b81afc4484d17442d066d96531f03
+FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$DEBIAN_BASE-full:4b6ddfba3f34412d4cf331a287251c201f630dac
 
 
 USER root
