@@ -139,7 +139,7 @@ debian clang:
 
 
 
-common gcc  cpp:
+common gcc debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -150,7 +150,7 @@ common gcc  cpp:
     script:
           - /src/.ci/gitlab/test_cpp.bash
 
-common gcc  headercheck:
+common gcc debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -161,7 +161,7 @@ common gcc  headercheck:
     script:
           - /src/.ci/gitlab/test_headercheck.bash
 
-grid gcc  cpp:
+grid gcc debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -172,7 +172,7 @@ grid gcc  cpp:
     script:
           - /src/.ci/gitlab/test_cpp.bash
 
-grid gcc  headercheck:
+grid gcc debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -184,7 +184,7 @@ grid gcc  headercheck:
           - /src/.ci/gitlab/test_headercheck.bash
 
 
-functions gcc  headercheck:
+functions gcc debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -195,7 +195,7 @@ functions gcc  headercheck:
     script:
           - /src/.ci/gitlab/test_headercheck.bash
 
-functions1 gcc  cpp:
+functions1 gcc debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -207,7 +207,7 @@ functions1 gcc  cpp:
           - /src/.ci/gitlab/test_cpp.bash
 
 
-functions2 gcc  cpp:
+functions2 gcc debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -219,7 +219,7 @@ functions2 gcc  cpp:
           - /src/.ci/gitlab/test_cpp.bash
 
 
-la gcc  cpp:
+la gcc debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -230,7 +230,7 @@ la gcc  cpp:
     script:
           - /src/.ci/gitlab/test_cpp.bash
 
-la gcc  headercheck:
+la gcc debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -241,7 +241,7 @@ la gcc  headercheck:
     script:
           - /src/.ci/gitlab/test_headercheck.bash
 
-gdt gcc  cpp:
+gdt gcc debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -252,7 +252,7 @@ gdt gcc  cpp:
     script:
           - /src/.ci/gitlab/test_cpp.bash
 
-gdt gcc  headercheck:
+gdt gcc debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -263,7 +263,7 @@ gdt gcc  headercheck:
     script:
           - /src/.ci/gitlab/test_headercheck.bash
 
-common clang  cpp:
+common clang debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -274,7 +274,7 @@ common clang  cpp:
     script:
           - /src/.ci/gitlab/test_cpp.bash
 
-common clang  headercheck:
+common clang debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -285,7 +285,7 @@ common clang  headercheck:
     script:
           - /src/.ci/gitlab/test_headercheck.bash
 
-grid clang  cpp:
+grid clang debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -296,7 +296,7 @@ grid clang  cpp:
     script:
           - /src/.ci/gitlab/test_cpp.bash
 
-grid clang  headercheck:
+grid clang debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -308,7 +308,7 @@ grid clang  headercheck:
           - /src/.ci/gitlab/test_headercheck.bash
 
 
-functions clang  headercheck:
+functions clang debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -319,7 +319,7 @@ functions clang  headercheck:
     script:
           - /src/.ci/gitlab/test_headercheck.bash
 
-functions1 clang  cpp:
+functions1 clang debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -331,7 +331,7 @@ functions1 clang  cpp:
           - /src/.ci/gitlab/test_cpp.bash
 
 
-functions2 clang  cpp:
+functions2 clang debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -343,7 +343,7 @@ functions2 clang  cpp:
           - /src/.ci/gitlab/test_cpp.bash
 
 
-la clang  cpp:
+la clang debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -354,7 +354,7 @@ la clang  cpp:
     script:
           - /src/.ci/gitlab/test_cpp.bash
 
-la clang  headercheck:
+la clang debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -365,7 +365,7 @@ la clang  headercheck:
     script:
           - /src/.ci/gitlab/test_headercheck.bash
 
-gdt clang  cpp:
+gdt clang debian cpp:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -376,7 +376,7 @@ gdt clang  cpp:
     script:
           - /src/.ci/gitlab/test_cpp.bash
 
-gdt clang  headercheck:
+gdt clang debian headercheck:
     extends: .subdir-test
     variables:
         CI_IMAGE: debian
@@ -388,6 +388,26 @@ gdt clang  headercheck:
           - /src/.ci/gitlab/test_headercheck.bash
 
 
+
+debian gcc python:
+    extends: .subdir-test
+    variables:
+        CI_IMAGE: debian
+        COMPILER: gcc
+    stage: python
+    needs: ["debian gcc"]
+    script:
+          - /src/.ci/gitlab/test_python.bash
+
+debian clang python:
+    extends: .subdir-test
+    variables:
+        CI_IMAGE: debian
+        COMPILER: clang
+    stage: python
+    needs: ["debian clang"]
+    script:
+          - /src/.ci/gitlab/test_python.bash
 
 
 

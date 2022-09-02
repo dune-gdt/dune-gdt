@@ -146,7 +146,7 @@ lint:
 
 {% for (cc, cxx), image, subdir, kind in matrix %}
 {%- if ('cpp' in kind and subdir != 'functions') or ('headercheck' in kind and subdir not in ('functions1', 'functions2')) %}
-{{subdir}} {{ cc }} {{ image[image.find('debian')+1+6:] }} {{kind}}:
+{{subdir}} {{ cc }} {{ image }} {{kind}}:
     extends: .subdir-test
     variables:
         CI_IMAGE: {{ image }}
@@ -160,7 +160,7 @@ lint:
 {% endfor %}
 
 {% for (cc, cxx), image in compiler_images %}
-{{ image[image.find('debian')+1+6:] }} {{ cc }} python:
+{{ image }} {{ cc }} python:
     extends: .subdir-test
     variables:
         CI_IMAGE: {{ image }}
