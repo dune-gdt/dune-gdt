@@ -16,7 +16,9 @@
 # https://compacc.fnal.gov/projects/repositories/entry/synergia2/CMake/FindMPI4PY.cmake?rev=c147eafb60728606af4fe7b1b16
 # 1a660df142e9a
 macro(MYFIND_MPI4PY)
-  if(NOT MPI4PY_INCLUDE_DIR)
+  if(MPI4PY_INCLUDE_DIR)
+    set(MPI4PY_FOUND TRUE)
+  else()
     set(_include_cmd
         "import mpi4py,pathlib; incl=str(mpi4py.get_include()).strip();print(pathlib.Path(incl).resolve().absolute())")
     execute_process(
@@ -32,28 +34,24 @@ macro(MYFIND_MPI4PY)
         OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
     if(MPI4PY_COMMAND_RESULT)
-      message("jfa: mpi4py not found")
+      message(STATUS "mpi4py not found")
       set(MPI4PY_FOUND FALSE)
     else(MPI4PY_COMMAND_RESULT)
       if(MPI4PY_INCLUDE_DIR MATCHES "Traceback")
-        message("jfa: mpi4py matches traceback")
+        message(STATUS "mpi4py matches traceback -> not found")
         # Did not successfully include MPI4PY
         set(MPI4PY_FOUND FALSE)
-      else(MPI4PY_INCLUDE_DIR MATCHES "Traceback")
+      else()
         # successful
         set(MPI4PY_FOUND TRUE)
-        set(MPI4PY_INCLUDE_DIR
-            ${MPI4PY_INCLUDE_DIR}
-            CACHE STRING "mpi4py include path")
-      endif(MPI4PY_INCLUDE_DIR MATCHES "Traceback")
+        message(STATUS "mpi4py found: ${MPI4PY_INCLUDE_DIR}")
+      endif()
     endif(MPI4PY_COMMAND_RESULT)
-  else(NOT MPI4PY_INCLUDE_DIR)
-    set(MPI4PY_FOUND TRUE)
-  endif(NOT MPI4PY_INCLUDE_DIR)
+  endif()
 
   include(FindPackageHandleStandardArgs)
   find_package_handle_standard_args(MPI4PY DEFAULT_MSG MPI4PY_INCLUDE_DIR)
-  message(WARNING "include dir for MPI4PY ${MPI4PY_INCLUDE_DIR} via ${MPI4PY_COMMAND_RESULT}")
+  message(STATUS "include dir for MPI4PY ${MPI4PY_INCLUDE_DIR} via ${MPI4PY_COMMAND_RESULT}")
 endmacro()
 
 myfind_mpi4py()

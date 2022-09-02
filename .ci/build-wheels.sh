@@ -17,7 +17,7 @@ python3 -m venv ${WHEEL_DIR}/venv
 cd ${DUNE_SRC_DIR}
 DUNE_CTRL=./deps/dune-common/bin/dunecontrol
 ${DUNE_CTRL} --opts=${OPTS} all
-${DUNE_CTRL}  --opts=${OPTS} make -j $(nproc --ignore 1) -l $(nproc --ignore 1)
+${DUNE_CTRL} --opts=${OPTS} make -j $(nproc --ignore 1) -l $(nproc --ignore 1)
 
 for md in xt gdt ; do
   if [[ -d dune-${md} ]]; then
