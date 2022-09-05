@@ -25,6 +25,9 @@ BUILD_CMD="ninja -v -j2"
 # TODO this is should be baked into the entrypoint
 . /venv/bin/activate
 
+# TODO This should be automatic from module deps
+python -m pip install pytest pytest-cov hypothesis codecov
+
 cd /src
 
 if [[ ${CC} == *"clang"* ]] ; then
