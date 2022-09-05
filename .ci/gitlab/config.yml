@@ -533,5 +533,5 @@ test wheels 3.10:
 publish dune-gdt:
   extends: .publish
   variables:
-    MOD_WHEEL_PREFIX: dune_gdt
+    MOD_WHEEL_PREFIX: dune-gdt
     MOD_DIR: dune-gdt
