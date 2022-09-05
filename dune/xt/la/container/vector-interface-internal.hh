@@ -31,11 +31,18 @@ namespace internal {
 
 
 template <class Traits, class ScalarImp>
-class VectorInputIterator : public std::iterator<std::input_iterator_tag, typename Traits::ScalarType>
+class VectorInputIterator
 {
   using ThisType = VectorInputIterator;
 
 public:
+  // next 5 types are what inheriting from std::iterator gave us before
+  using iterator_category = std::input_iterator_tag;
+  using value_type = typename Traits::ScalarType;
+  using difference_type = std::ptrdiff_t;
+  using pointer = value_type*;
+  using reference = value_type&;
+
   using VectorType = VectorInterface<Traits, ScalarImp>;
   using ScalarType = typename VectorType::ScalarType;
 
@@ -88,13 +95,19 @@ private:
 }; // class VectorInputIterator
 
 template <class Traits, class ScalarImp>
-class VectorOutputIterator : public std::iterator<std::output_iterator_tag, typename Traits::ScalarType>
+class VectorOutputIterator
 {
-  using BaseType = std::iterator<std::output_iterator_tag, typename Traits::ScalarType>;
   using InputIteratorType = VectorInputIterator<Traits, ScalarImp>;
   using ThisType = VectorOutputIterator;
 
 public:
+  // next 5 types are what inheriting from std::iterator gave us before
+  using iterator_category = std::output_iterator_tag;
+  using value_type = typename Traits::ScalarType;
+  using difference_type = std::ptrdiff_t;
+  using pointer = value_type*;
+  using reference = value_type&;
+
   using VectorType = VectorInterface<Traits, ScalarImp>;
   using ScalarType = typename VectorType::ScalarType;
 
