@@ -306,7 +306,13 @@ endmacro(DXT_EXCLUDE_FROM_HEADERCHECK)
 macro(DXT_ADD_PYTHON_TESTS)
   add_custom_target(
     xt_test_python
-    "${RUN_IN_ENV_SCRIPT}" "py.test" "${CMAKE_BINARY_DIR}/python" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "${RUN_IN_ENV_SCRIPT}"
+    "python"
+    "-m"
+    "pytest"
+    "${CMAKE_BINARY_DIR}/python"
+    "--cov"
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
     "--junitxml=pytest_results.xml"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python"
     DEPENDS bindings
