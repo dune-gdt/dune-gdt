@@ -421,6 +421,8 @@ debian clang python:
   stage: wheels
   image: zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${GDT_PYTHON_VERSION}:${ML_TAG}
   needs: []
+  tags:
+    - amm-only
   cache:
     paths:
       - ccache
