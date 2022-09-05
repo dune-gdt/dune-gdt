@@ -29,7 +29,8 @@ for whl in $(ls ${WHEEL_DIR}/tmp/dune_${md}*.whl); do
     [[ $whl == *"manylinux"* ]] || \
         python3 -m auditwheel repair --plat ${PLATFORM} $whl -w ${WHEEL_DIR}/final
 done
+
 # install wheel to be available for other modules
-python3 -m pip install ${WHEEL_DIR}/final/dune_${md}*.whl
+python3 -m pip install ${WHEEL_DIR}/final/dune?${md}*.whl
 
 deactivate

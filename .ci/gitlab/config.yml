@@ -529,11 +529,6 @@ test wheels 3.10:
     paths:
       - ${WHEEL_DIR}/final/${MOD_WHEEL_PREFIX}*whl
 
-publish dune-xt:
-  extends: .publish
-  variables:
-    MOD_WHEEL_PREFIX: dune_xt
-    MOD_DIR: dune-xt
 
 publish dune-gdt:
   extends: .publish
