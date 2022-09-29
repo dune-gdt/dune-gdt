@@ -31,7 +31,7 @@ extras_require = {
 }
 
 if '${HAVE_MPI}' == 'TRUE':
-    extras_require['parallel'] = ('mpi4py',)
+    requires.append ('mpi4py')
 
 extras_require['all'] = [p for plist in extras_require.values() for p in plist]
 
