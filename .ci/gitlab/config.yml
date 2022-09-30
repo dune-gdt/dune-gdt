@@ -439,6 +439,10 @@ debian clang python:
 .test_base:
   image: harbor.uni-muenster.de/proxy-docker/library/python:${GDT_PYTHON_VERSION}-slim
   stage: test
+  before_script:
+    - apt update
+    - apt install mpi-default-dev build-essential cmake g++ -y
+    - pip install mpi4py
   script:
     - pip install ${WHEEL_DIR}/final/dune*whl
     - python -c 'from dune.xt import *'
