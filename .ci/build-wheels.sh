@@ -1,5 +1,5 @@
 #!/bin/bash -l
-set -exu
+set -exuo pipefail
 
 # TODO why?
 rm -rf ${DUNE_SRC_DIR}/deps/dune-uggrid
@@ -25,8 +25,5 @@ ${DUNE_CTRL} --opts=${OPTS} --only=dune-gdt  make -j $(nproc --ignore 1) -l $(np
 python3 -m pip wheel ${DUNE_BUILD_DIR}/dune-gdt/python -w ${WHEEL_DIR}/tmp
 # Bundle external shared libraries into the wheels
 python3 -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*gdt*.whl -w ${WHEEL_DIR}/final
-
-# install wheel to be available for other modules
-python3 -m pip install ${WHEEL_DIR}/final/*gdt*.whl
 
 deactivate

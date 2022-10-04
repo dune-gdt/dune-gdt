@@ -182,9 +182,6 @@ ci_setup:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
     LOCAL_UID: 0
-    TWINE_PASSWORD: ${CI_JOB_TOKEN}
-    TWINE_USERNAME: gitlab-ci-token
-    GITLAB_PYPI: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi/
   stage: wheels
   image: zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${GDT_PYTHON_VERSION}:${ML_TAG}
   needs: []
@@ -227,6 +224,7 @@ wheels {{py}}:
   artifacts:
     paths:
       - ${WHEEL_DIR}/final/dune*whl
+      - ${WHEEL_DIR}/final/debug_symbols.tgz
 
 test wheels {{py}}:
   extends: .test_base
@@ -249,28 +247,38 @@ test wheels {{py}}:
   -  "test wheels {{py}}"
 {%- endfor %}
   stage: publish
+  variables:
+    MOD_WHEEL_PREFIX: dune.gdt
+    GITLAB_PYPI: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi/
   before_script:
       - apk --update add py3-pip git file bash python3 py3-cffi py3-cryptography
       - pip3 install -U twine
-  variables:
-    TWINE_PASSWORD: ${TWINE_PASSWORD}
-    TWINE_USERNAME: ${TWINE_USERNAME}
   script:
-    - cd ${MOD_DIR}
-    - pwd
-    - git describe --tags HEAD
-    - git tag --list
-    # upload only if a tag points to checked out commit
-    - (git describe --exact-match --tags HEAD && python3 -m twine upload ${WHEEL_DIR}/final/${MOD_WHEEL_PREFIX}*whl) || echo "not uploading untagged wheels"
-    - git checkout 2021.1.9
-    - (git describe --exact-match --tags HEAD ) || echo "still not a tag"
+    - python3 -m twine upload ${TWINE_TARGET} ${WHEEL_DIR}/final/${MOD_WHEEL_PREFIX}*whl
   artifacts:
     paths:
       - ${WHEEL_DIR}/final/${MOD_WHEEL_PREFIX}*whl
 
 
-publish dune-gdt:
+publish test:
   extends: .publish
   variables:
-    MOD_WHEEL_PREFIX: dune-gdt
-    MOD_DIR: dune-gdt
+    TWINE_TARGET: --repository testpypi
+    TWINE_PASSWORD: ${TEST_PYPI_PASSWORD}
+    TWINE_USERNAME: ${TEST_PYPI_USERNAME}
+
+publish:
+  extends: .publish
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^20(2\d).(\d+).(\d+)/
+
+  variables:
+    TWINE_PASSWORD: ${PYPI_PASSWORD}
+    TWINE_USERNAME: ${PYPI_USERNAME}
+
+publish gitlab:
+  extends: .publish
+  variables:
+    TWINE_TARGET: --repository-url ${GITLAB_PYPI}
+    TWINE_PASSWORD: ${CI_JOB_TOKEN}
+    TWINE_USERNAME: gitlab-ci-token
