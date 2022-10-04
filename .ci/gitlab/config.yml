@@ -111,7 +111,7 @@ variables:
     variables:
         PRECOMMIT: "pre-commit run --all"
     before_script:
-        - pip install pre-commit
+        - pip install pre-commit jinja2 python-dotenv
         - pre-commit install --install-hooks
 
 format_check:
@@ -130,6 +130,12 @@ lint:
         
         - ${PRECOMMIT} debug-statements
         - ${PRECOMMIT} check-yaml
+
+ci_setup:
+  extends: .pre-commit
+  script:
+    - ./.ci/gitlab/config_template.py
+    - git diff --exit-code .ci/gitlab/config.yml
 
 
 debian gcc:
