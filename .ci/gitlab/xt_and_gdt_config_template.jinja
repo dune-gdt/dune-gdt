@@ -115,7 +115,7 @@ variables:
         - pip install pre-commit
         - pre-commit install --install-hooks
 
-{# format_check:
+format_check:
     extends: .pre-commit
     script:
         - ${PRECOMMIT} clang-format
@@ -130,7 +130,7 @@ lint:
         {# disabled for now, lots of issues #}
         {# - ${PRECOMMIT} flake8 #}
         - ${PRECOMMIT} debug-statements
-        - ${PRECOMMIT} check-yaml #}
+        - ${PRECOMMIT} check-yaml
 
 
 {% for (cc, cxx), image in compiler_images -%}
