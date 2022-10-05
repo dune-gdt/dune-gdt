@@ -63,7 +63,7 @@ variables:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
           alias: docker
 
-.subdir-test:
+.test-base:
     tags:
       - amm-only
     variables:
@@ -150,24 +150,21 @@ ci_setup:
         OPTS: travis.ninja
 {% endfor %}
 
-{% for (cc, cxx), image, subdir, kind in matrix %}
-{%- if ('cpp' in kind and subdir != 'functions') or ('headercheck' in kind and subdir not in ('functions1', 'functions2')) %}
-{{subdir}} {{ cc }} {{ image }} {{kind}}:
-    extends: .subdir-test
+{% for (cc, cxx), image, kind in matrix %}
+{{ cc }} {{ image }} {{kind}}:
+    extends: .test-base
     variables:
         CI_IMAGE: {{ image }}
         COMPILER: {{ cc }}
-        TESTS_MODULE_SUBDIR: {{ subdir }}
     stage: {{kind}}
     needs: ["{{ image }} {{ cc }}"]
     script:
           - /src/.ci/gitlab/test_{{kind}}.bash
-{%- endif %}
 {% endfor %}
 
 {% for (cc, cxx), image in compiler_images %}
 {{ image }} {{ cc }} python:
-    extends: .subdir-test
+    extends: .test-base
     variables:
         CI_IMAGE: {{ image }}
         COMPILER: {{ cc }}

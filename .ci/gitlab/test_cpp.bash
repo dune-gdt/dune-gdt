@@ -19,7 +19,7 @@ OPTS_PATH=${THIS_DIR}/../../deps/config.opts/${CONFIG_OPTS}
 source ${OPTS_PATH}
 set -u
 
-CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2} -L subdir_${TESTS_MODULE_SUBDIR}"
+CTEST="ctest -V --timeout ${DXT_TEST_TIMEOUT:-300} -j ${DXT_TEST_PROCS:-2}"
 
 DUNECONTROL=/src/deps/dune-common/bin/dunecontrol
 
@@ -29,13 +29,7 @@ BUILD_CMD="ninja -v -j2 -k 10000"
 
 cd /src
 
-
-if [ "${TESTS_MODULE_SUBDIR}" = "gdt" ] ; then
-  # TODO this builds too much
-  ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} test_binaries
-else
-  ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} ${TESTS_MODULE_SUBDIR}_test_binaries
-fi
+${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} test_binaries
 
 ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${CTEST}
 
