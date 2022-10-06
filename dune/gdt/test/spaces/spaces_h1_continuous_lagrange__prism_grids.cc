@@ -16,6 +16,8 @@
 using namespace Dune;
 using namespace Dune::GDT;
 
+// currently the grid list is empty if we do not have UG
+#if HAVE_DUNE_UGGRID || HAVE_UG
 
 template <class G>
 using Order2PrismContinuousLagrangeSpace = ContinuousLagrangeSpaceOnPrismLeafViewTest<G, 1, double, 2>;
@@ -60,3 +62,4 @@ TYPED_TEST(Order2PrismContinuousLagrangeSpace, local_interpolation_seems_to_be_c
 {
   this->local_interpolation_seems_to_be_correct();
 }
+#endif // HAVE_DUNE_UGGRID || HAVE_UG
