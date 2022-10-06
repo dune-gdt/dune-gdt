@@ -14,20 +14,14 @@
 
 include(XtTooling)
 
-macro(GET_HEADERCHECK_TARGETS subdir)
+macro(GET_HEADERCHECK_TARGETS)
   file(GLOB_RECURSE bindir_header "${CMAKE_BINARY_DIR}/*.hh")
   list(APPEND dxt_ignore_header ${bindir_header})
   if(ENABLE_HEADERCHECK)
-    if(${subdir} STREQUAL "gdt")
-      file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/gdt/*.hh" "${CMAKE_SOURCE_DIR}/dune/gdt/test/*.hh"
-           "${CMAKE_SOURCE_DIR}/python/dune/gdt/*.hh")
+    file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/*/*.hh" "${CMAKE_SOURCE_DIR}/dune/*/test/*.hh"
+         "${CMAKE_SOURCE_DIR}/python/dune/*/*.hh")
 
-    else()
-      file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/xt/${subdir}/*.hh"
-           "${CMAKE_SOURCE_DIR}/dune/xt/test/${subdir}/*.hh" "${CMAKE_SOURCE_DIR}/python/dune/xt/${subdir}/*.hh")
-    endif()
-
-    add_custom_target(${subdir}_headercheck)
+    add_custom_target(dxt_headercheck)
     list(FILTER headerlist EXCLUDE REGEX ".*\/deps\/.*")
     foreach(header ${headerlist})
       list(FIND dxt_ignore_header "${header}" _index)
@@ -37,8 +31,8 @@ macro(GET_HEADERCHECK_TARGETS subdir)
       set(targname ${header})
       dxt_path_to_headercheck_name(targname)
       set(targname "headercheck_${targname}")
-      list(APPEND ${subdir}_dxt_headercheck_targets "${targname}")
-      add_dependencies(${subdir}_headercheck ${targname})
+      list(APPEND dxt_headercheck_targets "${targname}")
+      add_dependencies(dxt_headercheck ${targname})
     endforeach(header ${headerlist})
   endif(ENABLE_HEADERCHECK)
 endmacro(GET_HEADERCHECK_TARGETS)
@@ -216,22 +210,7 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
   endforeach()
 
   add_custom_target(${subdir}_test_binaries DEPENDS ${${subdir}_dxt_test_binaries})
-  if("${subdir}" STREQUAL "functions")
-    # There are a lot of tests in the function subdir and these take a long time in CI. We thus create two additional
-    # targets here, each containing half of the tests.
-    list(LENGTH functions_dxt_test_binaries num_tests)
-    math(EXPR half_num_tests "${num_tests}/2")
-    list(SUBLIST functions_dxt_test_binaries 0 ${half_num_tests} functions1_dxt_test_binaries)
-    # If length is -1, all list elements starting from <begin> will be returned
-    list(SUBLIST functions_dxt_test_binaries ${half_num_tests} -1 functions2_dxt_test_binaries)
-    add_custom_target(functions1_test_binaries DEPENDS ${functions1_dxt_test_binaries})
-    add_custom_target(functions2_test_binaries DEPENDS ${functions2_dxt_test_binaries})
-    foreach(label functions1 functions2)
-      foreach(test ${${label}_dxt_test_binaries})
-        set_tests_properties(${test} PROPERTIES LABELS subdir_${label})
-      endforeach()
-    endforeach()
-  endif()
+
   add_custom_target(
     ${subdir}_check
     COMMAND ${CMAKE_CTEST_COMMAND} --timeout ${DXT_TEST_TIMEOUT} -j ${DXT_TEST_PROCS}
@@ -245,11 +224,10 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
   foreach(target ${${subdir}_dxt_test_binaries})
     set(all_sorted_testnames "${all_sorted_testnames}/${dxt_test_names_${target}}")
   endforeach()
-  set(${subdir}_dxt_headercheck_targets "")
-  get_headercheck_targets(${subdir})
 endmacro(_PROCESS_SUBDIR_TESTS)
 
 macro(FINALIZE_TEST_SETUP)
+  get_headercheck_targets()
   get_property(dxt_test_dirs GLOBAL PROPERTY dxt_test_dirs_prop)
   set(combine_targets test_templates test_binaries check recheck)
 
@@ -267,10 +245,6 @@ macro(FINALIZE_TEST_SETUP)
 
     set(dxt_test_binaries "${dxt_test_binaries} ${${subdir}_dxt_test_binaries}")
   endforeach()
-  # set(${subdir}_dxt_headercheck_targets "")
-
-  # this isn't generated automatically due to the test subdirs not reflecting headers
-  get_headercheck_targets("gdt")
 
   if(ALBERTA_FOUND)
     foreach(test ${dxt_test_binaries})
