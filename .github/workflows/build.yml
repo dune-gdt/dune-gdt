@@ -97,7 +97,6 @@ jobs:
               run: |
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
-                    -v ${PWD}:/src \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
                     /src/.ci/gitlab/test_cpp.bash
@@ -120,7 +119,6 @@ jobs:
             - name: Test
               run: |
                   docker run --rm \
-                    -v ${PWD}:/src \
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
                     /src/.ci/gitlab/test_headercheck.bash
     test_python:
@@ -138,7 +136,6 @@ jobs:
             - name: Test
               run: |
                   docker run --rm \
-                    -v ${PWD}:/src \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
                     /src/.ci/gitlab/test_python.bash
