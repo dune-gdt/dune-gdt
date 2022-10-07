@@ -73,6 +73,8 @@ jobs:
                   context: .
                   push: true
                   file: deps/Dockerfile
+                  cache-from: type=registry,ref=ghcr.io/${{github.repository}}/ci_test
+                  cache-to: type=inline
                   tags: ${{ needs.metadata.outputs.tags }}_${{matrix.CC}}
                   build-args: |
                       BUILD_CXX=${{matrix.CXX}}
