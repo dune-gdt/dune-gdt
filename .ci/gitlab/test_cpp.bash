@@ -33,5 +33,5 @@ ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} test_binar
 
 ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${CTEST}
 
-# TODO
-# cp ${DUNE_BUILD_DIR}/dune-gdt/${MY_MODULE//-/\/}/test/*xml ${HOME}/testresults/
+[[ -d ${DUNE_BUILD_DIR}/testresults/ ]] || mkir ${DUNE_BUILD_DIR}/testresults/
+cp ${DUNE_BUILD_DIR}/dune-gdt/test/*xml ${DUNE_BUILD_DIR}/testresults/

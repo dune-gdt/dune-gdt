@@ -57,7 +57,8 @@ variables:
     script:
       - |
         git submodule update --init --recursive
-        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg BUILD_CXX=${CXX} --build-arg BUILD_CC=${CC} --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg BUILD_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile .
+        docker build --cache-from=${IMAGE_NAME}:${CI_COMMIT_BEFORE_SHA} --build-arg BUILD_CXX=${CXX} --build-arg BUILD_CC=${CC}
+        --build-arg DEBIAN_BASE=${CI_IMAGE} --build-arg BUILD_OPTS=${OPTS} -t ${IMAGE} -f deps/Dockerfile .
         docker push ${IMAGE}
     services:
         - name: harbor.uni-muenster.de/proxy-docker/library/docker:dind
