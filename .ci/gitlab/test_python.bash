@@ -39,5 +39,5 @@ fi
 ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} bindings
 ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} test_python
 
-[[ -d ${DUNE_BUILD_DIR}/testresults/ ]] || mkir ${DUNE_BUILD_DIR}/testresults/
+[[ -d ${DUNE_BUILD_DIR}/testresults/ ]] || mkdir ${DUNE_BUILD_DIR}/testresults/
 cp ${DUNE_BUILD_DIR}/dune-gdt/python/pytest_results.xml ${DUNE_BUILD_DIR}/testresults/
