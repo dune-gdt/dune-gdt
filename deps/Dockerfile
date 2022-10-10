@@ -1,12 +1,12 @@
 ARG DEBIAN_BASE=debian
-FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$DEBIAN_BASE-full:4b6ddfba3f34412d4cf331a287251c201f630dac
+FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$DEBIAN_BASE-full:ed08f4751b17d33a8264a934f3a8f3b64f842078
 
 
 USER root
 RUN apt update \
     && apt install -y --no-install-recommends python3-venv \
-            python3-pip python3-requests openssh-client \
-            python3-setuptools wget unzip curl lcov ccache llvm-${CLANG_VERSION} \
+            openssh-client \
+            wget unzip curl lcov ccache llvm-${CLANG_VERSION} \
             rsync doxygen texlive-latex-base doxygen-latex libmetis-dev \
     && rm -rf /var/lib/apt/lists \
     && python3 -m venv /venv \
