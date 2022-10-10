@@ -25,7 +25,7 @@ DUNECONTROL=/src/deps/dune-common/bin/dunecontrol
 
 # TODO this is should be baked into the entrypoint
 . /venv/bin/activate
-BUILD_CMD="ninja -v -j2 -k 10000"
+BUILD_CMD="ninja -v -j1 -k 0"
 
 cd /src
 

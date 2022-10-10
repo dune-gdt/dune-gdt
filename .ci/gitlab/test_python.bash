@@ -20,7 +20,7 @@ source ${OPTS_PATH}
 set -u
 
 DUNECONTROL=/src/deps/dune-common/bin/dunecontrol
-BUILD_CMD="ninja -v -j2"
+BUILD_CMD="ninja -v -j1 -k0"
 
 # TODO this is should be baked into the entrypoint
 . /venv/bin/activate
