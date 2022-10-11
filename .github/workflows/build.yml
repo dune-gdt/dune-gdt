@@ -162,10 +162,11 @@ jobs:
                     zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
                     /home/dxt/src/.ci/make_wheels.bash
               name: Build Wheel py${{matrix.python}}
+            - run: find . -name "*.whl"
             - uses: actions/upload-artifact@v3
               with:
                 name: wheels
-                path: ${GITHUB_WORKSPACE}/wheelhouse/final/dune*whl
+                path: ${{github.workspace}}/wheelhouse/final/dune*whl
 
     publish:
         needs: [wheels]
