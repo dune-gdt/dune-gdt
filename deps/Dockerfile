@@ -11,7 +11,11 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists \
     && python3 -m venv /venv \
     && . /venv/bin/activate \
-    && pip install --no-cache wheel pre-commit mpi4py jinja2 numpy scipy
+    && pip install --no-cache wheel pre-commit mpi4py jinja2 numpy scipy \
+    && cd /usr/local/bin  \
+    && (for ii in cc cpp clang clang++ clang-${CLANG_VERSION} clang++-${CLANG_VERSION} \
+        cpp-${GCC_VERSION} g++ g++-${GCC_VERSION} gcc ; do ln -s $(which ccache) $ii; done)
+
 
 ARG BUILD_OPTS=clang-debug
 ARG BUILD_CXX=g++
