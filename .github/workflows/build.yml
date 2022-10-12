@@ -98,6 +98,7 @@ jobs:
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
+                    -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
                     /src/.ci/gitlab/test_cpp.bash
             - uses: actions/upload-artifact@v3
