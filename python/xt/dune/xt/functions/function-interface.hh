@@ -16,10 +16,10 @@
 #include <dune/pybindxi/numpy.h>
 #include <dune/pybindxi/operators.h>
 
-#include <python/dune/xt/common/bindings.hh>
-#include <python/dune/xt/common/parameter.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/common/parameter.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/la/container/common.hh>
 #include <dune/xt/grid/gridprovider/provider.hh>

@@ -13,9 +13,9 @@
 
 #include <dune/pybindxi/pybind11.h>
 #include <dune/pybindxi/stl.h>
-#include <python/dune/xt/common/bindings.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/common/parameter.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/parameter.hh>
 
 
 PYBIND11_MODULE(userbindings, m)

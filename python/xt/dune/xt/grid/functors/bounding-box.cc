@@ -16,7 +16,7 @@
 #include <dune/xt/grid/dd/glued.hh>
 #include <dune/xt/grid/functors/bounding-box.hh>
 #include <dune/xt/grid/view/coupling.hh>
-#include <python/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
 
 #include "interfaces.hh"
 

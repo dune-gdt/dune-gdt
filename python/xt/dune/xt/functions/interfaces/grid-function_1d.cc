@@ -11,7 +11,7 @@
 
 #include "config.h"
 
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include "grid-function_for_all_grids.hh"
 

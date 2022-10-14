@@ -15,7 +15,7 @@
 #include <dune/pybindxi/stl.h>
 
 #include <dune/xt/common/python.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include "indicator.hh"
 

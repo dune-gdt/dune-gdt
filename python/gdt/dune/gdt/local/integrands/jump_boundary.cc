@@ -18,10 +18,10 @@
 
 #include <dune/gdt/local/integrands/jump.hh>
 
-#include <python/dune/xt/common/configuration.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
-#include <python/dune/xt/grid/traits.hh>
+#include <python/xt/dune/xt/common/configuration.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/traits.hh>
 
 #include "binary_intersection_interface.hh"
 

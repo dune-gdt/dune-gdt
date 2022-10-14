@@ -12,7 +12,7 @@
 
 #include "config.h"
 
-#include <python/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
 
 #include <string>
 #include <vector>
@@ -24,9 +24,9 @@
 #include <dune/pybindxi/pybind11.h>
 #include <dune/pybindxi/stl.h>
 
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/common/fmatrix.hh>
-#include <python/dune/xt/common/configuration.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/fmatrix.hh>
+#include <python/xt/dune/xt/common/configuration.hh>
 #include <dune/xt/common/parallel/mpi_comm_wrapper.hh>
 #include <dune/xt/common/parallel/helper.hh>
 #include <dune/xt/common/exceptions.hh>

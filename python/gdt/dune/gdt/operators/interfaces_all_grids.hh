@@ -13,7 +13,7 @@
 #include <dune/xt/grid/dd/glued.hh>
 #include <dune/xt/grid/view/coupling.hh>
 
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include "interfaces.hh"
 #include "lincomb.hh"

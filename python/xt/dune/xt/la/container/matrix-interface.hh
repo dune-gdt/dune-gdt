@@ -25,8 +25,8 @@
 
 #include <dune/xt/la/container/matrix-interface.hh>
 
-#include <python/dune/xt/la/container/container-interface.hh>
-#include <python/dune/xt/la/container.bindings.hh>
+#include <python/xt/dune/xt/la/container/container-interface.hh>
+#include <python/xt/dune/xt/la/container.bindings.hh>
 
 namespace Dune::XT::LA {
 namespace internal {

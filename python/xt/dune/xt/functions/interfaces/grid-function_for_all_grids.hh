@@ -13,7 +13,7 @@
 
 #include <dune/xt/grid/type_traits.hh>
 
-#include <python/dune/xt/functions/base/combined-grid-function.hh>
+#include <python/xt/dune/xt/functions/base/combined-grid-function.hh>
 
 #include "grid-function.hh"
 

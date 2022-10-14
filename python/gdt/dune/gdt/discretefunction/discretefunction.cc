@@ -10,8 +10,8 @@
 #include "config.h"
 
 #include <dune/xt/grid/grids.hh>
-#include <python/dune/xt/la/traits.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/la/traits.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include "discretefunction.hh"
 

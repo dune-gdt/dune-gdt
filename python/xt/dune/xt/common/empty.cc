@@ -19,7 +19,7 @@
 #include <dune/pybindxi/pybind11.h>
 #include <dune/pybindxi/stl.h>
 
-#include <python/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
 
 #include <dune/pybindxi/pybind11.h>
 

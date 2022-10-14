@@ -22,13 +22,13 @@
 #include <dune/gdt/operators/matrix.hh>
 #include <dune/gdt/tools/sparsity-pattern.hh>
 
-#include <python/dune/xt/common/configuration.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/common/parameter.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
-#include <python/dune/xt/grid/walker.hh>
-#include <python/dune/xt/la/traits.hh>
-#include <python/dune/gdt/operators/interfaces.hh>
+#include <python/xt/dune/xt/common/configuration.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/parameter.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/walker.hh>
+#include <python/xt/dune/xt/la/traits.hh>
+#include <python/gdt/dune/gdt/operators/interfaces.hh>
 
 
 namespace Dune {

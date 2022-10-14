@@ -16,9 +16,9 @@
 #include <dune/xt/grid/grids.hh>
 #include <dune/xt/grid/view/coupling.hh>
 
-#include <python/dune/xt/grid/gridprovider.hh>
-#include <python/dune/xt/grid/filters/intersection.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/gridprovider.hh>
+#include <python/xt/dune/xt/grid/filters/intersection.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 
 template <template <class> class Filter, class GridTypes = Dune::XT::Grid::bindings::AvailableGridTypes>

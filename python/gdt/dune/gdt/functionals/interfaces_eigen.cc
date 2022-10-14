@@ -10,7 +10,7 @@
 #include "config.h"
 
 #include <dune/xt/grid/grids.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include "interfaces.hh"
 

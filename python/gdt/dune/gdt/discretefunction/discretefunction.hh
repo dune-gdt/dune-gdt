@@ -19,11 +19,11 @@
 #include <dune/xt/functions/interfaces/grid-function.hh>
 #include <dune/xt/grid/type_traits.hh>
 #include <dune/xt/la/container.hh>
-#include <python/dune/xt/functions/interfaces/grid-function.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
-#include <python/dune/xt/grid/traits.hh>
-#include <python/dune/xt/la/traits.hh>
-#include <python/dune/xt/la/container.bindings.hh>
+#include <python/xt/dune/xt/functions/interfaces/grid-function.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/traits.hh>
+#include <python/xt/dune/xt/la/traits.hh>
+#include <python/xt/dune/xt/la/container.bindings.hh>
 
 #include <dune/gdt/discretefunction/default.hh>
 
