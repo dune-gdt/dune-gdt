@@ -188,6 +188,7 @@
 
 /*** End: Silence implicitly False evaluation of undefined macro warnings ****/
 
+#define TBB_PREVIEW_GLOBAL_CONTROL 1
 #include <boost/config.hpp>
 #if HAVE_TBB && defined(BOOST_CLANG)
   // Hack to fix compilation with clang as tbb does not detect C++11 feature correctly for clang. Recent versions of TBB
