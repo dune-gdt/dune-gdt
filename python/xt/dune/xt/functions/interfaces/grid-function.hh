@@ -20,7 +20,7 @@
 #include <dune/xt/functions/visualization.hh>
 #include <dune/xt/grid/gridprovider/provider.hh>
 
-#include <python/dune/xt/common/parameter.hh>
+#include <python/xt/dune/xt/common/parameter.hh>
 
 namespace Dune::XT::Functions::bindings {
 

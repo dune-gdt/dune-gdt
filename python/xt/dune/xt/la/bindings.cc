@@ -20,13 +20,13 @@
 #include <dune/pybindxi/pybind11.h>
 #include <dune/pybindxi/stl.h>
 
-#include <python/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
 
-#include <python/dune/xt/la/container/container-interface.hh>
-#include <python/dune/xt/la/container/vector-interface.hh>
-#include <python/dune/xt/la/container/pattern.hh>
-#include <python/dune/xt/la/container/matrix-interface.hh>
-#include <python/dune/xt/la/solver.hh>
+#include <python/xt/dune/xt/la/container/container-interface.hh>
+#include <python/xt/dune/xt/la/container/vector-interface.hh>
+#include <python/xt/dune/xt/la/container/pattern.hh>
+#include <python/xt/dune/xt/la/container/matrix-interface.hh>
+#include <python/xt/dune/xt/la/solver.hh>
 
 #include <dune/xt/common/timedlogging.hh>
 

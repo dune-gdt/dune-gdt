@@ -18,8 +18,8 @@
 #include <dune/xt/common/string.hh>
 #include <dune/xt/grid/boundaryinfo/interfaces.hh>
 #include <dune/xt/grid/type_traits.hh>
-#include <python/dune/xt/common/timedlogging.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/common/timedlogging.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 namespace Dune::XT::Grid::bindings {
 

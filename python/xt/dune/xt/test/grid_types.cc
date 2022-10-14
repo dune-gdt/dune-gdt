@@ -23,9 +23,9 @@
 
 #include <dune/xt/grid/grids.hh>
 
-#include <python/dune/xt/common/bindings.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 
 template <class Tuple = Dune::XT::Grid::bindings::AvailableGridTypes>

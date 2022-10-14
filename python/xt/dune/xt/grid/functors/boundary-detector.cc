@@ -17,7 +17,7 @@
 #include <dune/xt/grid/functors/boundary-detector.hh>
 #include <dune/xt/grid/view/coupling.hh>
 
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include "interfaces.hh"
 

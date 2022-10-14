@@ -15,9 +15,9 @@
 
 #include <dune/xt/grid/gridprovider/cube.hh>
 
-#include <python/dune/xt/common/bindings.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/grid/traits.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/grid/traits.hh>
 
 using namespace Dune;
 using namespace Dune::XT::Grid::bindings;

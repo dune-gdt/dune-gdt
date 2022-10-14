@@ -19,12 +19,12 @@
 
 #include <dune/gdt/tools/dirichlet-constraints.hh>
 
-#include <python/dune/xt/common/configuration.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/common/parameter.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
-#include <python/dune/xt/grid/dd_glued_gridprovider/provider.cc>
-#include <python/dune/xt/la/traits.hh>
+#include <python/xt/dune/xt/common/configuration.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/parameter.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/dd_glued_gridprovider/provider.cc>
+#include <python/xt/dune/xt/la/traits.hh>
 
 
 namespace Dune {

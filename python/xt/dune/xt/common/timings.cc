@@ -18,7 +18,7 @@
 #include <dune/pybindxi/stl.h>
 #include <dune/pybindxi/iostream.h>
 
-#include <python/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
 #include <dune/xt/common/python.hh>
 #include <dune/xt/common/timings.hh>
 #include <dune/common/parallel/mpihelper.hh>

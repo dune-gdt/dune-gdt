@@ -21,11 +21,11 @@
 #include <dune/xt/common/string.hh>
 
 #include <dune/xt/la/type_traits.hh>
-#include <python/dune/xt/la/container.bindings.hh>
+#include <python/xt/dune/xt/la/container.bindings.hh>
 
 #include <dune/xt/la/container/io.hh>
 #include <dune/xt/la/container/vector-interface.hh>
-#include <python/dune/xt/la/container/container-interface.hh>
+#include <python/xt/dune/xt/la/container/container-interface.hh>
 
 
 namespace Dune::XT::LA {

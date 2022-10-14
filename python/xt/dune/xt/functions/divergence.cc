@@ -25,12 +25,12 @@
 #include <dune/xt/grid/type_traits.hh>
 #include <dune/xt/functions/base/derivatives-of-grid-functions.hh>
 
-#include <python/dune/xt/common/parameter.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/common/fmatrix.hh>
-#include <python/dune/xt/common/bindings.hh>
-#include <python/dune/xt/grid/traits.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/common/parameter.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/fmatrix.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/grid/traits.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 namespace Dune::XT::Functions::bindings {
 

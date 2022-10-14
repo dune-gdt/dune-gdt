@@ -23,7 +23,7 @@
 #include <dune/xt/functions/spe10/model1.hh>
 #include <dune/xt/functions/spe10/model2.hh>
 
-#include <python/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
 
 namespace Dune::XT::Functions {
 

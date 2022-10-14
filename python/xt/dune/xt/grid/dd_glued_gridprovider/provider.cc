@@ -33,9 +33,9 @@
 #include <dune/xt/grid/view/coupling.hh>
 #include <dune/xt/functions/generic/grid-function.hh>
 
-#include <python/dune/xt/common/configuration.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/common/configuration.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 
 namespace Dune::XT::Grid {

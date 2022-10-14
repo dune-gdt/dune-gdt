@@ -13,7 +13,7 @@
 #include <dune/pybindxi/pybind11.h>
 #include <dune/pybindxi/functional.h>
 
-#include <python/dune/xt/common/bindings.hh>
+#include <python/xt/dune/xt/common/bindings.hh>
 #include <dune/xt/grid/grids.hh>
 #include <dune/xt/grid/gridprovider/provider.hh>
 

@@ -17,7 +17,7 @@
 #include <dune/xt/common/string.hh>
 #include <dune/xt/functions/interfaces/element-functions.hh>
 
-#include <python/dune/xt/common/parameter.hh>
+#include <python/xt/dune/xt/common/parameter.hh>
 
 namespace Dune::XT::Functions::bindings {
 

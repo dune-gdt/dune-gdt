@@ -19,12 +19,12 @@
 
 #include <dune/gdt/operators/operator.hh>
 
-#include <python/dune/xt/common/configuration.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/common/parameter.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
-#include <python/dune/xt/grid/walker.hh>
-#include <python/dune/xt/la/traits.hh>
+#include <python/xt/dune/xt/common/configuration.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/parameter.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/walker.hh>
+#include <python/xt/dune/xt/la/traits.hh>
 
 #include "interfaces.hh"
 

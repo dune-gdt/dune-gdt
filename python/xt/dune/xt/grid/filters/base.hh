@@ -17,7 +17,7 @@
 
 #include <dune/xt/common/string.hh>
 #include <dune/xt/grid/filters/base.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 namespace Dune::XT::Grid::bindings {
 

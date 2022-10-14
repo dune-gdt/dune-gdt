@@ -19,8 +19,8 @@
 #include <dune/xt/grid/gridprovider/provider.hh>
 #include <dune/xt/grid/type_traits.hh>
 
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/common/fmatrix.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/common/fmatrix.hh>
 
 #include <dune/xt/functions/indicator.hh>
 

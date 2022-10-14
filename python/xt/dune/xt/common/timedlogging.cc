@@ -15,7 +15,7 @@
 
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/common/timedlogging.hh>
-#include <python/dune/xt/common/timedlogging.hh>
+#include <python/xt/dune/xt/common/timedlogging.hh>
 
 
 PYBIND11_MODULE(timedlogging, m)

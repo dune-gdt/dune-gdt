@@ -13,7 +13,7 @@
 #ifndef PYTHON_DUNE_XT_FUNCTIONS_BASE_COMBINED_GRID_FUNCTION_HH
 #define PYTHON_DUNE_XT_FUNCTIONS_BASE_COMBINED_GRID_FUNCTION_HH
 
-#include <python/dune/xt/functions/interfaces/grid-function.hh>
+#include <python/xt/dune/xt/functions/interfaces/grid-function.hh>
 
 namespace Dune::XT::Functions::bindings {
 

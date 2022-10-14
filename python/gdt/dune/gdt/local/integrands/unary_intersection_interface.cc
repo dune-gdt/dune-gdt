@@ -17,9 +17,9 @@
 
 #include <dune/gdt/local/integrands/interfaces.hh>
 
-#include <python/dune/xt/common/configuration.hh>
-#include <python/dune/xt/common/fvector.hh>
-#include <python/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/common/configuration.hh>
+#include <python/xt/dune/xt/common/fvector.hh>
+#include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include "unary_intersection_combined.hh"
 #include "unary_intersection_interface.hh"
