@@ -102,15 +102,18 @@ jobs:
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
-                    -v ${GITHUB_WORKSPACE}/ccache/:/home/dxt/.ccache \
+                    -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
                     /src/.ci/gitlab/test_cpp.bash
             - uses: actions/upload-artifact@v3
+              name: Upload CPP results
+              if: always()
               with:
                 name: cpp_junit_reports
-                path: ${GITHUB_WORKSPACE}/build/testresults/*xml
+                path: ${{ github.workspace }}/build/testresults/*xml
             - name: Upload cache
+              if: always()
               run: |
                 ls -la ${GITHUB_WORKSPACE}/ccache/
                 du -sch ${GITHUB_WORKSPACE}/ccache
@@ -148,13 +151,16 @@ jobs:
               run: |
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
+                    -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
                     /src/.ci/gitlab/test_python.bash
             - uses: actions/upload-artifact@v3
+              name: Upload Python results
+              if: always()
               with:
                 name: python_junit_reports
-                path: ${GITHUB_WORKSPACE}/build/testresults/*xml
+                path: ${{ github.workspace }}/build/testresults/*xml
     wheels:
         runs-on: ubuntu-22.04
         strategy:
