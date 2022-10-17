@@ -287,10 +287,11 @@ macro(DXT_ADD_PYTHON_TESTS)
     "${CMAKE_BINARY_DIR}/python"
     "--cov"
     "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "--junitxml=pytest_results.xml"
+    "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python"
     DEPENDS bindings
     VERBATIM USES_TERMINAL)
+    "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
   if(NOT TARGET test_python)
     add_custom_target(test_python)
   endif(NOT TARGET test_python)
