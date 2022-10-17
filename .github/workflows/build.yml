@@ -108,7 +108,7 @@ jobs:
                     /src/.ci/gitlab/test_cpp.bash
             - uses: actions/upload-artifact@v3
               with:
-                name: junit_reports
+                name: cpp_junit_reports
                 path: ${GITHUB_WORKSPACE}/build/testresults/*xml
             - name: Upload cache
               run: |
@@ -148,8 +148,13 @@ jobs:
               run: |
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
+                    -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
                     /src/.ci/gitlab/test_python.bash
+            - uses: actions/upload-artifact@v3
+              with:
+                name: python_junit_reports
+                path: ${GITHUB_WORKSPACE}/build/testresults/*xml
     wheels:
         runs-on: ubuntu-22.04
         strategy:
