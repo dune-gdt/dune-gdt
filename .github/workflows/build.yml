@@ -193,19 +193,19 @@ jobs:
         needs: [wheels]
         runs-on: ubuntu-22.04
         steps:
-            - run: |
-                ls -l *
-                find . -name "*.whl"
+            - uses: actions/download-artifact@v3
+              with:
+                name: wheels
             - name: PyPI
               uses: pypa/gh-action-pypi-publish@release/v1
               if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/20')
               with:
                 password: ${{ secrets.PYPI_API_TOKEN }}
-                packages_dir: wheelhouse/final/
+                packages_dir: .
                 verbose: true
             - name: Test PyPI
               uses: pypa/gh-action-pypi-publish@release/v1
               with:
                 password: ${{ secrets.TEST_PYPI_API_TOKEN }}
                 verbose: true
-                packages_dir: wheelhouse/final/
+                packages_dir: .
