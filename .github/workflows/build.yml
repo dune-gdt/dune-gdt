@@ -22,7 +22,6 @@ jobs:
               id: setup-matrix-combinations
               run: |
                   MATRIX_PARAMS_COMBINATIONS='
-                      {"CC": "clang", "CXX": "clang++"},
                       {"CC": "gcc", "CXX": "g++"},
                   '
                   echo ::set-output name=matrix-combinations::{\"include\":[$MATRIX_PARAMS_COMBINATIONS]}
