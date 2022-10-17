@@ -284,16 +284,29 @@ macro(DXT_ADD_PYTHON_TESTS)
     "python"
     "-m"
     "pytest"
-    "${CMAKE_BINARY_DIR}/python"
+    "${CMAKE_BINARY_DIR}/python/xt"
     "--cov"
     "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python"
+    "--junitxml=pytest_results_xt.xml"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/xt"
+    DEPENDS bindings
+    VERBATIM USES_TERMINAL)
+  add_custom_target(
+    gdt_test_python
+    "${RUN_IN_ENV_SCRIPT}"
+    "python"
+    "-m"
+    "pytest"
+    "${CMAKE_BINARY_DIR}/python/gdt"
+    "--cov"
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "--junitxml=pytest_results_gdt.xml"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/gdt"
     DEPENDS bindings
     VERBATIM USES_TERMINAL)
     "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
   if(NOT TARGET test_python)
     add_custom_target(test_python)
   endif(NOT TARGET test_python)
-  add_dependencies(test_python xt_test_python)
+  add_dependencies(test_python xt_test_python gdt_test_python)
 endmacro(DXT_ADD_PYTHON_TESTS)
