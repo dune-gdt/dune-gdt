@@ -126,9 +126,16 @@ jobs:
                   registry: ghcr.io
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Setup ccache
+              id: ccache-header
+              uses: actions/cache@v3
+              with:
+                path: ${{ github.workspace }}/ccache
+                key: ${{matrix.CC}}-header-ccache
             - name: Headercheck ${{matrix.CC}}
               run: |
                   docker run --rm \
+                    -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
                     /src/.ci/gitlab/test_headercheck.bash
     test_python:
