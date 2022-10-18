@@ -180,6 +180,12 @@ jobs:
             - uses: actions/checkout@v3
               with:
                 submodules: true
+            - name: Setup ccache
+              id: ccache-wheel
+              uses: actions/cache@v3
+              with:
+                path: ${{ github.workspace }}/wheelhouse/cache
+                key: ${{matrix.python}}-wheel-ccache
             - name: Set up Docker Buildx
               id: buildx
               uses: docker/setup-buildx-action@v2
