@@ -8,7 +8,7 @@ OPTS=${DUNE_SRC_DIR}/deps/config.opts/manylinux
 
 # sets Python path, etc.
 source /usr/local/bin/pybin.sh
-export CCACHE_DIR=${WHEEL_DIR}/../cache
+export CCACHE_DIR=${WHEEL_DIR}/cache
 mkdir ${WHEEL_DIR}/{tmp,final} -p || true
 
 python3 -m venv ${WHEEL_DIR}/venv
