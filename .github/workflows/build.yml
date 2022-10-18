@@ -212,3 +212,24 @@ jobs:
                 password: ${{ secrets.TEST_PYPI_API_TOKEN }}
                 verbose: true
                 packages_dir: .
+    combine_reports:
+      needs: [test_cpp, test_python]
+      runs-on: ubuntu-22.04
+      steps:
+        - uses: actions/download-artifact@v3
+          name: Download Python reports
+          with:
+            name: python_junit_reports
+        - uses: actions/download-artifact@v3
+          name: Download C++ reports
+          with:
+            name: cpp_junit_reports
+        - uses: actions/setup-node@v3
+          with:
+            node-version: 16
+        - run: npm install -g junit-report-merger
+        - run: jrm combined_report.xml "*.xml"
+        - uses: actions/upload-artifact@v3
+          with:
+            name: combined_report
+            path: combined_report.xml
