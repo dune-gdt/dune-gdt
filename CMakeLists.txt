@@ -56,7 +56,7 @@ endif()
 
 # (re-)set version info from git if available
 include(DuneXtVersionHelper)
-dune_xt_module_version_from_git(dune-gdt)
+dune_xt_module_version_from_git()
 
 # dune-gdt cmake includes
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
