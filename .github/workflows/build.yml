@@ -94,8 +94,11 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
             - name: Setup ccache
-              run: |
-                mkdir ${GITHUB_WORKSPACE}/ccache
+              id: ccache-cpp
+              uses: actions/cache@v3
+              with:
+                path: ${{ github.workspace }}/ccache
+                key: ${{matrix.CC}}-cpp-ccache
             - name: C++ Tests ${{matrix.CC}}
               run: |
                   docker run --rm \
@@ -111,11 +114,6 @@ jobs:
               with:
                 name: cpp_junit_reports
                 path: ${{ github.workspace }}/build/testresults/*xml
-            - name: Upload cache
-              if: always()
-              run: |
-                ls -la ${GITHUB_WORKSPACE}/ccache/
-                du -sch ${GITHUB_WORKSPACE}/ccache
     test_headercheck:
         runs-on: ubuntu-22.04
         needs: [metadata, matrix-setup, build]
@@ -146,6 +144,12 @@ jobs:
                   registry: ghcr.io
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Setup ccache
+              id: ccache-py
+              uses: actions/cache@v3
+              with:
+                path: ${{ github.workspace }}/ccache
+                key: ${{matrix.CC}}-py-ccache
             - name: Python Tests ${{matrix.CC}}
               run: |
                   docker run --rm \

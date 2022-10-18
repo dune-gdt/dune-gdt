@@ -41,3 +41,5 @@ ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LI
 
 [[ -d ${DUNE_BUILD_DIR}/testresults/ ]] || mkdir ${DUNE_BUILD_DIR}/testresults/
 cp ${DUNE_BUILD_DIR}/dune-gdt/pytest_results*.xml ${DUNE_BUILD_DIR}/testresults/
+
+ccache --print-stats
