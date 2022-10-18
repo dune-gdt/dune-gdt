@@ -57,6 +57,8 @@ jobs:
             - uses: actions/checkout@v3
               with:
                 submodules: true
+                # version info generation needs potentially all commits
+                fetch-depth: 0
             - name: Set up Docker Buildx
               id: buildx
               uses: docker/setup-buildx-action@v2
@@ -103,6 +105,7 @@ jobs:
               run: |
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
+                    -e GITHUB_RUN_NUMBER \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
@@ -161,6 +164,7 @@ jobs:
               run: |
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
+                    -e GITHUB_RUN_NUMBER \
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
                     ${{ needs.metadata.outputs.tags }}_${{matrix.CC}} \
@@ -180,6 +184,8 @@ jobs:
             - uses: actions/checkout@v3
               with:
                 submodules: true
+                # version info generation needs potentially all commits
+                fetch-depth: 0
             - name: Setup ccache
               id: ccache-wheel
               uses: actions/cache@v3
@@ -195,6 +201,7 @@ jobs:
                     -v ${GITHUB_WORKSPACE}/wheelhouse:/wheelhouse \
                     -v ${PWD}:/home/dxt/src \
                     -e WHEEL_DIR=/wheelhouse \
+                    -e GITHUB_RUN_NUMBER \
                     -e LOCAL_UID=0 \
                     -e DUNE_SRC_DIR=/home/dxt/src \
                     zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
