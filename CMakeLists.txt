@@ -84,11 +84,6 @@ target_include_directories(dunepybindxi PRIVATE pybind11::module)
 # ----------------------------------------------------------------------------------------------------
 # General Settings
 # ----------------------------------------------------------------------------------------------------
-execute_process(
-  COMMAND ${CMAKE_SOURCE_DIR}/getRevision.sh
-  OUTPUT_VARIABLE COMMIT
-  ERROR_VARIABLE shell_error
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # search for spe10 data files
 find_file(
@@ -120,7 +115,6 @@ add_tidy(${CMAKE_CURRENT_SOURCE_DIR})
 add_pylicense()
 
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
-
 # patch config.h to remove warnings about unused HAVE_GRIDTYPE
 execute_process(
   COMMAND sed -i -e "s,^\\([ ]*\\)\#if HAVE_GRIDTYPE$,\\1\#if defined(HAVE_GRIDTYPE) \\&\\& HAVE_GRIDTYPE,g"
