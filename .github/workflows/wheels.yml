@@ -1,0 +1,93 @@
+---
+name: Wheels
+
+on:
+    push:
+    #     branches:
+    #         - main
+    # pull_request:
+
+concurrency:
+    group: ${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    wheels:
+        runs-on: ubuntu-22.04
+        strategy:
+            matrix:
+                python: ["3.8", "3.9", "3.10"]
+        steps:
+            - uses: actions/checkout@v3
+              with:
+                submodules: true
+                # version info generation needs potentially all commits
+                fetch-depth: 0
+            - name: Setup ccache
+              id: ccache-wheel
+              uses: actions/cache@v3
+              with:
+                path: ${{ github.workspace }}/wheelhouse/cache
+                key: ${{matrix.python}}-wheel-ccache
+            - name: Set up Docker Buildx
+              id: buildx
+              uses: docker/setup-buildx-action@v2
+            - run: |
+                git config --global --add safe.directory '*'
+                source .env
+                docker run --rm \
+                    -v ${GITHUB_WORKSPACE}/wheelhouse:/wheelhouse \
+                    -v ${PWD}:/home/dxt/src \
+                    -e WHEEL_DIR=/wheelhouse \
+                    -e GITHUB_RUN_NUMBER \
+                    -e LOCAL_UID=0 \
+                    -e DUNE_SRC_DIR=/home/dxt/src \
+                    zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
+                    -e CI
+                    /home/dxt/src/.ci/make_wheels.bash
+              name: Build Wheel py${{matrix.python}}
+            - uses: actions/upload-artifact@v3
+              with:
+                name: wheels
+                path: ${{github.workspace}}/wheelhouse/final/dune*whl
+
+    publish:
+        needs: [wheels]
+        runs-on: ubuntu-22.04
+        steps:
+            - uses: actions/download-artifact@v3
+              with:
+                name: wheels
+            - name: split by package
+              run: |
+                mkdir xt gdt
+                mv *xt*.whl xt/
+                mv *gdt*.whl gdt
+            - name: XT PyPI
+              uses: pypa/gh-action-pypi-publish@v1.5.1
+              if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/20')
+              with:
+                password: ${{ secrets.XT_PYPI_API_TOKEN }}
+                packages_dir: xt
+                verbose: true
+            - name: XT Test PyPI
+              uses: pypa/gh-action-pypi-publish@v1.5.1
+              with:
+                password: ${{ secrets.XT_TEST_PYPI_API_TOKEN }}
+                verbose: true
+                packages_dir: xt
+                repository_url: https://test.pypi.org/legacy/
+            - name: GDT PyPI
+              uses: pypa/gh-action-pypi-publish@v1.5.1
+              if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/20')
+              with:
+                password: ${{ secrets.GDT_PYPI_API_TOKEN }}
+                packages_dir: gdt
+                verbose: true
+            - name: GDT Test PyPI
+              uses: pypa/gh-action-pypi-publish@v1.5.1
+              with:
+                password: ${{ secrets.GDT_TEST_PYPI_API_TOKEN }}
+                verbose: true
+                packages_dir: gdt
+                repository_url: https://test.pypi.org/legacy/
