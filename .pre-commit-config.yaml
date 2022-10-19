@@ -35,4 +35,4 @@ repos:
     hooks:
     -   id: flake8
         exclude: "^pybind11"
-        args: ["--config=./python/setup.cfg"]
+        args: ["--config=./python/xt/setup.cfg"]
