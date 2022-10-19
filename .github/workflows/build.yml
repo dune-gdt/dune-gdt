@@ -238,6 +238,7 @@ jobs:
                 password: ${{ secrets.XT_TEST_PYPI_API_TOKEN }}
                 verbose: true
                 packages_dir: xt
+                repository_url: https://test.pypi.org/legacy/
             - name: GDT PyPI
               uses: pypa/gh-action-pypi-publish@v1.5.1
               if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/20')
@@ -251,6 +252,7 @@ jobs:
                 password: ${{ secrets.GDT_TEST_PYPI_API_TOKEN }}
                 verbose: true
                 packages_dir: gdt
+                repository_url: https://test.pypi.org/legacy/
     combine_reports:
       needs: [test_cpp, test_python]
       runs-on: ubuntu-22.04
