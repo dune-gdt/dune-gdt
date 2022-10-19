@@ -1,3 +1,15 @@
+# ~~~
+# This file is part of the dune-gdt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+# Copyright 2010-2021 dune-gdt developers and contributors. All rights reserved.
+# License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+#      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
+#          with "runtime exception" (http://www.dune-project.org/license.html)
+# Authors:
+#   Felix Schindler (2017)
+#   René Fritze     (2020)
+#   Tobias Leibner  (2021)
+#
 # - Find the Catch test framework or download it (single header)
 #
 # This is a quick module for internal use. It assumes that Catch is
@@ -8,6 +20,7 @@
 # This code sets the following variables:
 #  CATCH_INCLUDE_DIR      - path to catch.hpp
 #  CATCH_VERSION          - version number
+# ~~~
 
 if(NOT Catch_FIND_VERSION)
   message(FATAL_ERROR "A version number must be specified.")

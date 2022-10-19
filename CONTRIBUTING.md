@@ -7,8 +7,10 @@
 #          with "runtime exception" (http://www.dune-project.org/license.html)
 # Authors:
 #   Felix Schindler (2013 - 2014, 2016 - 2017, 2019)
-#   René Fritze     (2009, 2015, 2016, 2019)
-#   Tobias Leibner  (2021)
+#   René Fritze     (2009, 2015, 2019, 2021)
+#   René Milk       (2016)
+#   Tobias Leibner  (2020 - 2021)
+#   f_albr01        (2010)
 ```
 
 # Help

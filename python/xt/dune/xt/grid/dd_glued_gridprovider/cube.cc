@@ -1,11 +1,15 @@
-// This file is part of the dune-xt project:
-//   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt
-// Copyright 2009-2021 dune-xt developers and contributors. All rights reserved.
+// This file is part of the dune-gdt project:
+//   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+// Copyright 2010-2021 dune-gdt developers and contributors. All rights reserved.
 // License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 //      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 //          with "runtime exception" (http://www.dune-project.org/license.html)
 // Authors:
-//   Tim Keil (2020 - 2021)
+//   René Fritze    (2022)
+//   Tim Keil       (2020 - 2021)
+//   Tobias Leibner (2021)
+//
+// This file is part of the dune-xt project:
 
 #include "config.h"
 

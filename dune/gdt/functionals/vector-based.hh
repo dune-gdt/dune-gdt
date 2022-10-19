@@ -8,7 +8,7 @@
 //   Felix Schindler (2015 - 2018, 2020)
 //   René Fritze     (2016 - 2018)
 //   Tim Keil        (2017)
-//   Tobias Leibner  (2019 - 2020)
+//   Tobias Leibner  (2019 - 2021)
 
 #ifndef DUNE_GDT_FUNCTIONALS_VECTOR_BASED_HH
 #define DUNE_GDT_FUNCTIONALS_VECTOR_BASED_HH

@@ -1,15 +1,20 @@
 ```
-# This file is part of the dune-gdt project:
-#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
-# Copyright 2010-2021 dune-gdt developers and contributors. All rights reserved.
+# This file is part of the dune-xt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt
+# Copyright 2009-2021 dune-xt developers and contributors. All rights reserved.
 # License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 #      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 #          with "runtime exception" (http://www.dune-project.org/license.html)
 # Authors:
-#   Felix Schindler (2010, 2013 - 2014, 2016 - 2017)
-#   Rene Milk       (2017 - 2018)
-#   Tobias Leibner  (2021)
+#   Felix Schindler (2013 - 2014, 2016 - 2019)
+#   René Fritze     (2009, 2015, 2018 - 2022)
+#   René Milk       (2017)
+#   Tobias Leibner  (2020 - 2021)
+#   f_albr01        (2010)
+#
+# This file is part of the dune-gdt project:
 ```
+
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![pipeline status](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/badges/master/pipeline.svg)](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/-/commits/master)
 

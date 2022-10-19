@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#  -*- coding: utf-8 -*-
+
+#
+# ~~~
+# This file is part of the dune-gdt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+# Copyright 2010-2021 dune-gdt developers and contributors. All rights reserved.
+# License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+#      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
+#          with "runtime exception" (http://www.dune-project.org/license.html)
+# Authors:
+#   Felix Schindler (2016 - 2017, 2021)
+#   René Fritze     (2018 - 2020)
+#   Tobias Leibner  (2021)
 #
 # pybind11 documentation build configuration file, created by
 # sphinx-quickstart on Sun Oct 11 19:23:48 2015.
@@ -12,6 +25,7 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
+# ~~~
 
 import sys
 import os

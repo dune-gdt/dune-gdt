@@ -6,7 +6,7 @@
 //          with "runtime exception" (http://www.dune-project.org/license.html)
 // Authors:
 //   Felix Schindler (2019 - 2020)
-//   Tobias Leibner  (2019 - 2020)
+//   Tobias Leibner  (2019 - 2021)
 
 #ifndef DUNE_GDT_OPERATORS_LAPLACE_IPDG_FLUX_RECONSTRUCTION_HH
 #define DUNE_GDT_OPERATORS_LAPLACE_IPDG_FLUX_RECONSTRUCTION_HH

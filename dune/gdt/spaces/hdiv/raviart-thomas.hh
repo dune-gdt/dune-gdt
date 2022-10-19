@@ -7,7 +7,7 @@
 // Authors:
 //   Felix Schindler (2017 - 2020)
 //   René Fritze     (2018)
-//   Tobias Leibner  (2019 - 2020)
+//   Tobias Leibner  (2019 - 2021)
 
 #ifndef DUNE_GDT_SPACES_HDIV_RAVIART_THOMAS_HH
 #define DUNE_GDT_SPACES_HDIV_RAVIART_THOMAS_HH

@@ -1,5 +1,18 @@
+# ~~~
+# This file is part of the dune-gdt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+# Copyright 2010-2021 dune-gdt developers and contributors. All rights reserved.
+# License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+#      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
+#          with "runtime exception" (http://www.dune-project.org/license.html)
+# Authors:
+#   Felix Schindler (2020)
+#   René Fritze     (2022)
+#   Tim Keil        (2022)
+#
 # flake8: noqa
 # silencing all warnings here, in case import /instruction order was the trigger for the segfault
+# ~~~
 
 from dune.xt.grid import Dim, Cube, make_cube_grid
 

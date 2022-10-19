@@ -1,9 +1,19 @@
+# ~~~
+# This file is part of the dune-gdt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+# Copyright 2010-2021 dune-gdt developers and contributors. All rights reserved.
+# License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+#      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
+#          with "runtime exception" (http://www.dune-project.org/license.html)
+# Authors:
+#   Tobias Leibner (2021)
+#
 # tools/pybind11NewTools.cmake -- Build system for the pybind11 modules
 #
-# Copyright (c) 2020 Wenzel Jakob <wenzel@inf.ethz.ch> and Henry Schreiner
 #
 # All rights reserved. Use of this source code is governed by a
 # BSD-style license that can be found in the LICENSE file.
+# ~~~
 
 get_property(
   is_config
