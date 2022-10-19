@@ -6,8 +6,9 @@
 #      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 #          with "runtime exception" (http://www.dune-project.org/license.html)
 # Authors:
-#   René Fritze    (2018 - 2019)
-#   Tobias Leibner (2019 - 2021)
+#   Felix Schindler (2022)
+#   René Fritze     (2018 - 2019, 2022)
+#   Tobias Leibner  (2019 - 2021)
 # ~~~
 
 name = 'This file is part of the dune-gdt project:'
@@ -29,5 +30,5 @@ include_patterns = ('*.txt', '*.cmake', '*.py', '*.py.in', '*.pc.in', '*.sh',
                     '*dune-xt.pc.in', '*CMakeLists.txt', '*.cmake.in',
                     '*.py.in*')
 exclude_patterns = ('*config.h.cmake', '*.vcsetup*', 'FindEigen3.cmake',
-                    '*.dgf', '*builder_definitions.cmake',
+                    '*.dgf', '*builder_definitions.cmake', '*/deps/*', '*/wheelhouse/*',
                     '*builder_definitions.cmake', '*.ci/shared/*')
