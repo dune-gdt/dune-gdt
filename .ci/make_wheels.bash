@@ -2,6 +2,8 @@
 
 set -exo pipefail
 
+# otherwise versioneer fails on mounted source directories in CI
+git config --global --add safe.directory '*'
 
 THISDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd -P )"
 md=gdt
