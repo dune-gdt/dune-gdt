@@ -25,6 +25,8 @@ jobs:
                 fetch-depth: 0
             - run: |
                 git tag -l
+            - run: |
+                python cmake/modules/versioneer.py $PWD
             - name: Setup ccache
               id: ccache-wheel
               uses: actions/cache@v3
@@ -46,8 +48,6 @@ jobs:
                     -e DUNE_SRC_DIR=/home/dxt/src \
                     zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
                     git tag -l
-            - run: |
-                python cmake/modules/versioneer.py $PWD
             - run: |
                 git config --global --add safe.directory '*'
                 source .env
