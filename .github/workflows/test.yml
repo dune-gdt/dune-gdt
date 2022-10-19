@@ -19,7 +19,7 @@ jobs:
         uses: ./.github/workflows/build_images.yml
     test_cpp:
         runs-on: ubuntu-22.04
-        needs: [metadata, matrix-setup, build]
+        needs: [build_images]
         strategy:
             matrix: ${{ fromJson(needs.matrix-setup.outputs.matrix-combinations) }}
             fail-fast: false
