@@ -11,11 +11,6 @@
 #   Tobias Leibner  (2016, 2018 - 2020)
 # ~~~
 
-macro(ADD_FORMAT)
-  message(NOTICE "clang-format support was moved to a `pre-commit` hook. See dune-xt/.pre-commit-config.yaml.")
-  add_custom_target("format" echo 'clang-format is now a pre-commit hook' && false)
-endmacro(ADD_FORMAT)
-
 # Converts the path to a source file to a unique name that can be used as a target name. If arg points to a header file,
 # the corresponding headercheck target is headercheck_${arg} after calling this function. Example:
 # /home/user/dune-xt-super/dune-xt/dune/xt/common/algorithm.hh becomes _dune_xt_common_algorithm.hh

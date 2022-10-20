@@ -102,7 +102,6 @@ make_dependent_modules_sys_included()
 
 # enable headercheck
 add_definitions("-DENABLE_HEADERCHECK=1")
-add_format(${CMAKE_CURRENT_SOURCE_DIR})
 include(GridUtils)
 
 add_header_listing()
