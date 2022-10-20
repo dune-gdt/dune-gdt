@@ -23,13 +23,12 @@ jobs:
                 submodules: true
                 # version info generation needs potentially all commits
                 fetch-depth: 0
-            - run: |
-                git tag -l
-                git describe --tags --dirty --always --long --match '*' --debug
-            - run: |
-                git describe --tags --dirty --always --long --debug
-            - run: |
-                python cmake/modules/versioneer.py $PWD
+            - run: git tag -l
+            - run: git describe --tags --dirty --always --long --match '*' --debug
+            - run: git describe --tags --dirty --always --long --debug
+            - run: git describe --all --tags --dirty --always --long --debug
+            - run: git show 2022.3.0
+            - run: python cmake/modules/versioneer.py $PWD
             - name: Setup ccache
               id: ccache-wheel
               uses: actions/cache@v3
