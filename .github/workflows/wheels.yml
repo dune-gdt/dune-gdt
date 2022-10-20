@@ -25,6 +25,7 @@ jobs:
                 fetch-depth: 0
             - run: |
                 git tag -l
+                git describe --tags --dirty --always --long --match '*'
             - run: |
                 python cmake/modules/versioneer.py $PWD
             - name: Setup ccache
