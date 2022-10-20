@@ -134,6 +134,7 @@ def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False, env=
     """Call the given command(s)."""
     assert isinstance(commands, list)
     p = None
+    print(f'VERSIONEER CMD: {args}')
     for c in commands:
         try:
             dispcmd = str([c] + args)
@@ -300,6 +301,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     # parse describe_out. It will be like TAG-NUM-gHEX[-dirty] or HEX[-dirty]
     # TAG might have hyphens.
     git_describe = describe_out
+    print(f'VERSIONEER describe {git_describe}')
 
     # look for -dirty suffix
     dirty = git_describe.endswith("-dirty")
