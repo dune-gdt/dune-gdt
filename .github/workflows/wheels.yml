@@ -57,6 +57,7 @@ jobs:
                     -e WHEEL_DIR=/wheelhouse \
                     -e GITHUB_RUN_NUMBER \
                     -e LOCAL_UID=0 \
+                    -e CI
                     -e DUNE_SRC_DIR=/home/dxt/src \
                     zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
                     /home/dxt/src/.ci/make_wheels.bash
