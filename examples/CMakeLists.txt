@@ -15,6 +15,7 @@
 macro(CLEANUP_TARGET_NAME arg)
   string(REPLACE ${PROJECT_SOURCE_DIR} "" _targname ${arg})
   string(REPLACE ".cc" "" _targname ${_targname})
+  string(REPLACE ".py" "" _targname ${_targname})
   string(REGEX REPLACE "/" "__" _targname ${_targname})
   string(REGEX REPLACE "^__" "" _targname ${_targname})
 endmacro(CLEANUP_TARGET_NAME)
@@ -44,6 +45,31 @@ foreach(source ${example_sources}) # do some name conversion
     ${DXT_TEST_TIMEOUT}
     MPI_RANKS
     1)
+  set_tests_properties(${_targname} PROPERTIES TIMEOUT ${DXT_TEST_TIMEOUT})
+  set_tests_properties(${_targname} PROPERTIES LABELS subdir_examples)
+endforeach(source ${example_sources})
+
+add_custom_target(
+  install_example_requirements
+  COMMAND ${RUN_IN_ENV_SCRIPT} python -m pip install -r ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+file(GLOB_RECURSE example_sources "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
+
+foreach(source ${example_sources}) # do some name conversion
+  set(_targname ${source})
+  cleanup_target_name(${_targname})
+  list(APPEND examples_targets ${_targname})
+  add_custom_target(
+    ${_targname}
+    COMMAND ${RUN_IN_ENV_SCRIPT} python ${source}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  add_dependencies(${_targname} install_example_requirements)
+
+  # produces error:
+
+  # dune_add_test( TARGET ${_targname} )
+
   set_tests_properties(${test} PROPERTIES TIMEOUT ${DXT_TEST_TIMEOUT})
   set_tests_properties(${test} PROPERTIES LABELS subdir_examples)
 endforeach(source ${example_sources})
