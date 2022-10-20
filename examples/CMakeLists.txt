@@ -23,8 +23,29 @@ file(GLOB_RECURSE example_sources "${CMAKE_CURRENT_SOURCE_DIR}/*.cc")
 foreach(source ${example_sources}) # do some name conversion
   set(_targname ${source})
   cleanup_target_name(${_targname})
-  add_executable(${_targname} ${source})
   list(APPEND examples_targets ${_targname})
+  dune_add_test(
+    NAME
+    ${_targname}
+    SOURCES
+    ${source}
+    ${COMMON_HEADER}
+    LINK_LIBRARIES
+    ${link_xt_libs}
+    ${COMMON_LIBS}
+    ${GRID_LIBS}
+    gtest_dune_xt
+    COMMAND
+    ${RUN_IN_ENV_SCRIPT}
+    CMD_ARGS
+    ${CMAKE_CURRENT_BINARY_DIR}/${target}
+    --gtest_output=xml:${CMAKE_BINARY_DIR}/dune/examples_${target}.xml
+    TIMEOUT
+    ${DXT_TEST_TIMEOUT}
+    MPI_RANKS
+    1)
+  set_tests_properties(${test} PROPERTIES TIMEOUT ${DXT_TEST_TIMEOUT})
+  set_tests_properties(${test} PROPERTIES LABELS subdir_examples)
 endforeach(source ${example_sources})
 
 add_custom_target(examples COMMENT "Selected examples showing some of dune-gdt's features.")
