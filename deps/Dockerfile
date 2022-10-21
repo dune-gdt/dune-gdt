@@ -4,7 +4,7 @@ FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$DEBIAN_BASE-full:9e2f3
 USER root
 RUN apt update \
     && apt install -y --no-install-recommends python3-venv \
-            openssh-client \
+            openssh-client xvfb xauth \
             wget unzip curl lcov ccache llvm-${CLANG_VERSION} \
             rsync doxygen texlive-latex-base doxygen-latex libmetis-dev \
     && rm -rf /var/lib/apt/lists \
