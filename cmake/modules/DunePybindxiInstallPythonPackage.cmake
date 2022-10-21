@@ -99,7 +99,7 @@ function(dune_pybindxi_install_python_package)
       "${wheel_option}"
       "${edit_option}"
       ${PYINST_ADDITIONAL_PIP_PARAMS}
-      "${pyinst_fullpath}")
+      "${pyinst_fullpath}[infrastructure]")
 
   #
   # If requested, install into the configure-time Dune virtualenv
