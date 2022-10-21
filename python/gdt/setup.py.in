@@ -19,7 +19,7 @@ from setuptools import setup, find_packages
 from setuptools.dist import Distribution
 from setuptools.command.install import install
 
-requires = ["ipython", "numpy", "scipy"]
+requires = ["dune.xt==${DUNE_GDT_GIT_VERSION}"]
 
 extras_require = {
     "visualisation": (
