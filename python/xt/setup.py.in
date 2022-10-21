@@ -24,8 +24,9 @@ requires=['ipython','numpy', 'scipy']
 extras_require = {
   'visualisation': ( 'k3d', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
                      'matplotlib',),
-  'infrastructure': ('pylicense3>=0.4.1', 'pytest', 'pytest-cov',
-                     'cmake_format==0.4.1', 'codecov', 'yapf==0.32',
+  'infrastructure': ('pylicense3>=0.4.1', 'pytest', 'pytest-cov', 'pytest-regressions',
+                     'cmake_format==0.4.1', 'codecov', 'yapf==0.32', 'myst-nb>=0.16',
+                     'pytest-notebook==0.8.0', 'notebook',
                      'jinja2', 'pytest-cov', 'docutils', 'hypothesis', "codecov"),
   'parallel': ('bokeh', 'pymumps', 'metis'),
 }
