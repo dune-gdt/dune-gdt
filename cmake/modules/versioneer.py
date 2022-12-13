@@ -276,7 +276,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     if rc != 0:
         if verbose:
             print("Directory %s not under git control" % root)
-        raise NotThisMethod("'git rev-parse --git-dir' returned error")
+        raise RuntimeError("'git rev-parse --git-dir' returned error")
 
     # if there is a tag matching tag_prefix, this yields TAG-NUM-gHEX[-dirty]
     # if there isn't one, this yields HEX[-dirty] (no NUM)
@@ -285,11 +285,11 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
                "%s*" % tag_prefix], cwd=root)
     # --long was added in git-1.5.5
     if describe_out is None:
-        raise NotThisMethod("'git describe' failed")
+        raise RuntimeError("'git describe' failed")
     describe_out = describe_out.strip()
     full_out, rc = run_command(GITS, ["rev-parse", "HEAD"], cwd=root)
     if full_out is None:
-        raise NotThisMethod("'git rev-parse' failed")
+        raise RuntimeError("'git rev-parse' failed")
     full_out = full_out.strip()
 
     pieces = {}
