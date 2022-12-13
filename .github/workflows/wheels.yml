@@ -23,6 +23,8 @@ jobs:
                 submodules: true
                 # version info generation needs potentially all commits
                 fetch-depth: 0
+            - run: |
+                git tag --list
             - name: Setup ccache
               id: ccache-wheel
               uses: actions/cache@v3

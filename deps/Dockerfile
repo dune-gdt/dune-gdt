@@ -27,6 +27,7 @@ ENV CONFIG_OPTS=${BUILD_OPTS} \
 COPY . /src/
 RUN . /venv/bin/activate \
     && cd /src/ \
+    && git tag --list \
     && ./deps/dune-common/bin/dunecontrol --opts=./deps/config.opts/${CONFIG_OPTS} all \
     && mv deps/entrypoint.bash /usr/local/bin/entrypoint.bash \
     && cd / \
