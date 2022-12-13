@@ -23,6 +23,8 @@ jobs:
                 submodules: true
                 # version info generation needs potentially all commits
                 fetch-depth: 0
+            - name: Get tags
+              run: git fetch --tags origin
             - run: |
                 git config --global --add safe.directory '*'
                 git describe --tags --dirty --always --long --match "*"
