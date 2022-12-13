@@ -307,6 +307,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
     if dirty:
         git_describe = git_describe[:git_describe.rindex("-dirty")]
 
+    pieces["describe-out"] = describe_out
     # now we have TAG-NUM-gHEX or HEX
 
     if "-" in git_describe:
