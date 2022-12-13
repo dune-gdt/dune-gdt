@@ -38,6 +38,7 @@ jobs:
             - run: |
                 git config --global --add safe.directory '*'
                 source .env
+                ls -l ../
                 docker run --rm \
                     -v ${GITHUB_WORKSPACE}/wheelhouse:/wheelhouse \
                     -v ${PWD}:/home/dxt/src \
@@ -46,6 +47,7 @@ jobs:
                     -e LOCAL_UID=0 \
                     -e DUNE_SRC_DIR=/home/dxt/src \
                     -e CI \
+                    -u root:root \
                     -w /home/dxt/src \
                     zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
                     git describe --tags --dirty --always --long --match "*"
@@ -58,6 +60,7 @@ jobs:
                     -e WHEEL_DIR=/wheelhouse \
                     -e GITHUB_RUN_NUMBER \
                     -e LOCAL_UID=0 \
+                    -u root:root \
                     -e DUNE_SRC_DIR=/home/dxt/src \
                     -e CI \
                     zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
