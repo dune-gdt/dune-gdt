@@ -45,6 +45,21 @@ jobs:
                     -e LOCAL_UID=0 \
                     -e DUNE_SRC_DIR=/home/dxt/src \
                     -e CI \
+                    -w /src \
+                    zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
+                    git tag --list
+            - run: |
+                git config --global --add safe.directory '*'
+                source .env
+                docker run --rm \
+                    -v ${GITHUB_WORKSPACE}/wheelhouse:/wheelhouse \
+                    -v ${PWD}:/home/dxt/src \
+                    -e WHEEL_DIR=/wheelhouse \
+                    -e GITHUB_RUN_NUMBER \
+                    -e LOCAL_UID=0 \
+                    -e DUNE_SRC_DIR=/home/dxt/src \
+                    -e CI \
+                    -w /src \
                     zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2_28_x86_64_py${{matrix.python}}:${ML_TAG} \
                     /home/dxt/src/.ci/make_wheels.bash
               name: Build Wheel py${{matrix.python}}
