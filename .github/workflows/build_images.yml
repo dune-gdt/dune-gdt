@@ -63,6 +63,8 @@ jobs:
                 submodules: true
                 # version info generation needs potentially all commits
                 fetch-depth: 0
+            - name: Get tags
+              run: git fetch --tags origin
             - name: Set up Docker Buildx
               id: buildx
               uses: docker/setup-buildx-action@v2
