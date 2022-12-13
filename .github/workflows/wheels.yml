@@ -29,3 +29,8 @@ jobs:
                 git describe --tags --dirty --always --long --match "*"
                 git tag -l
                 git describe --tags --dirty --always --long
+            - uses: actions/setup-python@v3
+              with:
+                python-version: ${{ matrix.python }}
+            - run: |
+                python cmake/modules/versioneer.py  .
