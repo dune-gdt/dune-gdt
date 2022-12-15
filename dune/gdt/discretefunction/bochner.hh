@@ -50,6 +50,24 @@ public:
                                                   << bochner_space_.spatial_space().mapper().size());
   } // DiscreteBochnerFunction(...)
 
+  DiscreteBochnerFunction(const BochnerSpace<GV, r, rC, R>& bochner_space,
+                          XT::LA::ListVectorArray<V>*&& dof_vectors,
+                          const std::string nm = "")
+    : bochner_space_(bochner_space)
+    , dof_vectors_(std::move(dof_vectors))
+    , name_(nm.empty() ? "DiscreteBochnerFunction" : nm)
+  {
+    DUNE_THROW_IF(this->dof_vectors().length() != bochner_space_.temporal_space().mapper().size(),
+                  Exceptions::space_error,
+                  "\n   this->dof_vectors().length() = " << this->dof_vectors().length() << "\n   "
+                                                         << bochner_space_.temporal_space().mapper().size());
+    for (const auto& vec : this->dof_vectors())
+      DUNE_THROW_IF(vec.vector().size() != bochner_space_.spatial_space().mapper().size(),
+                    Exceptions::space_error,
+                    "\n   vec.vector().size() = " << vec.vector().size() << "\n   "
+                                                  << bochner_space_.spatial_space().mapper().size());
+  } // DiscreteBochnerFunction(...)
+
   DiscreteBochnerFunction(const BochnerSpace<GV, r, rC, R>& bochner_space, const std::string nm = "")
     : bochner_space_(bochner_space)
     , dof_vectors_(new XT::LA::ListVectorArray<V>(bochner_space_.spatial_space().mapper().size(),
@@ -97,16 +115,11 @@ public:
     return make_discrete_function(bochner_space_.spatial_space(), std::move(result));
   } // ... evaluate(...)
 
-  void visualize(const std::string filename_prefix, const VTK::OutputType vtk_output_type = VTK::appendedraw) const
+  [[deprecated("Use visualize(discrete_bochner_function) instead (01.03.2022)!")]] void
+  visualize(const std::string filename_prefix, const VTK::OutputType vtk_output_type = VTK::appendedraw) const
   {
-    DUNE_THROW_IF(
-        filename_prefix.empty(), XT::Common::Exceptions::wrong_input_given, "filename_prefix must not be empty!");
-    for (const auto& annotated_vector : dof_vectors_.access()) {
-      const double time = annotated_vector.note().get("_t").at(0);
-      auto df = make_const_discrete_function(bochner_space_.spatial_space(), annotated_vector.vector(), name_);
-      df.visualize(filename_prefix + "_" + XT::Common::to_string(time), vtk_output_type);
-    }
-  } // ... visualize(...)
+    GDT::visualize(*this, filename_prefix, false, vtk_output_type);
+  }
 
 private:
   const BochnerSpace<GV, r, rC, R>& bochner_space_;
@@ -117,18 +130,49 @@ private:
 
 template <class GV, size_t r, size_t rC, class R, class V>
 DiscreteBochnerFunction<V, GV, r, rC, R> make_discrete_bochner_function(const BochnerSpace<GV, r, rC, R>& bochner_space,
-                                                                        XT::LA::ListVectorArray<V>& dof_vectors)
+                                                                        XT::LA::ListVectorArray<V>& dof_vectors,
+                                                                        const std::string name = "")
 {
-  return DiscreteBochnerFunction<V, GV, r, rC, R>(bochner_space, dof_vectors);
+  return DiscreteBochnerFunction<V, GV, r, rC, R>(bochner_space, dof_vectors, name);
 }
 
 
 template <class VectorType, class GV, size_t r, size_t rC, class R>
 typename std::enable_if<XT::LA::is_vector<VectorType>::value, DiscreteBochnerFunction<VectorType, GV, r, rC, R>>::type
-make_discrete_bochner_function(const BochnerSpace<GV, r, rC, R>& bochner_space)
+make_discrete_bochner_function(const BochnerSpace<GV, r, rC, R>& bochner_space, const std::string name = "")
 {
-  return DiscreteBochnerFunction<VectorType, GV, r, rC, R>(bochner_space);
+  return DiscreteBochnerFunction<VectorType, GV, r, rC, R>(bochner_space, name);
 }
+
+
+template <class V, class GV, size_t r, size_t rC, class R>
+void visualize(
+    const DiscreteBochnerFunction<V, GV, r, rC, R>& discrete_bochner_function,
+    const std::string filename_prefix,
+    const bool subsampling = true,
+    const VTK::OutputType vtk_output_type = VTK::appendedraw,
+    const XT::Common::Parameter& param = {},
+    const XT::Functions::VisualizerInterface<r, rC, R>& visualizer = XT::Functions::default_visualizer<r, rC, R>())
+{
+  DUNE_THROW_IF(
+      filename_prefix.empty(), XT::Common::Exceptions::wrong_input_given, "filename_prefix must not be empty!");
+  bool use_counter = false;
+  size_t counter = 0;
+  for (const auto& annotated_vector : discrete_bochner_function.dof_vectors())
+    if (!annotated_vector.note().has_key("_t"))
+      use_counter = true;
+  for (const auto& annotated_vector : discrete_bochner_function.dof_vectors()) {
+    auto df = make_discrete_function(
+        discrete_bochner_function.space().spatial_space(), annotated_vector.vector(), discrete_bochner_function.name());
+    GDT::visualize(df,
+                   filename_prefix + "_" + (use_counter ? XT::Common::to_string(counter) : XT::Common::to_string(time)),
+                   subsampling,
+                   vtk_output_type,
+                   param,
+                   visualizer);
+    ++counter;
+  }
+} // ... visualize(...)
 
 
 } // namespace GDT

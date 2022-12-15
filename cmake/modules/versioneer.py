@@ -448,12 +448,8 @@ def render_pep440(pieces):
             rendered += "%d.g%s" % (pieces["distance"], pieces["short"])
             if pieces["dirty"]:
                 rendered += ".dirty"
-    else:
-        # exception #1
-        rendered = "0+untagged.%d.g%s" % (pieces["distance"], pieces["short"])
-        if pieces["dirty"]:
-            rendered += ".dirty"
-    return rendered
+        return rendered
+    raise RuntimeError(str(pieces))
 
 
 def render_pep440_pre(pieces):
@@ -467,10 +463,8 @@ def render_pep440_pre(pieces):
         # this needs to stay distance, run_number is always non-zero
         if pieces["distance"]:
             rendered += ".post2.dev%d" % pieces["run_number"]
-    else:
-        # exception #1
-        rendered = "0.post2.dev%d" % pieces["distance"]
-    return rendered
+        return rendered
+    raise RuntimeError(str(pieces))
 
 
 def render_pep440_post(pieces):
@@ -671,16 +665,7 @@ def get_versions(verbose=False):
     except NotThisMethod:
         pass
 
-    if verbose:
-        print("unable to compute version")
-
-    return {
-        "version": "0+unknown",
-        "full-revisionid": None,
-        "dirty": None,
-        "error": "unable to compute version",
-        "date": None,
-    }
+    raise RuntimeError("No version determined")
 
 
 def get_version():

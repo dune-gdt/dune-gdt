@@ -97,9 +97,9 @@ public:
 
   LocalUnaryElementIntegrandInterface(const XT::Common::ParameterType& param_type = {},
                                       const std::string& logging_prefix = "",
-                                      const bool logging_disabled = true)
+                                      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : XT::Common::ParametricInterface(param_type)
-    , Logger(logging_prefix.empty() ? "LocalUnaryElementIntegrand" : logging_prefix, logging_disabled)
+    , Logger(logging_prefix.empty() ? "LocalUnaryElementIntegrand" : logging_prefix, logging_state)
   {}
 
   ~LocalUnaryElementIntegrandInterface() override = default;
@@ -205,12 +205,12 @@ public:
 
   LocalBinaryElementIntegrandInterface(const XT::Common::ParameterType& param_type = {},
                                        const std::string& logging_prefix = "",
-                                       const bool logging_disabled = true)
+                                       const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : XT::Common::ParametricInterface(param_type)
     , XT::Grid::ElementBoundObject<Element>()
-    , Logger(logging_prefix.empty() ? "LocalBinaryElementIntegrand" : logging_prefix, logging_disabled)
+    , Logger(logging_prefix.empty() ? "LocalBinaryElementIntegrand" : logging_prefix, logging_state)
   {
-    LOG_(debug) << "LocalBinaryElementIntegrandInterface(this=" << this << ", param_type=" << param_type << ")"
+    LOG_(debug) << "LocalBinaryElementIntegrandInterface(this=" << this << ", param_type=" << print(param_type) << ")"
                 << std::endl;
   }
 
@@ -328,12 +328,13 @@ public:
   using DomainType = FieldVector<D, d - 1>;
   using LocalTestBasisType = XT::Functions::ElementFunctionSetInterface<E, r, rC, RF>;
 
-  LocalUnaryIntersectionIntegrandInterface(const XT::Common::ParameterType& param_type = {},
-                                           const std::string& logging_prefix = "",
-                                           const bool logging_disabled = true)
+  LocalUnaryIntersectionIntegrandInterface(
+      const XT::Common::ParameterType& param_type = {},
+      const std::string& logging_prefix = "",
+      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseParametricType(param_type)
     , BaseIntersectionBoundObjectType()
-    , Logger(logging_prefix.empty() ? "LocalUnaryIntersectionIntegrand" : logging_prefix, logging_disabled)
+    , Logger(logging_prefix.empty() ? "LocalUnaryIntersectionIntegrand" : logging_prefix, logging_state)
   {}
 
   LocalUnaryIntersectionIntegrandInterface(const ThisType&) = default;
@@ -456,12 +457,13 @@ public:
   using LocalTestBasisType = XT::Functions::ElementFunctionSetInterface<E, t_r, t_rC, TR>;
   using LocalAnsatzBasisType = XT::Functions::ElementFunctionSetInterface<E, a_r, a_rC, AR>;
 
-  LocalBinaryIntersectionIntegrandInterface(const XT::Common::ParameterType& param_type = {},
-                                            const std::string& logging_prefix = "",
-                                            const bool logging_disabled = true)
+  LocalBinaryIntersectionIntegrandInterface(
+      const XT::Common::ParameterType& param_type = {},
+      const std::string& logging_prefix = "",
+      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseParametricType(param_type)
     , BaseIntersectionBoundObjectType()
-    , Logger(logging_prefix.empty() ? "LocalBinaryIntersectionIntegrand" : logging_prefix, logging_disabled)
+    , Logger(logging_prefix.empty() ? "LocalBinaryIntersectionIntegrand" : logging_prefix, logging_state)
   {}
 
   LocalBinaryIntersectionIntegrandInterface(const ThisType& other) = default;
@@ -594,12 +596,13 @@ public:
   using LocalTestBasisType = XT::Functions::ElementFunctionSetInterface<E, t_r, t_rC, TR>;
   using LocalAnsatzBasisType = XT::Functions::ElementFunctionSetInterface<E, a_r, a_rC, AR>;
 
-  LocalQuaternaryIntersectionIntegrandInterface(const XT::Common::ParameterType& param_type = {},
-                                                const std::string& logging_prefix = "",
-                                                const bool logging_disabled = true)
+  LocalQuaternaryIntersectionIntegrandInterface(
+      const XT::Common::ParameterType& param_type = {},
+      const std::string& logging_prefix = "",
+      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : XT::Common::ParametricInterface(param_type)
     , XT::Grid::IntersectionBoundObject<Intersection>()
-    , Logger(logging_prefix.empty() ? "LocalQuaternaryIntersectionIntegrand" : logging_prefix, logging_disabled)
+    , Logger(logging_prefix.empty() ? "LocalQuaternaryIntersectionIntegrand" : logging_prefix, logging_state)
   {}
 
   ~LocalQuaternaryIntersectionIntegrandInterface() override = default;
@@ -664,7 +667,7 @@ public:
                    result_out_in,
                    result_out_out,
                    param);
-    return {result_in_in, result_in_out, result_out_in, result_out_out};
+    return {{result_in_in, result_in_out, result_out_in, result_out_out}};
   } // ... apply(...)
 
 protected:

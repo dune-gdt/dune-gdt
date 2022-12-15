@@ -1,0 +1,6 @@
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+NAME="$(basename ${BASH_SOURCE[0]})"
+
+CXXFLAGS="-DDXT_DISABLE_LARGE_TESTS=1 -DDEBUG -g3 -ggdb -O0"
+
+source ${DIR}/clang_base

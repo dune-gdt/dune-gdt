@@ -126,7 +126,7 @@ macro(DEPENDENCYCHECK)
     set(TEST_NAME "dependencycheck_${fn}")
     to_list_spaces(CMAKE_CXX_FLAGS TEST_NAME_FLAGS)
     set(XARGS ${TEST_NAME_FLAGS} -DHAVE_CONFIG_H -H -c ${header} -w)
-    add_custom_target(${TEST_NAME} + ${dune-xt_SOURCE_DIR}/cmake/dependencyinfo.py ${CMAKE_CXX_COMPILER} ${XARGS}
+    add_custom_target(${TEST_NAME} + ${dune-gdt_SOURCE_DIR}/cmake/dependencyinfo.py ${CMAKE_CXX_COMPILER} ${XARGS}
                                    ${CMAKE_CURRENT_SOURCE_DIR} ${fn}.dep)
     add_dependencies(dependencycheck ${TEST_NAME})
   endforeach(header)

@@ -53,10 +53,9 @@ public:
 
   LocalBinaryToUnaryElementIntegrand(const LocalBinaryElementIntegrandType& local_binary_integrand,
                                      XT::Functions::GridFunction<E, a_r, a_rC, AF> inducing_function_as_ansatz_basis,
-                                     const std::string& logging_prefix = "")
-    : BaseType({},
-               logging_prefix.empty() ? "LocalBinaryToUnaryElementIntegrand" : logging_prefix,
-               /*logging_disabled=*/logging_prefix.empty())
+                                     const std::string& logging_prefix = "",
+                                     const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+    : BaseType({}, logging_prefix.empty() ? "LocalBinaryToUnaryElementIntegrand" : logging_prefix, logging_state)
     , inducing_function_as_ansatz_basis_(inducing_function_as_ansatz_basis.copy_as_grid_function())
     , local_function_(inducing_function_as_ansatz_basis_->local_function())
     , local_binary_integrand_(local_binary_integrand.copy_as_binary_element_integrand())
@@ -100,7 +99,7 @@ public:
                 const XT::Common::Parameter& param = {}) const override final
   {
     LOG_(debug) << "evaluate(basis.size()=" << basis.size(param) << ", point_in_reference_element=["
-                << point_in_reference_element << "], param=" << param << "):" << std::endl;
+                << point_in_reference_element << "], param=" << print(param) << "):" << std::endl;
     // prepare storage
     const auto size = basis.size(param);
     if (result.size() < size)

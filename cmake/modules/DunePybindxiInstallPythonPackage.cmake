@@ -106,8 +106,8 @@ function(dune_pybindxi_install_python_package)
   #
 
   if(pyinst_purepython AND DUNE_PYTHON_VIRTUALENV_SETUP)
-    message("-- Installing python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH} into the virtualenv...")
-    dune_execute_process(COMMAND "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}" "${install_cmdline}" ERROR_MESSAGE
+    message("-- DXT Installing python package at ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH} into the virtualenv...")
+    dune_execute_process(COMMAND "${RUN_IN_ENV_SCRIPT}" "python3" "${install_cmdline}" ERROR_MESSAGE
                          "dune_python_install_package: Error installing into virtualenv!")
   endif()
 
@@ -124,7 +124,7 @@ function(dune_pybindxi_install_python_package)
   # Add a custom target that globally installs this package if requested
   add_custom_target(
     ${targetname}
-    COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} ${install_cmdline}
+    COMMAND "${RUN_IN_ENV_SCRIPT}" "python3" ${install_cmdline}
     COMMENT "Installing the python package at ${pyinst_fullpath}")
 
   add_dependencies(install_python ${targetname})
@@ -136,7 +136,7 @@ function(dune_pybindxi_install_python_package)
   #
 
   # Construct the wheel installation commandline
-  set(wheel_command ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${pyinst_fullpath})
+  set(wheel_command "${RUN_IN_ENV_SCRIPT}" "python3" -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${pyinst_fullpath})
 
   # Add the installation rule
   install(

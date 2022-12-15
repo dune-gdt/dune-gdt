@@ -393,6 +393,8 @@ using PrismGrids = ::testing::Types<
 #endif
     >;
 
+// currently the grid list is empty if we do not have UG
+#if HAVE_DUNE_UGGRID || HAVE_UG
 
 template <class G>
 using ScalarPrismFiniteVolumeSpace = FiniteVolumeSpaceOnPrismLeafView<G, 1>;
@@ -429,7 +431,7 @@ TYPED_TEST(ScalarPrismFiniteVolumeSpace, local_interpolation_seems_to_be_correct
 {
   this->local_interpolation_seems_to_be_correct();
 }
-
+#endif // HAVE_DUNE_UGGRID || HAVE_UG
 
 template <class G, size_t r>
 struct FiniteVolumeSpaceOnPyramidLeafView
@@ -483,6 +485,8 @@ using PyramidGrids = ::testing::Types<
 #endif
     >;
 
+// currently the grid list is empty if we do not have UG
+#if HAVE_DUNE_UGGRID || HAVE_UG
 
 template <class G>
 using ScalarPyramidFiniteVolumeSpace = FiniteVolumeSpaceOnPyramidLeafView<G, 1>;
@@ -520,6 +524,7 @@ TYPED_TEST(ScalarPyramidFiniteVolumeSpace, local_interpolation_seems_to_be_corre
   this->local_interpolation_seems_to_be_correct();
 }
 
+#endif // HAVE_DUNE_UGGRID || HAVE_UG
 
 template <class G, size_t r>
 struct FiniteVolumeSpaceOnMixedLeafView
@@ -616,6 +621,8 @@ using MixedGrids = ::testing::Types<
     UG_3D
 #endif
     >;
+// currently the grid list is empty if we do not have UG
+#if HAVE_DUNE_UGGRID || HAVE_UG
 
 
 template <class G>
@@ -653,3 +660,4 @@ TYPED_TEST(ScalarMixedFiniteVolumeSpace, local_interpolation_seems_to_be_correct
 {
   this->local_interpolation_seems_to_be_correct();
 }
+#endif // HAVE_DUNE_UGGRID || HAVE_UG

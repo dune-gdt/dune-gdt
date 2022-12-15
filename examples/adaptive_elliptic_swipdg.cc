@@ -41,7 +41,7 @@
 #include <dune/gdt/local/integrands/laplace-ipdg.hh>
 #include <dune/gdt/local/integrands/product.hh>
 #include <dune/gdt/operators/laplace-ipdg-flux-reconstruction.hh>
-#include <dune/gdt/operators/matrix-based.hh>
+#include <dune/gdt/operators/matrix.hh>
 #include <dune/gdt/operators/oswald-interpolation.hh>
 #include <dune/gdt/spaces/hdiv/raviart-thomas.hh>
 #include <dune/gdt/spaces/l2/discontinuous-lagrange.hh>
@@ -227,7 +227,7 @@ int main(int argc, char* argv[])
       logger.info() << "step " << counter << ", space has " << dg_space.mapper().size() << " DoFs" << std::endl;
 
       // assemble
-      auto lhs_op = make_matrix_operator<M>(dg_space, Stencil::element_and_intersection);
+      auto lhs_op = make_matrix_operator<M>(dg_space);
       lhs_op.append(LocalElementIntegralBilinearForm<E>(LocalLaplaceIntegrand<E>(problem.diffusion)));
       lhs_op.append(
           LocalCouplingIntersectionIntegralBilinearForm<I>(

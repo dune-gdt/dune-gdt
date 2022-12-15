@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
-ML_TAG=6055ab2
-
 THISDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd -P )"
+source ${THISDIR}/.env
 
 set -e
 # default command is "build-wheels.sh"

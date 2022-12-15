@@ -1,0 +1,5 @@
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+export CXX=g++
+export CC=gcc
+export F77=gfortran
+source ${DIR}/palma_common

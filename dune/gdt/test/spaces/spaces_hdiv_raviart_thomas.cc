@@ -587,6 +587,8 @@ using MixedGrids = ::testing::Types<
 #endif
     >;
 
+// currently the grid list is empty if we do not have UG
+#if HAVE_DUNE_UGGRID || HAVE_UG
 
 template <class G>
 using Order0MixedRtSpace = RtSpaceOnMixedLeafView<G, 0>;
@@ -631,3 +633,4 @@ TYPED_TEST(Order0MixedRtSpace, local_interpolation_seems_to_be_correct)
 {
   this->local_interpolation_seems_to_be_correct();
 }
+#endif // HAVE_DUNE_UGGRID || HAVE_UG

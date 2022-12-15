@@ -5,6 +5,7 @@ repos:
     rev: v3.2.0
     hooks:
     -   id: trailing-whitespace
+        exclude: "^(.ci/gitlab/config.yml)"
     -   id: check-yaml
     -   id: check-added-large-files
     -   id: debug-statements
@@ -34,4 +35,4 @@ repos:
     hooks:
     -   id: flake8
         exclude: "^pybind11"
-        args: ["--config=./python/setup.cfg"]
+        args: ["--config=./python/xt/setup.cfg"]

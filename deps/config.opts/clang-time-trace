@@ -1,0 +1,12 @@
+# This file is part of the dune-config-opts project:
+#   http://users.dune-project.org/projects/dune-config-opts
+# Copyright holders: Rene Milk, Felix Schindler
+# License: BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+NAME="$(basename ${BASH_SOURCE[0]})"
+
+TYPE=RelWithDebInfo
+CXXFLAGS="-O2 -g -mtune=native -march=native -ftime-trace -w -DDNDEBUG -DNDEBUG"
+
+source ${DIR}/base/clang

@@ -1,7 +1,7 @@
 # ~~~
-# This file is part of the dune-xt project:
-#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt
-# Copyright 2009-2021 dune-xt developers and contributors. All rights reserved.
+# This file is part of the dune-gdt project:
+#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
+# Copyright 2009-2021 dune-gdt developers and contributors. All rights reserved.
 # License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 #      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 #          with "runtime exception" (http://www.dune-project.org/license.html)
@@ -10,27 +10,14 @@
 # ~~~
 
 # cmake-lint: disable=C0103,W0106
-macro(DUNE_XT_MODULE_VERSION_FROM_GIT target_module)
-
-  dune_module_to_uppercase(TARGET_MODULE_UPPER ${target_module})
-
-  if(dune-xt_MODULE_PATH)
-    set(VERSIONEER_DIR ${dune-xt_MODULE_PATH})
-  else()
-    set(VERSIONEER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
-  endif()
-
-  if(${target_module}_SOURCE_DIR)
-    # the "self" case
-    set(_MODULE_SOURCE_DIR ${${target_module}_SOURCE_DIR})
-  else()
-    # the "other module" case
-    set(_MODULE_SOURCE_DIR ${${target_module}_PPREFIX})
-  endif()
+macro(DUNE_XT_MODULE_VERSION_FROM_GIT)
+  set(target_module dune-gdt)
+  set(TARGET_MODULE_UPPER DUNE_GDT)
+  set(VERSIONEER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
   execute_process(
-    COMMAND ${Python3_EXECUTABLE} ${VERSIONEER_DIR}/versioneer.py ${_MODULE_SOURCE_DIR}
-    WORKING_DIRECTORY ${_MODULE_SOURCE_DIR}
+    COMMAND ${Python3_EXECUTABLE} ${VERSIONEER_DIR}/versioneer.py ${PROJECT_SOURCE_DIR}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     OUTPUT_VARIABLE GIT_DESCRIBE_VERSION
     ERROR_VARIABLE GIT_DESCRIBE_ERROR
     RESULT_VARIABLE GIT_DESCRIBE_ERROR_CODE
@@ -39,13 +26,14 @@ macro(DUNE_XT_MODULE_VERSION_FROM_GIT target_module)
     message(FATAL_ERROR "Extracting version information failed: ${GIT_DESCRIBE_ERROR}")
   endif()
 
+  # The `DUNE_GDT_VERSION*` variables constantly regenerate from a cmake target. Instead of trying  to overwrite them,
+  # create our own set `DUNE_GDT_GIT_VERSION*`
+  extract_major_minor_version("${GIT_DESCRIBE_VERSION}" DUNE_VERSION)
   foreach(mod_var ${target_module} ${TARGET_MODULE_UPPER})
-    set(${mod_var}_VERSION ${GIT_DESCRIBE_VERSION})
-    # Reset variables from dune-common/cmake/modules/DuneMacros.cmake:dune_module_information
-    extract_major_minor_version("${GIT_DESCRIBE_VERSION}" DUNE_VERSION)
-    set(${mod_var}_VERSION_MAJOR "${DUNE_VERSION_MAJOR}")
-    set(${mod_var}_VERSION_MINOR "${DUNE_VERSION_MINOR}")
-    set(${mod_var}_VERSION_REVISION "${DUNE_VERSION_REVISION}")
+    set(${mod_var}_GIT_VERSION ${GIT_DESCRIBE_VERSION})
+    set(${mod_var}_GIT_VERSION_MAJOR "${DUNE_VERSION_MAJOR}")
+    set(${mod_var}_GIT_VERSION_MINOR "${DUNE_VERSION_MINOR}")
+    set(${mod_var}_GIT_VERSION_REVISION "${DUNE_VERSION_REVISION}")
   endforeach(mod_var)
   set(CPACK_PACKAGE_NAME "${DUNE_MOD_NAME}")
   set(CPACK_PACKAGE_VERSION "${DUNE_VERSION_MAJOR}.${DUNE_VERSION_MINOR}.${DUNE_VERSION_REVISION}")

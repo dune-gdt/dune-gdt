@@ -15,16 +15,16 @@
 #pragma GCC system_header
 
 /* Define to the version of dune-gdt */
-#define DUNE_GDT_VERSION ${DUNE_GDT_VERSION}
+#define DUNE_GDT_VERSION ${DUNE_GDT_GIT_VERSION_MAJOR}.${DUNE_GDT_GIT_VERSION_MINOR}.${DUNE_GDT_GIT_VERSION_REVISION}
 
 /* Define to the major version of dune-gdt */
-#define DUNE_GDT_VERSION_MAJOR ${DUNE_GDT_VERSION_MAJOR}
+#define DUNE_GDT_VERSION_MAJOR ${DUNE_GDT_GIT_VERSION_MAJOR}
 
 /* Define to the minor version of dune-gdt */
-#define DUNE_GDT_VERSION_MINOR ${DUNE_GDT_VERSION_MINOR}
+#define DUNE_GDT_VERSION_MINOR ${DUNE_GDT_GIT_VERSION_MINOR}
 
 /* Define to the revision of dune-gdt */
-#define DUNE_GDT_VERSION_REVISION ${DUNE_GDT_VERSION_REVISION}
+#define DUNE_GDT_VERSION_REVISION ${DUNE_GDT_GIT_VERSION_REVISION}
 
 #ifndef HAVE_CBLAS
 #cmakedefine01 HAVE_CBLAS
@@ -188,6 +188,7 @@
 
 /*** End: Silence implicitly False evaluation of undefined macro warnings ****/
 
+#define TBB_PREVIEW_GLOBAL_CONTROL 1
 #include <boost/config.hpp>
 #if HAVE_TBB && defined(BOOST_CLANG)
   // Hack to fix compilation with clang as tbb does not detect C++11 feature correctly for clang. Recent versions of TBB
@@ -219,10 +220,10 @@
 
 // alberta and lpsolve both define a clashing get_max_level
 #ifdef HAVE_LPSOLVE
-#if HAVE_LPSOLVE
 #if HAVE_ALBERTA
 #undef HAVE_LPSOLVE
-#endif
+#endif // HAVE_ALBERTA
+#endif // HAVE_LPSOLVE
 
 
 /* end dune-gdt */

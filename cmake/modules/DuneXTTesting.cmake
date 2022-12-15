@@ -14,13 +14,15 @@
 
 include(XtTooling)
 
-macro(GET_HEADERCHECK_TARGETS subdir)
+macro(GET_HEADERCHECK_TARGETS)
   file(GLOB_RECURSE bindir_header "${CMAKE_BINARY_DIR}/*.hh")
   list(APPEND dxt_ignore_header ${bindir_header})
   if(ENABLE_HEADERCHECK)
-    file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/xt/${subdir}/*.hh"
-         "${CMAKE_SOURCE_DIR}/dune/xt/test/${subdir}/*.hh" "${CMAKE_SOURCE_DIR}/python/dune/xt/${subdir}/*.hh")
-    add_custom_target(${subdir}_headercheck)
+    file(GLOB_RECURSE headerlist "${CMAKE_SOURCE_DIR}/dune/*/*.hh" "${CMAKE_SOURCE_DIR}/dune/*/test/*.hh"
+         "${CMAKE_SOURCE_DIR}/python/dune/*/*.hh")
+
+    add_custom_target(dxt_headercheck)
+    list(FILTER headerlist EXCLUDE REGEX ".*\/deps\/.*")
     foreach(header ${headerlist})
       list(FIND dxt_ignore_header "${header}" _index)
       if(${_index} GREATER -1)
@@ -29,17 +31,20 @@ macro(GET_HEADERCHECK_TARGETS subdir)
       set(targname ${header})
       dxt_path_to_headercheck_name(targname)
       set(targname "headercheck_${targname}")
-      list(APPEND ${subdir}_dxt_headercheck_targets "${targname}")
-      add_dependencies(${subdir}_headercheck ${targname})
+      list(APPEND dxt_headercheck_targets "${targname}")
+      add_dependencies(dxt_headercheck ${targname})
     endforeach(header ${headerlist})
   endif(ENABLE_HEADERCHECK)
 endmacro(GET_HEADERCHECK_TARGETS)
 
 # cmake-lint: disable=R0915
 macro(ADD_SUBDIR_TESTS subdir)
-  set(link_xt_libs dunext)
-  list(APPEND dxt_test_dirs ${subdir})
-  file(GLOB_RECURSE test_sources "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.cc")
+  get_property(dxt_test_dirs GLOBAL PROPERTY dxt_test_dirs_prop)
+  set(dxt_test_dirs ${dxt_test_dirs} ${CMAKE_CURRENT_SOURCE_DIR}/${subdir})
+  set_property(GLOBAL PROPERTY dxt_test_dirs_prop "${dxt_test_dirs}")
+endmacro()
+
+macro(_process_sources test_sources subdir)
   foreach(source ${test_sources})
     set(ranks "1")
     if(source MATCHES "mpi")
@@ -69,7 +74,7 @@ macro(ADD_SUBDIR_TESTS subdir)
           list(APPEND ${subdir}_dxt_test_binaries ${target})
           set(dxt_test_names_${target} ${testlist_${testbase}_${target}})
           foreach(test_name ${dxt_test_names_${target}})
-            set_tests_properties(${test_name} PROPERTIES LABELS ${subdir})
+            set_tests_properties(${test_name} PROPERTIES LABELS subdir_${subdir})
           endforeach()
         endforeach(target)
       else(dune-testtools_FOUND)
@@ -89,7 +94,7 @@ macro(ADD_SUBDIR_TESTS subdir)
         ${GRID_LIBS}
         gtest_dune_xt
         COMMAND
-        ${CMAKE_BINARY_DIR}/run-in-dune-env
+        ${RUN_IN_ENV_SCRIPT}
         CMD_ARGS
         ${CMAKE_CURRENT_BINARY_DIR}/${target}
         --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${target}.xml
@@ -99,9 +104,27 @@ macro(ADD_SUBDIR_TESTS subdir)
         ${ranks})
       list(APPEND ${subdir}_dxt_test_binaries ${target})
       set(dxt_test_names_${target} ${target})
-      set_tests_properties(${target} PROPERTIES LABELS ${subdir})
+      set_tests_properties(${target} PROPERTIES LABELS subdir_${subdir})
     endif(EXISTS ${minifile})
   endforeach(source)
+endmacro()
+
+macro(_PROCESS_SUBDIR_TESTS fullpath)
+  set(link_xt_libs dunext)
+
+  if(NOT DXT_TEST_TIMEOUT)
+    set(DXT_TEST_TIMEOUT 1000)
+  endif()
+
+  get_filename_component(subdir ${fullpath} NAME)
+  file(GLOB_RECURSE test_sources "${fullpath}/*.cc")
+
+  if(NOT test_sources)
+    message(AUTHOR_WARNING "called add_subdir_test(${subdir}), but no sources were found")
+  endif()
+
+  _process_sources("${test_sources}" "${subdir}")
+
   file(GLOB_RECURSE test_templates "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.tpl")
   foreach(template ${test_templates})
     set(ranks "1")
@@ -120,10 +143,11 @@ macro(ADD_SUBDIR_TESTS subdir)
       endif()
     endforeach(mod DEPENDENCIES)
 
+    # TODO dxt_code_geneartion.py should be avail in the venv when called from this target
     dune_execute_process(
       COMMAND
-      ${CMAKE_BINARY_DIR}/run-in-dune-env
-      dxt_code_generation.py
+      ${RUN_IN_ENV_SCRIPT}
+      ${PROJECT_SOURCE_DIR}/python/scripts/dxt_code_generation.py
       "${config_fn}"
       "${template}"
       "${CMAKE_BINARY_DIR}"
@@ -138,8 +162,8 @@ macro(ADD_SUBDIR_TESTS subdir)
     endif()
     add_custom_command(
       OUTPUT "${generated_sources}"
-      COMMAND ${CMAKE_BINARY_DIR}/run-in-dune-env dxt_code_generation.py "${config_fn}" "${template}"
-              "${CMAKE_BINARY_DIR}" "${out_fn}" "${last_dep_bindir}"
+      COMMAND ${RUN_IN_ENV_SCRIPT} ${PROJECT_SOURCE_DIR}/python/scripts/dxt_code_generation.py "${config_fn}"
+              "${template}" "${CMAKE_BINARY_DIR}" "${out_fn}" "${last_dep_bindir}"
       DEPENDS "${config_fn}" "${template}"
       VERBATIM USES_TERMINAL)
     foreach(gen_source ${generated_sources})
@@ -162,7 +186,7 @@ macro(ADD_SUBDIR_TESTS subdir)
         ${GRID_LIBS}
         gtest_dune_xt
         COMMAND
-        ${CMAKE_BINARY_DIR}/run-in-dune-env
+        ${RUN_IN_ENV_SCRIPT}
         CMD_ARGS
         ${CMAKE_CURRENT_BINARY_DIR}/${target}
         --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${target}.xml
@@ -172,7 +196,7 @@ macro(ADD_SUBDIR_TESTS subdir)
         ${ranks})
       list(APPEND ${subdir}_dxt_test_binaries ${target})
       set(dxt_test_names_${target} ${target})
-      set_tests_properties(${target} PROPERTIES LABELS ${subdir})
+      set_tests_properties(${target} PROPERTIES LABELS subdir_${subdir})
     endforeach()
   endforeach(template ${test_templates})
   add_custom_target(${subdir}_test_templates SOURCES ${test_templates})
@@ -181,27 +205,12 @@ macro(ADD_SUBDIR_TESTS subdir)
   foreach(test ${${subdir}_dxt_test_binaries})
     if(TEST test)
       set_tests_properties(${test} PROPERTIES TIMEOUT ${DXT_TEST_TIMEOUT})
-      set_tests_properties(${test} PROPERTIES LABELS ${subdir})
+      set_tests_properties(${test} PROPERTIES LABELS subdir_${subdir})
     endif(TEST test)
   endforeach()
 
   add_custom_target(${subdir}_test_binaries DEPENDS ${${subdir}_dxt_test_binaries})
-  if("${subdir}" STREQUAL "functions")
-    # There are a lot of tests in the function subdir and these take a long time in CI. We thus create two additional
-    # targets here, each containing half of the tests.
-    list(LENGTH functions_dxt_test_binaries num_tests)
-    math(EXPR half_num_tests "${num_tests}/2")
-    list(SUBLIST functions_dxt_test_binaries 0 ${half_num_tests} functions1_dxt_test_binaries)
-    # If length is -1, all list elements starting from <begin> will be returned
-    list(SUBLIST functions_dxt_test_binaries ${half_num_tests} -1 functions2_dxt_test_binaries)
-    add_custom_target(functions1_test_binaries DEPENDS ${functions1_dxt_test_binaries})
-    add_custom_target(functions2_test_binaries DEPENDS ${functions2_dxt_test_binaries})
-    foreach(label functions1 functions2)
-      foreach(test ${${label}_dxt_test_binaries})
-        set_tests_properties(${test} PROPERTIES LABELS ${label})
-      endforeach()
-    endforeach()
-  endif()
+
   add_custom_target(
     ${subdir}_check
     COMMAND ${CMAKE_CTEST_COMMAND} --timeout ${DXT_TEST_TIMEOUT} -j ${DXT_TEST_PROCS}
@@ -215,23 +224,27 @@ macro(ADD_SUBDIR_TESTS subdir)
   foreach(target ${${subdir}_dxt_test_binaries})
     set(all_sorted_testnames "${all_sorted_testnames}/${dxt_test_names_${target}}")
   endforeach()
-  set(${subdir}_dxt_headercheck_targets "")
-  get_headercheck_targets(${subdir})
-endmacro(ADD_SUBDIR_TESTS)
+endmacro(_PROCESS_SUBDIR_TESTS)
 
 macro(FINALIZE_TEST_SETUP)
+  get_headercheck_targets()
+  get_property(dxt_test_dirs GLOBAL PROPERTY dxt_test_dirs_prop)
   set(combine_targets test_templates test_binaries check recheck)
+
   foreach(target ${combine_targets})
     add_custom_target(${target})
-    foreach(subdir ${dxt_test_dirs})
-      add_dependencies(${target} ${subdir}_${target})
-    endforeach()
   endforeach()
 
-  foreach(subdir ${dxt_test_dirs})
+  foreach(fullpath ${dxt_test_dirs})
+    _process_subdir_tests(${fullpath})
+    get_filename_component(subdir ${fullpath} NAME)
+
+    foreach(target ${combine_targets})
+      add_dependencies(${target} ${subdir}_${target})
+    endforeach()
+
     set(dxt_test_binaries "${dxt_test_binaries} ${${subdir}_dxt_test_binaries}")
   endforeach()
-  # set(${subdir}_dxt_headercheck_targets "")
 
   if(ALBERTA_FOUND)
     foreach(test ${dxt_test_binaries})
@@ -252,7 +265,7 @@ macro(FINALIZE_TEST_SETUP)
       endif()
     endforeach()
   endif()
-endmacro()
+endmacro(FINALIZE_TEST_SETUP)
 
 macro(DXT_EXCLUDE_FROM_HEADERCHECK)
   exclude_from_headercheck(${ARGV0}) # make this robust to argument being passed with or without ""
@@ -267,13 +280,32 @@ endmacro(DXT_EXCLUDE_FROM_HEADERCHECK)
 macro(DXT_ADD_PYTHON_TESTS)
   add_custom_target(
     xt_test_python
-    "${CMAKE_BINARY_DIR}/run-in-dune-env" "py.test" "${CMAKE_BINARY_DIR}/python" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "--junitxml=pytest_results.xml"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python"
+    "${RUN_IN_ENV_SCRIPT}"
+    "python"
+    "-m"
+    "pytest"
+    "${CMAKE_BINARY_DIR}/python/xt"
+    "--cov"
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/xt"
+    DEPENDS bindings
+    VERBATIM USES_TERMINAL)
+  add_custom_target(
+    gdt_test_python
+    "${RUN_IN_ENV_SCRIPT}"
+    "python"
+    "-m"
+    "pytest"
+    "${CMAKE_BINARY_DIR}/python/gdt"
+    "--cov"
+    "${CMAKE_CURRENT_SOURCE_DIR}/"
+    "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/gdt"
     DEPENDS bindings
     VERBATIM USES_TERMINAL)
   if(NOT TARGET test_python)
     add_custom_target(test_python)
   endif(NOT TARGET test_python)
-  add_dependencies(test_python xt_test_python)
+  add_dependencies(test_python xt_test_python gdt_test_python)
 endmacro(DXT_ADD_PYTHON_TESTS)

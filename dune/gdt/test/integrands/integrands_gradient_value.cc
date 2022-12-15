@@ -143,20 +143,25 @@ struct GradientValueIntegrandTest : public IntegrandTest<G>
     const auto& grid_view = grid_provider_->leaf_view();
     const auto space = make_continuous_lagrange_space<d>(grid_view, /*polorder=*/2);
     const auto n = space.mapper().size();
-    MatrixType test_grad_mat(n, n, make_element_sparsity_pattern(space, space, grid_view));
-    MatrixType ansatz_grad_mat(n, n, make_element_sparsity_pattern(space, space, grid_view));
-    MatrixOperator<MatrixType, GV, d, 1, d, 1> test_grad_op(grid_view, space, space, test_grad_mat);
-    MatrixOperator<MatrixType, GV, d, 1, d, 1> ansatz_grad_op(grid_view, space, space, ansatz_grad_mat);
-    test_grad_op.append(LocalElementIntegralBilinearForm<E, d, 1, double, double, d, 1>{test_grad_integrand});
-    test_grad_op.assemble(true);
-    ansatz_grad_op.append(LocalElementIntegralBilinearForm<E, d, 1, double, double, d, 1>{ansatz_grad_integrand});
-    ansatz_grad_op.assemble(true);
-    EXPECT_TRUE(XT::Common::FloatCmp::eq(test_grad_mat, XT::Common::transposed(ansatz_grad_mat), 1e-14, 1e-14));
-    const auto mat_data_ptr = XT::Common::serialize_rowwise(test_grad_mat);
-    const auto min_entry = *std::min_element(mat_data_ptr.get(), mat_data_ptr.get() + n * n);
-    const auto max_entry = *std::max_element(mat_data_ptr.get(), mat_data_ptr.get() + n * n);
+
+    BilinearForm<GV, d, 1, d, 1> test_grad_form(grid_view);
+    test_grad_form += LocalElementIntegralBilinearForm<E, d, 1, double, double, d, 1>{test_grad_integrand};
+    BilinearForm<GV, d, 1, d, 1> ansatz_grad_form(grid_view);
+    ansatz_grad_form += LocalElementIntegralBilinearForm<E, d, 1, double, double, d, 1>{ansatz_grad_integrand};
+    auto test_grad_op = test_grad_form.template with<MatrixType>(space, space);
+    auto ansatz_grad_op = ansatz_grad_form.template with<MatrixType>(space, space);
+    auto walker = XT::Grid::make_walker(grid_view);
+    walker.append(test_grad_op);
+    walker.append(ansatz_grad_op);
+    walker.walk(DXTC_TEST_CONFIG_GET("setup.use_tbb", true));
+
+    EXPECT_TRUE(
+        XT::Common::FloatCmp::eq(test_grad_op.matrix(), XT::Common::transposed(ansatz_grad_op.matrix()), 1e-14, 1e-14));
+    const auto mat_data_ptr = XT::Common::serialize_rowwise(test_grad_op.matrix());
+    const auto min_entry = *std::min_element(mat_data_ptr.begin(), mat_data_ptr.begin() + n * n);
+    const auto max_entry = *std::max_element(mat_data_ptr.begin(), mat_data_ptr.begin() + n * n);
     const auto square_sum = std::accumulate(
-        mat_data_ptr.get(), mat_data_ptr.get() + n * n, 0., [](const auto& a, const auto& b) { return a + b * b; });
+        mat_data_ptr.begin(), mat_data_ptr.begin() + n * n, 0., [](const auto& a, const auto& b) { return a + b * b; });
     EXPECT_NEAR((is_simplex_grid_ ? -0.133333333333333 : -0.177777777777778), min_entry, 1e-13);
     EXPECT_NEAR((is_simplex_grid_ ? 0.133333333333333 : 0.177777777777778), max_entry, 1e-13);
     EXPECT_NEAR((is_simplex_grid_ ? 5.208148148148139 : 9.178930041152277), square_sum, 1e-13);

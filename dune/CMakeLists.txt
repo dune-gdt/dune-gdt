@@ -11,6 +11,8 @@
 #   Tobias Leibner  (2018)
 # ~~~
 
+enable_testing()
+
 add_subdirectory(xt)
 add_subdirectory(pybindxi)
 install(
@@ -19,3 +21,9 @@ install(
   FILES_MATCHING
   PATTERN "*.hh")
 add_subdirectory(gdt)
+
+# TODO find a better place for these files
+dune_symlink_to_source_files(FILES gmsh_2d_simplices.msh dgf_1d_interval.dgf dgf_2d_interval.dgf dgf_3d_interval.dgf
+                             dgf_4d_interval.dgf)
+
+finalize_test_setup()
