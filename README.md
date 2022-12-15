@@ -13,7 +13,7 @@ discrete function spaces.
 License
 -------
 
-dune-gdt is dual licensed as [BSD 2](http://opensource.org/licenses/BSD-2-Clause) or ([GPL-2.0+](http://opensource.org/licenses/gpl-license) with [runtime exception](http://www.dune-project.org/license.html)), see [LICENSE](LICENSE) for details.
+dune-gdt is dual licensed as [BSD 2](http://opensource.org/licenses/BSD-2-Clause) or ([GPL-2.0+](http://opensource.org/licenses/gpl-license) with [runtime exception](https://dune-project.org/about/license/)), see [LICENSE](LICENSE) for details.
 
 
 Citing
