@@ -15,6 +15,6 @@ services:
       TESTS_MODULE_SUBDIR: ${DUNE_GDT_TEST_MODULE:-gdt}
     restart: "no"
     working_dir: /src
-    command: /src/.ci/gitlab/test_cpp.bash
+    command: /src/.github/workflows/test_cpp.bash
     volumes:
       - ./:/src
