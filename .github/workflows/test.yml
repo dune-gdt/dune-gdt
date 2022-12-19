@@ -45,7 +45,7 @@ jobs:
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
                     ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
-                    /src/.ci/gitlab/test_cpp.bash
+                    /src/.github/workflows/test_cpp.bash
             - uses: actions/upload-artifact@v3
               name: Upload CPP results
               if: always()
@@ -75,7 +75,7 @@ jobs:
                   docker run --rm \
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
-                    /src/.ci/gitlab/test_headercheck.bash
+                    /src/.github/workflows/test_headercheck.bash
     test_python:
         runs-on: ubuntu-22.04
         needs: [build_images]
@@ -103,7 +103,7 @@ jobs:
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
                     ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
-                    /src/.ci/gitlab/test_python.bash
+                    /src/.github/workflows/test_python.bash
             - uses: actions/upload-artifact@v3
               name: Upload Python results
               if: always()
