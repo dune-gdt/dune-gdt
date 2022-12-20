@@ -30,7 +30,7 @@ fi
 
 [[ -e ${THISDIR}/docker ]] || mkdir -p ${THISDIR}/docker
 export DOCKER_ENVFILE=${THISDIR}/docker/env
-python3 ./.ci/shared/scripts/make_env_file.py
+python3 ./deps/scripts/python/make_env_file.py
 
 docker pull -q ${IMAGE}
 # this can happen in the background while we build stuff
