@@ -4,12 +4,12 @@ set -exuo pipefail
 # TODO why?
 rm -rf ${DUNE_SRC_DIR}/deps/dune-uggrid
 
-OPTS=${DUNE_SRC_DIR}/deps/config.opts/manylinux
+OPTS=${OPTS:-${DUNE_SRC_DIR}/deps/config.opts/manylinux}
 
 # sets Python path, etc.
 source /usr/local/bin/pybin.sh
 export CCACHE_DIR=${WHEEL_DIR}/cache
-mkdir ${WHEEL_DIR}/{tmp,final} -p || true
+mkdir ${WHEEL_DIR}/{tmp,final,cache} -p || true
 
 python3 -m venv ${WHEEL_DIR}/venv
 . ${WHEEL_DIR}/venv/bin/activate

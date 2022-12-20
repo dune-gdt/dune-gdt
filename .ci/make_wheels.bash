@@ -7,6 +7,7 @@ git config --global --add safe.directory '*'
 
 THISDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd -P )"
 
+# in case this script runs inside the manylinux container, this uses the right python
 [[ -f /usr/local/bin/pybin.sh ]] && source /usr/local/bin/pybin.sh
 
 python3 -m pip install -q twine
