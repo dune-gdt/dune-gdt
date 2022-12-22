@@ -280,32 +280,30 @@ endmacro(DXT_EXCLUDE_FROM_HEADERCHECK)
 macro(DXT_ADD_PYTHON_TESTS)
   add_custom_target(
     xt_test_python
-    "${RUN_IN_ENV_SCRIPT}"
-    "python"
-    "-m"
-    "pytest"
-    "${CMAKE_BINARY_DIR}/python/xt"
-    "--cov"
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml"
+    COMMAND
+      ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-xt "${RUN_IN_ENV_SCRIPT}" "python" "-m"
+      "pytest" "${CMAKE_BINARY_DIR}/python/xt" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
+      "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/xt"
     DEPENDS bindings
     VERBATIM USES_TERMINAL)
   add_custom_target(
     gdt_test_python
-    "${RUN_IN_ENV_SCRIPT}"
-    "python"
-    "-m"
-    "pytest"
-    "${CMAKE_BINARY_DIR}/python/gdt"
-    "--cov"
-    "${CMAKE_CURRENT_SOURCE_DIR}/"
-    "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
+    COMMAND
+      ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt "${RUN_IN_ENV_SCRIPT}" "python" "-m"
+      "pytest" "${CMAKE_BINARY_DIR}/python/gdt" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
+      "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/gdt"
     DEPENDS bindings
     VERBATIM USES_TERMINAL)
   if(NOT TARGET test_python)
     add_custom_target(test_python)
   endif(NOT TARGET test_python)
-  add_dependencies(test_python xt_test_python gdt_test_python)
+
+  add_custom_target(
+    test_tutorials
+    "${RUN_IN_ENV_SCRIPT}" "${PROJECT_SOURCE_DIR}/.ci/gitlab/test_tutorials.bash" "${CMAKE_BINARY_DIR}"
+    DEPENDS bindings
+    VERBATIM USES_TERMINAL)
+  add_dependencies(test_python xt_test_python gdt_test_python test_tutorials)
 endmacro(DXT_ADD_PYTHON_TESTS)

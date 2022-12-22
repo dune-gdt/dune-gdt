@@ -23,7 +23,9 @@ ${DUNE_CTRL} --opts=${OPTS} make -j $(nproc --ignore 1) -l $(nproc --ignore 1)
 
 ${DUNE_CTRL} --opts=${OPTS} --only=dune-gdt  make -j $(nproc --ignore 1) -l $(nproc --ignore 1) bindings
 python3 -m pip wheel ${DUNE_BUILD_DIR}/dune-gdt/python/xt/ -w ${WHEEL_DIR}/tmp
-python3 -m pip wheel ${DUNE_BUILD_DIR}/dune-gdt/python/gdt/ -w ${WHEEL_DIR}/tmp
+# xt is an exact-version dependency of gdt -> needs `--find-links`
+python3 -m pip install ${WHEEL_DIR}/tmp/dune.xt*whl
+python3 -m pip wheel ${DUNE_BUILD_DIR}/dune-gdt/python/gdt/ -w ${WHEEL_DIR}/tmp --find-links ${WHEEL_DIR}/tmp/
 # Bundle external shared libraries into the wheels
 python3 -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*xt*.whl -w ${WHEEL_DIR}/final
 python3 -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*gdt*.whl -w ${WHEEL_DIR}/final
