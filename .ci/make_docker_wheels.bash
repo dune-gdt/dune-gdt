@@ -6,10 +6,8 @@ set -exo pipefail
 
 THISDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" && pwd -P )"
 
-source ${THIS_DIR}/../.env
-
-md=${1}
-shift
+cd ${THISDIR}/..
+source ./.env
 
 # for rootless/podman execution set both to 0
 LOCAL_USER=${LOCAL_USER:$USER}
@@ -19,7 +17,7 @@ PYTHON_VERSION=${GDT_PYTHON_VERSION:-3.8}
 
 set -eu
 
-IMAGE=zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/manylinux-2014_py${PYTHON_VERSION}:${ML_TAG}
+IMAGE=${ML_IMAGE_BASE}_py${PYTHON_VERSION}:${ML_TAG}
 TEST_IMAGE=docker.io/python:${PYTHON_VERSION}-slim
 # check if we a have TTY first, else docker run would throw an error
 if [ -t 1 ] ; then
@@ -30,7 +28,7 @@ fi
 
 [[ -e ${THISDIR}/docker ]] || mkdir -p ${THISDIR}/docker
 export DOCKER_ENVFILE=${THISDIR}/docker/env
-python3 ./.ci/shared/scripts/make_env_file.py
+python3 ./deps/scripts/python/make_env_file.py
 
 docker pull -q ${IMAGE}
 # this can happen in the background while we build stuff
@@ -42,15 +40,13 @@ DOCKER_RUN="docker run ${DT} --env-file=${DOCKER_ENVFILE} -e DUNE_SRC_DIR=/home/
   -e LOCAL_USER=${LOCAL_USER} -e LOCAL_GID=${LOCAL_GID} -e LOCAL_UID=${LOCAL_UID} \
   -i ${IMAGE}"
 
-echo ${DOCKER_RUN} build-wheels.sh ${md}
+${DOCKER_RUN} build-wheels.sh
 
-if [[ "${md}" != "all" ]] ; then
-  # wait for pull to finish
-  wait
-  # makes sure wheels are importable
-  docker run ${DT} -v ${THISDIR}/docker/wheelhouse/final:/wheelhouse:ro -i ${TEST_IMAGE} \
-    bash -c "pip install /wheelhouse/dune* && python -c 'from dune.${md} import *'"
+# wait for pull to finish
+wait
+# makes sure wheels are importable
+docker run ${DT} -v ${THISDIR}/docker/wheelhouse/final:/wheelhouse:ro -i ${TEST_IMAGE} \
+  bash -c "pip install /wheelhouse/dune* && python -c 'from dune.${md} import *'"
 
-  echo '************************************'
-  echo Wheels are in ${THISDIR}/docker/wheelhouse/final
-fi
+echo '************************************'
+echo Wheels are in ${THISDIR}/docker/wheelhouse/final
