@@ -1,13 +1,13 @@
 # ~~~
 # This file is part of the dune-gdt project:
-#   https://github.com/dune-community/dune-gdt
+# https://github.com/dune-community/dune-gdt
 # Copyright 2010-2018 dune-gdt developers and contributors. All rights reserved.
 # License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
-#      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
-#          with "runtime exception" (http://www.dune-project.org/license.html)
+# or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
+# with "runtime exception" (http://www.dune-project.org/license.html)
 # Authors:
-#   Felix Schindler (2014, 2016 - 2018)
-#   René Fritze     (2017 - 2018)
+# Felix Schindler (2014, 2016 - 2018)
+# René Fritze     (2017 - 2018)
 # ~~~
 
 set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
@@ -39,6 +39,7 @@ set(DS_REQUIRED_BOOST_LIBS
     thread
     timer)
 set(_boost_root_hints "$ENV{BOOST_ROOT}" ${root_hints})
+
 # check if any hints are provided by user
 if(DEFINED BOOST_ROOT
    OR DEFINED BOOOST_INCLUDEDIR
@@ -52,26 +53,32 @@ else(
   foreach(boost_root_hint ${_boost_root_hints})
     set(BOOST_ROOT ${boost_root_hint})
     find_package(Boost 1.48.0 COMPONENTS ${DS_REQUIRED_BOOST_LIBS})
+
     if(${Boost_FOUND})
       break()
     endif()
   endforeach(boost_root_hint ${_boost_root_hints})
+
   # check for Boost again with REQUIRED keyword to make boost mandatory
   find_package(Boost 1.48.0 REQUIRED COMPONENTS ${DS_REQUIRED_BOOST_LIBS})
 endif(
   DEFINED BOOST_ROOT
   OR DEFINED BOOOST_INCLUDEDIR
   OR DEFINED BOOST_LIBRARYDIR)
+
 if(${Boost_INCLUDE_DIRS})
   dune_register_package_flags(INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 endif(${Boost_INCLUDE_DIRS})
+
 # if imported targets are available, use them
 if(TARGET Boost::headers)
   dune_register_package_flags(LIBRARIES Boost::headers)
 endif(TARGET Boost::headers)
+
 foreach(boost_lib ${DS_REQUIRED_BOOST_LIBS})
   set(_boost_lib "")
   string(TOUPPER "${boost_lib}" _boost_lib)
+
   if(TARGET Boost::${boost_lib})
     dune_register_package_flags(LIBRARIES Boost::${boost_lib})
   else(TARGET Boost::${boost_lib})
@@ -80,6 +87,7 @@ foreach(boost_lib ${DS_REQUIRED_BOOST_LIBS})
 endforeach(boost_lib ${DS_REQUIRED_BOOST_LIBS})
 
 find_package(Eigen3 3.2.0)
+
 if(EIGEN3_FOUND)
   dune_register_package_flags(INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR} COMPILE_DEFINITIONS "ENABLE_EIGEN=1")
   set(HAVE_EIGEN 1)
@@ -89,6 +97,7 @@ else(EIGEN3_FOUND)
 endif(EIGEN3_FOUND)
 
 find_package(MKL)
+
 if(MKL_FOUND)
   set(HAVE_LAPACKE 0)
 else(MKL_FOUND)
@@ -101,6 +110,7 @@ find_package(Spe10Data)
 if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL "k1om")
   include(FindLIKWID)
   find_package(LIKWID)
+
   if(LIKWID_FOUND)
     dune_register_package_flags(INCLUDE_DIRS ${LIKWID_INCLUDE_DIR} LIBRARIES ${LIKWID_LIBRARY})
   endif(LIKWID_FOUND)
@@ -112,6 +122,7 @@ include(DuneTBB)
 
 if(HAVE_MPI)
   include(FindMPI4PY)
+
   if(MPI4PY_FOUND)
 
   else()
@@ -121,19 +132,24 @@ if(HAVE_MPI)
       OUTPUT_STRIP_TRAILING_WHITESPACE)
     myfind_mpi4py()
   endif()
+
   if(MPI4PY_FOUND)
     # this only works in dependent modules
     dune_register_package_flags(INCLUDE_DIRS "${MPI4PY_INCLUDE_DIR}")
+
     # this only works in dune-gdt itself
-    include_directories(SYSTEM "${MPI4PY_INCLUDE_DIR}" ${PYTHON_INCLUDE_DIRS})
+    include_directories(SYSTEM "${MPI4PY_INCLUDE_DIR}")
   else()
     message(FATAL_ERROR "mpi4py is required, but could not be installed")
   endif()
 endif()
+
+# dune-common's FindX does not set this correctly
+include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
+
 # end library checks  #####################################################################
 
 # misc vars  #########################################################################
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 set(DS_MAX_MIC_THREADS
     120
@@ -142,9 +158,11 @@ set(DUNE_XT_COMMON_TEST_DIR ${dune-gdt_SOURCE_DIR}/dune/xt/common/test)
 set(ENABLE_PERFMON
     0
     CACHE STRING "enable likwid performance monitoring API usage")
+
 if(NOT DS_HEADERCHECK_DISABLE)
   set(ENABLE_HEADERCHECK 1)
 endif(NOT DS_HEADERCHECK_DISABLE)
+
 set(DXT_TEST_TIMEOUT
     180
     CACHE STRING "per-test timeout in seconds")
