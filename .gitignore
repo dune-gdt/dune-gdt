@@ -69,3 +69,5 @@ tags
 compile_commands.json
 .cache
 build-cmake
+.secrets
+wheelhouse
