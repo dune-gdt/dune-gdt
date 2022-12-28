@@ -75,6 +75,7 @@ jobs:
                 verbose: true
             - name: XT Test PyPI
               uses: pypa/gh-action-pypi-publish@v1.6.4
+              if: ${{ ! startsWith(github.ref, 'refs/tags/20') }}
               with:
                 password: ${{ secrets.XT_TEST_PYPI_API_TOKEN }}
                 verbose: true
@@ -89,8 +90,10 @@ jobs:
                 verbose: true
             - name: GDT Test PyPI
               uses: pypa/gh-action-pypi-publish@v1.6.4
+              if: ${{ ! startsWith(github.ref, 'refs/tags/20') }}
               with:
                 password: ${{ secrets.GDT_TEST_PYPI_API_TOKEN }}
                 verbose: true
                 packages_dir: gdt
                 repository_url: https://test.pypi.org/legacy/
+
