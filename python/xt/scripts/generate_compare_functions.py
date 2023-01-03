@@ -92,7 +92,7 @@ fn_common = os.path.join(
     bindir, "..", "dune", "xt", "common", "float_cmp_generated.hxx"
 )
 cmps = ["eq", "ne", "gt", "lt", "ge", "le"]
-with open(fn_test, "wt") as test_header, open(fn_common, "wt") as common_header:
+with open(fn_test, "w") as test_header, open(fn_common, "w") as common_header:
     for name in cmps:
         common_header.write(Template(common_tpl).substitute(id=name))
         test_header.write(Template(test_tpl).substitute(id=name, ID=name.upper()))

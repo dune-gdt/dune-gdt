@@ -11,7 +11,7 @@
 # ~~~
 
 
-class Grids(object):
+class Grids:
 
     def __init__(self, cache):
         try:
@@ -36,7 +36,7 @@ class LeafGrids(Grids):
     yasp_view_fmt = 'Yasp{}dLeafGridViewType'
 
     def __init__(self, cache):
-        super(LeafGrids, self).__init__(cache)
+        super().__init__(cache)
 
 
 class LevelGrids(Grids):
@@ -51,4 +51,4 @@ class LevelGrids(Grids):
     yasp_view_fmt = 'Yasp{}dLevelGridViewType'
 
     def __init__(self, cache):
-        super(LevelGrids, self).__init__(cache)
+        super().__init__(cache)
