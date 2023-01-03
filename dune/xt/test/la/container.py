@@ -12,7 +12,6 @@
 
 from itertools import product
 
-from dune.xt import codegen
 
 import matrices
 

@@ -11,7 +11,6 @@
 #   Tobias Leibner  (2018 - 2019)
 # ~~~
 
-import pytest
 
 
 def test_tags():

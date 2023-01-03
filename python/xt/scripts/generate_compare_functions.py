@@ -13,7 +13,6 @@
 #   Tobias Leibner  (2020)
 # ~~~
 
-import sys
 import os
 from string import Template
 

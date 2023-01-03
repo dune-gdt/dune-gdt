@@ -406,7 +406,7 @@ def test_reference_wrapper():
     a2 = m.refwrap_list(copy=True)
     assert [x.value for x in a1] == [2, 3]
     assert [x.value for x in a2] == [2, 3]
-    assert not a1[0] is a2[0] and not a1[1] is a2[1]
+    assert a1[0] is not a2[0] and a1[1] is not a2[1]
 
     b1 = m.refwrap_list(copy=False)
     b2 = m.refwrap_list(copy=False)

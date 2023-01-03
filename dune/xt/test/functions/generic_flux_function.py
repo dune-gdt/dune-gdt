@@ -13,7 +13,6 @@
 
 import grids
 import itertools
-from dune.xt.codegen import typeid_to_typedef_name
 
 dim_range = [1, 3]
 dim_state = [1, 2]

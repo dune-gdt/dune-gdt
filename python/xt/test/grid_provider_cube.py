@@ -11,7 +11,6 @@
 #   Tobias Leibner  (2018 - 2019)
 # ~~~
 
-import pytest
 
 from dune.xt.grid import Dim, Cube, Simplex, make_cube_grid
 

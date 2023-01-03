@@ -12,8 +12,6 @@
 # ~~~
 
 import grids
-import itertools
-from dune.xt.codegen import typeid_to_typedef_name
 
 dimDomain = [1]
 

@@ -9,7 +9,6 @@
 #   Felix Schindler (2020)
 # ~~~
 
-import pytest
 
 
 def test_types():

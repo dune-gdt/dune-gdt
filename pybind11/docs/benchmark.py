@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
 import os
-import time
 import datetime as dt
 
 nfns = 4     # Functions per class

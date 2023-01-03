@@ -11,7 +11,6 @@
 #   Tobias Leibner  (2019 - 2020)
 # ~~~
 
-from pkg_resources import resource_filename, resource_stream
 import pkgutil
 import logging
 import pprint
