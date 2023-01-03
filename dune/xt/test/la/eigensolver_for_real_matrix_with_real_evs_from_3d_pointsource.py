@@ -36,4 +36,6 @@ def _ok(ft):
     return True
 
 
-testtypes = [(safe_name('_'.join(ft)), *ft) for ft in zip(matrix, field, complex_matrix, real_matrix) if _ok(ft)]
+testtypes = [(safe_name('_'.join(ft)), *ft)
+             for ft in zip(matrix, field, complex_matrix, real_matrix, strict=True)
+             if _ok(ft)]
