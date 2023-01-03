@@ -10,8 +10,8 @@
 #ifndef PYTHON_DUNE_GDT_LOCAL_INTEGRANDS_QUATERNARY_INTERSECTION_INTERFACE_HH
 #define PYTHON_DUNE_GDT_LOCAL_INTEGRANDS_QUATERNARY_INTERSECTION_INTERFACE_HH
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/stl.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <dune/xt/grid/type_traits.hh>
 

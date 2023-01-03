@@ -11,8 +11,8 @@
 
 #include "config.h"
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/functional.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
 
 #include <python/xt/dune/xt/common/bindings.hh>
 #include <dune/xt/grid/grids.hh>

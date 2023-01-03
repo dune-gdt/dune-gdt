@@ -15,8 +15,8 @@
 #include <sstream>
 #include <type_traits>
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 #include <dune/xt/grid/type_traits.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>

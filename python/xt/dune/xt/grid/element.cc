@@ -11,10 +11,10 @@
 
 #include <sstream>
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/operators.h>
-#include <dune/pybindxi/stl.h>
-#include <dune/pybindxi/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
+#include <pybind11/stl.h>
+#include <pybind11/numpy.h>
 
 #include <dune/xt/common/numeric_cast.hh>
 #include <dune/xt/grid/type_traits.hh>

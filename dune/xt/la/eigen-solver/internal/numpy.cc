@@ -11,7 +11,7 @@
 
 #include "config.h"
 
-#include <dune/pybindxi/interpreter.hh>
+#include <pybind11/interpreter.hh>
 
 namespace Dune::XT::LA::internal {
 

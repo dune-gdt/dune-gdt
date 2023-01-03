@@ -16,8 +16,8 @@
 
 #include <dune/common/parallel/mpihelper.hh>
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/stl.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <dune/xt/common/string.hh>
 #include <dune/xt/grid/gridprovider/provider.hh>

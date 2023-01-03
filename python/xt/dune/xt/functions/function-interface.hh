@@ -12,9 +12,9 @@
 #ifndef PYTHON_DUNE_XT_FUNCTIONS_FUNCTION_INTERFACE_HH
 #define PYTHON_DUNE_XT_FUNCTIONS_FUNCTION_INTERFACE_HH
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/numpy.h>
-#include <dune/pybindxi/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/operators.h>
 
 #include <python/xt/dune/xt/common/bindings.hh>
 #include <python/xt/dune/xt/common/parameter.hh>

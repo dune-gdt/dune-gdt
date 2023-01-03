@@ -13,8 +13,8 @@
 #ifndef PYTHON_DUNE_XT_GRID_WALKER_HH
 #define PYTHON_DUNE_XT_GRID_WALKER_HH
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/functional.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
 
 #include <dune/xt/grid/gridprovider/coupling.hh>
 #include <dune/xt/grid/gridprovider/provider.hh>

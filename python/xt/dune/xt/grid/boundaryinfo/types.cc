@@ -12,8 +12,8 @@
 
 #include <sstream>
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 #include <dune/xt/grid/boundaryinfo/interfaces.hh>
 #include <dune/xt/grid/boundaryinfo/types.hh>
 

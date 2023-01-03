@@ -14,9 +14,9 @@
 #include <string>
 #include <vector>
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/stl.h>
-#include <dune/pybindxi/iostream.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/iostream.h>
 
 #include <python/xt/dune/xt/common/bindings.hh>
 #include <dune/xt/common/python.hh>

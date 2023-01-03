@@ -9,9 +9,9 @@
 
 #include "config.h"
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/stl.h>
-#include <dune/pybindxi/functional.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/functional.h>
 
 #include <dune/xt/grid/type_traits.hh>
 #include <dune/xt/grid/grids.hh>

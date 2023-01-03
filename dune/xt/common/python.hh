@@ -16,7 +16,7 @@
 
 #include <functional>
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 namespace Dune::XT::Common::bindings {
 
