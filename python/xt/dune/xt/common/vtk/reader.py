@@ -58,11 +58,11 @@ def _get_vtk_type(path):
     :param path: vtk file to peek into
     :return: None if no VTKFile element found, else the type attribute of the VTKFile element
     '''
-    parser = etree.XMLPullParser(events=('start',))
+    parser = etree.XMLPullParser(events=('start', ))
     with open(path, 'rb') as xml:
         for lines in xml.readlines():
             parser.feed(lines)
-            for action, element in parser.read_events():
+            for _action, element in parser.read_events():
                 if element.tag == 'VTKFile':
                     return element.get('type')
     return None

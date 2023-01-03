@@ -16,7 +16,6 @@ from numbers import Number
 from dune.xt import guarded_import
 from dune.xt.common.config import config
 
-
 for mod_name in (
         '_grid_boundaryinfo_alldirichlet',
         '_grid_boundaryinfo_allneumann',
@@ -29,9 +28,9 @@ for mod_name in (
         '_grid_filters_base',
         '_grid_filters_element',
         '_grid_functors_boundary_detector',
-     # '_grid_functors_bounding_box',
+        # '_grid_functors_bounding_box',
         '_grid_functors_interfaces',
-     # '_grid_functors_refinement',
+        # '_grid_functors_refinement',
         '_grid_gridprovider_cube',
         '_grid_gridprovider_gmsh',
         '_grid_gridprovider_provider',
@@ -78,4 +77,4 @@ def visualize_grid(grid):
         tmpfile = NamedTemporaryFile(mode='wb', delete=False, suffix='.vtu').name
         grid.visualize(tmpfile[:-4])
         return plot(tmpfile,
-                    color_attribute_name='Element index')     # see visualize in python/dune/xt/grid/gridprovider.hh
+                    color_attribute_name='Element index')  # see visualize in python/dune/xt/grid/gridprovider.hh

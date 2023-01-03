@@ -78,6 +78,6 @@ def type_ok(t, cache):
 
 
 def testtypes_creator(la_types, common_types, dune_types, cache):
-    return [la_test_tuple(item) for item in la_types if type_ok(item, cache)] + [
-        common_test_tuple(item, 'XT_') for item in common_types
-    ] + [common_test_tuple(item, '') for item in dune_types]
+    return [la_test_tuple(item) for item in la_types if type_ok(item, cache)
+            ] + [common_test_tuple(item, 'XT_')
+                 for item in common_types] + [common_test_tuple(item, '') for item in dune_types]

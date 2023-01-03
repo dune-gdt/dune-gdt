@@ -16,7 +16,6 @@ from dune.xt.grid import AllDirichletBoundaryInfo, Dim, DirichletBoundary, Walke
 
 
 def discretize_elliptic_cg_dirichlet_zero(grid, diffusion, source):
-
     """
     Discretizes the stationary heat equation with homogeneous Dirichlet boundary values everywhere
     with dune-gdt using continuous Lagrange finite elements.
@@ -47,9 +46,7 @@ def discretize_elliptic_cg_dirichlet_zero(grid, diffusion, source):
     V_h = ContinuousLagrangeSpace(grid, order=1)
 
     l_h = VectorFunctional(grid, source_space=V_h)
-    l_h += LocalElementIntegralFunctional(
-        LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source)
-    )
+    l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source))
 
     a_h = MatrixOperator(
         grid,
@@ -75,7 +72,6 @@ def discretize_elliptic_cg_dirichlet_zero(grid, diffusion, source):
 
 
 def discretize_elliptic_cg_dirichlet(grid, diffusion, source, dirichlet_values):
-
     """
     Discretizes the stationary heat equation with non-homogeneous Dirichlet
     boundary values everywhere with dune-gdt using continuous Lagrange finite elements.
@@ -110,9 +106,7 @@ def discretize_elliptic_cg_dirichlet(grid, diffusion, source, dirichlet_values):
     V_h = ContinuousLagrangeSpace(grid, order=1)
 
     l_h = VectorFunctional(grid, source_space=V_h)
-    l_h += LocalElementIntegralFunctional(
-        LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source)
-    )
+    l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source))
 
     a_h = MatrixOperator(
         grid,
@@ -123,9 +117,7 @@ def discretize_elliptic_cg_dirichlet(grid, diffusion, source, dirichlet_values):
     a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
 
     dirichlet_constraints = DirichletConstraints(boundary_info, V_h)
-    dirichlet_values = boundary_interpolation(
-        dirichlet_values, V_h, boundary_info, DirichletBoundary()
-    )
+    dirichlet_values = boundary_interpolation(dirichlet_values, V_h, boundary_info, DirichletBoundary())
 
     walker = Walker(grid)
     walker.append(a_h)

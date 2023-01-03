@@ -11,7 +11,6 @@
 #   Tobias Leibner  (2018 - 2019)
 # ~~~
 
-
 from dune.xt.grid import Cube, Dim, Simplex, make_cube_grid
 
 init_args = (

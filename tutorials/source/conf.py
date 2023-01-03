@@ -72,7 +72,6 @@ source_suffix = {
     ".md": "myst-nb",
 }
 
-
 # The master toctree document.
 master_doc = "index"
 
@@ -111,7 +110,6 @@ add_function_parentheses = False
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "default"
-
 
 # -----------------------------------------------------------------------------
 # HTML output
@@ -193,7 +191,6 @@ htmlhelp_basename = "dune-gdt"
 # Pngmath should try to align formulas properly.
 pngmath_use_preview = True
 
-
 # -----------------------------------------------------------------------------
 # LaTeX output
 # -----------------------------------------------------------------------------
@@ -229,7 +226,6 @@ pngmath_use_preview = True
 
 # If false, no module index is generated.
 latex_use_modindex = False
-
 
 # -----------------------------------------------------------------------------
 # Autosummary
@@ -267,15 +263,12 @@ intersphinx_mapping = {
 
 modindex_common_prefix = ["dune."]
 
-
 # make intersphinx link to pyside2 docs
 qt_documentation = "PySide2"
 
 # this must match GDT_TUTORIALS_ROOT/.ci/gitlab/deploy_docs
 try_on_binder_branch = branch.replace("github/PUSH_", "from_fork__")
-try_on_binder_slug = os.environ.get(
-    "CI_COMMIT_REF_SLUG", slugify.slugify(try_on_binder_branch)
-)
+try_on_binder_slug = os.environ.get("CI_COMMIT_REF_SLUG", slugify.slugify(try_on_binder_branch))
 
 
 def linkcode_resolve(domain, info):

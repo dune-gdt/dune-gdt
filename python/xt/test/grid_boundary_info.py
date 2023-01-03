@@ -10,7 +10,6 @@
 # ~~~
 
 
-
 def test_types():
     from dune.xt.grid import (
         AbsorbingBoundary,

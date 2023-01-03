@@ -1,6 +1,5 @@
 # flake8: noqa
 
-
 # substitutions for the most important classes and methods
 common = """
 .. |NumPy| replace:: :mod:`NumPy <numpy>`
