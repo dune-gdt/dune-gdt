@@ -30,7 +30,7 @@ real_matrix = [
 
 def _ok(ft):
     if 'Eigen' in ft[0]:
-        return have_eigen(cache)
+        return have_eigen(cache)  # noqa: F821
     return True
 
 

@@ -15,9 +15,9 @@ from itertools import product
 
 import matrices
 
-conts = matrices.matrices(cache) + matrices.vectors(cache)
+conts = matrices.matrices(cache) + matrices.vectors(cache)  # noqa: F821
 container = [
     matrices.name_type_tuple(c, f)
-    for c, f in product(conts, matrices.fieldtypes(cache))
+    for c, f in product(conts, matrices.fieldtypes(cache))  # noqa: F821
     if matrices.vector_filter(c, f)
 ]

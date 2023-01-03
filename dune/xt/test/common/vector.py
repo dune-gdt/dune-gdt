@@ -16,5 +16,5 @@ from vectors import vectortype, vectors, fieldtypes, vector_filter
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 testtypes = [(safe_name('{}_{}'.format(mv, f)), vectortype(mv, f))
-             for mv, f in product(vectors(cache), fieldtypes(cache))
+             for mv, f in product(vectors(cache), fieldtypes(cache))  # noqa: F821
              if vector_filter(mv, f)]

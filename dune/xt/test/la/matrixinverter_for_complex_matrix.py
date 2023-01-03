@@ -22,7 +22,7 @@ matrix = [
 
 def _ok(ft):
     if 'Eigen' in ft:
-        return have_eigen(cache)
+        return have_eigen(cache)  # noqa: F821
     return True
 
 

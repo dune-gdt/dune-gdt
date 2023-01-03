@@ -13,4 +13,4 @@
 
 from algorithms import la_types, common_types, dune_types, testtypes_creator
 
-testtypes = testtypes_creator(la_types, common_types, dune_types, cache)
+testtypes = testtypes_creator(la_types, common_types, dune_types, cache)  # noqa: F821

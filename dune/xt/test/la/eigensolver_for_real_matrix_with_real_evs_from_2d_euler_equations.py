@@ -24,7 +24,7 @@ real_matrix = ['EigenDenseMatrix<double>', 'FieldMatrix<double, 4, 4>', 'CommonD
 
 def _ok(ft):
     if 'Eigen' in ft[0]:
-        return have_eigen(cache)
+        return have_eigen(cache)  # noqa: F821
     return True
 
 

@@ -45,9 +45,9 @@ def test_tuple(args):
 
 def type_ok(t):
     if sum(['Eigen' in x for x in t]):
-        return have_eigen(cache)
+        return have_eigen(cache)  # noqa: F821
     if sum(['Istl' in x for x in t]):
-        return have_istl(cache)
+        return have_istl(cache)  # noqa: F821
     return True
 
 
