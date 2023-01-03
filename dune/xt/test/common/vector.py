@@ -12,9 +12,13 @@
 # ~~~
 
 from itertools import product
-from vectors import vectortype, vectors, fieldtypes, vector_filter
+
+from vectors import fieldtypes, vector_filter, vectors, vectortype
+
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
-testtypes = [(safe_name('{}_{}'.format(mv, f)), vectortype(mv, f))
-             for mv, f in product(vectors(cache), fieldtypes(cache))
-             if vector_filter(mv, f)]
+testtypes = [
+    (safe_name('{}_{}'.format(mv, f)), vectortype(mv, f))
+    for mv, f in product(vectors(cache), fieldtypes(cache))  # noqa: F821
+    if vector_filter(mv, f)
+]

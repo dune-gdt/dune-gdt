@@ -10,7 +10,8 @@
 #   Tobias Leibner (2018 - 2020)
 # ~~~
 
-from dune.xt.codegen import typeid_to_typedef_name as safe_name, have_eigen
+from dune.xt.codegen import have_eigen
+from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 matrix = [
     'EigenDenseMatrix<std::complex<double>>', 'FieldMatrix<std::complex<double>, 2, 2>',
@@ -22,7 +23,7 @@ matrix = [
 
 def _ok(ft):
     if 'Eigen' in ft:
-        return have_eigen(cache)
+        return have_eigen(cache)  # noqa: F821
     return True
 
 

@@ -11,9 +11,7 @@
 #   Tobias Leibner  (2018 - 2019)
 # ~~~
 
-import pytest
-
-from dune.xt.grid import Dim, Cube, Simplex, make_cube_grid
+from dune.xt.grid import Cube, Dim, Simplex, make_cube_grid
 
 init_args = (
     (Dim(1), [0], [1], [2]),
@@ -26,4 +24,4 @@ init_args = (
 
 def test_init():
     for args in init_args:
-        grid = make_cube_grid(*args)
+        grid = make_cube_grid(*args)  # noqa: F841

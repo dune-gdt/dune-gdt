@@ -11,9 +11,8 @@
 #   Tobias Leibner  (2019 - 2020)
 # ~~~
 
-from pkg_resources import resource_filename, resource_stream
-import pkgutil
 import logging
+import pkgutil
 import pprint
 
 
@@ -34,6 +33,7 @@ def load_all_submodule(module):
 
 
 def runmodule(filename):
-    import pytest
     import sys
+
+    import pytest
     sys.exit(pytest.main(sys.argv[1:] + [filename]))

@@ -9,9 +9,7 @@
 #   Felix Schindler (2020)
 # ~~~
 
-import pytest
-
-from dune.xt.grid import Dim, Cube, make_cube_grid
+from dune.xt.grid import Cube, Dim, make_cube_grid
 from dune.xt.test._test_grid_intersection import call_on_each_intersection
 
 

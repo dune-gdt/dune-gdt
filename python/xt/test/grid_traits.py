@@ -11,16 +11,14 @@
 #   Tobias Leibner  (2018 - 2019)
 # ~~~
 
-import pytest
-
 
 def test_tags():
     from dune.xt.grid import (
-        Simplex,
         Cube,
-        Pyramid,
-        Prism,
         Dim,
+        Prism,
+        Pyramid,
+        Simplex,
     )
     Simplex()
     Cube()

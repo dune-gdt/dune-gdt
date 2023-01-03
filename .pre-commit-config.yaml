@@ -17,7 +17,7 @@ repos:
     rev: 'v0.32.0'
     hooks:
     -   id: yapf
-        args: ["--style=.vcsetup/.style.yapf"]
+        args: ["--in-place", "--style=.vcsetup/.style.yapf"]
 -   repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: 'v0.6.13'
     hooks:
@@ -29,9 +29,9 @@ repos:
         additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
         exclude: "config.h.cmake|pybind11"
         args: ["--config-files=.cmake_format.py"]
--   repo: https://github.com/pycqa/flake8
-    rev: 3.9.2
-    hooks:
-    -   id: flake8
-        exclude: "^pybind11"
-        args: ["--config=./python/xt/setup.cfg"]
+- repo: https://github.com/charliermarsh/ruff-pre-commit
+  rev: 'v0.0.208'
+  hooks:
+      - id: ruff
+          # Respect `exclude` and `extend-exclude` settings.
+        args: ["--force-exclude", "--config=./python/ruff.toml"]

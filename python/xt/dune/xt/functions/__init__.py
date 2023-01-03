@@ -41,24 +41,22 @@ for mod_name in (
 ):
     guarded_import(globals(), 'dune.xt.functions', mod_name)
 
-
 if config.HAVE_K3D:
     import os
     import tempfile
     from dune.xt.common.vtk.plot import plot
     from dune.xt.functions._functions_gridfunction import GridFunction
 
-
     def visualize_function(functions, grid, interactive=False, subsampling=False):
         if not isinstance(functions, (list, tuple)):
-            functions = (functions,)
+            functions = (functions, )
         # this is a (bad) implicit check that these are functions
         dim_domain = functions[0].dim_domain
         dim_range = functions[0].dim_range
         name = functions[0].name
-        assert(all(f.dim_domain == dim_domain for f in functions))
-        assert(all(f.dim_range == dim_range for f in functions))
-        assert(all(f.name == name for f in functions))
+        assert (all(f.dim_domain == dim_domain for f in functions))
+        assert (all(f.dim_range == dim_range for f in functions))
+        assert (all(f.name == name for f in functions))
 
         def visualize_single(func, filename):
             try:
@@ -81,13 +79,12 @@ if config.HAVE_K3D:
                 pvd_file.write('<Collection>\n')
                 for ii, func in enumerate(functions):
                     pvd_file.write(
-            f'<DataSet timestep=\'{ii}\' part=\'1\' name=\'{name}\' file=\'{prefix}_{ii}.{suffix}\'/>\n')
+                        f'<DataSet timestep=\'{ii}\' part=\'1\' name=\'{name}\' file=\'{prefix}_{ii}.{suffix}\'/>\n')
                 pvd_file.write('</Collection>\n')
                 pvd_file.write('</VTKFile>\n')
             filename = f'{prefix}.pvd'
 
         return plot(filename, color_attribute_name=name, interactive=True)
-
 
     def visualize_function_on_dd_grid(function, dd_grid, subdomains=None):
         assert function.dim_domain == 2, f'Not implemented yet for {function.dim_domain}-dimensional grids!'
@@ -108,6 +105,6 @@ if config.HAVE_K3D:
             if 1 < len(subdomains) < dd_grid.num_subdomains:
                 # TODO: fix this error
                 print("For 1 < len(subdomains) < num_subdomains, the generated .pvtu file is known "
-                       + "to be broken. The result for each subdomain can be viewed via paraview")
+                      + "to be broken. The result for each subdomain can be viewed via paraview")
             else:
                 print("Unexpected error")

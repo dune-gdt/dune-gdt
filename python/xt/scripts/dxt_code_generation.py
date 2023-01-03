@@ -13,11 +13,12 @@
 #   Tobias Leibner  (2019 - 2020)
 # ~~~
 
+import logging
 import os
 import sys
 from runpy import run_path
+
 from jinja2 import Template
-import logging
 
 from dune.xt.cmake import parse_cache
 

@@ -21,14 +21,9 @@ prefix = '#'
 lead_in = '# ~~~'
 lead_out = '# ~~~'
 
-include_patterns = ('*.txt', '*.cmake', '*.py', '*.py.in', '*.pc.in', '*.sh',
-                    '*.bash', '*.dgf', '*.msh', '*.gdb', '*.cfg', '*.travis.*',
-                    '*.gitignore', '*.mailmap', '*.gitattributes',
-                    '*gitignore-*', '*stamp-vc', '*dune.module', '*Doxylocal',
-                    '*.clang-format', '*COPYING-CMAKE-SCRIPTS', '*README',
-                    '*LICENSE', '*mainpage', '*switch-build_dir',
-                    '*dune-xt.pc.in', '*CMakeLists.txt', '*.cmake.in',
-                    '*.py.in*')
-exclude_patterns = ('*config.h.cmake', '*.vcsetup*', 'FindEigen3.cmake',
-                    '*.dgf', '*builder_definitions.cmake', '*/deps/*', '*/wheelhouse/*',
-                    '*builder_definitions.cmake', '*.ci/shared/*')
+include_patterns = ('*.txt', '*.cmake', '*.py', '*.py.in', '*.pc.in', '*.sh', '*.bash', '*.dgf', '*.msh', '*.gdb',
+                    '*.cfg', '*.travis.*', '*.gitignore', '*.mailmap', '*.gitattributes', '*gitignore-*', '*stamp-vc',
+                    '*dune.module', '*Doxylocal', '*.clang-format', '*COPYING-CMAKE-SCRIPTS', '*README', '*LICENSE',
+                    '*mainpage', '*switch-build_dir', '*dune-xt.pc.in', '*CMakeLists.txt', '*.cmake.in', '*.py.in*')
+exclude_patterns = ('*config.h.cmake', '*.vcsetup*', 'FindEigen3.cmake', '*.dgf', '*builder_definitions.cmake',
+                    '*/deps/*', '*/wheelhouse/*', '*builder_definitions.cmake', '*.ci/shared/*')

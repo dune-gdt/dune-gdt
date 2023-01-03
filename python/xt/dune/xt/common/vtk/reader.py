@@ -11,12 +11,13 @@
 #   Tim Keil        (2020)
 # ~~~
 
+from collections import OrderedDict
 from pathlib import Path
 from xml.etree.ElementTree import fromstring
-from collections import OrderedDict
-from xmljson import BadgerFish
+
 import vtk
 from lxml import etree
+from xmljson import BadgerFish
 
 
 def _read_collection(xml):
@@ -57,11 +58,11 @@ def _get_vtk_type(path):
     :param path: vtk file to peek into
     :return: None if no VTKFile element found, else the type attribute of the VTKFile element
     '''
-    parser = etree.XMLPullParser(events=('start',))
+    parser = etree.XMLPullParser(events=('start', ))
     with open(path, 'rb') as xml:
         for lines in xml.readlines():
             parser.feed(lines)
-            for action, element in parser.read_events():
+            for _action, element in parser.read_events():
                 if element.tag == 'VTKFile':
                     return element.get('type')
     return None

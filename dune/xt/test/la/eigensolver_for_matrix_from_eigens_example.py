@@ -11,7 +11,8 @@
 #   Tobias Leibner  (2017, 2019 - 2020)
 # ~~~
 
-from dune.xt.codegen import typeid_to_typedef_name as safe_name, have_eigen
+from dune.xt.codegen import have_eigen
+from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 matrix = ['EigenDenseMatrix<double>', 'FieldMatrix<double, 6, 6>']
 field = ['double', 'double']
@@ -21,8 +22,10 @@ real_matrix = ['EigenDenseMatrix<double>', 'FieldMatrix<double, 6, 6>']
 
 def _ok(ft):
     if 'Eigen' in ft[0]:
-        return have_eigen(cache)
+        return have_eigen(cache)  # noqa: F821
     return True
 
 
-testtypes = [(safe_name('_'.join(ft)), *ft) for ft in zip(matrix, field, complex_matrix, real_matrix) if _ok(ft)]
+testtypes = [(safe_name('_'.join(ft)), *ft)
+             for ft in zip(matrix, field, complex_matrix, real_matrix, strict=True)
+             if _ok(ft)]

@@ -39,9 +39,8 @@ def is_found(cache, name):
 
 def type_and_dim(cache, dimDomain):
     grid_alu = _if_active(_make_alu(dimDomain), 'dune-alugrid', cache)
-    grid_yasp = [
-        ('Dune::YaspGrid<{d},Dune::EquidistantOffsetCoordinates<double,{d}>>'.format(d=d), d) for d in dimDomain
-    ]
+    grid_yasp = [('Dune::YaspGrid<{d},Dune::EquidistantOffsetCoordinates<double,{d}>>'.format(d=d), d)
+                 for d in dimDomain]
     grid_ug = _if_active([('Dune::UGGrid<{}>'.format(d), d) for d in dimDomain if d != 1], 'dune-uggrid', cache)
     grid_alberta = _if_active([('Dune::AlbertaGrid<{d},{d}>'.format(d=d), d) for d in dimDomain if d != 1],
                               'ALBERTA_FOUND', cache)

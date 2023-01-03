@@ -9,22 +9,20 @@
 #   Felix Schindler (2020)
 # ~~~
 
-import pytest
-
 
 def test_types():
     from dune.xt.grid import (
-        NoBoundary,
-        UnknownBoundary,
-        DirichletBoundary,
-        NeumannBoundary,
-        RobinBoundary,
-        ReflectingBoundary,
         AbsorbingBoundary,
-        InflowBoundary,
-        OutflowBoundary,
-        InflowOutflowBoundary,
+        DirichletBoundary,
         ImpermeableBoundary,
+        InflowBoundary,
+        InflowOutflowBoundary,
+        NeumannBoundary,
+        NoBoundary,
+        OutflowBoundary,
+        ReflectingBoundary,
+        RobinBoundary,
+        UnknownBoundary,
     )
     NoBoundary()
     UnknownBoundary()
@@ -40,13 +38,14 @@ def test_types():
 
 
 def test_initless_boundary_infos():
+    from grid_provider_cube import init_args as grid_init_args
+
     from dune.xt.grid import (
         AllDirichletBoundaryInfo,
         AllNeumannBoundaryInfo,
         AllReflectingBoundaryInfo,
+        make_cube_grid,
     )
-    from dune.xt.grid import make_cube_grid
-    from grid_provider_cube import init_args as grid_init_args
     for args in grid_init_args:
         grid = make_cube_grid(*args)
         AllDirichletBoundaryInfo(grid)
@@ -55,9 +54,9 @@ def test_initless_boundary_infos():
 
 
 def test_normalbased_boundary_inf():
-    from dune.xt.grid import NormalBasedBoundaryInfo
-    from dune.xt.grid import make_cube_grid, NoBoundary
     from grid_provider_cube import init_args as grid_init_args
+
+    from dune.xt.grid import NoBoundary, NormalBasedBoundaryInfo, make_cube_grid
     for args in grid_init_args:
         grid = make_cube_grid(*args)
         NormalBasedBoundaryInfo(grid_provider=grid,

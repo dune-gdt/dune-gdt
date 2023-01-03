@@ -3,6 +3,7 @@
 
 from dune.xt.grid import Dim, Cube, make_cube_grid
 
+
 def test_segfault():
     grid = make_cube_grid(Dim(1), [0], [1], [2])
     d = grid.dimension

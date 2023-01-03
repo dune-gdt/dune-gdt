@@ -15,18 +15,21 @@ from dune.xt.common.config import config
 if config.HAVE_K3D:
     import time
     import warnings
+
     import IPython
-    from ipywidgets import IntSlider, interact, widgets, Play
-    from k3d.helpers import minmax
-    from .reader import read_vtkfile
-    from k3d.plot import Plot as k3dPlot
     import k3d
-    from vtk.util import numpy_support
     import numpy as np
     import vtk
+    from ipywidgets import IntSlider, Play, interact, widgets
+    from k3d.helpers import minmax
+    from k3d.plot import Plot as k3dPlot
     from matplotlib.cm import get_cmap
     from matplotlib.colors import Colormap
+    from vtk.util import numpy_support
 
+    from .reader import read_vtkfile
+
+    DEFAULT_COLOR_MAP = get_cmap('viridis')
 
     def _transform_to_k3d(timestep, poly_data, color_attribute_name):
         '''
@@ -50,13 +53,12 @@ if config.HAVE_K3D:
             color_range = [
                 0,
                 -1,
-            ]     #[-np.inf, np.inf]
+            ]  #[-np.inf, np.inf]
         vertices = numpy_support.vtk_to_numpy(poly_data.GetPoints().GetData())
         indices = numpy_support.vtk_to_numpy(poly_data.GetPolys().GetData()).reshape(-1, 4)[:, 1:4]
 
         return timestep, np.array(attribute, np.float32), color_range[0], color_range[1], \
             np.array(vertices, np.float32), np.array(indices, np.uint32)
-
 
     class VTKPlot(k3dPlot):
 
@@ -104,8 +106,7 @@ if config.HAVE_K3D:
         def inc(self):
             self._goto_idx(self.idx + 1)
 
-
-    def plot(vtkfile_path, color_attribute_name, interactive=False, color_map=get_cmap('viridis')):
+    def plot(vtkfile_path, color_attribute_name, interactive=False, color_map=DEFAULT_COLOR_MAP):
         ''' Generate a k3d Plot and associated controls for VTK data from file
 
         :param vtkfile_path: the path to load vtk data from. Can be a single .vtu or a collection
@@ -146,11 +147,11 @@ if config.HAVE_K3D:
             try:
                 vtkplot.menu_visibility = False
             except AttributeError:
-                pass     # k3d < 2.5.6
+                pass  # k3d < 2.5.6
             # guesstimate
             fov_angle = 30
             absx = np.abs(combined_bounds[0] - combined_bounds[3])
-            c_dist = np.sin((90 - fov_angle) * np.pi / 180) * absx / (2 * np.sin(fov_angle * np.pi / 180))
+            c_dist = np.sin((90-fov_angle) * np.pi / 180) * absx / (2 * np.sin(fov_angle * np.pi / 180))
             xhalf = (combined_bounds[0] + combined_bounds[3]) / 2
             yhalf = (combined_bounds[1] + combined_bounds[4]) / 2
             zhalf = (combined_bounds[2] + combined_bounds[5]) / 2

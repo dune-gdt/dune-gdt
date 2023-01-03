@@ -7,7 +7,6 @@ from pymor.vectorarrays.list import ListVectorArray
 
 from dune.xt.la import IstlDenseVectorDouble
 from dune.xt.functions import ConstantFunction__2d_to_1x1 as ConstantFunction
-from dune.xt.functions import ExpressionFunction__2d_to_1x1 as ExpressionFunction
 from dune.xt.functions import IndicatorGridFunction__2d_simplex_aluconformgrid_to_1x1 as IndicatorFunction
 from dune.gdt.gamm_2019_talk_on_conservative_rb import function_to_grid_function, Spe10Model1Function
 
@@ -128,7 +127,7 @@ diffusion_factor = {
 
 def make_diffusion_factor_mu(mu):
     return (function_to_grid_function(ConstantFunction(1))
-            + function_to_grid_function(ConstantFunction(1 - mu['switch'])) * channel)  # noqa: W503
+            + function_to_grid_function(ConstantFunction(1 - mu['switch'])) * channel)
 
 
 mu_bar = {'switch': 0.1}
@@ -165,10 +164,8 @@ from dune.gdt.gamm_2019_talk_on_conservative_rb import (
     assemble_SWIPDG_matrix,
     compute_estimate,
     compute_flux_reconstruction,
-    compute_local_conservation_error,
     make_discrete_function,
     prolong,
-    visualize,
 )
 
 

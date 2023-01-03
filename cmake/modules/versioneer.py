@@ -34,6 +34,7 @@ https://img.shields.io/travis/com/python-versioneer/python-versioneer.svg
 
 """
 
+import ast
 import configparser
 import errno
 import json
@@ -41,7 +42,6 @@ import os
 import re
 import subprocess
 import sys
-import ast
 
 
 class VersioneerConfig:
@@ -88,7 +88,7 @@ def get_config_from_root(root):
     # the top of versioneer.py for instructions on writing your setup.cfg .
     parser = configparser.ConfigParser()
     parser.read_string(CONFIG)
-    VCS = parser.get("versioneer", "VCS")     # mandatory
+    VCS = parser.get("versioneer", "VCS")  # mandatory
 
     def get(parser, name):
         if parser.has_option("versioneer", name):
@@ -117,7 +117,7 @@ LONG_VERSION_PY = {}
 HANDLERS = {}
 
 
-def register_vcs_handler(vcs, method):     # decorator
+def register_vcs_handler(vcs, method):  # decorator
     """Create decorator to mark a method as the handler of a VCS."""
 
     def decorate(f):
@@ -144,7 +144,7 @@ def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False, env=
                                  stdout=subprocess.PIPE,
                                  stderr=(subprocess.PIPE if hide_stderr else None))
             break
-        except EnvironmentError:
+        except OSError:
             e = sys.exc_info()[1]
             if e.errno == errno.ENOENT:
                 continue
@@ -154,7 +154,7 @@ def run_command(commands, args, cwd=None, verbose=False, hide_stderr=False, env=
             return None, None
     else:
         if verbose:
-            print("unable to find command, tried %s" % (commands,))
+            print("unable to find command, tried %s" % (commands, ))
         return None, None
     stdout = p.communicate()[0].strip().decode()
     if p.returncode != 0:
@@ -174,7 +174,7 @@ def git_get_keywords(versionfile_abs):
     # _version.py.
     keywords = {}
     try:
-        f = open(versionfile_abs, "r")
+        f = open(versionfile_abs)
         for line in f.readlines():
             if line.strip().startswith("git_refnames ="):
                 mo = re.search(r'=\s*"(.*)"', line)
@@ -189,7 +189,7 @@ def git_get_keywords(versionfile_abs):
                 if mo:
                     keywords["date"] = mo.group(1)
         f.close()
-    except EnvironmentError:
+    except OSError:
         pass
     return keywords
 
@@ -294,7 +294,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
 
     pieces = {}
     pieces["long"] = full_out
-    pieces["short"] = full_out[:7]     # maybe improved later
+    pieces["short"] = full_out[:7]  # maybe improved later
     pieces["error"] = None
 
     # parse describe_out. It will be like TAG-NUM-gHEX[-dirty] or HEX[-dirty]
@@ -337,7 +337,7 @@ def git_pieces_from_vcs(tag_prefix, root, verbose, run_command=run_command):
         # HEX: no tags
         pieces["closest-tag"] = None
         count_out, rc = run_command(GITS, ["rev-list", "HEAD", "--count"], cwd=root)
-        pieces["distance"] = int(count_out)     # total number of commits
+        pieces["distance"] = int(count_out)  # total number of commits
 
     # commit date: see ISO-8601 comment in git_versions_from_keywords()
     date = run_command(GITS, ["show", "-s", "--format=%ci", "HEAD"], cwd=root)[0].strip()
@@ -363,7 +363,7 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
     """
     rootdirs = []
 
-    for i in range(3):
+    for _i in range(3):
         dirname = os.path.basename(root)
         if dirname.startswith(parentdir_prefix):
             return {
@@ -375,7 +375,7 @@ def versions_from_parentdir(parentdir_prefix, root, verbose):
             }
         else:
             rootdirs.append(root)
-            root = os.path.dirname(root)     # up a level
+            root = os.path.dirname(root)  # up a level
 
     if verbose:
         print("Tried directories %s but none started with prefix %s" % (str(rootdirs), parentdir_prefix))
@@ -405,8 +405,8 @@ def versions_from_file(filename):
     try:
         with open(filename) as f:
             contents = f.read()
-    except EnvironmentError:
-        raise NotThisMethod("unable to read _version.py")
+    except OSError as oe:
+        raise NotThisMethod("unable to read _version.py") from oe
     mo = re.search(r"version_json = '''\n(.*)'''  # END VERSION_JSON", contents, re.M | re.S)
     if not mo:
         mo = re.search(r"version_json = '''\r\n(.*)'''  # END VERSION_JSON", contents, re.M | re.S)
@@ -568,7 +568,7 @@ def render(pieces, style):
         }
 
     if not style or style == "default":
-        style = "pep440"     # the default
+        style = "pep440"  # the default
 
     if style == "pep440":
         rendered = render_pep440(pieces)

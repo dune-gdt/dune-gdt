@@ -21,8 +21,8 @@ import os.path
 import subprocess
 import sys
 
-from dune.testtools.wrapper.argumentparser import get_args
 from dune.testtools.parser import parse_ini_file
+from dune.testtools.wrapper.argumentparser import get_args
 
 
 def call(executable, inifile=None, *additional_args):

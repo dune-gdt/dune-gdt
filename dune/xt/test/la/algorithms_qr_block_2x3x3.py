@@ -24,4 +24,4 @@ dune_types = [
     for f in ['FieldMatrix_FieldVector_FieldVector_double,6,6', 'DynamicMatrix_DynamicVector_DynamicVector_double']
 ]
 
-testtypes = testtypes_creator(la_types, common_types, dune_types, cache)
+testtypes = testtypes_creator(la_types, common_types, dune_types, cache)  # noqa: F821

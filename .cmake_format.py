@@ -20,7 +20,11 @@ with section("parse"):  # noqa: F821
     additional_commands = {
         "foo": {
             "flags": ["BAR", "BAZ"],
-            "kwargs": {"DEPENDS": "*", "HEADERS": "*", "SOURCES": "*"},
+            "kwargs": {
+                "DEPENDS": "*",
+                "HEADERS": "*",
+                "SOURCES": "*"
+            },
         }
     }
 

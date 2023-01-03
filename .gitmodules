@@ -22,7 +22,7 @@
 	url = https://github.com/dune-mirrors/dune-typetree.git
 [submodule "scripts"]
 	path = deps/scripts
-	url = https://github.com/wwu-numerik/scripts.git
+	url = https://github.com/dune-gdt/scripts.git
 [submodule "dune-testtools"]
 	path = deps/dune-testtools
 	url = https://github.com/dune-community/dune-testtools.git

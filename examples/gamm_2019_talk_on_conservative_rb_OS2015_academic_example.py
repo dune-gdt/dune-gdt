@@ -45,10 +45,8 @@ from dune.gdt.gamm_2019_talk_on_conservative_rb import (
     assemble_SWIPDG_matrix,
     compute_estimate,
     compute_flux_reconstruction,
-    compute_local_conservation_error,
     make_discrete_function,
     prolong,
-    visualize,
 )
 
 
