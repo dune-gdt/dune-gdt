@@ -3,6 +3,8 @@ from dune.xt.common.config import config
 if config.HAVE_K3D:
     from dune.gdt import visualize_function
 
+# flake8: noqa
+
 from dune.gdt._discretefunction_bochner import DiscreteBochnerFunction
 from dune.gdt._discretefunction_discretefunction import DiscreteFunction
 from dune.gdt._functionals_vector_based import VectorFunctional
