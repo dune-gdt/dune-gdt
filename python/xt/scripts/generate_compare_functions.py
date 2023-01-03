@@ -16,7 +16,7 @@
 import os
 from string import Template
 
-common_tpl = '''
+common_tpl = """
 template <Style style,
             class FirstType,
             class SecondType,
@@ -44,9 +44,9 @@ template <Style style,
   {
     return ${id}<Style::defaultStyle>(first, second, rtol, atol);
   }
-'''
+"""
 
-test_tpl = '''
+test_tpl = """
   template <Dune::XT::Common::FloatCmp::Style style,
             class FirstType,
             class SecondType,
@@ -82,13 +82,17 @@ test_tpl = '''
   {
     DXTC_EXPECT_FLOAT_${ID}<Dune::XT::Common::FloatCmp::Style::defaultStyle>(first, second, rtol, atol);
   }
-'''
+"""  # noqa: E501
 
 bindir = os.path.dirname(os.path.abspath(__file__))
-fn_test = os.path.join(bindir, '..', 'dune', 'xt', 'common', 'test', 'float_cmp_generated.hxx')
-fn_common = os.path.join(bindir, '..', 'dune', 'xt', 'common', 'float_cmp_generated.hxx')
-cmps = ['eq', 'ne', 'gt', 'lt', 'ge', 'le']
-with open(fn_test, 'wt') as test_header, open(fn_common, 'wt') as common_header:
+fn_test = os.path.join(
+    bindir, "..", "dune", "xt", "common", "test", "float_cmp_generated.hxx"
+)
+fn_common = os.path.join(
+    bindir, "..", "dune", "xt", "common", "float_cmp_generated.hxx"
+)
+cmps = ["eq", "ne", "gt", "lt", "ge", "le"]
+with open(fn_test, "wt") as test_header, open(fn_common, "wt") as common_header:
     for name in cmps:
         common_header.write(Template(common_tpl).substitute(id=name))
         test_header.write(Template(test_tpl).substitute(id=name, ID=name.upper()))

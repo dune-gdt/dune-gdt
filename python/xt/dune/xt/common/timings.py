@@ -15,4 +15,4 @@ from dune.xt import guarded_import
 
 guarded_import(globals(), 'dune.xt.common', '_common_timings')
 
-instance()
+instance()  # noqa: F821

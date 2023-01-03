@@ -25,4 +25,4 @@ init_args = (
 
 def test_init():
     for args in init_args:
-        grid = make_cube_grid(*args)
+        grid = make_cube_grid(*args)  # noqa: F841

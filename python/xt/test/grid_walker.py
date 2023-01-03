@@ -26,7 +26,7 @@ init_args = (
 def test_init():
     for args in init_args:
         grid = make_cube_grid(*args)
-        walker = Walker(grid)
+        walker = Walker(grid)  # noqa: F841
 
 
 def test_walk():

@@ -13,7 +13,7 @@
 # ~~~
 
 try:
-    from dune.xt.test._test_grid_types import *
+    from dune.xt.test._test_grid_types import *  # noqa: F403
 except ImportError as e:
     import os
     import logging

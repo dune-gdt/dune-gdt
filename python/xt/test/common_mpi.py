@@ -38,7 +38,7 @@ def test_wrapper():
         pytest.skip('optional mpi4py is missing')
         return
 
-    mpi_comm = MPI.COMM_WORLD
+    mpi_comm = MPI.COMM_WORLD  # noqa: F841
 
 
 if __name__ == '__main__':

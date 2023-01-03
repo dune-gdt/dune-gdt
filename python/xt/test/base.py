@@ -15,9 +15,9 @@ from dune.xt.test import grid_types as types
 
 
 def test_load_all():
-    import dune.xt.common  # noqa:F401
-    import dune.xt.la  # noqa:F401
-    import dune.xt.grid  # noqa:F401
+    import dune.xt.common
+    import dune.xt.la
+    import dune.xt.grid
     import dune.xt.functions  # noqa:F401
 
 

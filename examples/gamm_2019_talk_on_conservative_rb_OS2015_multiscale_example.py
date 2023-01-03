@@ -1,3 +1,5 @@
+
+
 import numpy as np
 
 from pymor.basic import *
@@ -127,7 +129,7 @@ diffusion_factor = {
 
 def make_diffusion_factor_mu(mu):
     return (function_to_grid_function(ConstantFunction(1))
-            + function_to_grid_function(ConstantFunction(1 - mu['switch'])) * channel)  # noqa: W503
+            + function_to_grid_function(ConstantFunction(1 - mu['switch'])) * channel)
 
 
 mu_bar = {'switch': 0.1}

@@ -4,4 +4,4 @@ select = ["E", "F", "RUF100"]
 fix = true
 line-length = 120
 
-exclude = ["__init__.py", "deps/", "pybind11/", "examples/gamm*"]
+exclude = ["__init__.py", "deps/*", "pybind11/*", "examples/gamm*"]
