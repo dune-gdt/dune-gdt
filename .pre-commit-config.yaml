@@ -17,7 +17,7 @@ repos:
     rev: 'v0.32.0'
     hooks:
     -   id: yapf
-        args: ["--style=.vcsetup/.style.yapf"]
+        args: ["--in-place", "--style=.vcsetup/.style.yapf"]
 -   repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: 'v0.6.13'
     hooks:
