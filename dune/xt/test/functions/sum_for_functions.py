@@ -11,8 +11,9 @@
 #   Tobias Leibner (2019 - 2020)
 # ~~~
 
-import grids
 import itertools
+
+import grids
 
 dim_range = [1, 3]
 dim_range_cols = [1, 3]

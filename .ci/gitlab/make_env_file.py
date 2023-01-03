@@ -15,6 +15,7 @@
 import os
 from os.path import expanduser
 from shlex import quote
+
 home = expanduser("~")
 
 prefixes = os.environ.get('ENV_PREFIXES', 'BUILD SYSTEM GITLAB CODECOV CI encrypt TOKEN TESTS').split(' ')

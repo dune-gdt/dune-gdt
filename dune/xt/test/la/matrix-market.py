@@ -11,7 +11,9 @@
 # ~~~
 
 from itertools import product
-from matrices import matrices, latype, fieldtypes
+
+from matrices import fieldtypes, latype, matrices
+
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 testtypes = [

@@ -11,7 +11,8 @@
 #   Tobias Leibner  (2017 - 2020)
 # ~~~
 
-from dune.xt.codegen import typeid_to_typedef_name as safe_name, have_eigen
+from dune.xt.codegen import have_eigen
+from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 matrix = [
     'EigenDenseMatrix<double>', 'FieldMatrix<double, 2, 2>', 'CommonDenseMatrix<double>', 'CommonSparseMatrix<double>'

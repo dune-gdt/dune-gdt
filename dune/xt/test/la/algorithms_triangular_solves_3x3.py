@@ -11,6 +11,6 @@
 #   Tobias Leibner  (2015 - 2018, 2020)
 # ~~~
 
-from algorithms import la_types, common_types, dune_types, testtypes_creator
+from algorithms import common_types, dune_types, la_types, testtypes_creator
 
 testtypes = testtypes_creator(la_types, common_types, dune_types, cache)  # noqa: F821

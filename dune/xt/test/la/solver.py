@@ -12,7 +12,9 @@
 # ~~~
 
 from matrices import commontype, latype
-from dune.xt.codegen import have_eigen, have_istl, typeid_to_typedef_name as safe_name
+
+from dune.xt.codegen import have_eigen, have_istl
+from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 types = [
     f.split('_') for f in [

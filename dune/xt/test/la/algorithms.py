@@ -10,8 +10,10 @@
 #   Tobias Leibner (2018 - 2020)
 # ~~~
 
-from matrices import latype, commontype, dunetype
-from dune.xt.codegen import have_eigen, have_istl, typeid_to_typedef_name as safe_name
+from matrices import commontype, dunetype, latype
+
+from dune.xt.codegen import have_eigen, have_istl
+from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 
 def la_types_creator():

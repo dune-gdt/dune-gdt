@@ -15,8 +15,8 @@
 try:
     from dune.xt.test._test_grid_types import *  # noqa: F403
 except ImportError as e:
-    import os
     import logging
+    import os
     if os.environ.get('DXT_PYTHON_DEBUG', False):
         raise e
     logging.error('dune-xt-grid bindings not available')

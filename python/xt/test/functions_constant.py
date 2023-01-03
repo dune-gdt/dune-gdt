@@ -13,8 +13,9 @@
 # ~~~
 
 import pytest
-from dune.xt.test import grid_types as types
+
 import dune.xt.functions as xtf
+from dune.xt.test import grid_types as types
 
 
 @pytest.fixture(params=types.available_types)

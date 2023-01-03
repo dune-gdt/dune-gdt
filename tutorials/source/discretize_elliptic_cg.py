@@ -1,6 +1,3 @@
-from dune.xt.grid import AllDirichletBoundaryInfo, Dim, DirichletBoundary, Walker
-from dune.xt.functions import GridFunction as GF
-
 from dune.gdt import (
     ContinuousLagrangeSpace,
     DirichletConstraints,
@@ -14,6 +11,8 @@ from dune.gdt import (
     boundary_interpolation,
     make_element_sparsity_pattern,
 )
+from dune.xt.functions import GridFunction as GF
+from dune.xt.grid import AllDirichletBoundaryInfo, Dim, DirichletBoundary, Walker
 
 
 def discretize_elliptic_cg_dirichlet_zero(grid, diffusion, source):

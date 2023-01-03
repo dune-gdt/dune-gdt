@@ -15,17 +15,19 @@ from dune.xt.common.config import config
 if config.HAVE_K3D:
     import time
     import warnings
+
     import IPython
-    from ipywidgets import IntSlider, interact, widgets, Play
-    from k3d.helpers import minmax
-    from .reader import read_vtkfile
-    from k3d.plot import Plot as k3dPlot
     import k3d
-    from vtk.util import numpy_support
     import numpy as np
     import vtk
+    from ipywidgets import IntSlider, Play, interact, widgets
+    from k3d.helpers import minmax
+    from k3d.plot import Plot as k3dPlot
     from matplotlib.cm import get_cmap
     from matplotlib.colors import Colormap
+    from vtk.util import numpy_support
+
+    from .reader import read_vtkfile
 
 
     def _transform_to_k3d(timestep, poly_data, color_attribute_name):

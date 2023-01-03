@@ -1,28 +1,17 @@
 # +
 from numbers import Number
 
-from dune.xt.grid import (
-    AllDirichletBoundaryInfo,
-    ApplyOnCustomBoundaryIntersections,
-    ApplyOnInnerIntersectionsOnce,
-    Dim,
-    DirichletBoundary,
-    Walker,
-)
-from dune.xt.functions import GridFunction as GF
-
 # -
-
 from dune.gdt import (
     DiscontinuousLagrangeSpace,
     DiscreteFunction,
+    LocalCouplingIntersectionIntegralBilinearForm,
     LocalElementIntegralBilinearForm,
     LocalElementIntegralFunctional,
     LocalElementProductIntegrand,
-    LocalCouplingIntersectionIntegralBilinearForm,
+    LocalIntersectionIntegralBilinearForm,
     LocalIPDGBoundaryPenaltyIntegrand,
     LocalIPDGInnerPenaltyIntegrand,
-    LocalIntersectionIntegralBilinearForm,
     LocalLaplaceIntegrand,
     LocalLaplaceIPDGDirichletCouplingIntegrand,
     LocalLaplaceIPDGInnerCouplingIntegrand,
@@ -31,6 +20,15 @@ from dune.gdt import (
     estimate_combined_inverse_trace_inequality_constant,
     estimate_element_to_intersection_equivalence_constant,
     make_element_and_intersection_sparsity_pattern,
+)
+from dune.xt.functions import GridFunction as GF
+from dune.xt.grid import (
+    AllDirichletBoundaryInfo,
+    ApplyOnCustomBoundaryIntersections,
+    ApplyOnInnerIntersectionsOnce,
+    Dim,
+    DirichletBoundary,
+    Walker,
 )
 
 

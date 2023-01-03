@@ -12,7 +12,7 @@
 # ~~~
 
 
-from dune.xt.grid import Dim, Cube, Simplex, make_cube_grid
+from dune.xt.grid import Cube, Dim, Simplex, make_cube_grid
 
 init_args = (
     (Dim(1), [0], [1], [2]),

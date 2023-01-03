@@ -12,7 +12,6 @@
 
 from itertools import product
 
-
 import matrices
 
 conts = matrices.matrices(cache) + matrices.vectors(cache)  # noqa: F821

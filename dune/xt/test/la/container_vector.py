@@ -12,7 +12,9 @@
 # ~~~
 
 from itertools import product
-from matrices import latype, vectors, fieldtypes, vector_filter
+
+from matrices import fieldtypes, latype, vector_filter, vectors
+
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 testtypes = [(safe_name('{}_{}'.format(mv, f)), latype(mv, f))

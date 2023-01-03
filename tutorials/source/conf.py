@@ -1,9 +1,11 @@
-import sys
-import os
-import slugify
 import glob
-import sphinx
+import os
+import sys
 from pathlib import Path
+
+import slugify
+import sphinx
+
 import dune.gdt
 
 # Check Sphinx version

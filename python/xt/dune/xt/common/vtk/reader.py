@@ -11,12 +11,13 @@
 #   Tim Keil        (2020)
 # ~~~
 
+from collections import OrderedDict
 from pathlib import Path
 from xml.etree.ElementTree import fromstring
-from collections import OrderedDict
-from xmljson import BadgerFish
+
 import vtk
 from lxml import etree
+from xmljson import BadgerFish
 
 
 def _read_collection(xml):
