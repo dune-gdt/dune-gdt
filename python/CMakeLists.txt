@@ -20,4 +20,3 @@ dune_pybindxi_install_python_package(PATH gdt)
 add_subdirectory(gdt)
 
 dxt_add_python_tests()
-include_dependent_binary_python_dirs()
