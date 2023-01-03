@@ -1,5 +1,5 @@
 ARG DEBIAN_BASE=debian
-FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$DEBIAN_BASE-full:9e2f3829c6dc7441b6bbc9d61422413d6f6be817
+FROM zivgitlab.wwu.io/ag-ohlberger/dune-community/docker/$DEBIAN_BASE-full:f5f82f6fc9a11358e49d35cd813f3412b921fdab
 
 USER root
 RUN apt update \
