@@ -20,13 +20,16 @@
 # Renamed copy of pybind11_add_module, added code blocks are marked with dune-pybindxi START/END.
 # ~~~
 
-# cmake-lint: disable=R0912,R0915
 macro(DUNE_PYBINDXI_ADD_MODULE target_name)
+  if(NOT TARGET bindings)
+    add_custom_target(bindings)
+  endif()
   pybind11_add_module(${target_name} ${ARGN})
   dune_target_link_libraries(${target_name} "${DUNE_LIB_ADD_LIBS}")
   dune_target_enable_all_packages(${target_name})
 
   target_include_directories(${target_name} PRIVATE ${PYBIND11_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
+  add_dependencies(bindings ${target_name})
 endmacro()
 
 macro(DXT_ADD_MAKE_DEPENDENT_BINDINGS)
