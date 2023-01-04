@@ -14,8 +14,8 @@
 
 #include <sstream>
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 #include <dune/xt/common/numeric_cast.hh>
 #include <dune/xt/common/string.hh>

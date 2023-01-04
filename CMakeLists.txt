@@ -62,25 +62,24 @@ dune_xt_module_version_from_git()
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Python3 COMPONENTS Interpreter Development)
-add_subdirectory(pybind11)
+add_subdirectory(deps/pybind11)
 dune_enable_all_packages(
   INCLUDE_DIRS
   ${dune-gdt_SOURCE_DIR}/dune
   ${Python3_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/deps/pybind11/include
   MODULE_LIBRARIES
-  dunepybindxi
   gtest_dune_xt
   dunext)
 
-target_link_libraries(dunepybindxi PRIVATE pybind11::module)
-
 if(NOT DXT_DONT_LINK_PYTHON_LIB)
-  target_link_libraries(dunepybindxi PRIVATE ${Python3_LIBRARIES})
   target_link_libraries(dunext INTERFACE ${Python3_LIBRARIES})
 endif()
+target_include_directories(dunext SYSTEM INTERFACE $<BUILD_INTERFACE:${pybind11_INCLUDE_DIR}>
+                                                   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-target_include_directories(dunepybindxi PRIVATE pybind11::module)
-
+# target_include_directories( dunext SYSTEM INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/deps/pybind11/include)
+target_compile_features(dunext INTERFACE cxx_inheriting_constructors cxx_user_literals cxx_right_angle_brackets)
 # ----------------------------------------------------------------------------------------------------
 # General Settings
 # ----------------------------------------------------------------------------------------------------

@@ -13,7 +13,7 @@
 #ifndef DUNE_XT_FUNCTIONS_ESV2007_BINDINGS_HH
 #define DUNE_XT_FUNCTIONS_ESV2007_BINDINGS_HH
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 #include <dune/xt/common/string.hh>
 #include <dune/xt/grid/gridprovider/provider.hh>

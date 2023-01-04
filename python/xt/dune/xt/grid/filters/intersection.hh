@@ -13,7 +13,7 @@
 #ifndef PYTHON_DUNE_XT_GRID_FILTERS_INTERSECTION_HH
 #define PYTHON_DUNE_XT_GRID_FILTERS_INTERSECTION_HH
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 #include <dune/xt/common/string.hh>
 #include <dune/xt/grid/filters/intersection.hh>

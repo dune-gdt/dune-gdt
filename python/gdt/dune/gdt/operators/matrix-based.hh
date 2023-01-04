@@ -10,7 +10,7 @@
 #ifndef DUNE_GDT_PYTHON_OPERATORS_MATRIX_BASED_HH
 #define DUNE_GDT_PYTHON_OPERATORS_MATRIX_BASED_HH
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 #include <dune/xt/grid/type_traits.hh>
 #include <dune/xt/grid/functors/interfaces.hh>

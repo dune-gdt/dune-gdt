@@ -20,101 +20,17 @@
 # Renamed copy of pybind11_add_module, added code blocks are marked with dune-pybindxi START/END.
 # ~~~
 
-# cmake-lint: disable=R0912,R0915
-function(dune_pybindxi_add_module target_name)
-  set(options "MODULE;SHARED;EXCLUDE_FROM_ALL;NO_EXTRAS;SYSTEM;THIN_LTO;OPT_SIZE")
-  # the next two lines were added/modified compared to the original function
-  set(oneValueArgs LIBNAME)
-  cmake_parse_arguments(ARG "${options}" "${oneValueArgs}" "" ${ARGN})
-
-  if(ARG_MODULE AND ARG_SHARED)
-    message(FATAL_ERROR "Can't be both MODULE and SHARED")
-  elseif(ARG_SHARED)
-    set(lib_type SHARED)
-  else()
-    set(lib_type MODULE)
+macro(DUNE_PYBINDXI_ADD_MODULE target_name)
+  if(NOT TARGET bindings)
+    add_custom_target(bindings)
   endif()
-
-  # dune-pybindxi START
-  if(NOT ARG_LIBNAME)
-    set(lib_name bindings)
-  else()
-    set(lib_name ${ARG_LIBNAME})
-  endif()
-  # dune-pybindxi END
-
-  if(ARG_EXCLUDE_FROM_ALL)
-    set(exclude_from_all EXCLUDE_FROM_ALL)
-  else()
-    set(exclude_from_all "")
-  endif()
-
-  add_library(${target_name} ${lib_type} ${exclude_from_all} ${ARG_UNPARSED_ARGUMENTS})
-  # dune-pybindxi START
+  pybind11_add_module(${target_name} ${ARGN})
   dune_target_link_libraries(${target_name} "${DUNE_LIB_ADD_LIBS}")
   dune_target_enable_all_packages(${target_name})
 
-  target_link_libraries(${target_name} PRIVATE dunepybindxi)
   target_include_directories(${target_name} PRIVATE ${PYBIND11_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
-  # dune-pybindxi END
-
-  if(ARG_SYSTEM)
-    message(STATUS "Warning: this does not have an effect - use NO_SYSTEM_FROM_IMPORTED if using imported targets")
-  endif()
-
-  pybind11_extension(${target_name})
-
-  # -fvisibility=hidden is required to allow multiple modules compiled against different pybind versions to work
-  # properly, and for some features (e.g. py::module_local).  We force it on everything inside the `pybind11` namespace;
-  # also turning it on for a pybind module compilation here avoids potential warnings or issues from having mixed
-  # hidden/non-hidden types.
-  if(NOT DEFINED CMAKE_CXX_VISIBILITY_PRESET)
-    set_target_properties(${target_name} PROPERTIES CXX_VISIBILITY_PRESET "hidden")
-  endif()
-
-  if(NOT DEFINED CMAKE_CUDA_VISIBILITY_PRESET)
-    set_target_properties(${target_name} PROPERTIES CUDA_VISIBILITY_PRESET "hidden")
-  endif()
-
-  # dune-pybindxi START
-  if(TARGET ${lib_name})
-    add_dependencies(${lib_name} ${target_name})
-    add_dependencies(${lib_name}_no_ext ${target_name})
-  else()
-    if(DUNE_XT_WITH_PYTHON_BINDINGS)
-      add_custom_target(${lib_name} ALL DEPENDS ${target_name})
-      add_custom_target(${lib_name}_no_ext ALL DEPENDS ${target_name})
-    else()
-      add_custom_target(${lib_name} DEPENDS ${target_name})
-      add_custom_target(${lib_name}_no_ext DEPENDS ${target_name})
-    endif()
-  endif()
-  # dune-pybindxi END
-
-  if(ARG_NO_EXTRAS)
-    return()
-  endif()
-
-  if(NOT DEFINED CMAKE_INTERPROCEDURAL_OPTIMIZATION)
-    if(ARG_THIN_LTO)
-      target_link_libraries(${target_name} PRIVATE pybind11::thin_lto)
-    else()
-      target_link_libraries(${target_name} PRIVATE pybind11::lto)
-    endif()
-  endif()
-
-  if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
-    pybind11_strip(${target_name})
-  endif()
-
-  if(MSVC)
-    target_link_libraries(${target_name} PRIVATE pybind11::windows_extras)
-  endif()
-
-  if(ARG_OPT_SIZE)
-    target_link_libraries(${target_name} PRIVATE pybind11::opt_size)
-  endif()
-endfunction()
+  add_dependencies(bindings ${target_name})
+endmacro()
 
 macro(DXT_ADD_MAKE_DEPENDENT_BINDINGS)
   add_custom_target(dependent_bindings)

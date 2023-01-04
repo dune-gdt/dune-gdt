@@ -10,7 +10,7 @@
 #ifndef PYTHON_DUNE_XT_COMMON_NUMPY_HH
 #define PYTHON_DUNE_XT_COMMON_NUMPY_HH
 
-#include <dune/pybindxi/numpy.h>
+#include <pybind11/numpy.h>
 
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/common/numeric.hh>

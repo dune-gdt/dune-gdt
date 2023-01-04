@@ -12,8 +12,8 @@
 #ifndef DUNE_XT_COMMON_CONFIGURATION_PBH
 #define DUNE_XT_COMMON_CONFIGURATION_PBH
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/cast.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/cast.h>
 
 #include <dune/xt/common/configuration.hh>
 

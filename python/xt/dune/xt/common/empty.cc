@@ -16,12 +16,12 @@
 #include <vector>
 
 #include <dune/common/parallel/mpihelper.hh>
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/stl.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <python/xt/dune/xt/common/bindings.hh>
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 
 struct Pet

@@ -17,9 +17,9 @@
 #include <dune/geometry/type.hh>
 #include <dune/grid/common/mcmgmapper.hh>
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/stl.h>
-#include <dune/pybindxi/functional.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/functional.h>
 #include <dune/xt/common/numeric_cast.hh>
 #include <dune/xt/common/parallel/mpi_comm_wrapper.hh>
 #include <dune/xt/common/ranges.hh>

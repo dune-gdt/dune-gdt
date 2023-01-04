@@ -9,8 +9,8 @@
 
 #include "config.h"
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/stl.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 #include <dune/xt/grid/type_traits.hh>
 #include <dune/xt/grid/gridprovider/provider.hh>
@@ -200,7 +200,7 @@ namespace bindings {
 // };
 
 
-PYBIND11_MODULE(_operators_laplace_ipdg_flux_reconstruction, /*m*/)
+PYBIND11_MODULE(_operators_laplace_ipdg_flux_reconstruction, m)
 {
   namespace py = pybind11;
   using namespace Dune;

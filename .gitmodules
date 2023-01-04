@@ -38,3 +38,7 @@
 [submodule "dune-grid-glue"]
 	path = deps/dune-grid-glue
 	url = https://github.com/dune-mirrors/dune-grid-glue.git
+[submodule "deps/pybind11"]
+	path = deps/pybind11
+	url = https://github.com/pybind/pybind11.git
+	branch = v2.10

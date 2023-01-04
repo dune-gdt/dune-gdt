@@ -12,8 +12,8 @@
 #ifndef DUNE_XT_LA_CONTAINER_INTERFACE_PBH
 #define DUNE_XT_LA_CONTAINER_INTERFACE_PBH
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 #include <dune/xt/la/type_traits.hh>
 

@@ -11,8 +11,8 @@
 #ifndef PYTHON_DUNE_XT_FUNCTIONS_INTERFACES_ELEMENT_FUNCTION_HH
 #define PYTHON_DUNE_XT_FUNCTIONS_INTERFACES_ELEMENT_FUNCTION_HH
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/numpy.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
 
 #include <dune/xt/common/string.hh>
 #include <dune/xt/functions/interfaces/element-functions.hh>

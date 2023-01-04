@@ -13,7 +13,7 @@
 #ifndef PYTHON_DUNE_XT_FUNCTIONS_INTERFACES_GRID_FUNCTION_HH
 #define PYTHON_DUNE_XT_FUNCTIONS_INTERFACES_GRID_FUNCTION_HH
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 #include <dune/xt/common/string.hh>
 #include <dune/xt/functions/interfaces/grid-function.hh>

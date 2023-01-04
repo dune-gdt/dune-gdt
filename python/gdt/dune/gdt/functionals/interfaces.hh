@@ -12,7 +12,7 @@
 #ifndef PYTHON_DUNE_GDT_FUNCTIONALS_INTERFACES_HH
 #define PYTHON_DUNE_GDT_FUNCTIONALS_INTERFACES_HH
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 #include <dune/xt/common/python.hh>
 #include <dune/xt/common/string.hh>

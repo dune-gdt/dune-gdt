@@ -20,6 +20,7 @@ set(_lib_dune_xt_common_sources
     exceptions.cc
     filesystem.cc
     fix-ambiguous-std-math-overloads.cc
+    interpreter.cc
     lapacke.cc
     localization-study.cc
     logging.cc

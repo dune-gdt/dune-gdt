@@ -12,7 +12,7 @@
 
 #include "config.h"
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 #include <dune/xt/grid/dd/glued.hh>
 #include <dune/xt/grid/functors/boundary-detector.hh>
 #include <dune/xt/grid/view/coupling.hh>

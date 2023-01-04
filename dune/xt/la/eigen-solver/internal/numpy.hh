@@ -16,7 +16,7 @@
 
 #include <dune/common/typetraits.hh>
 
-#include <dune/pybindxi/interpreter.hh>
+#include <dune/xt/common/interpreter.hh>
 
 #include <dune/xt/common/vector.hh>
 #include <dune/xt/common/fmatrix.hh>

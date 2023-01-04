@@ -13,7 +13,7 @@
 #ifndef PYTHON_DUNE_XT_GRID_BOUNDARYINFO_INTERFACES_HH
 #define PYTHON_DUNE_XT_GRID_BOUNDARYINFO_INTERFACES_HH
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 #include <dune/xt/common/string.hh>
 #include <dune/xt/grid/boundaryinfo/interfaces.hh>

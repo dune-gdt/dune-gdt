@@ -19,7 +19,7 @@
 
 #include <dune/common/visibility.hh>
 
-#include "embed.h"
+#include <pybind11/embed.h>
 
 namespace Dune {
 namespace PybindXI {

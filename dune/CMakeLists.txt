@@ -14,7 +14,6 @@
 enable_testing()
 
 add_subdirectory(xt)
-add_subdirectory(pybindxi)
 install(
   DIRECTORY xt
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/

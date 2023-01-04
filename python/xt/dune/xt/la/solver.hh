@@ -12,8 +12,8 @@
 #ifndef DUNE_XT_LA_SOLVER_PBH
 #define DUNE_XT_LA_SOLVER_PBH
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 
 #include <python/xt/dune/xt/common/configuration.hh>
 #include <python/xt/dune/xt/la/container.bindings.hh>

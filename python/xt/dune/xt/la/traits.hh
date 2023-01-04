@@ -12,7 +12,7 @@
 #ifndef PYTHON_DUNE_XT_LA_TRAITS_HH
 #define PYTHON_DUNE_XT_LA_TRAITS_HH
 
-#include <dune/pybindxi/pybind11.h>
+#include <pybind11/pybind11.h>
 
 namespace Dune::XT::LA::bindings {
 

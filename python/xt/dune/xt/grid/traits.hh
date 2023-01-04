@@ -13,8 +13,8 @@
 #ifndef PYTHON_DUNE_XT_GRID_TRAITS_HH
 #define PYTHON_DUNE_XT_GRID_TRAITS_HH
 
-#include <dune/pybindxi/pybind11.h>
-#include <dune/pybindxi/cast.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/cast.h>
 
 #include <dune/geometry/type.hh>
 #include <dune/xt/common/string.hh>
