@@ -52,7 +52,7 @@ jobs:
               name: Build Wheel py${{matrix.python}}
             - uses: actions/upload-artifact@v3
               with:
-                name: wheels
+                name: wheels_${{matrix.python}}
                 path: ${{github.workspace}}/wheelhouse/final/dune*whl
             - uses: actions/upload-artifact@v3
               with:
@@ -61,14 +61,17 @@ jobs:
     test:
         needs: [wheels]
         runs-on: ubuntu-22.04
+        strategy:
+          matrix:
+            python: ["3.8", "3.9", "3.10", "3.11"]
         steps:
             - uses: actions/checkout@v3
             - uses: actions/download-artifact@v3
               with:
-                name: wheels
+                name: wheels_${{matrix.python}}
             - uses : actions/setup-python@v2
               with:
-                python-version: 3.9
+                python-version: ${{ matrix.python }}
             - name: Install dependencies
               run: |
                 ls -l
@@ -78,7 +81,7 @@ jobs:
                 pip install dune*gdt*whl
             - name: Test with pytest
               run: |
-                pytest -v ./python/dune/gdt/test/test_version.py
+                pytest -v ./python/gdt/test/test_version.py
 
     publish:
         needs: [test]
