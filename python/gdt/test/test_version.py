@@ -3,6 +3,7 @@ from importlib import metadata
 import pytest
 from packaging.version import Version
 
+
 @pytest.mark.parametrize('module', ['dune.gdt', 'dune.xt'])
 def test_version(module):
 
