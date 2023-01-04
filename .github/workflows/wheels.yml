@@ -53,9 +53,30 @@ jobs:
               with:
                 name: wheels
                 path: ${{github.workspace}}/wheelhouse/final/dune*whl
-
-    publish:
+    test:
         needs: [wheels]
+        runs-on: ubuntu-22.04
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/download-artifact@v3
+              with:
+                name: wheels
+            - uses : actions/setup-python@v2
+              with:
+                python-version: 3.9
+            - name: Install dependencies
+              run: |
+                ls -l
+                python -m pip install --upgrade pip
+                pip install pytest
+                pip install dune*xt*whl
+                pip install dune*gdt*whl
+            - name: Test with pytest
+              run: |
+                pytest -v ./python/dune/gdt/test/test_version.py
+    
+    publish:
+        needs: [test]
         runs-on: ubuntu-22.04
         steps:
             - uses: actions/download-artifact@v3
