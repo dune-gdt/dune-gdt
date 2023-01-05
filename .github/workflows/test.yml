@@ -83,6 +83,7 @@ jobs:
                   docker run --rm \
                     -e GITHUB_RUN_NUMBER \
                     -e CCACHE_DEBUG=1 \
+                    -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
                     /src/.github/workflows/test_headercheck.bash
