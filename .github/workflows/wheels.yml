@@ -54,6 +54,7 @@ jobs:
               with:
                 name: wheels_${{matrix.python}}
                 path: ${{github.workspace}}/wheelhouse/final/dune*whl
+                if-no-files-found: error
             - uses: actions/upload-artifact@v3
               with:
                 name: ccache-log_${{matrix.python}}
