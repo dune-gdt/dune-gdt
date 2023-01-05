@@ -73,6 +73,7 @@ jobs:
             - name: Headercheck ${{matrix.CC}}
               run: |
                   docker run --rm \
+                    -e GITHUB_RUN_NUMBER \
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
                     /src/.github/workflows/test_headercheck.bash
