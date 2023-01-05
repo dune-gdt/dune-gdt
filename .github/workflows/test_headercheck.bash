@@ -29,3 +29,8 @@ cd /src
 
 ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} "dxt_headercheck"
 
+if [[ ${CCACHE_DEBUG} == 1 ]] ; then
+  ccache -s
+  mkdir -p "${DUNE_BUILD_DIR}/testresults/ccache/" || true
+  find "${DUNE_BUILD_DIR}/dune-gdt/" -type f -name "*.ccache-*" | xargs -I {} cp {} "${DUNE_BUILD_DIR}/testresults/ccache/"
+fi
