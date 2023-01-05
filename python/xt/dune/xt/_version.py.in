@@ -12,4 +12,7 @@
 #   Tobias Leibner  (2019 - 2020)
 # ~~~
 
-__version__ = "${dune-gdt_VERSION}"
+# this mirrors the definition in config.h.cmake
+__version__ = "${DUNE_GDT_GIT_VERSION_MAJOR}.${DUNE_GDT_GIT_VERSION_MINOR}.${DUNE_GDT_GIT_VERSION_REVISION}"
+# this is the full git describe
+__git_revision__ = "${DUNE_GDT_GIT_VERSION}"
