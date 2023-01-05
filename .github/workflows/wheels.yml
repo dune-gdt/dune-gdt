@@ -84,12 +84,14 @@ jobs:
                 pytest -v ./python/gdt/test/test_version.py
 
     publish:
-        needs: [test]
+        needs: [test,wheels]
         runs-on: ubuntu-22.04
+        matrix:
+          python: [ "3.8", "3.9", "3.10", "3.11" ]
         steps:
             - uses: actions/download-artifact@v3
               with:
-                name: wheels
+                name: wheels_${{matrix.python}}
             - name: split by package
               run: |
                 mkdir xt gdt
