@@ -41,6 +41,7 @@ jobs:
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
                     -e GITHUB_RUN_NUMBER \
+                    -e CCACHE_DEBUG=1 \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
@@ -52,6 +53,13 @@ jobs:
               with:
                 name: cpp_junit_reports
                 path: ${{ github.workspace }}/build/testresults/*xml
+                if-no-files-found: error
+            - uses: actions/upload-artifact@v3
+              with:
+                if-no-files-found: error
+                name: ccache-log_cpp_${{matrix.CC}}
+                path: ${{github.workspace}}//build/testresults/ccache/*.ccache-*
+
     test_headercheck:
         runs-on: ubuntu-22.04
         needs: [build_images]
@@ -74,9 +82,15 @@ jobs:
               run: |
                   docker run --rm \
                     -e GITHUB_RUN_NUMBER \
+                    -e CCACHE_DEBUG=1 \
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
                     /src/.github/workflows/test_headercheck.bash
+            - uses: actions/upload-artifact@v3
+              with:
+                if-no-files-found: error
+                name: ccache-log_cpp_${{matrix.CC}}
+                path: ${{github.workspace}}//build/testresults/ccache/*.ccache-*
     test_python:
         runs-on: ubuntu-22.04
         needs: [build_images]
@@ -101,6 +115,7 @@ jobs:
                   docker run --rm \
                     -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
                     -e GITHUB_RUN_NUMBER \
+                    -e CCACHE_DEBUG=1 \
                     -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
                     -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
                     ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
@@ -111,6 +126,11 @@ jobs:
               with:
                 name: python_junit_reports
                 path: ${{ github.workspace }}/build/testresults/*xml
+            - uses: actions/upload-artifact@v3
+              with:
+                if-no-files-found: error
+                name: ccache-log_py_${{matrix.CC}}
+                path: ${{github.workspace}}//build/testresults/ccache/*.ccache-*
     combine_reports:
       needs: [test_cpp, test_python]
       runs-on: ubuntu-22.04
