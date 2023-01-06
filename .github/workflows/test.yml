@@ -6,6 +6,13 @@ on:
     #     branches:
     #         - main
     # pull_request:
+    workflow_dispatch:
+      # manually starting this workflow enables ccache debug by default
+      inputs:
+        ccache_debug:
+          description: 'Enable and upload ccache debug info'
+          required: false
+          default: '1'
 
 concurrency:
     group: ${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}
@@ -87,6 +94,7 @@ jobs:
           name: Download C++ reports
           with:
             name: cpp_junit_reports
+        # This suddenly started to fail. Needs pinning of last working version?
         # - uses: actions/setup-node@v3
         #   with:
         #     node-version: 16
