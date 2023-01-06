@@ -42,6 +42,7 @@ jobs:
                     -v ${GITHUB_WORKSPACE}/wheelhouse:/wheelhouse \
                     -v ${PWD}:/home/dxt/src \
                     -e WHEEL_DIR=/wheelhouse \
+                    -e CCACHE_DEBUG=1 \
                     -e GITHUB_RUN_NUMBER \
                     -e LOCAL_UID=0 \
                     -e DUNE_SRC_DIR=/home/dxt/src \
@@ -51,16 +52,48 @@ jobs:
               name: Build Wheel py${{matrix.python}}
             - uses: actions/upload-artifact@v3
               with:
-                name: wheels
+                name: wheels_${{matrix.python}}
                 path: ${{github.workspace}}/wheelhouse/final/dune*whl
-
-    publish:
+                if-no-files-found: error
+            - uses: actions/upload-artifact@v3
+              with:
+                name: ccache-log_${{matrix.python}}
+                path: ${{github.workspace}}/docker/build/dune-gdt/**/*ccache-log
+    test:
         needs: [wheels]
         runs-on: ubuntu-22.04
+        strategy:
+          matrix:
+            python: ["3.8", "3.9", "3.10", "3.11"]
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/download-artifact@v3
+              with:
+                name: wheels_${{matrix.python}}
+            - uses : actions/setup-python@v2
+              with:
+                python-version: ${{ matrix.python }}
+            - name: Install dependencies
+              run: |
+                ls -l
+                python -m pip install --upgrade pip
+                pip install pytest
+                pip install dune*xt*whl
+                pip install dune*gdt*whl
+            - name: Test with pytest
+              run: |
+                pytest -v ./python/gdt/test/test_version.py
+
+    publish:
+        needs: [test,wheels]
+        runs-on: ubuntu-22.04
+        strategy:
+          matrix:
+            python: ["3.8", "3.9", "3.10", "3.11"]
         steps:
             - uses: actions/download-artifact@v3
               with:
-                name: wheels
+                name: wheels_${{matrix.python}}
             - name: split by package
               run: |
                 mkdir xt gdt

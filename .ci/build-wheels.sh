@@ -31,3 +31,4 @@ python3 -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*xt*.whl -w ${W
 python3 -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*gdt*.whl -w ${WHEEL_DIR}/final
 
 deactivate
+ccache -s

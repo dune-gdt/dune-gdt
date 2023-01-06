@@ -6,17 +6,22 @@ on:
     #     branches:
     #         - main
     # pull_request:
+    workflow_dispatch:
+      # manually starting this workflow enables ccache debug by default
+      inputs:
+        ccache_debug:
+          description: 'Enable and upload ccache debug info'
+          required: false
+          default: '1'
 
 concurrency:
     group: ${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}
     cancel-in-progress: true
 
-env:
-    DUNE_BUILD_DIR: /build
-
 jobs:
     build_images:
         uses: ./.github/workflows/build_images.yml
+
     test_cpp:
         runs-on: ubuntu-22.04
         needs: [build_images]
@@ -24,58 +29,37 @@ jobs:
             matrix: ${{ fromJson(needs.build_images.outputs.matrix-combinations) }}
             fail-fast: false
         steps:
-            - name: Login to Github Packages
-              uses: docker/login-action@v2
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-            - name: Setup ccache
-              id: ccache-cpp
-              uses: actions/cache@v3
-              with:
-                path: ${{ github.workspace }}/ccache
-                key: ${{matrix.CC}}-cpp-ccache
-            - name: C++ Tests ${{matrix.CC}}
-              run: |
-                  docker run --rm \
-                    -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
-                    -e GITHUB_RUN_NUMBER \
-                    -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
-                    -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
-                    -e OMPI_ALLOW_RUN_AS_ROOT=1 -e OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 \
-                    ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
-                    /src/.github/workflows/test_cpp.bash
-            - uses: actions/upload-artifact@v3
-              name: Upload CPP results
-              if: always()
-              with:
-                name: cpp_junit_reports
-                path: ${{ github.workspace }}/build/testresults/*xml
+          - uses: actions/checkout@v3
+          - uses: ./.github/actions/docker_run
+            with:
+              script: /src/.github/workflows/test_cpp.bash
+              registry_username: ${{ github.actor }}
+              registry_password: ${{ secrets.GITHUB_TOKEN }}
+              image: ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}}
+              CC: ${{matrix.CC}}
+          - uses: actions/upload-artifact@v3
+            name: Upload CPP results
+            if: always()
+            with:
+              name: cpp_junit_reports
+              path: ${{ github.workspace }}/build/testresults/*xml
+              if-no-files-found: error
+
     test_headercheck:
         runs-on: ubuntu-22.04
         needs: [build_images]
         strategy:
             matrix: ${{ fromJson(needs.build_images.outputs.matrix-combinations) }}
         steps:
-            - name: Login to Github Packages
-              uses: docker/login-action@v2
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-            - name: Setup ccache
-              id: ccache-header
-              uses: actions/cache@v3
-              with:
-                path: ${{ github.workspace }}/ccache
-                key: ${{matrix.CC}}-header-ccache
-            - name: Headercheck ${{matrix.CC}}
-              run: |
-                  docker run --rm \
-                    -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
-                    ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
-                    /src/.github/workflows/test_headercheck.bash
+          - uses: actions/checkout@v3
+          - uses: ./.github/actions/docker_run
+            with:
+              script: /src/.github/workflows/test_headercheck.bash
+              registry_username: ${{ github.actor }}
+              registry_password: ${{ secrets.GITHUB_TOKEN }}
+              image: ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}}
+              CC: ${{matrix.CC}}
+
     test_python:
         runs-on: ubuntu-22.04
         needs: [build_images]
@@ -83,33 +67,21 @@ jobs:
             matrix: ${{ fromJson(needs.build_images.outputs.matrix-combinations) }}
             fail-fast: false
         steps:
-            - name: Login to Github Packages
-              uses: docker/login-action@v2
-              with:
-                  registry: ghcr.io
-                  username: ${{ github.actor }}
-                  password: ${{ secrets.GITHUB_TOKEN }}
-            - name: Setup ccache
-              id: ccache-py
-              uses: actions/cache@v3
-              with:
-                path: ${{ github.workspace }}/ccache
-                key: ${{matrix.CC}}-py-ccache
-            - name: Python Tests ${{matrix.CC}}
-              run: |
-                  docker run --rm \
-                    -e DUNE_BUILD_DIR=${DUNE_BUILD_DIR} \
-                    -e GITHUB_RUN_NUMBER \
-                    -v ${GITHUB_WORKSPACE}/ccache/:/root/.ccache \
-                    -v ${GITHUB_WORKSPACE}/build/testresults/:/build/testresults \
-                    ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}} \
-                    /src/.github/workflows/test_python.bash
-            - uses: actions/upload-artifact@v3
-              name: Upload Python results
-              if: always()
-              with:
-                name: python_junit_reports
-                path: ${{ github.workspace }}/build/testresults/*xml
+          - uses: actions/checkout@v3
+          - uses: ./.github/actions/docker_run
+            with:
+              script: /src/.github/workflows/test_python.bash
+              registry_username: ${{ github.actor }}
+              registry_password: ${{ secrets.GITHUB_TOKEN }}
+              image: ${{ needs.build_images.outputs.image_tag }}_${{matrix.CC}}
+              CC: ${{matrix.CC}}
+          - uses: actions/upload-artifact@v3
+            name: Upload Python results
+            if: always()
+            with:
+              name: python_junit_reports
+              path: ${{ github.workspace }}/build/testresults/*xml
+
     combine_reports:
       needs: [test_cpp, test_python]
       runs-on: ubuntu-22.04
@@ -122,6 +94,7 @@ jobs:
           name: Download C++ reports
           with:
             name: cpp_junit_reports
+        # This suddenly started to fail. Needs pinning of last working version?
         # - uses: actions/setup-node@v3
         #   with:
         #     node-version: 16

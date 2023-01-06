@@ -36,4 +36,8 @@ ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} ${DUNECONTROL} --opt
 [[ -d ${DUNE_BUILD_DIR}/testresults/ ]] || mkdir ${DUNE_BUILD_DIR}/testresults/
 cp ${DUNE_BUILD_DIR}/dune-gdt/dune/*xml ${DUNE_BUILD_DIR}/testresults/
 
-ccache --print-stats
+if [[ ${CCACHE_DEBUG} == 1 ]] ; then
+  ccache -s
+  mkdir -p "${DUNE_BUILD_DIR}/testresults/ccache/" || true
+  find "${DUNE_BUILD_DIR}/dune-gdt/" -type f -name "*.ccache-*" | xargs -I {} cp {} "${DUNE_BUILD_DIR}/testresults/ccache/"
+fi
