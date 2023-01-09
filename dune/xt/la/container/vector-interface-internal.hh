@@ -50,7 +50,8 @@ public:
     : const_vec_(vec)
     , position_(0)
     , end_(end)
-  {}
+  {
+  }
 
   ThisType& operator++()
   {
@@ -118,7 +119,8 @@ public:
   explicit VectorOutputIterator(VectorType& vec, const bool end = false)
     : input_iterator_(vec, end)
     , vec_(vec)
-  {}
+  {
+  }
 
   ThisType& operator++()
   {

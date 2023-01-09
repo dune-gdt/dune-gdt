@@ -95,7 +95,8 @@ private:
       , evaluate_(std::move(evaluate_func))
       , jacobian_(std::move(jacobian_func))
       , derivative_(std::move(derivative_func))
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& element) final
@@ -185,7 +186,8 @@ public:
     , name_(std::move(nm))
     , jacobian_(std::move(jacobian_func))
     , derivative_(std::move(derivative_func))
-  {}
+  {
+  }
 
   GenericGridFunction(GenericOrderFunctionType order_func,
                       GenericPostBindFunctionType post_bind_func = default_post_bind_function(),
@@ -201,7 +203,8 @@ public:
     , name_(std::move(nm))
     , jacobian_(std::move(jacobian_func))
     , derivative_(std::move(derivative_func))
-  {}
+  {
+  }
 
   GenericGridFunction(const ThisType&) = default;
 

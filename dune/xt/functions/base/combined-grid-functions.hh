@@ -122,7 +122,8 @@ public:
     , left_(other.left_->copy_as_grid_function())
     , right_(other.right_->copy_as_grid_function())
     , name_(other.name_)
-  {}
+  {
+  }
 
   CombinedGridFunction(ThisType&& source) = default;
 
@@ -175,7 +176,8 @@ public:
   template <class... Args>
   explicit DifferenceGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class DifferenceGridFunction
 
 
@@ -193,7 +195,8 @@ public:
   template <class... Args>
   explicit SumGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class SumGridFunction
 
 
@@ -211,7 +214,8 @@ public:
   template <class... Args>
   explicit FractionGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class FractionGridFunction
 
 
@@ -229,7 +233,8 @@ public:
   template <class... Args>
   explicit ProductGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class ProductGridFunction
 
 

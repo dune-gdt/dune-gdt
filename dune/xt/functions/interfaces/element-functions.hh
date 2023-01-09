@@ -133,7 +133,8 @@ public:
 
   ElementFunctionSetInterface(const XT::Common::ParameterType& param_type = {})
     : Common::ParametricInterface(param_type)
-  {}
+  {
+  }
 
   ElementFunctionSetInterface(const ThisType& other) = default;
 
@@ -490,7 +491,8 @@ public:
 
   ElementFunctionInterface(const XT::Common::ParameterType& param_type = {})
     : BaseType(param_type)
-  {}
+  {
+  }
 
   ElementFunctionInterface(const ThisType& other) = default;
   ElementFunctionInterface(ThisType&& source) = default;

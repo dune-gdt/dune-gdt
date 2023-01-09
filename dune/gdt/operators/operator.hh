@@ -67,7 +67,8 @@ public:
     , range_space_(range_spc)
     , requires_assembly_(requires_assembly)
     , linear_(true)
-  {}
+  {
+  }
 
   Operator(const ThisType& other)
     : BaseType(other)

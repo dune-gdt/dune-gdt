@@ -318,17 +318,20 @@ struct CombinedStorageProvider
   CombinedStorageProvider(LeftType& lft, RightType& rght)
     : left(lft)
     , right(rght)
-  {}
+  {
+  }
 
   CombinedStorageProvider(std::shared_ptr<LeftType> lft, std::shared_ptr<RightType> rght)
     : left(lft)
     , right(rght)
-  {}
+  {
+  }
 
   CombinedStorageProvider(std::unique_ptr<LeftType>&& lft, std::unique_ptr<RightType>&& rght)
     : left(std::move(lft))
     , right(std::move(rght))
-  {}
+  {
+  }
 
   CombinedStorageProvider(const ThisType&) = default;
 

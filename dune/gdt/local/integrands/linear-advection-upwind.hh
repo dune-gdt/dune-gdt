@@ -56,7 +56,8 @@ public:
     : BaseType(other)
     , direction_(other.direction_->copy_as_grid_function())
     , local_direction_in_(direction_->local_function())
-  {}
+  {
+  }
 
   InnerCoupling(ThisType&& source) = default;
 
@@ -210,7 +211,8 @@ public:
     , dirichlet_data_(other.dirichlet_data_->copy_as_grid_function())
     , local_direction_(direction_->local_function())
     , local_dirichlet_data_(dirichlet_data_->local_function())
-  {}
+  {
+  }
 #pragma GCC diagnostic pop
 
   DirichletCoupling(ThisType&& source) = default;

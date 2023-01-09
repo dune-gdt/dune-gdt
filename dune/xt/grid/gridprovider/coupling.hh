@@ -37,7 +37,8 @@ public:
 
   CouplingGridProvider(const CouplingGridViewType view)
     : view_(view)
-  {}
+  {
+  }
 
   CouplingGridProvider(const ThisType& other) = default;
 

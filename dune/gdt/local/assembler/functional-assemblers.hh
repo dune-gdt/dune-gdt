@@ -65,7 +65,8 @@ public:
     , local_vector_(other.local_vector_)
     , global_indices_(other.global_indices_)
     , basis_(space_->basis().localize())
-  {}
+  {
+  }
 
   LocalElementFunctionalAssembler(ThisType&& source) = default;
 
@@ -141,7 +142,8 @@ public:
     , local_vector_(other.local_vector_)
     , global_indices_(other.global_indices_)
     , basis_(space_->basis().localize())
-  {}
+  {
+  }
 
   LocalIntersectionFunctionalAssembler(ThisType&& source) = default;
 

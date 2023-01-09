@@ -31,7 +31,8 @@ public:
 
   Printer(const T& val, const Configuration& cfg = {})
     : internal::DefaultPrinter<T, use_repr>(val, cfg)
-  {}
+  {
+  }
 
   void repr(std::ostream& out) const final
   {
@@ -67,7 +68,8 @@ public:
 
   Printer(const T& val, const Configuration& cfg = {})
     : internal::DefaultPrinter<T, use_repr>(val, cfg)
-  {}
+  {
+  }
 
   void repr(std::ostream& out) const final
   {

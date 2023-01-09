@@ -96,7 +96,7 @@ private:
     file.close();
     /* todo */
     // if (filecounter != 3366000)
-    //#warning you are not using the entire data file. Use default number_of_elements instead.
+    // #warning you are not using the entire data file. Use default number_of_elements instead.
 
     auto data = std::make_shared<std::vector<RangeType>>(entries_per_coordinate, RangeType(0));
 
@@ -140,7 +140,8 @@ public:
                  const std::string& nm = BaseType::static_id())
     : BaseType(lower_left, upper_right, number_of_elements, read_values_from_file(filename, number_of_elements), nm)
 
-  {}
+  {
+  }
 }; // class Model2Function
 
 

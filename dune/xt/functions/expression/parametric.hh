@@ -97,7 +97,8 @@ public:
     , name_(other.name_)
     , num_parameter_variables_(other.num_parameter_variables_)
     , function_(new ActualFunctionType(*other.function_))
-  {}
+  {
+  }
 
   ParametricExpressionFunction(ThisType&&) = default;
 

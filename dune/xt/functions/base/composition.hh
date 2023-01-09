@@ -57,7 +57,8 @@ struct GeneralElementFunctionChooser
       , element_search_(element_search)
       , local_inner_function_(inner_function_.local_function())
       , local_outer_function_(outer_function_.local_function())
-    {}
+    {
+    }
 
     ElementFunction(const ElementFunction& /*other*/) = delete;
 
@@ -135,7 +136,8 @@ struct ElementFunctionForGlobalChooser
       : BaseType()
       , localizable_function_(localizable_function)
       , global_function_(global_function)
-    {}
+    {
+    }
 
     ElementFunction(const ElementFunction& /*other*/) = delete;
 
@@ -223,7 +225,8 @@ public:
     , outer_function_(outer_function)
     , element_search_(std::make_shared<typename Grid::EntityInlevelSearch<OuterGridViewType>>(outer_grid_view))
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   // constructor without grid view, only makes sense if OuterType is derived from FunctionInterface
   CompositionFunction(const InnerType local_func, const OuterType global_func, std::string nm = static_id())

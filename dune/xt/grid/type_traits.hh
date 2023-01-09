@@ -476,7 +476,8 @@ struct EntityLess
 
   EntityLess(const IndexSet& index_set)
     : index_set_(index_set)
-  {}
+  {
+  }
 
   bool operator()(const E& a, const E& b) const
   {

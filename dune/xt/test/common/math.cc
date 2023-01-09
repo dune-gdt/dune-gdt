@@ -32,7 +32,8 @@ struct ClampTest : public testing::Test
   ClampTest()
     : lower(-1)
     , upper(1)
-  {}
+  {
+  }
 };
 
 TYPED_TEST_SUITE(ClampTest, TestTypes);

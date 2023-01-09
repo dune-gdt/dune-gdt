@@ -59,7 +59,8 @@ public:
     , local_diffusion_out_(diffusion_->local_function())
     , local_weight_in_(weight_->local_function())
     , local_weight_out_(weight_->local_function())
-  {}
+  {
+  }
 
   InnerCoupling(const ThisType& other)
     : BaseType(other)
@@ -70,7 +71,8 @@ public:
     , local_diffusion_out_(diffusion_->local_function())
     , local_weight_in_(weight_->local_function())
     , local_weight_out_(weight_->local_function())
-  {}
+  {
+  }
 
   InnerCoupling(ThisType&& source) = default;
 
@@ -251,7 +253,8 @@ public:
     , dirichlet_data_(dirichlet_data.copy_as_grid_function())
     , local_diffusion_(diffusion_->local_function())
     , local_dirichlet_data_(dirichlet_data_->local_function())
-  {}
+  {
+  }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
@@ -263,7 +266,8 @@ public:
     , dirichlet_data_(other.dirichlet_data_->copy_as_grid_function())
     , local_diffusion_(diffusion_->local_function())
     , local_dirichlet_data_(dirichlet_data_->local_function())
-  {}
+  {
+  }
 #pragma GCC diagnostic pop
 
 

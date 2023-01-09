@@ -57,7 +57,8 @@ struct CommonDenseVectorBackend
     : size_(ss)
     , values_vector_(size_, value)
     , values_ptr_(values_vector_.data())
-  {}
+  {
+  }
 
   // Uses the provided buffer with size ss. The pointer values_ptr should point to the first element of the buffer.
   // The user has to ensure that the buffer has at least ss elements, we have no way to check it here.
@@ -67,7 +68,8 @@ struct CommonDenseVectorBackend
   CommonDenseVectorBackend(const size_t ss, ScalarType* values_ptr)
     : size_(ss)
     , values_ptr_(values_ptr)
-  {}
+  {
+  }
 
   // The copy constructor performs a deep copy of the values, even if other was constructed from a values_ptr
   // If you do not want an actual copy, use the constructor above.
@@ -87,7 +89,8 @@ struct CommonDenseVectorBackend
     // strictly guaranteed by the standard as of now but fulfilled in all major implementations (see
     // https://stackoverflow.com/a/25348988 and LWG open issue 2321).
     , values_ptr_(std::move(other.values_ptr_))
-  {}
+  {
+  }
 
   ThisType copy() const
   {
@@ -266,7 +269,8 @@ public:
   explicit CommonDenseVector(const size_t ss = 0, const ScalarType& value = ScalarType(), const size_t num_mutexes = 1)
     : backend_(new BackendType(ss, value))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   explicit CommonDenseVector(const std::vector<ScalarType>& other, const size_t num_mutexes = 1)
     : backend_(new BackendType(other.size()))
@@ -291,7 +295,8 @@ public:
   explicit CommonDenseVector(const size_t ss, ScalarType* values_ptr, const size_t num_mutexes, bool /*dummy*/)
     : backend_(new BackendType(ss, values_ptr))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {} // CommonDenseVector(...)
+  {
+  } // CommonDenseVector(...)
 
   explicit CommonDenseVector(const Dune::DynamicVector<ScalarType>& dynvec, const size_t num_mutexes = 1)
     : backend_(new BackendType(dynvec.size()))
@@ -304,7 +309,8 @@ public:
   CommonDenseVector(const ThisType& other)
     : backend_(std::make_shared<BackendType>(*other.backend_))
     , mutexes_(std::make_unique<MutexesType>(other.mutexes_->size()))
-  {}
+  {
+  }
 
   explicit CommonDenseVector(const BackendType& other,
                              const bool /*prune*/ = false,
@@ -312,7 +318,8 @@ public:
                              const size_t num_mutexes = 1)
     : backend_(new BackendType(other))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   /**
    *  \note Takes ownership of backend_ptr in the sense that you must not delete it afterwards!
@@ -320,12 +327,14 @@ public:
   explicit CommonDenseVector(BackendType* backend_ptr, const size_t num_mutexes = 1)
     : backend_(backend_ptr)
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   explicit CommonDenseVector(std::shared_ptr<BackendType> backend_ptr, const size_t num_mutexes = 1)
     : backend_(std::move(backend_ptr))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   using InterfaceType::operator=;
 

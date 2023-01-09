@@ -41,7 +41,8 @@ public:
 
   Local0dFiniteElementBasis()
     : geometry_type_(GeometryTypes::simplex(0))
-  {}
+  {
+  }
 
   Local0dFiniteElementBasis(const ThisType& other) = default;
 
@@ -109,7 +110,8 @@ public:
 
   Local0dFiniteElementInterpolation()
     : geometry_type_(GeometryTypes::simplex(0))
-  {}
+  {
+  }
 
   Local0dFiniteElementInterpolation(const ThisType& other) = default;
 
@@ -218,7 +220,8 @@ public:
                new Local0dFiniteElementCoefficients<D>(r),
                new Local0dFiniteElementInterpolation<D, R, r>(),
                {ReferenceElements<D, 0>::simplex().position(0, 0)})
-  {}
+  {
+  }
 }; // class Local0dFiniteElement
 
 

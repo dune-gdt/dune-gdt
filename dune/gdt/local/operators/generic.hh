@@ -57,7 +57,8 @@ public:
                               const XT::Common::ParameterType& param_type = {})
     : BaseType(num_local_sources, param_type)
     , func_(func)
-  {}
+  {
+  }
 
   GenericLocalElementOperator(const SourceType& source,
                               GenericFunctionType func,
@@ -65,12 +66,14 @@ public:
                               const XT::Common::ParameterType& param_type = {})
     : BaseType(source, num_local_sources, param_type)
     , func_(func)
-  {}
+  {
+  }
 
   GenericLocalElementOperator(const ThisType& other)
     : BaseType(other)
     , func_(other.func_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -132,7 +135,8 @@ public:
                                    const XT::Common::ParameterType& param_type = {})
     : BaseType(num_local_sources, param_type)
     , func_(func)
-  {}
+  {
+  }
 
   GenericLocalIntersectionOperator(const SourceType& source,
                                    GenericFunctionType func,
@@ -140,12 +144,14 @@ public:
                                    const XT::Common::ParameterType& param_type = {})
     : BaseType(source, num_local_sources, param_type)
     , func_(func)
-  {}
+  {
+  }
 
   GenericLocalIntersectionOperator(const ThisType& other)
     : BaseType(other)
     , func_(other.func_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {

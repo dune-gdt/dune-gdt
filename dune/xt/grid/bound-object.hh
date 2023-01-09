@@ -37,7 +37,8 @@ public:
     ,*/
     element_(nullptr)
 
-  {}
+  {
+  }
 
   ElementBoundObject(const ThisType& other)
     : /*DebugLogging(other)
@@ -56,7 +57,8 @@ public:
 ,*/
     element_(std::move(source.element_))
     , is_bound_(source.is_bound_)
-  {}
+  {
+  }
 
   virtual ~ElementBoundObject() = default;
 
@@ -125,7 +127,8 @@ public:
   IntersectionBoundObject()
     : intersection_(nullptr)
 
-  {}
+  {
+  }
 
   IntersectionBoundObject(const ThisType& other)
     : intersection_(nullptr)

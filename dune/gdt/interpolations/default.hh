@@ -66,7 +66,8 @@ public:
     , local_dof_vector_(target_.dofs().localize())
     , local_source_(source_->local_function())
     , target_basis_(target_.space().basis().localize())
-  {}
+  {
+  }
 
   DefaultInterpolationElementFunctor(ThisType&&) = default;
 

@@ -82,7 +82,8 @@ public:
   template <class... Args>
   explicit EigenSolver(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 
 protected:
   void compute() const final

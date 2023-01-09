@@ -146,6 +146,7 @@ size_t Dune::XT::Common::ThreadManager::default_max_threads()
 
 Dune::XT::Common::ThreadManager::ThreadManager()
   : max_threads_(1)
-{}
+{
+}
 
 #endif // HAVE_TBB

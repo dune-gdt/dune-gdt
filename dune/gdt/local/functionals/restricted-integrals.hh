@@ -45,14 +45,16 @@ public:
     , filter_(filter)
     , integrand_(integrand.copy_as_unary_intersection_integrand())
     , over_integrate_(over_integrate)
-  {}
+  {
+  }
 
   LocalIntersectionRestrictedIntegralFunctional(const ThisType& other)
     : BaseType(other)
     , filter_(other.filter_)
     , integrand_(other.integrand_->copy_as_unary_intersection_integrand())
     , over_integrate_(other.over_integrate_)
-  {}
+  {
+  }
 
   LocalIntersectionRestrictedIntegralFunctional(ThisType&& source) = default;
 

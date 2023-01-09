@@ -55,13 +55,15 @@ public:
     : BaseType(grid_function.parameter_type())
     , grid_function_(grid_function.copy_as_grid_function())
     , name_(nm.empty() ? "DerivativeGridFunction" : nm)
-  {}
+  {
+  }
 
   DerivativeGridFunction(const ThisType& other)
     : BaseType(other)
     , grid_function_(other.grid_function_->copy_as_grid_function())
     , name_(other.name_)
-  {}
+  {
+  }
 
   std::unique_ptr<LocalFunctionType> local_function() const final
   {
@@ -102,7 +104,8 @@ public:
   template <class... Args>
   explicit DivergenceGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class DivergenceGridFunction
 
 
@@ -115,7 +118,8 @@ public:
   template <class... Args>
   explicit GradientGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class GradientGridFunction
 
 

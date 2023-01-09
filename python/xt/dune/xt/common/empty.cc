@@ -28,7 +28,8 @@ struct Pet
 {
   Pet(std::string name_)
     : name(std::move(name_))
-  {}
+  {
+  }
   void setName(const std::string& name_)
   {
     name = name_;
@@ -44,7 +45,8 @@ struct Dog : Pet
 {
   Dog(const std::string& name_)
     : Pet(name_)
-  {}
+  {
+  }
   std::string bark() const
   {
     return "woof!";
@@ -55,7 +57,8 @@ struct Terrier : Dog
 {
   Terrier()
     : Dog("Berti")
-  {}
+  {
+  }
 };
 
 

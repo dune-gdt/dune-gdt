@@ -102,7 +102,8 @@ public:
     , reference_space_(nullptr)
     , current_solution_on_reference_grid_(nullptr)
     , reference_solution_on_reference_grid_(nullptr)
-  {}
+  {
+  }
 
   size_t num_refinements() const override
   {

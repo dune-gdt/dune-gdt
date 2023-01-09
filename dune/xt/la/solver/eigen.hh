@@ -28,14 +28,14 @@
 #  include <Eigen/SparseCholesky>
 #  include <Eigen/SparseLU>
 #  include <Eigen/SparseQR>
-//#   if HAVE_UMFPACK
-//#     include <Eigen/UmfPackSupport>
-//#   endif
-//#   include <Eigen/SPQRSupport>
-//#   include <Eigen/CholmodSupport>
-//#   if HAVE_SUPERLU
-//#     include <Eigen/SuperLUSupport>
-//#   endif
+// #   if HAVE_UMFPACK
+// #     include <Eigen/UmfPackSupport>
+// #   endif
+// #   include <Eigen/SPQRSupport>
+// #   include <Eigen/CholmodSupport>
+// #   if HAVE_SUPERLU
+// #     include <Eigen/SuperLUSupport>
+// #   endif
 #  include <dune/xt/common/reenable_warnings.hh>
 #endif // HAVE_EIGEN
 
@@ -89,11 +89,13 @@ public:
 
   Solver(const MatrixType& matrix)
     : matrix_(matrix)
-  {}
+  {
+  }
 
   Solver(const MatrixType& matrix, const CommunicatorType& /*communicator*/)
     : matrix_(matrix)
-  {}
+  {
+  }
 
   static std::vector<std::string> types()
   {
@@ -277,12 +279,12 @@ public:
         "cg.identity.upper" // <- does only work with symmetric matrices, may produce correct results
         //           , "spqr"                  // <- does not compile
         //           , "llt.cholmodsupernodal" // <- does not compile
-        //#if HAVE_UMFPACK
+        // #if HAVE_UMFPACK
         //           , "lu.umfpack"            // <- untested
-        //#endif
-        //#if HAVE_SUPERLU
+        // #endif
+        // #if HAVE_SUPERLU
         //           , "superlu"               // <- untested
-        //#endif
+        // #endif
     };
   } // ... types(...)
 
@@ -337,11 +339,13 @@ private:
 public:
   Solver(const MatrixType& matrix)
     : matrix_(matrix)
-  {}
+  {
+  }
 
   Solver(const MatrixType& matrix, const CommunicatorType& /*communicator*/)
     : matrix_(matrix)
-  {}
+  {
+  }
 
   static std::vector<std::string> types()
   {
@@ -517,42 +521,42 @@ public:
       solver.factorize(colmajor_copy);
       solution.backend() = solver.solve(rhs.backend());
       info = solver.info();
-      //#if HAVE_UMFPACK
-      //    } else if (type == "lu.umfpack") {
-      //      using SolverType = ::Eigen::UmfPackLU< typename MatrixType::BackendType >;
-      //      SolverType solver;
-      //      solver.analyzePattern(matrix_.backend());
-      //      solver.factorize(matrix_.backend());
-      //      solution.backend() = solver.solve(rhs.backend());
-      //      info = solver.info();
-      //#endif // HAVE_UMFPACK
-      //    } else if (type == "spqr") {
-      //      ColMajorBackendType colmajor_copy(matrix_.backend());
-      //      colmajor_copy.makeCompressed();
-      //      using SolverType = ::Eigen::SPQR< ColMajorBackendType >;
-      //      SolverType solver;
-      //      solver.analyzePattern(colmajor_copy);
-      //      solver.factorize(colmajor_copy);
-      //      solution.backend() = solver.solve(rhs.backend());
-      //      if (solver.info() != ::Eigen::Success)
-      //        return solver.info();
-      //    } else if (type == "cholmodsupernodalllt") {
-      //      using SolverType = ::Eigen::CholmodSupernodalLLT< typename MatrixType::BackendType >;
-      //      SolverType solver;
-      //      solver.analyzePattern(matrix_.backend());
-      //      solver.factorize(matrix_.backend());
-      //      solution.backend() = solver.solve(rhs.backend());
-      //      if (solver.info() != ::Eigen::Success)
-      //        return solver.info();
-      //#if HAVE_SUPERLU
-      //    } else if (type == "superlu") {
-      //      using SolverType = ::Eigen::SuperLU< typename MatrixType::BackendType >;
-      //      SolverType solver;
-      //      solver.analyzePattern(matrix_.backend());
-      //      solver.factorize(matrix_.backend());
-      //      solution.backend() = solver.solve(rhs.backend());
-      //      info = solver.info();
-      //#endif // HAVE_SUPERLU
+      // #if HAVE_UMFPACK
+      //     } else if (type == "lu.umfpack") {
+      //       using SolverType = ::Eigen::UmfPackLU< typename MatrixType::BackendType >;
+      //       SolverType solver;
+      //       solver.analyzePattern(matrix_.backend());
+      //       solver.factorize(matrix_.backend());
+      //       solution.backend() = solver.solve(rhs.backend());
+      //       info = solver.info();
+      // #endif // HAVE_UMFPACK
+      //     } else if (type == "spqr") {
+      //       ColMajorBackendType colmajor_copy(matrix_.backend());
+      //       colmajor_copy.makeCompressed();
+      //       using SolverType = ::Eigen::SPQR< ColMajorBackendType >;
+      //       SolverType solver;
+      //       solver.analyzePattern(colmajor_copy);
+      //       solver.factorize(colmajor_copy);
+      //       solution.backend() = solver.solve(rhs.backend());
+      //       if (solver.info() != ::Eigen::Success)
+      //         return solver.info();
+      //     } else if (type == "cholmodsupernodalllt") {
+      //       using SolverType = ::Eigen::CholmodSupernodalLLT< typename MatrixType::BackendType >;
+      //       SolverType solver;
+      //       solver.analyzePattern(matrix_.backend());
+      //       solver.factorize(matrix_.backend());
+      //       solution.backend() = solver.solve(rhs.backend());
+      //       if (solver.info() != ::Eigen::Success)
+      //         return solver.info();
+      // #if HAVE_SUPERLU
+      //     } else if (type == "superlu") {
+      //       using SolverType = ::Eigen::SuperLU< typename MatrixType::BackendType >;
+      //       SolverType solver;
+      //       solver.analyzePattern(matrix_.backend());
+      //       solver.factorize(matrix_.backend());
+      //       solution.backend() = solver.solve(rhs.backend());
+      //       info = solver.info();
+      // #endif // HAVE_SUPERLU
     } else
       DUNE_THROW(Common::Exceptions::internal_error,
                  "Given type '" << type << "' is not supported, although it was reported by types()!");

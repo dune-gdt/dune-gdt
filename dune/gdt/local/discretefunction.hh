@@ -71,7 +71,8 @@ public:
     , dynamic_basis_values_(basis_values_.size())
     , basis_derivatives_(basis_values_.size())
     , dynamic_basis_derivatives_(basis_values_.size())
-  {}
+  {
+  }
 
   virtual ~ConstLocalDiscreteFunction() = default;
 
@@ -310,12 +311,14 @@ public:
   LocalDiscreteFunction(const SpaceType& spc, DofVectorType& dof_vector)
     : BaseType(spc, dof_vector)
     , dof_vector_(dof_vector.localize())
-  {}
+  {
+  }
 
   LocalDiscreteFunction(const SpaceType& spc, DofVectorType& dof_vector, const ElementType& ent)
     : BaseType(spc, dof_vector, ent)
     , dof_vector_(dof_vector.localize(ent))
-  {}
+  {
+  }
 
 protected:
   void post_bind(const ElementType& ent) override final

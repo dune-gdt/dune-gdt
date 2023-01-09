@@ -103,7 +103,8 @@ public:
     , range_space_(other.range_space_)
     , matrix_(other.matrix_)
     , linear_solver_(matrix_, source_space_.dof_communicator())
-  {}
+  {
+  }
 
   ConstMatrixOperator(ThisType&& source)
     : BaseType(source)
@@ -112,7 +113,8 @@ public:
     , range_space_(source.range_space_)
     , matrix_(source.matrix_)
     , linear_solver_(matrix_, source_space_.dof_communicator())
-  {}
+  {
+  }
 
   // pull in methods from BilinearFormInterface, OperatorInterface, OperatorInterface
   using BaseType::apply;

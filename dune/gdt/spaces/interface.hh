@@ -77,7 +77,8 @@ public:
     : Logger(logging_prefix.empty() ? "Space" : logging_prefix, logging_state)
     , dof_communicator_(nullptr)
     , adapted_(false)
-  {}
+  {
+  }
 
   SpaceInterface(const ThisType& other) = default;
 

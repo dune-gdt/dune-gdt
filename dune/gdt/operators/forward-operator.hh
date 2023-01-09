@@ -67,7 +67,8 @@ public:
     , assembly_grid_view_(assembly_grid_vw)
     , range_space_(range_spc)
     , linear_(true)
-  {}
+  {
+  }
 
   ForwardOperator(const ThisType& other)
     : BaseType(other)

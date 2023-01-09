@@ -41,7 +41,8 @@ DefaultLogger::DefaultLogger(const std::string& prfx,
   , warn_(std::make_shared<TimedPrefixedLogStream>(global_timer_ ? SecondsSinceStartup() : timer_,
                                                    build_prefix(prfx.empty() ? "warn" : prfx, copy_count, colors_[2]),
                                                    std::cerr))
-{}
+{
+}
 
 DefaultLogger::DefaultLogger(const DefaultLogger& other)
   : prefix(other.prefix)
@@ -61,7 +62,8 @@ DefaultLogger::DefaultLogger(const DefaultLogger& other)
         std::make_shared<TimedPrefixedLogStream>(global_timer_ ? SecondsSinceStartup() : timer_,
                                                  build_prefix(prefix.empty() ? "warn" : prefix, copy_count, colors_[2]),
                                                  std::cerr))
-{}
+{
+}
 
 DefaultLogger& DefaultLogger::operator=(const DefaultLogger& other)
 {
@@ -189,7 +191,8 @@ TimedLogManager::TimedLogManager(const Timer& timer,
                                                     current_level_ <= max_debug_level ? enabled_out : dev_null))
 #endif
   , warn_(std::make_shared<TimedPrefixedLogStream>(timer_, warning_prefix, enable_warnings ? warn_out : disabled_out))
-{}
+{
+}
 
 TimedLogManager::~TimedLogManager()
 {

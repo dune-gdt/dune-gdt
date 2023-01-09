@@ -96,17 +96,20 @@ public:
   InverseElementFunction(ElementFunctionType& func, const int ord)
     : func_(func)
     , order_(ord)
-  {}
+  {
+  }
 
   InverseElementFunction(std::shared_ptr<ElementFunctionType> func, const int ord)
     : func_(func)
     , order_(ord)
-  {}
+  {
+  }
 
   InverseElementFunction(std::unique_ptr<ElementFunctionType>&& func, const int ord)
     : func_(std::move(func))
     , order_(ord)
-  {}
+  {
+  }
 
 protected:
   void post_bind(const ElementType& element) final
@@ -156,19 +159,22 @@ public:
     : BaseType(func.parameter_type())
     , func_(func.copy_as_function())
     , order_(ord)
-  {}
+  {
+  }
 
   InverseFunction(FunctionType&& func, const int ord)
     : BaseType(func->parameter_type())
     , func_(std::move(func))
     , order_(ord)
-  {}
+  {
+  }
 
   InverseFunction(const ThisType& other)
     : BaseType(other)
     , func_(other.func_->copy_as_function())
     , order_(order)
-  {}
+  {
+  }
 
   InverseFunction(ThisType&&) = default;
 
@@ -229,19 +235,22 @@ public:
     : func_(func.copy_as_grid_function())
     , order_(ord)
     , name_(nm.empty() ? ("inverse of " + func_->name()) : nm)
-  {}
+  {
+  }
 
   InverseGridFunction(GridFunctionInterface<E, r_, rC_, R>&& func, const int ord, const std::string& nm = "")
     : func_(std::move(func))
     , order_(ord)
     , name_(nm.empty() ? ("inverse of " + func_->name()) : nm)
-  {}
+  {
+  }
 
   InverseGridFunction(const ThisType& other)
     : BaseType(other)
     , func_(other.func_->copy_as_grid_function())
     , order_(other.order_)
-  {}
+  {
+  }
 
   InverseGridFunction(ThisType&&) = default;
 

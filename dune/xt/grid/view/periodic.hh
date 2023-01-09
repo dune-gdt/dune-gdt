@@ -378,7 +378,8 @@ public:
   //! \brief Default constructor
   PeriodicIntersectionImp()
     : BaseType()
-  {}
+  {
+  }
 
   PeriodicIntersectionImp(const PeriodicIntersectionImp& other) = default;
   PeriodicIntersectionImp(PeriodicIntersectionImp&& other) = default;
@@ -474,7 +475,8 @@ public:
     , has_boundary_intersections_(element_.hasBoundaryIntersections())
     , periodic_neighbors_(periodic_neighbors)
     , current_intersection_(nullptr)
-  {}
+  {
+  }
 
   PeriodicIntersectionIterator(const ThisType& other)
     : BaseType(other)
@@ -483,7 +485,8 @@ public:
     , has_boundary_intersections_(other.has_boundary_intersections_)
     , periodic_neighbors_(other.periodic_neighbors_)
     , current_intersection_(nullptr)
-  {}
+  {
+  }
 
   ThisType& operator=(const ThisType& other)
   {
@@ -582,7 +585,8 @@ public:
         , entities_to_skip_(entities_to_skip)
         , base_index_set_(base_index_set)
         , base_it_end_(std::make_shared<const BaseType>(base_it_end))
-      {}
+      {
+      }
 
       PeriodicIterator& operator++()
       {
@@ -895,12 +899,14 @@ public:
                    const std::bitset<dimension> periodic_directions = std::bitset<dimension>().set())
     : ImplementationStorage(new Implementation(base_grid_view, periodic_directions))
     , BaseType(ImplementationStorage::access())
-  {}
+  {
+  }
 
   PeriodicGridView(const PeriodicGridView& other)
     : ImplementationStorage(new Implementation(other.access()))
     , BaseType(ImplementationStorage::access())
-  {}
+  {
+  }
 
   PeriodicGridView& operator=(const PeriodicGridView& other)
   {

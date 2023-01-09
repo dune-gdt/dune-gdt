@@ -67,7 +67,8 @@ public:
     : order_(other.order_)
     , basis_(other.basis_->copy())
     , coefficients_(other.coefficients_->copy())
-  {}
+  {
+  }
 
   BaseType* copy() const override final
   {
@@ -366,7 +367,8 @@ public:
       [[maybe_unused]] std::lock_guard<std::mutex> guard(mutex);
       return LocalRaviartThomasFiniteElementFactory<D, d, R>::create(geometry_type, order);
     })
-  {}
+  {
+  }
 }; // ... LocalRaviartThomasFiniteElementFamily(...)
 
 

@@ -92,23 +92,27 @@ public:
   LocalFiniteElementBasisWrapper(std::shared_ptr<const Implementation> imp)
     : imp_(imp)
     , geometry_type_(imp_->type())
-  {}
+  {
+  }
 
   LocalFiniteElementBasisWrapper(Implementation*&& imp_ptr)
     : LocalFiniteElementBasisWrapper(std::shared_ptr<Implementation>(std::move(imp_ptr)))
-  {}
+  {
+  }
 
   template <class ImpType,
             typename = typename std::enable_if<std::is_same<ImpType, Implementation>::value
                                                && std::is_copy_constructible<ImpType>::value>::type>
   LocalFiniteElementBasisWrapper(const ImpType& imp)
     : LocalFiniteElementBasisWrapper(new ImpType(imp))
-  {}
+  {
+  }
 
   template <class... Args>
   explicit LocalFiniteElementBasisWrapper(Args&&... args)
     : LocalFiniteElementBasisWrapper(new Implementation(std::forward<Args>(args)...))
-  {}
+  {
+  }
 
   LocalFiniteElementBasisWrapper(const ThisType& other) = default;
 
@@ -194,7 +198,8 @@ class LocalFiniteElementInterpolationWrapper : public LocalFiniteElementInterpol
 
     FunctionWrapper(const std::function<RangeType(DomainType)>& im)
       : imp(im)
-    {}
+    {
+    }
 
     void evaluate(const DomainType& point_in_reference_element, RangeType& ret) const
     {
@@ -212,23 +217,27 @@ public:
     : imp_(imp)
     , geometry_type_(imp_->type())
     , dofs_(imp_->size())
-  {}
+  {
+  }
 
   LocalFiniteElementInterpolationWrapper(Implementation*&& imp_ptr)
     : LocalFiniteElementInterpolationWrapper(std::shared_ptr<Implementation>(std::move(imp_ptr)))
-  {}
+  {
+  }
 
   template <class ImpType,
             typename = typename std::enable_if<std::is_same<ImpType, Implementation>::value
                                                && std::is_copy_constructible<ImpType>::value>::type>
   LocalFiniteElementInterpolationWrapper(const ImpType& imp)
     : LocalFiniteElementInterpolationWrapper(new ImpType(imp))
-  {}
+  {
+  }
 
   template <class... Args>
   explicit LocalFiniteElementInterpolationWrapper(Args&&... args)
     : LocalFiniteElementInterpolationWrapper(new Implementation(std::forward<Args>(args)...))
-  {}
+  {
+  }
 
   LocalFiniteElementInterpolationWrapper(const ThisType& other) = default;
 
@@ -286,23 +295,27 @@ public:
   LocalFiniteElementCoefficientsWrapper(std::shared_ptr<const Implementation> imp)
     : imp_(imp)
     , geometry_type_(imp_->type())
-  {}
+  {
+  }
 
   LocalFiniteElementCoefficientsWrapper(Implementation*&& imp_ptr)
     : LocalFiniteElementCoefficientsWrapper(std::shared_ptr<Implementation>(std::move(imp_ptr)))
-  {}
+  {
+  }
 
   template <class ImpType,
             typename = typename std::enable_if<std::is_same<ImpType, Implementation>::value
                                                && std::is_copy_constructible<ImpType>::value>::type>
   LocalFiniteElementCoefficientsWrapper(const ImpType& imp)
     : LocalFiniteElementCoefficientsWrapper(new ImpType(imp))
-  {}
+  {
+  }
 
   template <class... Args>
   explicit LocalFiniteElementCoefficientsWrapper(Args&&... args)
     : LocalFiniteElementCoefficientsWrapper(new Implementation(std::forward<Args>(args)...))
-  {}
+  {
+  }
 
   LocalFiniteElementCoefficientsWrapper(const ThisType& other) = default;
 
@@ -376,19 +389,22 @@ public:
           new LocalFiniteElementCoefficientsWrapper<Implementation, D, d>(ImplementationProvider::access()),
           new LocalFiniteElementInterpolationWrapper<Implementation, D, d, R, r, rC>(ImplementationProvider::access()),
           LpAccessor::get(ImplementationProvider::access()->localInterpolation()))
-  {}
+  {
+  }
 
   template <class ImpType,
             typename = typename std::enable_if<std::is_same<ImpType, Implementation>::value
                                                && std::is_copy_constructible<ImpType>::value>::type>
   LocalFiniteElementWrapper(const int ord, const ImpType& imp)
     : LocalFiniteElementWrapper(ord, new ImpType(imp))
-  {}
+  {
+  }
 
   template <class... Args>
   explicit LocalFiniteElementWrapper(const int ord, Args&&... args)
     : LocalFiniteElementWrapper(ord, new Implementation(std::forward<Args>(args)...))
-  {}
+  {
+  }
 }; // class LocalFiniteElementWrapper
 
 

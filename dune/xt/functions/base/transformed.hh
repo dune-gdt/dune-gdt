@@ -75,7 +75,8 @@ class TransformedGridFunction : public XT::Functions::GridFunctionInterface<type
       , function_(function.copy_as_grid_function())
       , local_function_(function_->local_function())
       , transformation_(transformation)
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& element) final
@@ -119,14 +120,16 @@ public:
     , function_(func.copy_as_grid_function())
     , transformation_(transformation)
     , name_(nm.empty() ? "transformed " + function_->name() : nm)
-  {}
+  {
+  }
 
   TransformedGridFunction(const ThisType& other)
     : BaseType(other)
     , function_(other.function_->copy_as_grid_function())
     , transformation_(other.transformation_)
     , name_(other.name_)
-  {}
+  {
+  }
 
   TransformedGridFunction(ThisType&&) = default;
 

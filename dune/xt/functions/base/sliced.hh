@@ -68,7 +68,8 @@ class SlicedGridFunction<GF, r, 1> : public XT::Functions::GridFunctionInterface
       , function_(function.copy_as_grid_function())
       , local_function_(function_->local_function())
       , dims_(dims)
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& element) final
@@ -126,7 +127,8 @@ public:
     , function_(other.function_->copy_as_grid_function())
     , dims_(other.dims_)
     , name_(other.name_)
-  {}
+  {
+  }
 
   SlicedGridFunction(ThisType&&) = default;
 

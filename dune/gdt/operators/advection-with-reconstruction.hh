@@ -58,7 +58,8 @@ public:
     , advection_operator_(advection_operator)
     , reconstruction_operator_(reconstruction_operator)
     , reconstruction_(reconstruction_operator.range_space().mapper().size())
-  {}
+  {
+  }
 
   // pull in methods from various base classes
   using BaseType::apply;
@@ -161,7 +162,8 @@ public:
     , reconstruction_operator_(reconstruction_operator)
     , reconstructed_values_(source_space().grid_view().indexSet().size(0))
     , reconstructed_function_(source_space().grid_view(), reconstructed_values_)
-  {}
+  {
+  }
 
   // pull in methods from various base classes
   using BaseType::apply;

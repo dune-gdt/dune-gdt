@@ -167,7 +167,8 @@ public:
   ThreadSafeDefaultLocalFiniteElementFamily(
       std::function<std::unique_ptr<LocalFiniteElementType>(const GeometryType&, const int&)> factory)
     : factory_(factory)
-  {}
+  {
+  }
 
   ThreadSafeDefaultLocalFiniteElementFamily(const ThisType& other)
     : factory_(other.factory_)
@@ -178,7 +179,8 @@ public:
   ThreadSafeDefaultLocalFiniteElementFamily(ThisType&& source)
     : factory_(std::move(source.factory_))
     , fes_(std::move(source.fes_))
-  {}
+  {
+  }
 
   const LocalFiniteElementType& get(const GeometryType& geometry_type, const int order) const override final
   {
@@ -217,11 +219,13 @@ public:
 
   LocalL2FiniteElementInterpolation(const LocalBasisType& local_basis)
     : local_basis_(local_basis.copy())
-  {}
+  {
+  }
 
   LocalL2FiniteElementInterpolation(const ThisType& other)
     : local_basis_(other.local_basis_->copy())
-  {}
+  {
+  }
 
   LocalL2FiniteElementInterpolation(ThisType& source) = default;
 

@@ -55,7 +55,8 @@ struct addbind_Matrix<T, true>
 {
   template <class S, class C>
   static void ctor(C& /*c*/)
-  {}
+  {
+  }
 };
 
 

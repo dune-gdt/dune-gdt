@@ -77,7 +77,8 @@ public:
   BoundaryInfo(const std::string& logging_prefix = "",
                const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Logger(logging_prefix.empty() ? "BoundaryInfo" : logging_prefix, logging_state)
-  {}
+  {
+  }
 
   BoundaryInfo(const ThisType&) = default;
 

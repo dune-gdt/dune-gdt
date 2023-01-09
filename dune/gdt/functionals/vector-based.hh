@@ -169,7 +169,8 @@ public:
     : VectorStorage(vec)
     , BaseFunctionalType(source_spc, VectorStorage::access())
     , BaseWalkerType(assembly_grid_view)
-  {}
+  {
+  }
 
   /**
    * \brief Ctor which creates an appropriate vector into which to assemble (which is accessible via vector()).
@@ -179,7 +180,8 @@ public:
     : VectorStorage(new SourceVectorType(source_spc.mapper().size(), 0))
     , BaseFunctionalType(source_spc, VectorStorage::access())
     , BaseWalkerType(assembly_grid_view)
-  {}
+  {
+  }
 
   VectorBasedFunctional(const ThisType&) = delete;
 

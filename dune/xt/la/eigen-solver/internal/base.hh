@@ -93,7 +93,8 @@ public:
 
   EigenSolverBase(const MatrixType& matrix, const std::string& type = "")
     : EigenSolverBase(matrix, EigenSolverOptions<MatrixType, true>::options(type))
-  {}
+  {
+  }
 
   EigenSolverBase(const MatrixType& matrix, const Common::Configuration& opts)
     : matrix_(matrix)

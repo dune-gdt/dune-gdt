@@ -56,7 +56,8 @@ public:
     , local_finite_elements_(local_finite_elements)
     , fe_order_(order)
     , max_size_(0)
-  {}
+  {
+  }
 
   size_t max_size() const override final
   {
@@ -96,7 +97,8 @@ private:
     LocalizedDefaultGlobalBasis(const DefaultGlobalBasis<GV, r, rC, R>& self)
       : BaseType()
       , self_(self)
-    {}
+    {
+    }
 
     LocalizedDefaultGlobalBasis(const ThisType&) = delete;
     LocalizedDefaultGlobalBasis(ThisType&&) = default;

@@ -33,13 +33,15 @@ public:
     : BaseType(left.parameter_type() + right.parameter_type())
     , left_(left.copy_as_unary_element_integrand().release())
     , right_(right.copy_as_unary_element_integrand().release())
-  {}
+  {
+  }
 
   LocalUnaryElementIntegrandSum(const ThisType& other)
     : BaseType(other)
     , left_(other.left_.access().copy_as_unary_element_integrand().release())
     , right_(other.right_.access().copy_as_unary_element_integrand().release())
-  {}
+  {
+  }
 
   LocalUnaryElementIntegrandSum(ThisType&& source) = default;
 
@@ -112,7 +114,8 @@ public:
     : BaseType(other)
     , left_(other.left_.access().copy_as_unary_intersection_integrand().release())
     , right_(other.right_.access().copy_as_unary_intersection_integrand().release())
-  {}
+  {
+  }
 #pragma GCC diagnostic pop
 
   LocalUnaryIntersectionIntegrandSum(ThisType&& source) = default;
@@ -180,13 +183,15 @@ public:
     : BaseType(left.parameter_type() + right.parameter_type())
     , left_(left.copy_as_binary_element_integrand().release())
     , right_(right.copy_as_binary_element_integrand().release())
-  {}
+  {
+  }
 
   LocalBinaryElementIntegrandSum(const ThisType& other)
     : BaseType(other)
     , left_(other.left_.access().copy_as_binary_element_integrand().release())
     , right_(other.right_.access().copy_as_binary_element_integrand().release())
-  {}
+  {
+  }
 
   LocalBinaryElementIntegrandSum(ThisType&& source) = default;
 
@@ -267,7 +272,8 @@ public:
     : BaseType(other)
     , left_(other.left_.access().copy_as_binary_intersection_integrand().release())
     , right_(other.right_.access().copy_as_binary_intersection_integrand().release())
-  {}
+  {
+  }
 #pragma GCC diagnostic pop
 
   LocalBinaryIntersectionIntegrandSum(ThisType&& source) = default;
@@ -342,13 +348,15 @@ public:
     : BaseType(left.parameter_type() + right.parameter_type())
     , left_(left.copy_as_quaternary_intersection_integrand().release())
     , right_(right.copy_as_quaternary_intersection_integrand().release())
-  {}
+  {
+  }
 
   LocalQuaternaryIntersectionIntegrandSum(const ThisType& other)
     : BaseType(other)
     , left_(other.left_.access().copy_as_quaternary_intersection_integrand().release())
     , right_(other.right_.access().copy_as_quaternary_intersection_integrand().release())
-  {}
+  {
+  }
 
   LocalQuaternaryIntersectionIntegrandSum(ThisType&& source) = default;
 

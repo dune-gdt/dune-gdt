@@ -77,7 +77,8 @@ struct StokesDirichletProblem
     , boundary_info_()
     , grid_(XT::Grid::make_cube_grid<G>(-1, 1, 20))
     , grid_view_(grid_.leaf_view())
-  {}
+  {
+  }
 
   static std::shared_ptr<const DiffusionTensor> default_diffusion()
   {
@@ -172,7 +173,8 @@ class StokesDirichletTest : public ::testing::Test
 public:
   StokesDirichletTest(StokesDirichletProblem<GV> problem)
     : problem_(problem)
-  {}
+  {
+  }
 
   static bool is_symmetric(const Matrix& mat)
   {
@@ -334,7 +336,8 @@ public:
                            dirichlet(),
                            exact_sol_u(),
                            exact_sol_p()))
-  {}
+  {
+  }
 
   static std::shared_ptr<const VectorGridFunction> dirichlet()
   {

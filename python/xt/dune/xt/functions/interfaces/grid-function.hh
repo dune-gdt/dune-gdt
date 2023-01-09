@@ -97,7 +97,8 @@ class GridFunctionInterface
   {
     template <class T, typename... options>
     static void addbind(pybind11::class_<T, options...>& /*c*/)
-    {}
+    {
+    }
   };
 
 public:

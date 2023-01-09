@@ -110,7 +110,8 @@ public:
     , past_last_col_(past_last_col)
     , pattern_init_flag_(std::make_shared<std::once_flag>())
     , pattern_(nullptr)
-  {}
+  {
+  }
 
 
   // We cannot copy a view (we could make a shallow copy, but that is error-prone).
@@ -329,7 +330,8 @@ public:
              const size_t past_last_col)
     : const_matrix_view_(matrix, first_row, past_last_row, first_col, past_last_col)
     , matrix_(matrix)
-  {}
+  {
+  }
 
   // We cannot copy a view (we could make a shallow copy, but that is error-prone).
   // However, the MatrixInterface does not compile for non-copyable types, so we fail at runtime here.

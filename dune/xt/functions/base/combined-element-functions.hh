@@ -159,22 +159,26 @@ public:
   CombinedElementFunction(LeftType& lft, RightType& rght)
     : Storage(lft, rght)
     , BaseType(Storage::left.access(), Storage::right.access())
-  {}
+  {
+  }
 
   CombinedElementFunction(LeftType& lft, RightType&& rght)
     : Storage(lft, std::move(rght))
     , BaseType(Storage::left.access(), Storage::right.access())
-  {}
+  {
+  }
 
   CombinedElementFunction(std::shared_ptr<LeftType> lft, std::shared_ptr<RightType> rght)
     : Storage(lft, rght)
     , BaseType(Storage::left.access(), Storage::right.access())
-  {}
+  {
+  }
 
   CombinedElementFunction(std::unique_ptr<LeftType>&& lft, std::unique_ptr<RightType>&& rght)
     : Storage(std::move(lft), std::move(rght))
     , BaseType(Storage::left.access(), Storage::right.access())
-  {}
+  {
+  }
 
   CombinedElementFunction(const ThisType&) = default;
 
@@ -204,7 +208,8 @@ public:
   template <class... Args>
   explicit ConstDifferenceElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -223,7 +228,8 @@ public:
   template <class... Args>
   explicit DifferenceElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -242,7 +248,8 @@ public:
   template <class... Args>
   explicit ConstSumElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -260,7 +267,8 @@ public:
   template <class... Args>
   explicit SumElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -279,7 +287,8 @@ public:
   template <class... Args>
   explicit ConstProductElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -297,7 +306,8 @@ public:
   template <class... Args>
   explicit ProductElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -316,7 +326,8 @@ public:
   template <class... Args>
   explicit ConstFractionElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -335,7 +346,8 @@ public:
   template <class... Args>
   explicit FractionElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 

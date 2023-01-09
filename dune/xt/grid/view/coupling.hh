@@ -70,7 +70,8 @@ public:
                                         const MacroIntersectionType macro_intersection)
     : BaseType(coupling_intersection)
     , macro_intersection_(macro_intersection)
-  {}
+  {
+  }
 
   GlobalCoordinate outerNormal(const LocalCoordinate& local) const
   {
@@ -421,12 +422,14 @@ public:
                    const MacroIntersectionType macro_intersection)
     : ImplementationStorage(new Implementation(ss, nn, dd_grid, macro_intersection))
     , BaseType(ImplementationStorage::access())
-  {}
+  {
+  }
 
   CouplingGridView(const CouplingGridView& other)
     : ImplementationStorage(new Implementation(other.access()))
     , BaseType(ImplementationStorage::access())
-  {}
+  {
+  }
 
   void update()
   {

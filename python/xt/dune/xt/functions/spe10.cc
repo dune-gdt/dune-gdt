@@ -47,7 +47,8 @@ void bind_model1_for_all_grids(pybind11::module& m)
 
 template <>
 void bind_model1_for_all_grids<Dune::XT::Common::tuple_null_type>(pybind11::module&)
-{}
+{
+}
 
 
 template <class G>
@@ -68,7 +69,8 @@ void bind_model2_for_all_grids(pybind11::module& m)
 
 template <>
 void bind_model2_for_all_grids<Dune::XT::Common::tuple_null_type>(pybind11::module&)
-{}
+{
+}
 
 
 PYBIND11_MODULE(_functions_spe10, m)

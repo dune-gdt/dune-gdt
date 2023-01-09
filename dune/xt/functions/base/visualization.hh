@@ -141,7 +141,8 @@ public:
 
   ComponentVisualizer(const int comp)
     : comp_(comp)
-  {}
+  {
+  }
 
   int ncomps() const final
   {
@@ -171,7 +172,8 @@ public:
   GenericVisualizer(const int ncomps, EvalType eval)
     : ncomps_(ncomps)
     , eval_(eval)
-  {}
+  {
+  }
 
   int ncomps() const final
   {
@@ -212,7 +214,8 @@ public:
     , visualizer_(visualizer)
     , name_(nm.empty() ? function_->name() : nm)
     , param_(std::move(param))
-  {}
+  {
+  }
 
   VisualizationAdapter(const GridFunctionType& grid_function,
                        const std::string& nm = "",
@@ -222,7 +225,8 @@ public:
     , visualizer_(new DefaultVisualizer<range_dim, range_dim_cols, RangeField>())
     , name_(nm.empty() ? function_->name() : nm)
     , param_(std::move(param))
-  {}
+  {
+  }
 
   int ncomps() const final
   {

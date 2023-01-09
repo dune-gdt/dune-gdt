@@ -193,7 +193,8 @@ private:
   public:
     CouplingFaceDescriptor(const MacroIntersectionType& macro_intersection)
       : macro_intersection_(macro_intersection)
-    {}
+    {
+    }
 
     bool operator()(const LocalEntityType& element, unsigned int face) const
     {
@@ -1050,7 +1051,8 @@ class GluedVTKWriter
       : BaseType(local_grid_view)
       , commRank_(boost::numeric_cast<int>(subdomain))
       , commSize_(boost::numeric_cast<int>(num_subdomains))
-    {}
+    {
+    }
 
     void write_locally(const std::string& name, VTK::OutputType ot)
     {

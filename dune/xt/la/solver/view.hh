@@ -67,7 +67,8 @@ public:
 
   Solver(const MatrixType& matrix, const CommunicatorType& /*communicator*/)
     : Solver(matrix)
-  {}
+  {
+  }
 
   static std::vector<std::string> types()
   {

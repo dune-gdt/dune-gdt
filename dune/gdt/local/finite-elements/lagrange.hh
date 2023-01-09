@@ -56,7 +56,8 @@ public:
                Storage::access().interpolation().copy(),
                {ReferenceElements<D, d>::general(geometry_type).position(0, 0)},
                /*powered=*/(r == 1) ? false : true)
-  {}
+  {
+  }
 }; // class LocalZeroOrderLagrangeFiniteElement
 
 
@@ -205,7 +206,8 @@ public:
     : BaseType([](const auto& geometry_type, const auto& order) {
       return LocalLagrangeFiniteElementFactory<D, d, R, r>::create(geometry_type, order);
     })
-  {}
+  {
+  }
 }; // ... LocalLagrangeFiniteElementFamily(...)
 
 

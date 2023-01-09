@@ -38,22 +38,26 @@ public:
   FunctionAsGridFunctionWrapper(const FunctionType& function)
     : BaseType(function.parameter_type())
     , function_(function.copy_as_function())
-  {}
+  {
+  }
 
   FunctionAsGridFunctionWrapper(FunctionType*&& function_ptr)
     : BaseType(function_ptr->parameter_type())
     , function_(std::move(function_ptr))
-  {}
+  {
+  }
 
   FunctionAsGridFunctionWrapper(std::unique_ptr<FunctionType>&& function_ptr)
     : BaseType(function_ptr->parameter_type())
     , function_(std::move(function_ptr))
-  {}
+  {
+  }
 
   FunctionAsGridFunctionWrapper(const ThisType& other)
     : BaseType(other)
     , function_(other.function_->copy_as_function())
-  {}
+  {
+  }
 
   FunctionAsGridFunctionWrapper(ThisType&&) = default;
 
@@ -95,7 +99,8 @@ private:
       : BaseType()
       , function_(function.copy_as_function())
       , geometry_(nullptr)
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& el) final

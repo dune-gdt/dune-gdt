@@ -98,7 +98,8 @@ public:
     , global_ansatz_indices_(ansatz_space_->mapper().max_local_size())
     , test_basis_(test_space_->basis().localize())
     , ansatz_basis_(ansatz_space_->basis().localize())
-  {}
+  {
+  }
 
   LocalElementBilinearFormAssembler(ThisType&& source) = default;
 
@@ -226,7 +227,8 @@ public:
     , test_basis_outside_(test_space_->basis().localize())
     , ansatz_basis_inside_(ansatz_space_->basis().localize())
     , ansatz_basis_outside_(ansatz_space_->basis().localize())
-  {}
+  {
+  }
 
   LocalCouplingIntersectionBilinearFormAssembler(ThisType&& source) = default;
 
@@ -368,7 +370,8 @@ public:
     , global_ansatz_indices_(ansatz_space_->mapper().max_local_size())
     , test_basis_(test_space_->basis().localize())
     , ansatz_basis_(ansatz_space_->basis().localize())
-  {}
+  {
+  }
 
   LocalIntersectionBilinearFormAssembler(ThisType&& source) = default;
 

@@ -82,7 +82,8 @@ public:
     : BaseType(other)
     , integrand_(other.integrand_->copy_as_binary_element_integrand())
     , over_integrate_(other.over_integrate_)
-  {}
+  {
+  }
 
   LocalElementIntegralBilinearForm(ThisType&& source) = default;
 
@@ -186,7 +187,8 @@ public:
     : BaseType(other)
     , integrand_(other.integrand_->copy_as_quaternary_intersection_integrand())
     , over_integrate_(other.over_integrate_)
-  {}
+  {
+  }
 
   LocalCouplingIntersectionIntegralBilinearForm(ThisType&& source) = default;
 
@@ -323,7 +325,8 @@ public:
     : BaseType(other)
     , integrand_(other.integrand_->copy_as_binary_intersection_integrand())
     , over_integrate_(other.over_integrate_)
-  {}
+  {
+  }
 
   LocalIntersectionIntegralBilinearForm(ThisType&& source) = default;
 

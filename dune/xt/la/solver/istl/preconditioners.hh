@@ -34,7 +34,8 @@ public:
 
   IdentityPreconditioner(const SolverCategory::Category cat)
     : category_(cat)
-  {}
+  {
+  }
 
   //! Category of the preconditioner (see SolverCategory::Category)
   SolverCategory::Category category() const final

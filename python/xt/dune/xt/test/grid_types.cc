@@ -40,7 +40,8 @@ void addbind_for_Grid(pybind11::module& m, std::vector<std::string>& available_t
 
 template <>
 void addbind_for_Grid<Dune::XT::Common::tuple_null_type>(pybind11::module&, std::vector<std::string>&)
-{}
+{
+}
 
 PYBIND11_MODULE(_test_grid_types, m)
 {

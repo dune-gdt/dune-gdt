@@ -131,7 +131,8 @@ public:
 
   explicit GenericFilteredElements(GenericFunctionType lambda)
     : filter_(std::move(lambda))
-  {}
+  {
+  }
 
   ElementFilter<GridViewType>* copy() const final
   {

@@ -36,7 +36,8 @@ class ElementwiseDiameterFunction : public GridFunctionInterface<E>
     LocalFunction()
       : BaseType()
 
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& element) final
@@ -74,7 +75,8 @@ public:
   ElementwiseDiameterFunction(std::string nm = "ElementwiseDiameterFunction")
     : BaseType()
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   ElementwiseDiameterFunction(const ThisType&) = default;
 

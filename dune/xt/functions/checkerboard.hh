@@ -54,7 +54,8 @@ class CheckerboardFunction : public GridFunctionInterface<E, r, rC, R>
       , upper_right_(upper_right)
       , num_elements_(num_elements)
       , values_(std::move(values))
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& element) final
@@ -186,7 +187,8 @@ public:
                        const std::vector<RangeType>& values,
                        const std::string& nm = "CheckerboardFunction")
     : CheckerboardFunction(lower_left, upper_right, num_elements, std::make_shared<std::vector<RangeType>>(values), nm)
-  {}
+  {
+  }
 
   CheckerboardFunction(const ThisType& other) = default;
 

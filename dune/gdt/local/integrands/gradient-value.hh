@@ -59,13 +59,15 @@ public:
     : BaseType()
     , vector_(vector_in.copy_as_grid_function())
     , local_function_(vector_->local_function())
-  {}
+  {
+  }
 
   LocalElementGradientValueIntegrand(const ThisType& other)
     : BaseType(other)
     , vector_(other.vector_->copy_as_grid_function())
     , local_function_(vector_->local_function())
-  {}
+  {
+  }
 
   LocalElementGradientValueIntegrand(ThisType&& source) = default;
 

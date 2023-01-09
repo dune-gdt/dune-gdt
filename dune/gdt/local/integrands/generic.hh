@@ -48,14 +48,16 @@ public:
     , order_(order_function)
     , evaluate_(evaluate_function)
     , post_bind_(post_bind_function)
-  {}
+  {
+  }
 
   GenericLocalUnaryElementIntegrand(const ThisType& other)
     : BaseType(other)
     , order_(other.order_)
     , evaluate_(other.evaluate_)
     , post_bind_(other.post_bind_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy_as_unary_element_integrand() const override final
   {
@@ -138,14 +140,16 @@ public:
     , order_(order_function)
     , evaluate_(evaluate_function)
     , post_bind_(post_bind_function)
-  {}
+  {
+  }
 
   GenericLocalBinaryElementIntegrand(const ThisType& other)
     : BaseType(other)
     , order_(other.order_)
     , evaluate_(other.evaluate_)
     , post_bind_(other.post_bind_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy_as_binary_element_integrand() const override final
   {
@@ -225,7 +229,8 @@ public:
     , evaluate_(evaluate_function)
     , post_bind_(post_bind_function)
     , inside_(use_inside_bases)
-  {}
+  {
+  }
 
   GenericLocalUnaryIntersectionIntegrand(const ThisType& other) = default;
 
@@ -318,7 +323,8 @@ public:
     , evaluate_(evaluate_function)
     , post_bind_(post_bind_function)
     , inside_(use_inside_bases)
-  {}
+  {
+  }
 
   GenericLocalBinaryIntersectionIntegrand(const ThisType& other) = default;
 

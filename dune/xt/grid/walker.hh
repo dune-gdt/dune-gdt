@@ -71,12 +71,14 @@ public:
   ElementFunctorWrapper(FunctorType& functr, const FilterType& filtr)
     : functor_(functr.copy())
     , filter_(filtr.copy())
-  {}
+  {
+  }
 
   ElementFunctorWrapper(const ThisType& other)
     : functor_(other.functor_->copy())
     , filter_(other.filter_->copy())
-  {}
+  {
+  }
 
   const FilterType& filter() const
   {
@@ -112,12 +114,14 @@ public:
   IntersectionFunctorWrapper(FunctorType& functr, const FilterType& filtr)
     : functor_(functr.copy())
     , filter_(filtr.copy())
-  {}
+  {
+  }
 
   IntersectionFunctorWrapper(const ThisType& other)
     : functor_(other.functor_->copy())
     , filter_(other.filter_->copy())
-  {}
+  {
+  }
 
   const FilterType& filter() const
   {
@@ -157,13 +161,15 @@ public:
     : functor_(functr.copy())
     , element_filter_(element_filtr.copy())
     , intersection_filter_(intersection_filtr.copy())
-  {}
+  {
+  }
 
   ElementAndIntersectionFunctorWrapper(const ThisType& other)
     : functor_(other.functor_->copy())
     , element_filter_(other.element_filter_->copy())
     , intersection_filter_(other.intersection_filter_->copy())
-  {}
+  {
+  }
 
   const ElementFilterType& element_filter() const
   {
@@ -236,7 +242,8 @@ private:
 public:
   explicit Walker(GridViewType grd_vw)
     : grid_view_(grd_vw)
-  {}
+  {
+  }
 
   Walker(const ThisType& other)
     : BaseType(other)
@@ -628,12 +635,14 @@ protected:
     Body(WalkerType& walker, const PartioningType& partitioning)
       : walker_(walker)
       , partitioning_(partitioning)
-    {}
+    {
+    }
 
     Body(const Body& other)
       : walker_(other.walker_)
       , partitioning_(other.partitioning_)
-    {}
+    {
+    }
 
     void operator()(const tbb::blocked_range<std::size_t>& range) const
     {

@@ -44,7 +44,8 @@ public:
   AmgApplicator(const MatrixType& matrix, const CommunicatorType& comm)
     : matrix_(matrix)
     , communicator_(comm)
-  {}
+  {
+  }
 
   InverseOperatorResult call(IstlDenseVector<S>& rhs,
                              IstlDenseVector<S>& solution,
@@ -156,7 +157,8 @@ public:
   AmgApplicator(const MatrixType& matrix, const SequentialCommunication& comm)
     : matrix_(matrix)
     , communicator_(comm)
-  {}
+  {
+  }
 
   InverseOperatorResult call(IstlDenseVector<S>& rhs,
                              IstlDenseVector<S>& solution,

@@ -164,7 +164,8 @@ private:
 
     template <typename T>
     void operator()(const T&, int, int)
-    {}
+    {
+    }
 
     std::vector<size_type>& pivot_;
   }; // struct ElimPivot
@@ -174,7 +175,8 @@ private:
   {
     Elim(V& rhs)
       : rhs_(&rhs)
-    {}
+    {
+    }
 
     void swap(int i, int j)
     {
@@ -484,7 +486,8 @@ public:
 
   FieldMatrix(const BaseType& other)
     : BaseType(other)
-  {}
+  {
+  }
 
   FieldMatrix(const Dune::XT::Common::FieldVector<K, 1>& other)
     : BaseType()
@@ -533,7 +536,8 @@ public:
 
   BlockedFieldMatrix(const K& val = K(0.))
     : backend_(BlockType(val))
-  {}
+  {
+  }
 
   BlockedFieldMatrix(DXTC_DEBUG_ONLY const size_t rows, DXTC_DEBUG_ONLY const size_t cols, const K& val = K(0.))
     : backend_(BlockType(val))
@@ -567,7 +571,8 @@ public:
 
   BlockedFieldMatrix(const BlockType& block)
     : backend_(block)
-  {}
+  {
+  }
 
   bool operator==(const ThisType& other) const
   {

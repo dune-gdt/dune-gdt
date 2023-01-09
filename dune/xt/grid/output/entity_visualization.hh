@@ -63,7 +63,8 @@ struct ElementVisualization
     FunctorBase(std::string filename = "Functor", std::string dirname = ".")
       : filename_(std::move(filename))
       , dir_(std::move(dirname))
-    {}
+    {
+    }
 
     virtual ~FunctorBase() = default;
 
@@ -96,7 +97,8 @@ struct ElementVisualization
     using Element = typename FunctorBase<GridViewType>::Element;
     VolumeFunctor(const std::string& filename = "VolumeFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
-    {}
+    {
+    }
 
     double operator()(const Element& ent) const
     {
@@ -111,7 +113,8 @@ struct ElementVisualization
     using Element = typename FunctorBase<GridViewType>::Element;
     ProcessIdFunctor(const std::string& filename = "ProcessIDFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
-    {}
+    {
+    }
 
     double operator()(const Element& /*ent*/) const
     {
@@ -131,7 +134,8 @@ struct ElementVisualization
                       const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
       , gridview_(view)
-    {}
+    {
+    }
 
     double operator()(const Element& entity) const
     {
@@ -194,7 +198,8 @@ struct ElementVisualization
       , gridview_(view)
       , type_(std::move(type))
       , boundaryInfo_(boundaryInfo)
-    {}
+    {
+    }
 
     double operator()(const Element& entity) const override
     {
@@ -221,7 +226,8 @@ struct ElementVisualization
     using Element = typename FunctorBase<GridViewType>::Element;
     AreaMarker(const std::string& filename = "AreaFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
-    {}
+    {
+    }
 
     double operator()(const Element& entity) const
     {
@@ -253,7 +259,8 @@ struct ElementVisualization
     using Element = typename FunctorBase<GridViewType>::Element;
     GeometryFunctor(const std::string& filename = "GeometryFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
-    {}
+    {
+    }
 
     double operator()(const Element& ent) const
     {
@@ -279,7 +286,8 @@ struct ElementVisualization
     using Element = typename FunctorBase<GridViewType>::Element;
     PartitionTypeFunctor(const std::string& filename = "PartitionTypeFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
-    {}
+    {
+    }
 
     double operator()(const Element& ent) const
     {
@@ -301,7 +309,8 @@ struct ElementVisualization
                  const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
       , gridview_(view)
-    {}
+    {
+    }
 
     double operator()(const Element& entity) const override
     {

@@ -56,14 +56,16 @@ public:
     , filter_(filter)
     , integrand_(integrand.copy_as_quaternary_intersection_integrand())
     , over_integrate_(over_integrate)
-  {}
+  {
+  }
 
   LocalCouplingIntersectionRestrictedIntegralBilinearForm(const ThisType& other)
     : BaseType(other)
     , filter_(other.filter_)
     , integrand_(other.integrand_->copy_as_quaternary_intersection_integrand())
     , over_integrate_(other.over_integrate_)
-  {}
+  {
+  }
 
   LocalCouplingIntersectionRestrictedIntegralBilinearForm(ThisType&& source) = default;
 
@@ -196,14 +198,16 @@ public:
     , filter_(filter)
     , integrand_(integrand.copy_as_binary_intersection_integrand())
     , over_integrate_(over_integrate)
-  {}
+  {
+  }
 
   LocalIntersectionRestrictedIntegralBilinearForm(const ThisType& other)
     : BaseType(other)
     , filter_(other.filter_)
     , integrand_(other.integrand_->copy_as_binary_intersection_integrand())
     , over_integrate_(other.over_integrate_)
-  {}
+  {
+  }
 
   LocalIntersectionRestrictedIntegralBilinearForm(ThisType&& source) = default;
 

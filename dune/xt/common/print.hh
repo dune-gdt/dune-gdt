@@ -58,7 +58,8 @@ public:
   DefaultPrinter(const ValueType& val, const Configuration& cfg)
     : value(val)
     , opts(cfg)
-  {}
+  {
+  }
 
   DefaultPrinter(const ThisType&) = default;
   DefaultPrinter(ThisType&&) = default;
@@ -104,7 +105,8 @@ public:
   VectorPrinter(const T& val, const Configuration& cfg = {}, std::string clss_nm = Typename<T>::value())
     : internal::DefaultPrinter<T, use_repr>(val, cfg)
     , class_name(std::move(clss_nm))
-  {}
+  {
+  }
 
   void repr(std::ostream& out) const override
   {
@@ -154,7 +156,8 @@ public:
   MatrixPrinter(const T& val, const Configuration& cfg = {}, std::string clss_nm = Typename<T>::value())
     : internal::DefaultPrinter<T, use_repr>(val, cfg)
     , class_name(std::move(clss_nm))
-  {}
+  {
+  }
 
   void repr(std::ostream& out) const override
   {
@@ -243,7 +246,8 @@ class Printer : public internal::DefaultPrinter<T, use_repr>
 public:
   Printer(const T& val, const Configuration& param = {})
     : internal::DefaultPrinter<T, use_repr>(val, param)
-  {}
+  {
+  }
 };
 
 
@@ -254,7 +258,8 @@ class Printer<V, use_repr, std::enable_if_t<is_vector<V>::value>> : public inter
 public:
   Printer(const V& val, const Configuration& param)
     : internal::VectorPrinter<V, use_repr>(val, param)
-  {}
+  {
+  }
 }; // class Printer
 
 
@@ -265,7 +270,8 @@ class Printer<M, use_repr, std::enable_if_t<is_matrix<M>::value>> : public inter
 public:
   Printer(const M& val, const Configuration& param = {{"oneline", "false"}})
     : internal::MatrixPrinter<M, use_repr>(val, param)
-  {}
+  {
+  }
 }; // class Printer
 
 
@@ -275,7 +281,8 @@ class Printer<Configuration, use_repr, anything> : public internal::DefaultPrint
 public:
   Printer(const Configuration& val, const Configuration& param = {{"oneline", "false"}})
     : internal::DefaultPrinter<Configuration, use_repr>(val, param)
-  {}
+  {
+  }
 
   // let repr() default to operator<<, handled in internal::DefaultPrinter
 
@@ -310,7 +317,8 @@ class Printer<ParameterType, use_repr, anything> : public internal::DefaultPrint
 public:
   Printer(const ParameterType& val, const Configuration& param = {})
     : internal::DefaultPrinter<ParameterType, use_repr>(val, param)
-  {}
+  {
+  }
 
   void repr(std::ostream& out) const override
   {
@@ -345,7 +353,8 @@ class Printer<Parameter, use_repr, anything> : public internal::DefaultPrinter<P
 public:
   Printer(const Parameter& val, const Configuration& param = {})
     : internal::DefaultPrinter<Parameter, use_repr>(val, param)
-  {}
+  {
+  }
 
   void repr(std::ostream& out) const override
   {
@@ -486,7 +495,8 @@ public:
     : ostream(o)
     , prefix(std::move(p))
     , first(true)
-  {}
+  {
+  }
 
   PrefixOutputIterator& operator*()
   {

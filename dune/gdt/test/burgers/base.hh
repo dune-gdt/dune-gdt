@@ -44,7 +44,8 @@ struct BurgersProblem
         {},
         [&](const auto& u, const auto& /*param*/) { return u; })
     , T_end(1.)
-  {}
+  {
+  }
 
   XT::Grid::GridProvider<G> make_initial_grid() const
   {
@@ -98,7 +99,8 @@ public:
                  }
                })
     , visualization_steps_(0)
-  {}
+  {
+  }
 
 protected:
   const F& flux() const override

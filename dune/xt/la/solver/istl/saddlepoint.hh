@@ -50,7 +50,8 @@ public:
     , B1_(B1)
     , B2_(B2)
     , C_(C)
-  {}
+  {
+  }
 
   static std::vector<std::string> types()
   {

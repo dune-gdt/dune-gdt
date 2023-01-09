@@ -51,7 +51,8 @@ struct DiscontinuousLagrangeSpaceOnSimplicialLeafViewTest : public Discontinuous
 {
   DiscontinuousLagrangeSpaceOnSimplicialLeafViewTest()
     : DiscontinuousLagrangeSpaceTest<G, r, R, p>(make_simplicial_grid<G>())
-  {}
+  {
+  }
 };
 
 
@@ -60,7 +61,8 @@ struct DiscontinuousLagrangeSpaceOnCubicLeafViewTest : public DiscontinuousLagra
 {
   DiscontinuousLagrangeSpaceOnCubicLeafViewTest()
     : DiscontinuousLagrangeSpaceTest<G, r, R, p>(make_cubic_grid<G>())
-  {}
+  {
+  }
 };
 
 
@@ -69,7 +71,8 @@ struct DiscontinuousLagrangeSpaceOnPrismLeafViewTest : public DiscontinuousLagra
 {
   DiscontinuousLagrangeSpaceOnPrismLeafViewTest()
     : DiscontinuousLagrangeSpaceTest<G, r, R, p>(make_prism_grid<G>())
-  {}
+  {
+  }
 };
 
 
@@ -78,7 +81,8 @@ struct DiscontinuousLagrangeSpaceOnMixedLeafViewTest : public DiscontinuousLagra
 {
   DiscontinuousLagrangeSpaceOnMixedLeafViewTest()
     : DiscontinuousLagrangeSpaceTest<G, r, R, p>(make_mixed_grid<G>())
-  {}
+  {
+  }
 };
 
 

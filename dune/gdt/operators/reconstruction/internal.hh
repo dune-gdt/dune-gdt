@@ -71,7 +71,8 @@ public:
     , local_flux_(analytical_flux_.local_function())
     , flux_is_affine_(flux_is_affine)
     , computed_(false)
-  {}
+  {
+  }
 
   virtual ~EigenvectorWrapperBase() {}
 
@@ -131,7 +132,8 @@ public:
 
   DummyEigenVectorWrapper(const AnalyticalFluxType& analytical_flux, const bool flux_is_affine)
     : BaseType(analytical_flux, flux_is_affine)
-  {}
+  {
+  }
 
   void apply_eigenvectors(const size_t /*dd*/, const VectorType& u, VectorType& ret) const override final
   {
@@ -147,13 +149,15 @@ public:
                             const DomainType& /*x_local*/,
                             const VectorType& /*u*/,
                             const XT::Common::Parameter& /*param*/) const override final
-  {}
+  {
+  }
 
   void compute_eigenvectors_impl(const E& /*entity*/,
                                  const DomainType& /*x_local*/,
                                  const VectorType& /*u*/,
                                  const XT::Common::Parameter& /*param*/) const override final
-  {}
+  {
+  }
 
   const MatrixType& eigenvectors(const size_t /*dd*/) const override final
   {

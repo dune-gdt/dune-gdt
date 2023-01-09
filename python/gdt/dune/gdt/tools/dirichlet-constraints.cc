@@ -120,14 +120,14 @@ public:
     //    //    addbind_apply_matrix<XT::LA::CommonSparseMatrix<double>>(c);
     //    //    addbind_apply_matrix_and_vector<XT::LA::CommonSparseMatrix<double>,
     //    XT::LA::CommonDenseVector<double>>(c);
-    //#if HAVE_EIGEN
+    // #if HAVE_EIGEN
     //    addbind_apply_matrix<XT::LA::EigenDenseMatrix<double>>(c);
     //    addbind_apply_vector<XT::LA::EigenDenseVector<double>>(c);
     //    addbind_apply_matrix_and_vector<XT::LA::EigenDenseMatrix<double>, XT::LA::IstlDenseVector<double>>(c);
     //    addbind_apply_matrix<XT::LA::EigenRowMajorSparseMatrix<double>>(c);
     //    addbind_apply_matrix_and_vector<XT::LA::EigenRowMajorSparseMatrix<double>,
     //    XT::LA::EigenDenseVector<double>>(c);
-    //#endif
+    // #endif
     addbind_apply_matrix<XT::LA::IstlRowMajorSparseMatrix<double>>(c);
     addbind_apply_vector<XT::LA::IstlDenseVector<double>>(c);
     addbind_apply_matrix_and_vector<XT::LA::IstlRowMajorSparseMatrix<double>, XT::LA::IstlDenseVector<double>>(c);

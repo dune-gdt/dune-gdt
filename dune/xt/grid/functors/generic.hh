@@ -39,7 +39,8 @@ public:
     : prepare_func_(std::move(prepare_func))
     , apply_func_(std::move(apply_func))
     , finalize_func_(std::move(finalize_func))
-  {}
+  {
+  }
 
   BaseType* copy() final
   {
@@ -89,7 +90,8 @@ public:
     : prepare_func_(std::move(prepare_func))
     , apply_func_(std::move(apply_func))
     , finalize_func_(std::move(finalize_func))
-  {}
+  {
+  }
 
   BaseType* copy() final
   {
@@ -144,7 +146,8 @@ public:
     , element_apply_func_(element_apply_func)
     , intersection_apply_func_(intersection_apply_func)
     , finalize_func_(std::move(finalize_func))
-  {}
+  {
+  }
 
   void prepare() final
   {

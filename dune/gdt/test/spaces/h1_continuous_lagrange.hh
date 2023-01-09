@@ -90,7 +90,8 @@ struct ContinuousLagrangeSpaceOnSimplicialLeafViewTest : public ContinuousLagran
 {
   ContinuousLagrangeSpaceOnSimplicialLeafViewTest()
     : ContinuousLagrangeSpaceTest<G, r, R, p>(make_simplicial_grid<G>())
-  {}
+  {
+  }
 };
 
 
@@ -99,7 +100,8 @@ struct ContinuousLagrangeSpaceOnCubicLeafViewTest : public ContinuousLagrangeSpa
 {
   ContinuousLagrangeSpaceOnCubicLeafViewTest()
     : ContinuousLagrangeSpaceTest<G, r, R, p>(make_cubic_grid<G>())
-  {}
+  {
+  }
 };
 
 
@@ -108,7 +110,8 @@ struct ContinuousLagrangeSpaceOnPrismLeafViewTest : public ContinuousLagrangeSpa
 {
   ContinuousLagrangeSpaceOnPrismLeafViewTest()
     : ContinuousLagrangeSpaceTest<G, r, R, p>(make_prism_grid<G>())
-  {}
+  {
+  }
 };
 
 
@@ -117,7 +120,8 @@ struct ContinuousLagrangeSpaceOnMixedLeafViewTest : public ContinuousLagrangeSpa
 {
   ContinuousLagrangeSpaceOnMixedLeafViewTest()
     : ContinuousLagrangeSpaceTest<G, r, R, p>(make_mixed_grid<G>())
-  {}
+  {
+  }
 };
 
 

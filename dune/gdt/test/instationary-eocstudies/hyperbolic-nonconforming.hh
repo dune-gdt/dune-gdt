@@ -83,7 +83,8 @@ public:
                                                             advection_dg_artificial_viscosity_default_alpha_1()))
     , dg_artificial_viscosity_component_(DXTC_TEST_CONFIG_GET("setup.dg_artificial_viscosity_component",
                                                               advection_dg_artificial_viscosity_default_component()))
-  {}
+  {
+  }
 
 protected:
   virtual const F& flux() const = 0;

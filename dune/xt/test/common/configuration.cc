@@ -203,7 +203,8 @@ struct ConfigTest : public testing::Test
     , key_gen(8)
     , values(boost::assign::list_of<T>().repeat_fun(values.size() - 1, rng))
     , keys(boost::assign::list_of<std::string>().repeat_fun(values.size() - 1, key_gen))
-  {}
+  {
+  }
 
   ~ConfigTest() override = default;
 

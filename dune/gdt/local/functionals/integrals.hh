@@ -40,7 +40,8 @@ public:
     : BaseType(integrand.parameter_type())
     , integrand_(integrand.copy_as_unary_element_integrand())
     , over_integrate_(over_integrate)
-  {}
+  {
+  }
 
   LocalElementIntegralFunctional(
       typename GenericIntegrand::GenericOrderFunctionType order_function,
@@ -52,13 +53,15 @@ public:
     , integrand_(
           GenericIntegrand(order_function, evaluate_function, post_bind_function).copy_as_unary_element_integrand())
     , over_integrate_(over_integrate)
-  {}
+  {
+  }
 
   LocalElementIntegralFunctional(const ThisType& other)
     : BaseType(other)
     , integrand_(other.integrand_->copy_as_unary_element_integrand())
     , over_integrate_(other.over_integrate_)
-  {}
+  {
+  }
 
   LocalElementIntegralFunctional(ThisType&& source) = default;
 
@@ -122,7 +125,8 @@ public:
     : BaseType(integrand.parameter_type())
     , integrand_(integrand.copy_as_unary_intersection_integrand())
     , over_integrate_(over_integrate)
-  {}
+  {
+  }
 
   LocalIntersectionIntegralFunctional(
       typename GenericIntegrand::GenericOrderFunctionType order_function,
@@ -134,13 +138,15 @@ public:
     , integrand_(GenericIntegrand(order_function, evaluate_function, post_bind_function)
                      .copy_as_unary_intersection_integrand())
     , over_integrate_(over_integrate)
-  {}
+  {
+  }
 
   LocalIntersectionIntegralFunctional(const ThisType& other)
     : BaseType(other)
     , integrand_(other.integrand_->copy_as_unary_intersection_integrand())
     , over_integrate_(other.over_integrate_)
-  {}
+  {
+  }
 
   LocalIntersectionIntegralFunctional(ThisType&& source) = default;
 

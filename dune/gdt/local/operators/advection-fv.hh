@@ -74,7 +74,8 @@ public:
     , u_(m)
     , v_(m)
     , g_(m)
-  {}
+  {
+  }
 
   LocalAdvectionFvCouplingOperator(const SourceType& source,
                                    const NumericalFluxType& numerical_flux,
@@ -85,7 +86,8 @@ public:
     , u_(m)
     , v_(m)
     , g_(m)
-  {}
+  {
+  }
 
   LocalAdvectionFvCouplingOperator(const SourceSpaceType& source_space,
                                    const SV& source_vector,
@@ -97,11 +99,13 @@ public:
     , u_(m)
     , v_(m)
     , g_(m)
-  {}
+  {
+  }
 
   LocalAdvectionFvCouplingOperator(const DiscreteSourceType& source, const NumericalFluxType& numerical_flux)
     : ThisType(source, numerical_flux, source.space().type() == SpaceType::finite_volume)
-  {}
+  {
+  }
 
   LocalAdvectionFvCouplingOperator(const ThisType& other)
     : BaseType(other)
@@ -110,7 +114,8 @@ public:
     , u_(m)
     , v_(m)
     , g_(m)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -220,7 +225,8 @@ public:
     , source_is_elementwise_constant_(source_is_elementwise_constant)
     , u_(m)
     , g_(m)
-  {}
+  {
+  }
 
   LocalAdvectionFvBoundaryTreatmentByCustomNumericalFluxOperator(
       const SourceType& source,
@@ -232,7 +238,8 @@ public:
     , source_is_elementwise_constant_(source_is_elementwise_constant)
     , u_(m)
     , g_(m)
-  {}
+  {
+  }
 
   LocalAdvectionFvBoundaryTreatmentByCustomNumericalFluxOperator(
       const SourceSpaceType& source_space,
@@ -245,7 +252,8 @@ public:
     , source_is_elementwise_constant_(source_is_elementwise_constant)
     , u_(m)
     , g_(m)
-  {}
+  {
+  }
 
   LocalAdvectionFvBoundaryTreatmentByCustomNumericalFluxOperator(
       const DiscreteSourceType& source,
@@ -255,7 +263,8 @@ public:
                numerical_boundary_flux_lambda,
                boundary_treatment_param_type,
                source.space().type() == SpaceType::finite_volume)
-  {}
+  {
+  }
 
   LocalAdvectionFvBoundaryTreatmentByCustomNumericalFluxOperator(const ThisType& other)
     : BaseType(other)
@@ -263,7 +272,8 @@ public:
     , source_is_elementwise_constant_(other.source_is_elementwise_constant_)
     , u_(m)
     , g_(m)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -347,7 +357,8 @@ public:
     , u_(m)
     , v_(m)
     , g_(m)
-  {}
+  {
+  }
 
   LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator(
       const SourceType& source,
@@ -362,7 +373,8 @@ public:
     , u_(m)
     , v_(m)
     , g_(m)
-  {}
+  {
+  }
 
   LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator(
       const SourceSpaceType& source_space,
@@ -375,7 +387,8 @@ public:
     , numerical_flux_(numerical_flux.copy())
     , extrapolate_(boundary_extrapolation_lambda)
     , source_is_elementwise_constant_(source_is_elementwise_constant)
-  {}
+  {
+  }
 
   LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator(
       const DiscreteSourceType& source,
@@ -387,7 +400,8 @@ public:
                boundary_extrapolation_lambda,
                boundary_treatment_param_type,
                source.space().type() == SpaceType::finite_volume)
-  {}
+  {
+  }
 
   LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator(const ThisType& other)
     : BaseType(other)
@@ -397,7 +411,8 @@ public:
     , u_(m)
     , v_(m)
     , g_(m)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {

@@ -109,7 +109,8 @@ public:
     : vector_(vector)
     , first_entry_(first_entry)
     , past_last_entry_(past_last_entry)
-  {}
+  {
+  }
 
   // We cannot copy a view (we could make a shallow copy, but that is error-prone).
   // However, the VectorInterface does not compile for non-copyable types, so we fail at runtime here.
@@ -287,7 +288,8 @@ public:
   VectorView(Vector& vector, const size_t first_entry, const size_t past_last_entry)
     : const_vector_view_(vector, first_entry, past_last_entry)
     , vector_(vector)
-  {}
+  {
+  }
 
   // We cannot copy a view (we could make a shallow copy, but that is error-prone).
   // However, the VectorInterface does not compile for non-copyable types, so we fail at runtime here.
