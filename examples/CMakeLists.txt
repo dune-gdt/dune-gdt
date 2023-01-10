@@ -21,7 +21,20 @@ macro(CLEANUP_TARGET_NAME arg)
 endmacro(CLEANUP_TARGET_NAME)
 
 file(GLOB_RECURSE example_sources "${CMAKE_CURRENT_SOURCE_DIR}/*.cc")
+# remove this list again https://github.com/dune-gdt/dune-merged/issues/33
+set(EXAMPLES_IGNORE_LIST
+    ${CMAKE_CURRENT_SOURCE_DIR}/stationary-heat-equation.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/mpi_2019_02_talk_on_hyperbolic_equations.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/adaptive-swipdg.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/adaptive_elliptic_swipdg.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/adaptive_interpolation.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/gamm_2019_talk_on_conservative_rb_OS2015_academic_example.py
+    ${CMAKE_CURRENT_SOURCE_DIR}/gamm_2019_talk_on_conservative_rb_OS2015_multiscale_example.py)
+
 foreach(source ${example_sources}) # do some name conversion
+  if(source IN_LIST EXAMPLES_IGNORE_LIST)
+    continue()
+  endif()
   set(_targname ${source})
   cleanup_target_name(${_targname})
   list(APPEND examples_targets ${_targname})
@@ -57,6 +70,9 @@ add_custom_target(
 file(GLOB_RECURSE example_sources "${CMAKE_CURRENT_SOURCE_DIR}/*.py")
 
 foreach(source ${example_sources}) # do some name conversion
+  if(source IN_LIST EXAMPLES_IGNORE_LIST)
+    continue()
+  endif()
   set(_targname ${source})
   cleanup_target_name(${_targname})
   list(APPEND examples_targets ${_targname})

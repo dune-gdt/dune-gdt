@@ -1,1 +1,2 @@
-pymor==2019.2.0
+# this is the minimal version that will install in a 3.10 venv currently
+pymor==2021.1.0
