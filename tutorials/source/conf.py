@@ -56,10 +56,10 @@ myst_heading_anchors = 2
 import substitutions  # noqa
 
 myst_substitutions = substitutions.myst_substitutions
-jupyter_execute_notebooks = "cache"
-execution_timeout = 240  # there is an interpolation test
+nb_execute_notebooks = "cache"
+nb_execution_timeout = 240  # there is an interpolation test
 # print tracebacks to stdout
-execution_show_tb = True
+nb_execution_show_tb = True
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
