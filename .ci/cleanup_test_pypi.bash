@@ -12,7 +12,7 @@ if [[ ! "${WORK_DIR}" || ! -d "${WORK_DIR}" ]]; then
 fi
 
 # deletes the temp directory
-function cleanup {      
+function cleanup {
   rm -rf "${WORK_DIR}"
   echo "Deleted temp working directory ${WORK_DIR}"
 }
@@ -30,6 +30,6 @@ echo "Input test.pypi.password"
 read password
 
 CLEANUP_CMD="pypi-cleanup --username ${username} --do-it --host https://test.pypi.org/ "
-PYPI_CLEANUP_PASSWORD="${password}" ${CLEANUP_CMD}  --package dune-xt 
+PYPI_CLEANUP_PASSWORD="${password}" ${CLEANUP_CMD}  --package dune-xt
 PYPI_CLEANUP_PASSWORD="${password}" ${CLEANUP_CMD} --package dune-gdt
 
