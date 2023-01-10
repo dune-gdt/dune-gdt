@@ -21,13 +21,15 @@ from setuptools.command.install import install
 
 requires=['ipython','numpy', 'scipy']
 
+visualization_packages = [ 'k3d', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
+                            'matplotlib',]
+
 extras_require = {
-  'visualisation': ( 'k3d', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
-                     'matplotlib',),
-  'infrastructure': ('pylicense3>=0.4.1', 'pytest', 'pytest-cov', 'pytest-regressions',
+  'visualisation': visualization_packages,
+  'infrastructure': ['pylicense3>=0.4.1', 'pytest', 'pytest-cov', 'pytest-regressions',
                      'cmake_format==0.4.1', 'codecov', 'yapf==0.32', 'myst-nb>=0.16',
                      'pytest-notebook==0.8.0', 'notebook', 'python-slugify', 'sphinxcontrib-bibtex', 'furo',
-                     'jinja2', 'pytest-cov', 'docutils', 'hypothesis', "codecov"),
+                     'jinja2', 'pytest-cov', 'docutils', 'hypothesis', "codecov"] + visualization_packages,
   'parallel': ('bokeh', 'pymumps', 'metis'),
 }
 
