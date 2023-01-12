@@ -6,6 +6,13 @@
 #   Felix Schindler (2010, 2013, 2016)
 #
 # https://releases.llvm.org/6.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+---
+# defaults for all languages go here
+BasedOnStyle: Mozilla
+---
+
+Language: Cpp
+
 AlignAfterOpenBracket: true
 AlignConsecutiveAssignments: false
 AlignEscapedNewlines: Right
@@ -21,7 +28,6 @@ AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: true
-BasedOnStyle: Mozilla
 BinPackArguments: false
 BinPackParameters: false
 BreakBeforeBinaryOperators: NonAssignment
@@ -43,7 +49,6 @@ IndentPPDirectives: AfterHash
 IndentWidth: 2
 IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: true
-Language: Cpp
 MaxEmptyLinesToKeep: 2
 NamespaceIndentation: None
 PenaltyBreakComment: 60
@@ -66,3 +71,7 @@ SpacesInSquareBrackets: false
 Standard: Cpp11
 TabWidth: 2
 UseTab: Never
+
+---
+Language: Json
+---
