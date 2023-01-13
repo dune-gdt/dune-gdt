@@ -67,16 +67,19 @@ public:
    */
   GridProvider(GridType*&& grd_ptr)
     : grid_ptr_(std::move(grd_ptr))
-  {}
+  {
+  }
 
   GridProvider(std::shared_ptr<GridType> grd_ptr)
     : grid_ptr_(std::move(grd_ptr))
-  {}
+  {
+  }
 
 #if DUNE_VERSION_EQUAL(DUNE_COMMON, 2, 7)
   GridProvider(Dune::ToUniquePtr<GridType> grd_ptr)
     : grid_ptr_(std::shared_ptr<GridType>(grd_ptr))
-  {}
+  {
+  }
 #endif
 
   GridProvider(const ThisType& other) = default;
@@ -84,7 +87,8 @@ public:
   // Manual ctor required for clang 3.8.1-12~bpo8+1 (otherwise: undefined reference).
   GridProvider(ThisType&& source) noexcept
     : grid_ptr_(source.grid_ptr_)
-  {}
+  {
+  }
 
   ThisType& operator=(const ThisType& other) = delete;
   ThisType& operator=(ThisType&& source) = delete;

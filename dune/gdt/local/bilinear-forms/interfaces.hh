@@ -188,7 +188,8 @@ public:
       const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : XT::Common::ParametricInterface(param_type)
     , Logger(logging_prefix.empty() ? "LocalCouplingIntersectionBilinearForm" : logging_prefix, logging_state)
-  {}
+  {
+  }
 
   LocalCouplingIntersectionBilinearFormInterface(const ThisType&) = default;
 
@@ -306,7 +307,8 @@ public:
                                          const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : XT::Common::ParametricInterface(param_type)
     , Logger(logging_prefix.empty() ? "LocalIntersectionBilinearForm" : logging_prefix, logging_state)
-  {}
+  {
+  }
 
   LocalIntersectionBilinearFormInterface(const ThisType&) = default;
 

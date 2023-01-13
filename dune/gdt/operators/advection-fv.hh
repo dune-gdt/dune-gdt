@@ -96,7 +96,8 @@ public:
     : BaseType(std::move(source))
     , numerical_flux_(std::move(source.numerical_flux_))
     , periodicity_exception_(std::move(source.periodicity_exception_))
-  {}
+  {
+  }
 
   /// \name These methods can be used to define non-periodic boundary treatment
   /// \{

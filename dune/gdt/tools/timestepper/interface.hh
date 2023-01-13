@@ -86,7 +86,8 @@ protected:
     , t_(t_0)
     , u_n_(&CurrentSolutionStorageProviderType::access())
     , solution_(&SolutionStorageProviderType::access())
-  {}
+  {
+  }
 
 public:
   TimeStepperInterface(const ThisType& other) = delete;

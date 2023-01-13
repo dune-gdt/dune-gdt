@@ -59,7 +59,8 @@ private:
     DiscreteValuedLocalFunction(std::vector<LocalFunctionValuesType>& values, const IndexSetType& index_set)
       : values_(values)
       , index_set_(index_set)
-    {}
+    {
+    }
 
     int order(const XT::Common::Parameter& /*mu*/ = {}) const override
     {

@@ -174,7 +174,8 @@ public:
   template <class... Args>
   EOCGridProvider(Args&&... args)
     : LevelBasedEOCGridProvider<G>(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -188,7 +189,8 @@ public:
   template <class... Args>
   EOCGridProvider(Args&&... args)
     : LeafBasedEOCGridProvider<Dune::ALUGrid<2, 2, simplex, conforming, Comm>>(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 #endif // HAVE_DUNE_ALUGRID

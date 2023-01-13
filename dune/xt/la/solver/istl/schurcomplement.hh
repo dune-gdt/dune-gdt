@@ -56,7 +56,8 @@ public:
     , m_vec_2_(_A.rows())
     , n_vec_1_(_C.rows())
     , n_vec_2_(_C.rows())
-  {}
+  {
+  }
 
   SchurComplementOperator(const SchurComplementOperator& other)
     : A_(other.A_)
@@ -69,7 +70,8 @@ public:
     , m_vec_2_(other.m_vec_2_)
     , n_vec_1_(other.n_vec_1_)
     , n_vec_2_(other.n_vec_2_)
-  {}
+  {
+  }
 
   /*! \brief apply operator to x:  \f$ y = S(x) \f$
         The input vector is consistent and the output must also be

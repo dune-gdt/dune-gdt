@@ -140,7 +140,8 @@ public:
     : backend_(
         std::make_shared<BackendType>(Common::numeric_cast<EIGEN_size_t>(rr), Common::numeric_cast<EIGEN_size_t>(cc)))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   explicit EigenRowMajorSparseMatrix(const size_t rr,
                                      const size_t cc,
@@ -162,7 +163,8 @@ public:
   EigenRowMajorSparseMatrix(const ThisType& other)
     : backend_(std::make_shared<BackendType>(*other.backend_))
     , mutexes_(std::make_unique<MutexesType>(other.mutexes_->size()))
-  {}
+  {
+  }
 
   explicit EigenRowMajorSparseMatrix(const BackendType& mat,
                                      const bool prune = false,
@@ -198,12 +200,14 @@ public:
   explicit EigenRowMajorSparseMatrix(BackendType* backend_ptr, const size_t num_mutexes = 1)
     : backend_(backend_ptr)
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   explicit EigenRowMajorSparseMatrix(std::shared_ptr<BackendType> backend_ptr, const size_t num_mutexes = 1)
     : backend_(std::move(backend_ptr))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   ThisType& operator=(const ThisType& other)
   {

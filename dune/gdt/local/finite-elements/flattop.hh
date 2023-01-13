@@ -173,7 +173,8 @@ public:
         LocalLagrangeFiniteElementFactory<D, 2, R, 1>::create(Dune::GeometryTypes::cube(2), 1)->coefficients().copy(),
         LocalL2FiniteElementInterpolation<D, 2, R, 1>(LocalFlatTop2dCubeFiniteElementBasis<D, R>(overlap)).copy(),
         {})
-  {}
+  {
+  }
 }; // class LocalFlatTop2dCubeFiniteElement
 
 
@@ -293,7 +294,8 @@ public:
     : BaseType([=](const auto& geometry_type, const auto& order) {
       return LocalFlatTopFiniteElementFactory<D, d, R, r>::create(geometry_type, order, overlap);
     })
-  {}
+  {
+  }
 }; // ... LocalFlatTopFiniteElementFamily(...)
 
 

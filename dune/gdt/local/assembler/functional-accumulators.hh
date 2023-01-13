@@ -63,7 +63,8 @@ public:
     , result_(0)
     , param_(param)
     , local_source_(source_->local_function())
-  {}
+  {
+  }
 
   LocalElementFunctionalAccumulator(const ThisType& other)
     : BaseType(other)
@@ -73,7 +74,8 @@ public:
     , result_(0)
     , param_(other.param_)
     , local_source_(source_->local_function())
-  {}
+  {
+  }
 
   LocalElementFunctionalAccumulator(ThisType&& other) = default;
 

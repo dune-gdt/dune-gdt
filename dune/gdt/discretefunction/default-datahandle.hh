@@ -30,7 +30,8 @@ public:
     , mapper_(discrete_function_.space().mapper())
     , vector_(discrete_function_.dofs().vector())
     , fixed_size_(fixed_size)
-  {}
+  {
+  }
 
   //! export type of data for message buffer
   using DataType = typename DiscreteFunctionType::SpaceType::D;
@@ -69,7 +70,8 @@ public:
   //! pack data from user to message buffer
   template <class MessageBuffer, class EntityType>
   std::enable_if_t<EntityType::codimension != 0> gather(MessageBuffer& /*buff*/, const EntityType& /*entity*/) const
-  {}
+  {
+  }
 
   template <class MessageBuffer, class EntityType>
   std::enable_if_t<EntityType::codimension == 0> gather(MessageBuffer& buff, const EntityType& entity) const
@@ -85,7 +87,8 @@ public:
   template <class MessageBuffer, class EntityType>
   std::enable_if_t<EntityType::codimension != 0>
   scatter(MessageBuffer& /*buff*/, const EntityType& /*entity*/, size_t /*n*/)
-  {}
+  {
+  }
 
   template <class MessageBuffer, class EntityType>
   std::enable_if_t<EntityType::codimension == 0>

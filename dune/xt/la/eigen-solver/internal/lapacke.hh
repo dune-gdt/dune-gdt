@@ -50,7 +50,8 @@ class MatrixDataProvider<MatrixType, true>
 public:
   MatrixDataProvider(MatrixType& matrix)
     : matrix_(matrix)
-  {}
+  {
+  }
 
   double* data()
   {
@@ -70,7 +71,8 @@ public:
   // lapacks favorite storage format is column-major, otherwise the matrix would be copied from row-major to col-major
   MatrixDataProvider(const MatrixType& matrix)
     : serialized_matrix_(Dune::XT::Common::serialize_colwise<double>(matrix))
-  {}
+  {
+  }
 
   double* data()
   {

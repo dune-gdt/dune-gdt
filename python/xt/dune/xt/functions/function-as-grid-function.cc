@@ -52,7 +52,8 @@ void all_grids(pybind11::module& m)
 
 template <>
 void all_grids<Dune::XT::Common::tuple_null_type>(pybind11::module&)
-{}
+{
+}
 
 
 PYBIND11_MODULE(_functions_function_as_grid_function, m)

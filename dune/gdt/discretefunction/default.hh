@@ -75,7 +75,8 @@ public:
     : space_(spc)
     , dofs_(space_.mapper(), vector)
     , name_(nm)
-  {}
+  {
+  }
 
   ConstDiscreteFunction(const ThisType&) = default;
 
@@ -212,19 +213,22 @@ public:
     : VectorStorage(vector)
     , BaseType(spc, VectorStorage::access(), nm)
     , dofs_(space_.mapper(), VectorStorage::access())
-  {}
+  {
+  }
 
   DiscreteFunction(const SpaceType& spc, VectorType&& vector, const std::string nm = "DiscreteFunction")
     : VectorStorage(new VectorType(std::move(vector)))
     , BaseType(spc, VectorStorage::access(), nm)
     , dofs_(space_.mapper(), VectorStorage::access())
-  {}
+  {
+  }
 
   DiscreteFunction(const SpaceType& spc, const std::string nm = "DiscreteFunction")
     : VectorStorage(new VectorType(spc.mapper().size(), 0.))
     , BaseType(spc, VectorStorage::access(), nm)
     , dofs_(space_.mapper(), VectorStorage::access())
-  {}
+  {
+  }
 
   DiscreteFunction(const ThisType&) = delete;
 

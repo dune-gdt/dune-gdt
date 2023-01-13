@@ -90,7 +90,8 @@ public:
     , inner_penalty_(inner_penalty)
     , dirichlet_penalty_(dirichlet_penalty)
     , intersection_diameter_(intersection_diameter)
-  {}
+  {
+  }
 
 protected:
   using FF = XT::Functions::GridFunctionInterface<E>;

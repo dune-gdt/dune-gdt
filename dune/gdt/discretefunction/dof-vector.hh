@@ -83,7 +83,8 @@ public:
   DofVector(const MapperType& mapper, VectorType& vec)
     : BaseType(mapper, vec)
     , vector_(vec)
-  {}
+  {
+  }
 
   DofVector(const ThisType&) = default;
 

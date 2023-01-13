@@ -24,7 +24,8 @@ namespace Dune::XT::Common {
 
 LocalizationStudy::LocalizationStudy(std::vector<std::string> only_these_indicators)
   : only_these_indicators_(std::move(only_these_indicators))
-{}
+{
+}
 
 LocalizationStudy::~LocalizationStudy() = default;
 

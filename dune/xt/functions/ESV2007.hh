@@ -76,7 +76,8 @@ public:
                  std::string nm = "ESV2007Testcase1Force")
     : order_(static_cast<int>(ord))
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   Testcase1Force(const ThisType&) = default;
 
@@ -174,7 +175,8 @@ public:
                          std::string nm = "ESV2007Testcase1ExactSolution")
     : order_(static_cast<int>(ord))
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   Testcase1ExactSolution(const ThisType&) = default;
 
@@ -262,7 +264,8 @@ private:
       , local_diffusion_(diffusion_->local_function())
       , poincare_constant_(poincare_constant)
       , value_(0)
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& ele) final
@@ -359,14 +362,16 @@ public:
     , diffusion_(diffusion.copy_as_grid_function())
     , poincare_constant_(poincare_constant)
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   CutoffFunction(const ThisType& other)
     : BaseType(other)
     , diffusion_(other.diffusion_->copy_as_grid_function())
     , poincare_constant_(other.poincare_constant_)
     , name_(other.name_)
-  {}
+  {
+  }
 
   CutoffFunction(ThisType&&) = default;
 

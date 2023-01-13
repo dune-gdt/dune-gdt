@@ -72,7 +72,8 @@ public:
     , boundary_info_(bnd_info)
     , space_(space.copy())
     , basis_(space_->basis().localize())
-  {}
+  {
+  }
 
   DirichletConstraints(const ThisType& other)
     : BaseType(other)
@@ -80,7 +81,8 @@ public:
     , boundary_info_(other.boundary_info_)
     , space_(other.space_->copy())
     , basis_(space_->basis().localize())
-  {}
+  {
+  }
 
   void apply_local(const ElementType& element) override final
   {

@@ -51,13 +51,15 @@ class FieldVector : public Dune::FieldVector<K, SIZE>
 public:
   FieldVector(const K& kk = suitable_default<K>::value())
     : BaseType(kk)
-  {}
+  {
+  }
 
   FieldVector(const ThisType& other) = default;
 
   FieldVector(const BaseType& other)
     : BaseType(other)
-  {}
+  {
+  }
 
   /* FieldMatrix< K, 1, 1 > is convertible to K, which in turn is convertible to FieldVector< K, 1 >. Without the
    * following constructor, this leads to an "ambiguous constructor" error (candidates are copy constructor and
@@ -66,7 +68,8 @@ public:
   FieldVector(const typename std::enable_if<SIZE == 1 && std::is_same<K, Type>::value,
                                             typename Dune::FieldMatrix<K, 1, 1>>::type& mat)
     : BaseType(mat[0][0])
-  {}
+  {
+  }
 
   FieldVector(const std::vector<K>& vec)
     : BaseType()
@@ -104,7 +107,8 @@ public:
                               && std::is_convertible<typename DenseVector<C>::value_type, K>::value>::type* /*dummy*/
       = nullptr)
     : BaseType(x)
-  {}
+  {
+  }
 
   operator std::vector<K>() const
   {
@@ -188,7 +192,8 @@ public:
 
   BlockedFieldVector(const K& val = K(0.))
     : backend_(BlockType(val))
-  {}
+  {
+  }
 
   template <class OtherVectorType>
   BlockedFieldVector(const OtherVectorType& other,
@@ -199,7 +204,8 @@ public:
 
   BlockedFieldVector(const BlockType& block)
     : backend_(block)
-  {}
+  {
+  }
 
   BlockedFieldVector(const std::initializer_list<K>& init_list)
   {
@@ -387,7 +393,8 @@ class ValueInitFieldVector : public Dune::XT::Common::FieldVector<K, SIZE>
 public:
   ValueInitFieldVector()
     : BaseType(value)
-  {}
+  {
+  }
 }; // class ValueInitFieldVector
 
 

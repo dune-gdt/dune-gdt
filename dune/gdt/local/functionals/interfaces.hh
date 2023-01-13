@@ -58,7 +58,8 @@ public:
 
   LocalElementFunctionalInterface(const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type)
-  {}
+  {
+  }
 
   virtual ~LocalElementFunctionalInterface() = default;
 
@@ -119,7 +120,8 @@ public:
 
   LocalIntersectionFunctionalInterface(const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type)
-  {}
+  {
+  }
 
   virtual ~LocalIntersectionFunctionalInterface() = default;
 

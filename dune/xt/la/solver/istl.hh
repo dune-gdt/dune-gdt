@@ -174,12 +174,14 @@ public:
   Solver(const MatrixType& matrix)
     : matrix_(matrix)
     , communicator_(CommunicatorType())
-  {}
+  {
+  }
 
   Solver(const MatrixType& matrix, const CommunicatorType& communicator)
     : matrix_(matrix)
     , communicator_(communicator)
-  {}
+  {
+  }
 
   Solver(Solver&& source) = default;
 

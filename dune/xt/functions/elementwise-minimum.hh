@@ -121,7 +121,8 @@ private:
       , some_lf_(some_func_->local_function())
       , search_quadrature_order_(search_quadrature_order)
       , min_(0)
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& element) final
@@ -168,7 +169,8 @@ public:
     , some_func_(other.some_func_->copy_as_grid_function())
     , search_quadrature_order_(other.search_quadrature_order_)
     , name_(other.name_)
-  {}
+  {
+  }
 
   ElementwiseMinimumFunction(ThisType&&) = default;
 

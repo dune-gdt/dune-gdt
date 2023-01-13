@@ -53,7 +53,8 @@ struct ESV2007DiffusionProblem
     , dirichlet(0.)
     , neumann(0.)
     , force(XT::Functions::ESV2007::Testcase1Force<d, 1>(force_order))
-  {}
+  {
+  }
 
   XT::Grid::GridProvider<G> make_initial_grid() const
   {
@@ -111,7 +112,8 @@ public:
         /*dirichlet_penalty=*/14,
         /*intersection_diameter=*/[](const auto& intersection) { return intersection.geometry().volume(); })
     , problem(DXTC_TEST_CONFIG_GET("setup.force_order", 2))
-  {}
+  {
+  }
 
 protected:
   std::vector<std::string> norms() const override final

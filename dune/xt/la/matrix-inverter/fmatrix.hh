@@ -124,7 +124,8 @@ public:
   template <class... Args>
   explicit MatrixInverter(Args&&... args)
     : MatrixInverter<FieldMatrix<K, ROWS, COLS>>(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 

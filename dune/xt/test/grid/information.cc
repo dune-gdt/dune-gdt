@@ -35,7 +35,8 @@ struct GridInfoTest : public ::testing::Test
   const GridProvider<GridType> grid_prv;
   GridInfoTest()
     : grid_prv(make_cube_grid<GridType>(0.f, 1.f, level))
-  {}
+  {
+  }
 
   void check_dimensions(const DimensionsType& dim, const size_t entities)
   {

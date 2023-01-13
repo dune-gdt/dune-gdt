@@ -67,7 +67,8 @@ public:
     : BaseType(other)
     , weight_(other.weight_->copy_as_grid_function())
     , local_weight_(weight_->local_function())
-  {}
+  {
+  }
 
   LocalElementProductIntegrand(ThisType&& source) = default;
 
@@ -167,14 +168,16 @@ public:
     , weight_(weight.copy_as_grid_function())
     , local_weight_in_(weight_->local_function())
     , local_weight_out_(weight_->local_function())
-  {}
+  {
+  }
 
   LocalCouplingIntersectionProductIntegrand(const ThisType& other)
     : BaseType(other)
     , weight_(other.weight_->copy_as_grid_function())
     , local_weight_in_(weight_->local_function())
     , local_weight_out_(weight_->local_function())
-  {}
+  {
+  }
 
   LocalCouplingIntersectionProductIntegrand(ThisType&& source) = default;
 
@@ -299,7 +302,8 @@ public:
     , weight_(weight.copy_as_grid_function())
     , local_weight_(weight_->local_function())
     , inside_(use_inside_bases)
-  {}
+  {
+  }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
@@ -308,7 +312,8 @@ public:
     , weight_(other.weight_->copy_as_grid_function())
     , local_weight_(weight_->local_function())
     , inside_(other.inside_)
-  {}
+  {
+  }
 #pragma GCC diagnostic pop
 
   LocalIntersectionProductIntegrand(ThisType&& source) = default;
@@ -418,14 +423,16 @@ public:
     , weight_(weight.copy_as_grid_function())
     , local_weight_(weight_->local_function())
     , inside_(use_inside_bases)
-  {}
+  {
+  }
 
   LocalIntersectionNormalComponentProductIntegrand(const ThisType& other)
     : BaseType(other)
     , weight_(other.weight_->copy_as_grid_function())
     , local_weight_(weight_->local_function())
     , inside_(other.inside_)
-  {}
+  {
+  }
 
   LocalIntersectionNormalComponentProductIntegrand(ThisType&& source) = default;
 
@@ -515,7 +522,8 @@ public:
   template <class... Args>
   explicit LocalProductIntegrand(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class LocalProductIntegrand
 
 

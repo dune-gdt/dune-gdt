@@ -13,7 +13,7 @@
 
 #include "traits.hh"
 
-//#include <dune/xt/grid/type_traits.hh>
+// #include <dune/xt/grid/type_traits.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 template <class GridTypes = Dune::XT::Grid::bindings::AvailableGridTypes>

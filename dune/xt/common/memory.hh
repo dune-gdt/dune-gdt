@@ -55,7 +55,8 @@ class ConstAccessByReference : public ConstAccessInterface<T>
 public:
   explicit ConstAccessByReference(const T& tt)
     : tt_(tt)
-  {}
+  {
+  }
 
   const T& access() const final
   {
@@ -81,15 +82,18 @@ public:
    */
   explicit ConstAccessByPointer(T* tt)
     : tt_(tt)
-  {}
+  {
+  }
 
   explicit ConstAccessByPointer(std::unique_ptr<const T>&& tt)
     : tt_(std::move(tt))
-  {}
+  {
+  }
 
   explicit ConstAccessByPointer(std::shared_ptr<const T> tt)
     : tt_(std::move(tt))
-  {}
+  {
+  }
 
   const T& access() const final
   {
@@ -111,11 +115,13 @@ class ConstAccessByValue : public ConstAccessInterface<T>
 public:
   explicit ConstAccessByValue(T&& tt)
     : tt_(tt)
-  {}
+  {
+  }
 
   explicit ConstAccessByValue(const T& tt)
     : tt_(tt)
-  {}
+  {
+  }
 
   const T& access() const final
   {
@@ -154,7 +160,8 @@ class AccessByReference : public AccessInterface<T>
 public:
   explicit AccessByReference(T& tt)
     : tt_(tt)
-  {}
+  {
+  }
 
   T& access() final
   {
@@ -185,15 +192,18 @@ public:
    */
   explicit AccessByPointer(T*&& tt)
     : tt_(tt)
-  {}
+  {
+  }
 
   explicit AccessByPointer(std::unique_ptr<T>&& tt)
     : tt_(std::move(tt))
-  {}
+  {
+  }
 
   explicit AccessByPointer(std::shared_ptr<T> tt)
     : tt_(std::move(tt))
-  {}
+  {
+  }
 
   T& access() final
   {
@@ -220,7 +230,8 @@ class AccessByValue : public AccessInterface<T>
 public:
   explicit AccessByValue(T&& tt)
     : tt_(tt)
-  {}
+  {
+  }
 
   const T& access() const final
   {
@@ -307,36 +318,43 @@ class ConstStorageProvider
 public:
   explicit ConstStorageProvider()
     : storage_(nullptr)
-  {}
+  {
+  }
 
   explicit ConstStorageProvider(const T& tt)
     : storage_(new internal::ConstAccessByReference<T>(tt))
-  {}
+  {
+  }
 
   /**
    * \attention This ctor transfers ownership to ConstStorageProvider, do not delete tt manually!
    */
   explicit ConstStorageProvider(T*&& tt)
     : storage_(new internal::ConstAccessByPointer<T>(tt))
-  {}
+  {
+  }
 
   // We have to disable this constructor if T is not a complete type to avoid compilation failures
   template <class S, typename std::enable_if_t<std::is_constructible<T, S&&>::value, bool> = true>
   explicit ConstStorageProvider(S&& tt)
     : storage_(new internal::ConstAccessByValue<T>(std::forward<S>(tt)))
-  {}
+  {
+  }
 
   explicit ConstStorageProvider(std::shared_ptr<const T> tt)
     : storage_(new internal::ConstAccessByPointer<T>(tt))
-  {}
+  {
+  }
 
   explicit ConstStorageProvider(std::unique_ptr<const T>&& tt)
     : storage_(new internal::ConstAccessByPointer<T>(std::move(tt)))
-  {}
+  {
+  }
 
   ConstStorageProvider(const ConstStorageProvider<T>& other)
     : storage_(other.storage_ ? other.storage_->copy() : nullptr)
-  {}
+  {
+  }
 
   ConstStorageProvider(ConstStorageProvider<T>&& source) = default;
 
@@ -388,32 +406,38 @@ class StorageProvider
 public:
   explicit StorageProvider()
     : storage_(nullptr)
-  {}
+  {
+  }
 
   explicit StorageProvider(T& tt)
     : storage_(new internal::AccessByReference<T>(tt))
-  {}
+  {
+  }
 
   /**
    * \attention This ctor transfers ownership to StorageProvider, do not delete it manually!
    */
   explicit StorageProvider(T*&& tt)
     : storage_(new internal::AccessByPointer<T>(std::move(tt)))
-  {}
+  {
+  }
 
   explicit StorageProvider(T&& tt)
     : storage_(new internal::AccessByValue<T>(std::move(tt)))
-  {}
+  {
+  }
 
   explicit StorageProvider(std::shared_ptr<T> tt)
     : storage_(new internal::AccessByPointer<T>(tt))
-  {}
+  {
+  }
 
   StorageProvider(const StorageProvider<T>& other) = delete;
 
   StorageProvider(StorageProvider<T>& other)
     : storage_(other.storage_ ? other.storage_->copy() : nullptr)
-  {}
+  {
+  }
 
   StorageProvider(StorageProvider<T>&& source) = default;
 
@@ -477,30 +501,36 @@ public:
    */
   explicit ConstSharedStorageProvider(const T*&& tt)
     : storage_(std::move(tt))
-  {}
+  {
+  }
 
   /**
    * \attention This ctor transfers ownership to ConstSharedStorageProvider, do not delete tt manually!
    */
   explicit ConstSharedStorageProvider(T*&& tt)
     : storage_(std::move(tt))
-  {}
+  {
+  }
 
   explicit ConstSharedStorageProvider(std::shared_ptr<const T> tt)
     : storage_(tt)
-  {}
+  {
+  }
 
   explicit ConstSharedStorageProvider(std::shared_ptr<T> tt)
     : storage_(tt)
-  {}
+  {
+  }
 
   explicit ConstSharedStorageProvider(std::unique_ptr<const T>&& tt)
     : storage_(tt.release())
-  {}
+  {
+  }
 
   explicit ConstSharedStorageProvider(std::unique_ptr<T>&& tt)
     : storage_(tt.release())
-  {}
+  {
+  }
 
   ConstSharedStorageProvider(const ConstSharedStorageProvider<T>& other) = default;
   ConstSharedStorageProvider(ConstSharedStorageProvider<T>&& source) = default;

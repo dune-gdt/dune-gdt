@@ -184,19 +184,22 @@ public:
     : BaseType()
     , func_(func)
     , do_post_bind_(true)
-  {}
+  {
+  }
 
   DerivativeElementFunction(std::shared_ptr<ElementFunctionType> func)
     : BaseType()
     , func_(func)
     , do_post_bind_(true)
-  {}
+  {
+  }
 
   DerivativeElementFunction(std::unique_ptr<ElementFunctionType>&& func)
     : BaseType()
     , func_(std::move(func))
     , do_post_bind_(true)
-  {}
+  {
+  }
 
 protected:
   void post_bind(const ElementType& element) final
@@ -257,7 +260,8 @@ public:
   template <class... Args>
   explicit DivergenceElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class DivergenceElementFunction
 
 
@@ -275,7 +279,8 @@ public:
   template <class... Args>
   explicit GradientElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class GradientElementFunction
 
 

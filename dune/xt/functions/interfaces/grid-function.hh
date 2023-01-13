@@ -115,7 +115,8 @@ public:
   GridFunctionInterface(const ThisType& other)
     : Common::ParametricInterface(other)
     , Logger(other)
-  {}
+  {
+  }
 
   GridFunctionInterface(ThisType&) = default;
 

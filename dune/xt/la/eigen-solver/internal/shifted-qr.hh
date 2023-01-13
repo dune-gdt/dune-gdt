@@ -41,7 +41,8 @@ struct RealQrEigenSolver
                      const size_t /*num_rows*/,
                      const size_t /*num_cols*/,
                      const FieldType& /*val*/)
-  {}
+  {
+  }
 
   static void
   calculate_eigenvalues_by_shifted_qr(MatrixType& A, const std::unique_ptr<MatrixType>& Q, std::vector<double>& eigvals)

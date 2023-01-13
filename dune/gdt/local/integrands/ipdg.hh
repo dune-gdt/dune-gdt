@@ -70,7 +70,8 @@ public:
     , intersection_diameter_(intersection_diameter)
     , local_weight_in_(weight_->local_function())
     , local_weight_out_(weight_->local_function())
-  {}
+  {
+  }
 
   InnerPenalty(const ThisType& other)
     : BaseType(other)
@@ -79,7 +80,8 @@ public:
     , intersection_diameter_(other.intersection_diameter_)
     , local_weight_in_(weight_->local_function())
     , local_weight_out_(weight_->local_function())
-  {}
+  {
+  }
 
   InnerPenalty(ThisType&& source) = default;
 
@@ -212,7 +214,8 @@ public:
     , weight_(weight_function.copy_as_grid_function())
     , intersection_diameter_(intersection_diameter)
     , local_weight_(weight_->local_function())
-  {}
+  {
+  }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
@@ -222,7 +225,8 @@ public:
     , weight_(other.weight_->copy_as_grid_function())
     , intersection_diameter_(other.intersection_diameter_)
     , local_weight_(weight_->local_function())
-  {}
+  {
+  }
 #pragma GCC diagnostic pop
 
   BoundaryPenalty(ThisType&& source) = default;

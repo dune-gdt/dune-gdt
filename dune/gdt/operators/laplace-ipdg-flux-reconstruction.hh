@@ -100,7 +100,8 @@ public:
     , weight_function_(other.weight_function_->copy_as_grid_function())
     , intersection_diameter_(other.intersection_diameter_)
     , element_mapper_(assembly_grid_view_)
-  {}
+  {
+  }
 
   LaplaceIpdgFluxReconstructionOperator(ThisType&&) = default;
 

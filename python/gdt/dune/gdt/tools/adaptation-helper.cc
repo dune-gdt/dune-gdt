@@ -56,7 +56,8 @@ public:
     : BaseType(grd, logging_prefix)
     , marker_indices(grd.leafGridView()) // BAD, bad, bad, has to coincide with GV!
     , markers(marker_indices.mapper().size())
-  {}
+  {
+  }
 
   GDT::FiniteVolumeSpace<GV, r, rC> marker_indices;
   XT::LA::CommonDenseVector<size_t> markers;
@@ -246,8 +247,8 @@ PYBIND11_MODULE(_tools_adaptation_helper, m)
   py::module::import("dune.gdt._discretefunction_discretefunction");
 
   //  AdaptationHelper_for_all_grids<LA::CommonDenseVector<double>, LA::bindings::Common>::bind(m);
-  //#if HAVE_EIGEN
+  // #if HAVE_EIGEN
   //  AdaptationHelper_for_all_grids<LA::EigenDenseVector<double>, LA::bindings::Eigen>::bind(m);
-  //#endif
+  // #endif
   AdaptationHelper_for_all_grids<LA::IstlDenseVector<double>, LA::bindings::Istl>::bind(m);
 }

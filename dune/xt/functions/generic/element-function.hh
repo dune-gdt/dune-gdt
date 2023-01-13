@@ -63,7 +63,8 @@ public:
     , jacobian_(jacobian_func)
     , derivative_(derivative_func)
     , post_bind_(post_bind_func)
-  {}
+  {
+  }
 
   GenericElementFunctionSet(const size_t fixed_size,
                             const int ord,
@@ -80,7 +81,8 @@ public:
     , jacobian_(jacobian_lambda)
     , derivative_(derivative_lambda)
     , post_bind_(post_bind_func)
-  {}
+  {
+  }
 
   /**
    * \name ´´These methods are required by XT::Grid::ElementBoundObject.''
@@ -241,7 +243,8 @@ public:
     , jacobian_(jacobian_func)
     , derivative_(derivative_func)
     , post_bind_(post_bind_func)
-  {}
+  {
+  }
 
   GenericElementFunction(
       const int ord,
@@ -256,7 +259,8 @@ public:
     , jacobian_(jacobian_lambda)
     , derivative_(derivative_lambda)
     , post_bind_(post_bind_func)
-  {}
+  {
+  }
 
   /**
    * \name ´´These methods are required by XT::Grid::ElementBoundObject.''

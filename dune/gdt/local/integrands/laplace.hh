@@ -45,13 +45,15 @@ public:
         diffusion.parameter_type(), logging_prefix.empty() ? "LocalLaplaceIntegrand" : logging_prefix, logging_state)
     , weight_(diffusion.copy_as_grid_function())
     , local_weight_(weight_->local_function())
-  {}
+  {
+  }
 
   LocalLaplaceIntegrand(const ThisType& other)
     : BaseType(other)
     , weight_(other.weight_->copy_as_grid_function())
     , local_weight_(weight_->local_function())
-  {}
+  {
+  }
 
   LocalLaplaceIntegrand(ThisType&& source) = default;
 

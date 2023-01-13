@@ -32,14 +32,14 @@ PYBIND11_MODULE(_operators_interfaces_eigen, m)
 
   py::module::import("dune.gdt._spaces_interface");
 
-  //#if HAVE_EIGEN
-  //  OperatorInterface_for_all_grids<LA::EigenDenseMatrix<double>,
-  //                                  LA::bindings::Eigen,
-  //                                  LA::bindings::Dense,
-  //                                  XT::Grid::bindings::AvailableGridTypes>::bind(m, "eigen_dense");
-  //  OperatorInterface_for_all_grids<LA::EigenRowMajorSparseMatrix<double>,
-  //                                  LA::bindings::Eigen,
-  //                                  LA::bindings::Sparse,
-  //                                  XT::Grid::bindings::AvailableGridTypes>::bind(m, "eigen_sparse");
-  //#endif
+  // #if HAVE_EIGEN
+  //   OperatorInterface_for_all_grids<LA::EigenDenseMatrix<double>,
+  //                                   LA::bindings::Eigen,
+  //                                   LA::bindings::Dense,
+  //                                   XT::Grid::bindings::AvailableGridTypes>::bind(m, "eigen_dense");
+  //   OperatorInterface_for_all_grids<LA::EigenRowMajorSparseMatrix<double>,
+  //                                   LA::bindings::Eigen,
+  //                                   LA::bindings::Sparse,
+  //                                   XT::Grid::bindings::AvailableGridTypes>::bind(m, "eigen_sparse");
+  // #endif
 }

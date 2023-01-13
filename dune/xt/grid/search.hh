@@ -105,7 +105,8 @@ public:
   EntityInlevelSearch(const GridLayerType& grid_layer)
     : grid_layer_(grid_layer)
     , it_last_(grid_layer_.template begin<codim>())
-  {}
+  {
+  }
 
   /** \arg points iterable sequence of global coordinates to search for
    *  \return a vector of size points.size() of, potentially nullptr if no corresponding one was found,
@@ -183,7 +184,8 @@ public:
   FallbackEntityInlevelSearch(const GridLayerType& grid_layer)
     : grid_layer_(grid_layer)
     , it_last_(grid_layer_.template begin<0>())
-  {}
+  {
+  }
 
   /** \arg points iterable sequence of global coordinates to search for
    *  \return a vector of size points.size() of, potentially nullptr if no corresponding one was found,
@@ -257,7 +259,8 @@ public:
   EntityHierarchicSearch(const GridLayerType& grid_layer)
     : grid_layer_(grid_layer)
     , start_level_(0)
-  {}
+  {
+  }
 
   using EntityVectorType = typename BaseType::EntityVectorType;
 

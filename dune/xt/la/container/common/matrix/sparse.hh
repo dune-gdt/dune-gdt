@@ -164,7 +164,8 @@ public:
     , column_indices_(std::make_shared<IndexVectorType>(*other.column_indices_))
     , mutexes_(std::make_unique<MutexesType>(other.mutexes_->size()))
     , eps_(other.eps_)
-  {}
+  {
+  }
 
   template <class OtherMatrixType>
   explicit CommonSparseMatrix(
@@ -207,7 +208,8 @@ public:
                          Common::FloatCmp::DefaultEpsilon<ScalarType>::value()
                              / (1000. * Common::MatrixAbstraction<OtherMatrixType>::cols(mat)),
                          num_mutexes)
-  {} // CommonSparseMatrix(...)
+  {
+  } // CommonSparseMatrix(...)
 
   template <class DenseMatrixImp>
   void copy_to_densematrix(DenseMatrixImp& ret) const
@@ -624,7 +626,8 @@ public:
     , column_pointers_(std::make_shared<IndexVectorType>(num_cols_ + 1))
     , row_indices_(std::make_shared<IndexVectorType>())
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   CommonSparseMatrix(const ThisType& other)
     : num_rows_(other.num_rows_)
@@ -634,7 +637,8 @@ public:
     , row_indices_(std::make_shared<IndexVectorType>(*other.row_indices_))
     , mutexes_(std::make_unique<MutexesType>(other.mutexes_->size()))
     , eps_(other.eps_)
-  {}
+  {
+  }
 
 
   template <class OtherMatrixType>
@@ -679,7 +683,8 @@ public:
                          Common::FloatCmp::DefaultEpsilon<ScalarType>::value()
                              / (1000. * Common::MatrixAbstraction<OtherMatrixType>::cols(mat)),
                          num_mutexes)
-  {} // CommonSparseMatrix(...)
+  {
+  } // CommonSparseMatrix(...)
 
   ThisType& operator=(const ThisType& other)
   {
@@ -1167,7 +1172,8 @@ public:
 
   CommonSparseOrDenseMatrix(const size_t rr, const size_t cc, const size_t num_mutexes, bool use_sparse = true)
     : CommonSparseOrDenseMatrix(rr, cc, ScalarType(0.), num_mutexes, use_sparse)
-  {}
+  {
+  }
 
   CommonSparseOrDenseMatrix(const ThisType& other)
     : num_rows_(other.num_rows_)
@@ -1175,7 +1181,8 @@ public:
     , sparse_(other.sparse_)
     , sparse_matrix_(other.sparse_matrix_)
     , dense_matrix_(other.dense_matrix_)
-  {}
+  {
+  }
 
   template <class OtherMatrixType>
   explicit CommonSparseOrDenseMatrix(
@@ -1215,7 +1222,8 @@ public:
                                 Common::FloatCmp::DefaultEpsilon<ScalarType>::value()
                                     / (1000. * Common::MatrixAbstraction<OtherMatrixType>::cols(mat)),
                                 num_mutexes)
-  {} // CommonSparseOrDenseMatrix(...)
+  {
+  } // CommonSparseOrDenseMatrix(...)
 
   ThisType& operator=(const ThisType& other)
   {

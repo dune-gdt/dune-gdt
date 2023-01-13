@@ -59,7 +59,8 @@ public:
     , name_(nm.empty() ? ((r == 1 && rC == 1) ? std::string("ConstantFunction(" + Common::to_string(value) + ")")
                                               : "ConstantFunction")
                        : nm)
-  {}
+  {
+  }
 
   ConstantFunction(const ThisType&) = default;
 
@@ -119,7 +120,8 @@ public:
         nm.empty() ? ((r == 1 && rC == 1) ? std::string("ConstantGridFunction(" + Common::to_string(value) + ")")
                                           : "ConstantGridFunction")
                    : nm))
-  {}
+  {
+  }
   std::unique_ptr<ThisType> copy_as_grid_function() const
   {
     return std::unique_ptr<ThisType>(this->copy_as_grid_function_impl());
@@ -146,7 +148,8 @@ public:
                        const std::string& name_in = static_id())
     : constant_function_(constant, name_in)
     , constant_flux_function_(constant_function_)
-  {}
+  {
+  }
 
   static std::string static_id()
   {

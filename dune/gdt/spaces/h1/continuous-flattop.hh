@@ -11,16 +11,16 @@
 #define DUNE_GDT_SPACES_H1_CONTINUOUS_FLATTOP_HH
 
 #include <memory>
-//#include <vector>
+// #include <vector>
 
-//#include <dune/common/typetraits.hh>
+// #include <dune/common/typetraits.hh>
 
-//#include <dune/geometry/type.hh>
+// #include <dune/geometry/type.hh>
 
 #include <dune/grid/common/gridview.hh>
 
-//#include <dune/xt/common/exceptions.hh>
-//#include <dune/xt/grid/type_traits.hh>
+// #include <dune/xt/common/exceptions.hh>
+// #include <dune/xt/grid/type_traits.hh>
 
 #include <dune/gdt/local/finite-elements/flattop.hh>
 #include <dune/gdt/spaces/basis/default.hh>

@@ -49,7 +49,8 @@ public:
   GenericLocalElementBilinearForm(GenericFunctionType func, const XT::Common::ParameterType& param_type = {})
     : BaseType(param_type)
     , func_(func)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -117,7 +118,8 @@ public:
                                                const XT::Common::ParameterType& param_type = {})
     : BaseType(param_type)
     , func_(func)
-  {}
+  {
+  }
 
   GenericLocalCouplingIntersectionBilinearForm(ThisType&& source) = default;
 

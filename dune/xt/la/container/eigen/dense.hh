@@ -428,7 +428,8 @@ public:
   EigenDenseMatrix(const ThisType& other)
     : backend_(std::make_shared<BackendType>(*other.backend_))
     , mutexes_(std::make_unique<MutexesType>(other.mutexes_->size()))
-  {}
+  {
+  }
 
   /**
    * \note If prune == true, this implementation is not optimal!
@@ -472,12 +473,14 @@ public:
   explicit EigenDenseMatrix(BackendType* backend_ptr, const size_t num_mutexes = 1)
     : backend_(backend_ptr)
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   explicit EigenDenseMatrix(std::shared_ptr<BackendType> backend_ptr, const size_t num_mutexes = 1)
     : backend_(std::move(backend_ptr))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   ThisType& operator=(const ThisType& other)
   {

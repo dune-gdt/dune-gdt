@@ -88,7 +88,8 @@ public:
     , entries_(new EntriesVectorType())
     , indices_(new IndicesVectorType())
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   explicit CommonSparseVector(const size_t sz, const ScalarType value, const size_t num_mutexes = 1)
     : size_(sz)
@@ -149,7 +150,8 @@ public:
     , entries_(std::make_shared<EntriesVectorType>(*other.entries_))
     , indices_(std::make_shared<IndicesVectorType>(*other.indices_))
     , mutexes_(std::make_unique<MutexesType>(other.mutexes_->size()))
-  {}
+  {
+  }
 
   template <class OtherVectorType>
   explicit CommonSparseVector(
@@ -177,7 +179,8 @@ public:
       const typename std::enable_if_t<XT::Common::VectorAbstraction<OtherVectorType>::is_vector, bool> prune,
       const size_t num_mutexes)
     : CommonSparseVector(other, prune, Common::FloatCmp::DefaultEpsilon<ScalarType>::value(), num_mutexes)
-  {}
+  {
+  }
 
   ThisType& operator=(const ThisType& other)
   {

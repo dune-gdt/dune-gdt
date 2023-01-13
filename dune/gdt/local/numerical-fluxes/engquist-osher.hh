@@ -30,7 +30,8 @@ public:
   template <class... Args>
   explicit NumericalEngquistOsherFlux(Args&&... /*args*/)
     : internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>()
-  {}
+  {
+  }
 };
 
 template <class I, size_t d, class R>
@@ -50,11 +51,13 @@ public:
 
   NumericalEngquistOsherFlux(const FluxType& flx)
     : BaseType(flx)
-  {}
+  {
+  }
 
   NumericalEngquistOsherFlux(const XIndependentFluxType& flx)
     : BaseType(flx)
-  {}
+  {
+  }
 
   NumericalEngquistOsherFlux(const ThisType& other) = default;
 

@@ -140,7 +140,8 @@ public:
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
     , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(new ConstantFunction<d, r, rC, R>(value)))
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   GridFunction(const FunctionInterface<d, r, rC, R>& func, const std::string& logging_prefix = "")
     : BaseType(func.parameter_type(),
@@ -148,7 +149,8 @@ public:
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
     , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(func))
     , name_(function_->name())
-  {}
+  {
+  }
 
   GridFunction(FunctionInterface<d, r, rC, R>*&& func_ptr, const std::string& logging_prefix = "")
     : BaseType(func_ptr->parameter_type(),
@@ -156,7 +158,8 @@ public:
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
     , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(std::move(func_ptr)))
     , name_(function_->name())
-  {}
+  {
+  }
 
   GridFunction(const GridFunctionInterface<E, r, rC, R>& func, const std::string& logging_prefix = "")
     : BaseType(func.parameter_type(),
@@ -164,7 +167,8 @@ public:
                logging_prefix.empty() ? func.logger.state : Common::default_logger_state())
     , function_(func.copy_as_grid_function())
     , name_(function_->name())
-  {}
+  {
+  }
 
   GridFunction(GridFunctionInterface<E, r, rC, R>*&& func_ptr, const std::string& logging_prefix = "")
     : BaseType(func_ptr->parameter_type(),
@@ -172,7 +176,8 @@ public:
                logging_prefix.empty() ? func_ptr->logger.state : Common::default_logger_state())
     , function_(std::move(func_ptr))
     , name_(function_->name())
-  {}
+  {
+  }
 
   GridFunction(std::tuple<int, typename GenericFunctionType::GenericEvaluateFunctionType> order_evaluate,
                std::string nm = "GridFunction",
@@ -183,7 +188,8 @@ public:
     , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
           new GenericFunctionType(std::get<0>(order_evaluate), std::get<1>(order_evaluate))))
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   GridFunction(std::tuple<int, typename GenericFunctionType::GenericEvaluateFunctionType, const std::string&>
                    order_evaluate_name,
@@ -194,7 +200,8 @@ public:
     , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
           new GenericFunctionType(std::get<0>(order_evaluate_name), std::get<1>(order_evaluate_name))))
     , name_(std::get<2>(order_evaluate_name))
-  {}
+  {
+  }
 
   GridFunction(std::tuple<int,
                           typename GenericFunctionType::GenericEvaluateFunctionType,
@@ -210,7 +217,8 @@ public:
                                                                                  /*param_type=*/{},
                                                                                  std::get<2>(order_evaluate_jacobian))))
     , name_("GridFunction")
-  {}
+  {
+  }
 
   GridFunction(std::tuple<int,
                           typename GenericFunctionType::GenericEvaluateFunctionType,
@@ -227,13 +235,15 @@ public:
                                   /*param_type=*/{},
                                   std::get<2>(order_evaluate_jacobian_name))))
     , name_(std::get<3>(order_evaluate_jacobian_name))
-  {}
+  {
+  }
 
   GridFunction(const ThisType& other)
     : BaseType(other)
     , function_(other.function_->copy_as_grid_function())
     , name_(other.name_)
-  {}
+  {
+  }
 
   GridFunction(ThisType&& source) = default;
 
@@ -466,7 +476,8 @@ public:
     : BaseType(other)
     , function_(other.function_->copy_as_grid_function())
     , name_(other.name_)
-  {}
+  {
+  }
 
   GridFunction(ThisType&&) = default;
 
@@ -665,7 +676,8 @@ public:
     : BaseType(other)
     , function_(other.function_->copy_as_grid_function())
     , name_(other.name_)
-  {}
+  {
+  }
 
   GridFunction(ThisType&&) = default;
 

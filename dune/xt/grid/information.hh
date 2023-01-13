@@ -115,7 +115,8 @@ struct Dimensions
       : coord_limits_(c)
       , entity_volume_(e)
       , entity_width_(w)
-    {}
+    {
+    }
 
     void apply_local(const ElementType& element) override
     {

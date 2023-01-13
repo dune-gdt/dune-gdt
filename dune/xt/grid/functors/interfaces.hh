@@ -50,7 +50,8 @@ public:
   ElementFunctor(const std::string& log_prefix = "",
                  const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Common::WithLogger<ElementFunctor<GL>>(log_prefix.empty() ? "ElementFunctor" : log_prefix, logging_state)
-  {}
+  {
+  }
 
   ElementFunctor(const ElementFunctor<GL>&) = default;
 
@@ -98,7 +99,8 @@ public:
                       const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Common::WithLogger<IntersectionFunctor<GL>>(log_prefix.empty() ? "IntersectionFunctor" : log_prefix,
                                                   logging_state)
-  {}
+  {
+  }
 
   virtual ~IntersectionFunctor() = default;
 
@@ -114,7 +116,8 @@ public:
   virtual void apply_local(const IntersectionType& /*intersection*/,
                            const ElementType& /*inside_element*/,
                            const ElementType& /*outside_element*/)
-  {}
+  {
+  }
 
   virtual void finalize() {}
 }; // class IntersectionFunctor
@@ -152,7 +155,8 @@ public:
                                 const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Common::WithLogger<ElementAndIntersectionFunctor<GL>>(
         log_prefix.empty() ? "ElementAndIntersectionFunctor" : log_prefix, logging_state)
-  {}
+  {
+  }
 
   virtual ~ElementAndIntersectionFunctor() = default;
 
@@ -165,7 +169,8 @@ public:
   virtual void apply_local(const IntersectionType& /*intersection*/,
                            const ElementType& /*inside_element*/,
                            const ElementType& /*outside_element*/)
-  {}
+  {
+  }
 
   virtual void finalize() {}
 }; // class ElementAndIntersectionFunctor

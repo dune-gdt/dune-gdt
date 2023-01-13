@@ -53,7 +53,8 @@ struct MatrixBackendBase
     : num_rows_(num_rows)
     , num_cols_(num_cols)
     , entries_(num_rows_ * num_cols_, value)
-  {}
+  {
+  }
 
   void resize(const size_t num_rows, const size_t num_cols)
   {
@@ -79,7 +80,8 @@ struct CommonDenseMatrixBackend<ScalarType, Common::StorageLayout::dense_row_maj
 
   CommonDenseMatrixBackend(const size_t num_rows, const size_t num_cols, const ScalarType value = ScalarType(0))
     : BaseType(num_rows, num_cols, value)
-  {}
+  {
+  }
 
   ScalarType& get_entry_ref(const size_t rr, const size_t cc)
   {
@@ -115,7 +117,8 @@ struct CommonDenseMatrixBackend<ScalarType, Common::StorageLayout::dense_column_
 
   CommonDenseMatrixBackend(const size_t num_rows, const size_t num_cols, const ScalarType value = ScalarType(0))
     : BaseType(num_rows, num_cols, value)
-  {}
+  {
+  }
 
   ScalarType& get_entry_ref(const size_t rr, const size_t cc)
   {
@@ -187,7 +190,8 @@ public:
                              const size_t num_mutexes = 1)
     : backend_(std::make_unique<BackendType>(rr, cc, value))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   /// This constructors ignores the given pattern and initializes the matrix with 0.
   CommonDenseMatrix(const size_t rr,
@@ -196,12 +200,14 @@ public:
                     const size_t num_mutexes = 1)
     : backend_(std::make_unique<BackendType>(rr, cc, ScalarType(0)))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   CommonDenseMatrix(const ThisType& other)
     : backend_(std::make_unique<BackendType>(*other.backend_))
     , mutexes_(std::make_unique<MutexesType>(other.mutexes_->size()))
-  {}
+  {
+  }
 
   /**
    * \note If prune == true, this implementation is not optimal!
@@ -245,7 +251,8 @@ public:
   explicit CommonDenseMatrix(BackendType* backend_ptr, const size_t num_mutexes = 1)
     : backend_(backend_ptr)
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
-  {}
+  {
+  }
 
   ThisType& operator=(const ThisType& other)
   {

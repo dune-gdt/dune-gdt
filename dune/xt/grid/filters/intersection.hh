@@ -246,7 +246,8 @@ public:
 
   InnerIntersectionsOnceMap(const std::map<size_t, std::set<size_t>>& outside_indices_to_ignore)
     : outside_indices_to_ignore_(outside_indices_to_ignore)
-  {}
+  {
+  }
 
   IntersectionFilter<GridViewType>* copy() const final
   {
@@ -471,7 +472,8 @@ public:
 
   PeriodicBoundaryIntersectionsOnceMap(const std::map<size_t, std::set<size_t>>& outside_indices_to_ignore)
     : outside_indices_to_ignore_(outside_indices_to_ignore)
-  {}
+  {
+  }
 
   IntersectionFilter<GridViewType>* copy() const final
   {
@@ -513,7 +515,8 @@ public:
 
   explicit GenericFilteredIntersections(GenericFunctionType func)
     : filter_(std::move(func))
-  {}
+  {
+  }
 
   IntersectionFilter<GridViewType>* copy() const final
   {
@@ -557,7 +560,8 @@ public:
     : BaseType(logging_prefix.empty() ? "xt.grid.customboundaryintersections" : logging_prefix, logging_state)
     , boundary_info_(boundary_info)
     , boundary_type_(boundary_type)
-  {}
+  {
+  }
 
   explicit CustomBoundaryIntersections(const BoundaryInfo<IntersectionType>& boundary_info,
                                        std::shared_ptr<BoundaryType> boundary_type,
@@ -566,13 +570,15 @@ public:
     : BaseType(logging_prefix.empty() ? "xt.grid.customboundaryintersections" : logging_prefix, logging_state)
     , boundary_info_(boundary_info)
     , boundary_type_(std::move(boundary_type))
-  {}
+  {
+  }
 
   CustomBoundaryIntersections(const ThisType& other)
     : BaseType(other)
     , boundary_info_(other.boundary_info_)
     , boundary_type_(other.boundary_type_)
-  {}
+  {
+  }
 
   IntersectionFilter<GridViewType>* copy() const final
   {
@@ -616,13 +622,15 @@ public:
                                                  BoundaryType*&& boundary_type)
     : boundary_info_(boundary_info)
     , boundary_type_(boundary_type)
-  {}
+  {
+  }
 
   explicit CustomBoundaryAndProcessIntersections(const BoundaryInfo<IntersectionType>& boundary_info,
                                                  std::shared_ptr<BoundaryType> boundary_type)
     : boundary_info_(boundary_info)
     , boundary_type_(std::move(boundary_type))
-  {}
+  {
+  }
 
   IntersectionFilter<GridViewType>* copy() const final
   {

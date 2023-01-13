@@ -92,7 +92,8 @@ public:
 
   GeneralizedEigenSolverBase(const MatrixType& lhs_matrix, const MatrixType& rhs_matrix, const std::string& type = "")
     : GeneralizedEigenSolverBase(lhs_matrix, rhs_matrix, GeneralizedEigenSolverOptions<MatrixType, true>::options(type))
-  {}
+  {
+  }
 
   GeneralizedEigenSolverBase(const MatrixType& lhs_matrix,
                              const MatrixType& rhs_matrix,

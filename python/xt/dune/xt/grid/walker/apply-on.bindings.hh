@@ -109,7 +109,7 @@ public:
   _DUNE_XT_GRID_WALKER_APPLYON_BIND(_m, _W, _w, ALBERTA_2D, _layer, _backend, _class_name)
 #else*/
 #define _DUNE_XT_GRID_WALKER_APPLYON_BIND_ALBERTA(_m, _W, _w, _layer, _backend, _class_name)
-//#endif
+// #endif
 
 #if HAVE_DUNE_ALUGRID
 #  define _DUNE_XT_GRID_WALKER_APPLYON_BIND_ALU(_m, _W, _w, _layer, _backend, _class_name)                             \
@@ -123,7 +123,7 @@ public:
   _DUNE_XT_GRID_WALKER_APPLYON_BIND(_m, _W, _w, UG_2D, _layer, _backend, _class_name)
 #else*/
 #define _DUNE_XT_GRID_WALKER_APPLYON_BIND_UG(_m, _W, _w, _layer, _backend, _class_name)
-//#endif
+// #endif
 
 #define _DUNE_XT_GRID_WALKER_APPLYON_BIND_YASP(_m, _W, _w, _layer, _backend, _class_name)                              \
   _DUNE_XT_GRID_WALKER_APPLYON_BIND(_m, _W, _w, YASP_1D_EQUIDISTANT_OFFSET, _layer, _backend, _class_name);            \

@@ -58,7 +58,8 @@ struct OS2015MultiscaleProblem
     , force({/*domain_with_positive_value=*/{{{0.95, 1.1}, {0.3, 0.45}}, 2e3},
              /*first_domain_with_negative_value=*/{{{3., 3.15}, {0.75, 0.9}}, -1e3},
              /*second_domain_with_negative_value=*/{{{4.25, 4.4}, {0.25, 0.4}}, -1e3}})
-  {}
+  {
+  }
 
   XT::Grid::GridProvider<G> make_initial_grid() const
   {
@@ -107,7 +108,8 @@ public:
   OS2015MultiscaleTest()
     : BaseType()
     , problem()
-  {}
+  {
+  }
 
 protected:
   std::vector<std::string> norms() const override final

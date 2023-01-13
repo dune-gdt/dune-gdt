@@ -64,7 +64,8 @@ public:
     , jacobian_(jacobian_func)
     , derivative_(derivative_func)
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   GenericFunction(int ord,
                   GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
@@ -79,7 +80,8 @@ public:
     , jacobian_(std::move(jacobian_func))
     , derivative_(std::move(derivative_func))
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   GenericFunction(GenericOrderFunctionType order_func,
                   GenericDynamicEvaluateFunctionType dynamic_evaluate_func,
@@ -94,7 +96,8 @@ public:
     , jacobian_(jacobian_func)
     , derivative_(derivative_func)
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   GenericFunction(int ord,
                   GenericDynamicEvaluateFunctionType dynamic_evaluate_func,
@@ -109,7 +112,8 @@ public:
     , jacobian_(jacobian_func)
     , derivative_(derivative_func)
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   GenericFunction(const ThisType&) = default;
 

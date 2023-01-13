@@ -328,7 +328,8 @@ public:
     , bilinear_form_value_out_in_(1, 1, 0.)
     , bilinear_form_value_out_out_(1, 1, 0.)
     , result_(0)
-  {}
+  {
+  }
 
   BilinearFormAssembler(const ThisType& other)
     : BaseType(other)
@@ -346,7 +347,8 @@ public:
     , bilinear_form_value_out_in_(other.bilinear_form_value_out_in_)
     , bilinear_form_value_out_out_(other.bilinear_form_value_out_out_)
     , result_(other.result_)
-  {}
+  {
+  }
 
   BilinearFormAssembler(ThisType&& source) = default;
 

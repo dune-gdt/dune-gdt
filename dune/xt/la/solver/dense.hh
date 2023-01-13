@@ -63,11 +63,13 @@ public:
 
   Solver(const MatrixType& matrix)
     : matrix_(matrix)
-  {}
+  {
+  }
 
   Solver(const MatrixType& matrix, const CommunicatorType& /*communicator*/)
     : matrix_(matrix)
-  {}
+  {
+  }
 
   static std::vector<std::string> types()
   {

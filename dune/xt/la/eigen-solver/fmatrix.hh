@@ -101,7 +101,8 @@ public:
   template <class... Args>
   explicit EigenSolver(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 
 protected:
   void compute() const final
@@ -193,7 +194,8 @@ public:
   template <class... Args>
   EigenSolver(Args&&... args)
     : EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>>(std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -210,7 +212,8 @@ public:
   EigenSolver(const Dune::XT::Common::FieldVector<K, 1>& vector, Args&&... args)
     : Storage(vector[0])
     , BaseType(Storage::access(), std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 
@@ -227,7 +230,8 @@ public:
   EigenSolver(const Dune::FieldVector<K, 1>& vector, Args&&... args)
     : Storage(vector[0])
     , BaseType(Storage::access(), std::forward<Args>(args)...)
-  {}
+  {
+  }
 };
 
 

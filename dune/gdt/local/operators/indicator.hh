@@ -44,17 +44,20 @@ public:
   LocalElementBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
     : BaseType(1)
     , local_bilinear_form_(bilinear_form.copy())
-  {}
+  {
+  }
 
   LocalElementBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form, const SourceType& src)
     : BaseType(src)
     , local_bilinear_form_(bilinear_form.copy())
-  {}
+  {
+  }
 
   LocalElementBilinearFormIndicatorOperator(const ThisType& other)
     : BaseType(other)
     , local_bilinear_form_(other.local_bilinear_form_->copy())
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -111,18 +114,21 @@ public:
   LocalCouplingIntersectionBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
     : BaseType(2)
     , local_bilinear_form_(bilinear_form.copy())
-  {}
+  {
+  }
 
   LocalCouplingIntersectionBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form,
                                                          const SourceType& src)
     : BaseType(src, 2)
     , local_bilinear_form_(bilinear_form.copy())
-  {}
+  {
+  }
 
   LocalCouplingIntersectionBilinearFormIndicatorOperator(const ThisType& other)
     : BaseType(other)
     , local_bilinear_form_(other.local_bilinear_form_->copy())
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -201,17 +207,20 @@ public:
   LocalIntersectionBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
     : BaseType(1)
     , local_bilinear_form_(bilinear_form.copy())
-  {}
+  {
+  }
 
   LocalIntersectionBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form, const SourceType& src)
     : BaseType(src, 1)
     , local_bilinear_form_(bilinear_form.copy())
-  {}
+  {
+  }
 
   LocalIntersectionBilinearFormIndicatorOperator(const ThisType& other)
     : BaseType(other)
     , local_bilinear_form_(other.local_bilinear_form_->copy())
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {

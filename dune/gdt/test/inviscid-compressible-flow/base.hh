@@ -57,7 +57,8 @@ struct InviscidCompressibleFlowEulerProblem
           {},
           [&](const auto& u, const auto& /*param*/) { return euler_tools.flux_jacobian(u); })
     , T_end(1.)
-  {}
+  {
+  }
 
   XT::Grid::GridProvider<G> make_initial_grid() const
   {
@@ -125,7 +126,8 @@ public:
           num_refinements)
     , visualization_steps_(0)
     , boundary_treatment("")
-  {}
+  {
+  }
 
 protected:
   const F& flux() const override final
@@ -354,7 +356,8 @@ class InviscidCompressibleFlowEulerExplicitTest : public InviscidCompressibleFlo
 protected:
   InviscidCompressibleFlowEulerExplicitTest()
     : BaseType("explicit/fixed")
-  {}
+  {
+  }
 
   XT::LA::ListVectorArray<V> solve(const S& space, const double T_end) override final
   {

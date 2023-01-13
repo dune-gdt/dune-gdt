@@ -61,13 +61,15 @@ public:
     : BaseType(1, flux.parameter_type())
     , flux_(flux)
     , local_flux_(flux_.local_function())
-  {}
+  {
+  }
 
   LocalAdvectionDgVolumeOperator(const SourceType& source, const FluxType& flux)
     : BaseType(source, 1, flux.parameter_type())
     , flux_(flux)
     , local_flux_(flux_.local_function())
-  {}
+  {
+  }
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
   /// Applies the inverse of the local mass matrix.
@@ -76,7 +78,8 @@ public:
     , flux_(flux)
     , local_flux_(flux_.local_function())
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgVolumeOperator(const SourceType& source,
@@ -86,7 +89,8 @@ public:
     , flux_(flux)
     , local_flux_(flux_.local_function())
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgVolumeOperator(const SourceSpaceType& source_space,
@@ -97,14 +101,16 @@ public:
     , flux_(flux)
     , local_flux_(flux_.local_function())
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   LocalAdvectionDgVolumeOperator(const ThisType& other)
     : BaseType(other)
     , flux_(other.flux_)
     , local_flux_(flux_.local_function())
     , local_mass_matrices_(other.local_mass_matrices_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -208,7 +214,8 @@ public:
     , local_flux_inside_(numerical_flux_->flux().local_function())
     , local_flux_outside_(numerical_flux_->flux().local_function())
     , compute_outside_(compute_outside)
-  {}
+  {
+  }
 
   LocalAdvectionDgCouplingOperator(const SourceType& source,
                                    const NumericalFluxType& numerical_flux,
@@ -218,7 +225,8 @@ public:
     , local_flux_inside_(numerical_flux_->flux().local_function())
     , local_flux_outside_(numerical_flux_->flux().local_function())
     , compute_outside_(compute_outside)
-  {}
+  {
+  }
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
   /// Applies the inverse of the local mass matrix.
@@ -231,7 +239,8 @@ public:
     , local_flux_outside_(numerical_flux_->flux().local_function())
     , compute_outside_(compute_outside)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgCouplingOperator(const SourceType& source,
@@ -244,7 +253,8 @@ public:
     , local_flux_outside_(numerical_flux_->flux().local_function())
     , compute_outside_(compute_outside)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgCouplingOperator(const SourceSpaceType& source_space,
@@ -258,7 +268,8 @@ public:
     , local_flux_outside_(numerical_flux_->flux().local_function())
     , compute_outside_(compute_outside)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   LocalAdvectionDgCouplingOperator(const ThisType& other)
     : BaseType(other)
@@ -267,7 +278,8 @@ public:
     , local_flux_outside_(numerical_flux_->flux().local_function())
     , compute_outside_(other.compute_outside_)
     , local_mass_matrices_(other.local_mass_matrices_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -397,7 +409,8 @@ public:
     : BaseType(source, 1, numerical_flux_param_type)
     , numerical_boundary_flux_(numerical_boundary_flux)
     , numerical_flux_order_(numerical_flux_order)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgBoundaryTreatmentByCustomNumericalFluxOperator(
@@ -410,7 +423,8 @@ public:
     , numerical_boundary_flux_(numerical_boundary_flux)
     , numerical_flux_order_(numerical_flux_order)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgBoundaryTreatmentByCustomNumericalFluxOperator(
@@ -424,7 +438,8 @@ public:
     , numerical_boundary_flux_(numerical_boundary_flux)
     , numerical_flux_order_(numerical_flux_order)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
 
   LocalAdvectionDgBoundaryTreatmentByCustomNumericalFluxOperator(const ThisType& other)
@@ -432,7 +447,8 @@ public:
     , numerical_boundary_flux_(other.numerical_boundary_flux_)
     , numerical_flux_order_(other.numerical_flux_order_)
     , local_mass_matrices_(other.local_mass_matrices_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -531,7 +547,8 @@ public:
     , numerical_flux_(numerical_flux.copy())
     , local_flux_(numerical_flux_->flux().local_function())
     , extrapolate_(boundary_extrapolation_lambda)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgBoundaryTreatmentByCustomExtrapolationOperator(
@@ -545,7 +562,8 @@ public:
     , local_flux_(numerical_flux_->flux().local_function())
     , extrapolate_(boundary_extrapolation_lambda)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgBoundaryTreatmentByCustomExtrapolationOperator(
@@ -560,7 +578,8 @@ public:
     , local_flux_(numerical_flux_->flux().local_function())
     , extrapolate_(boundary_extrapolation_lambda)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   LocalAdvectionDgBoundaryTreatmentByCustomExtrapolationOperator(const ThisType& other)
     : BaseType(other)
@@ -568,7 +587,8 @@ public:
     , local_flux_(numerical_flux_->flux().local_function())
     , extrapolate_(other.extrapolate_)
     , local_mass_matrices_(other.local_mass_matrices_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -664,7 +684,8 @@ public:
     , nu_1_(nu_1)
     , alpha_1_(alpha_1)
     , index_(index)
-  {}
+  {
+  }
 
   LocalAdvectionDgArtificialViscosityShockCapturingOperator(const SourceType& source,
                                                             const SGV& assembly_grid_view,
@@ -676,7 +697,8 @@ public:
     , nu_1_(nu_1)
     , alpha_1_(alpha_1)
     , index_(index)
-  {}
+  {
+  }
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
   /// Applies the inverse of the local mass matrix.
@@ -691,7 +713,8 @@ public:
     , alpha_1_(alpha_1)
     , index_(index)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgArtificialViscosityShockCapturingOperator(const SourceType& source,
@@ -706,7 +729,8 @@ public:
     , alpha_1_(alpha_1)
     , index_(index)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgArtificialViscosityShockCapturingOperator(const SourceSpaceType& source_space,
@@ -722,7 +746,8 @@ public:
     , alpha_1_(alpha_1)
     , index_(index)
     , local_mass_matrices_(local_mass_matrices)
-  {}
+  {
+  }
 
   LocalAdvectionDgArtificialViscosityShockCapturingOperator(const ThisType& other)
     : BaseType(other)
@@ -731,7 +756,8 @@ public:
     , alpha_1_(other.alpha_1_)
     , index_(other.index_)
     , local_mass_matrices_(other.local_mass_matrices_)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {

@@ -59,7 +59,8 @@ public:
     : macro_grid_view_(macro_grid_view)
     , macro_element_(macro_element)
     , macro_boundary_info_(macro_boundary_info)
-  {}
+  {
+  }
 
   const Dune::XT::Grid::BoundaryType& type(const IntersectionType& intersection) const final
   {

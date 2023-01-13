@@ -131,7 +131,8 @@ public:
   IntersectionFilter(const std::string& logging_prefix = "xt.grid.intersectionfilter",
                      const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : logger(logging_prefix, logging_state)
-  {}
+  {
+  }
 
   IntersectionFilter(const IntersectionFilter<GL>&) = default;
 
@@ -206,7 +207,8 @@ public:
     : left_(left.copy())
     , right_(right.copy())
     , combine_lambda_(std::move(combine_lambda))
-  {}
+  {
+  }
 
   CombinedIntersectionFilter(const BaseType& left,
                              BaseType*&& right,
@@ -214,7 +216,8 @@ public:
     : left_(left.copy())
     , right_(std::move(right))
     , combine_lambda_(std::move(combine_lambda))
-  {}
+  {
+  }
 
   CombinedIntersectionFilter(const BaseType& left,
                              std::unique_ptr<BaseType> right,
@@ -222,7 +225,8 @@ public:
     : left_(left.copy())
     , right_(std::move(right))
     , combine_lambda_(std::move(combine_lambda))
-  {}
+  {
+  }
 
   IntersectionFilter<GridViewType>* copy() const final
   {
@@ -256,7 +260,8 @@ public:
     : left_(left.copy())
     , right_(right.copy())
     , combine_lambda_(std::move(combine_lambda))
-  {}
+  {
+  }
 
   CombinedElementFilter(const BaseType& left,
                         BaseType*&& right,
@@ -264,7 +269,8 @@ public:
     : left_(left.copy())
     , right_(std::move(right))
     , combine_lambda_(std::move(combine_lambda))
-  {}
+  {
+  }
 
   CombinedElementFilter(const BaseType& left,
                         std::unique_ptr<BaseType> right,
@@ -272,7 +278,8 @@ public:
     : left_(left.copy())
     , right_(std::move(right))
     , combine_lambda_(std::move(combine_lambda))
-  {}
+  {
+  }
 
   ElementFilter<GridViewType>* copy() const final
   {
@@ -302,11 +309,13 @@ public:
 
   NegatedIntersectionFilter(const BaseType& filter)
     : filter_(filter.copy())
-  {}
+  {
+  }
 
   NegatedIntersectionFilter(BaseType*&& filter)
     : filter_(std::move(filter))
-  {}
+  {
+  }
 
   IntersectionFilter<GridViewType>* copy() const final
   {
@@ -334,11 +343,13 @@ public:
 
   NegatedElementFilter(const BaseType& filter)
     : filter_(filter.copy())
-  {}
+  {
+  }
 
   NegatedElementFilter(BaseType*&& filter)
     : filter_(std::move(filter))
-  {}
+  {
+  }
 
   ElementFilter<GridViewType>* copy() const final
   {

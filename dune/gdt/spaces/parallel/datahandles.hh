@@ -117,7 +117,8 @@ struct EntityDataCommunicationDescriptor
   //! remove default value, force handles to use actual space provided values
   explicit EntityDataCommunicationDescriptor(std::size_t count)
     : count_(count)
-  {}
+  {
+  }
 
 private:
   const std::size_t count_;
@@ -149,7 +150,8 @@ public:
     , gather_scatter_(gather_scatter)
     , communication_descriptor_(communication_descriptor)
     , local_view_(v, space, communication_descriptor_)
-  {}
+  {
+  }
 
   //! returns true if data for this codim should be communicated
   bool contains(int dim, int codim) const
@@ -254,7 +256,8 @@ public:
 
   DataGatherScatter(GatherScatter gather_scatter = GatherScatter())
     : _gather_scatter(gather_scatter)
-  {}
+  {
+  }
 
 private:
   GatherScatter _gather_scatter;
@@ -306,7 +309,8 @@ public:
 
   DataEntityGatherScatter(GatherScatter gather_scatter = GatherScatter())
     : gather_scatter_(gather_scatter)
-  {}
+  {
+  }
 
 private:
   GatherScatter gather_scatter_;
@@ -351,7 +355,8 @@ class MinDataHandle
 public:
   MinDataHandle(const SpaceInterface<GV, r, rD, R>& sp, VectorType& v_)
     : BaseType(sp, v_, DofDataCommunicationDescriptor<typename VectorType::ScalarType>())
-  {}
+  {
+  }
 };
 
 //! GatherScatter functor for marking ghost DOFs.
@@ -495,7 +500,8 @@ public:
    */
   DisjointPartitioningGatherScatter(RankIndex rank)
     : rank_(rank)
-  {}
+  {
+  }
 
 private:
   const RankIndex rank_;
@@ -644,7 +650,8 @@ public:
     : space_(space)
     , rank_(rank)
     , neighbors_(neighbors)
-  {}
+  {
+  }
 
   bool contains(int dim, int codim) const
   {

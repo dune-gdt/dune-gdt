@@ -94,7 +94,8 @@ private:
     LocalizedFiniteVolumeGlobalBasis(const FiniteVolumeGlobalBasis<GV, r, R>& self)
       : BaseType()
       , self_(self)
-    {}
+    {
+    }
 
     LocalizedFiniteVolumeGlobalBasis(const ThisType&) = default;
     LocalizedFiniteVolumeGlobalBasis(ThisType&&) = default;

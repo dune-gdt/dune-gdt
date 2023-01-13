@@ -76,7 +76,8 @@ public:
   NumericalVijayasundaramFlux(const XIndependentFluxType& flx)
     : BaseType(flx)
     , flux_eigen_decomposition_(default_flux_eigen_decomposition())
-  {}
+  {
+  }
 
   NumericalVijayasundaramFlux(const FluxType& flx, FluxEigenDecompositionLambdaType flux_eigen_decomposition)
     : BaseType(flx)
@@ -90,7 +91,8 @@ public:
                               FluxEigenDecompositionLambdaType flux_eigen_decomposition)
     : BaseType(flx)
     , flux_eigen_decomposition_(flux_eigen_decomposition)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {

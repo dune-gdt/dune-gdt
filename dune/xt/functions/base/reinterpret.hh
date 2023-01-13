@@ -56,13 +56,15 @@ public:
     : BaseType(source.parameter_type())
     , source_(source.copy_as_grid_function())
     , source_grid_view_(source_grid_view)
-  {}
+  {
+  }
 
   ReinterpretLocalizableFunction(const ThisType& other)
     : BaseType(other)
     , source_(other.source_->copy_as_grid_function())
     , source_grid_view_(other.source_grid_view_)
-  {}
+  {
+  }
 
   ReinterpretLocalizableFunction(ThisType&&) = default;
 
@@ -110,7 +112,8 @@ private:
       , source_element_which_contains_complete_target_element_(nullptr)
       , source_element_which_contains_some_point_of_target_element_(nullptr)
       , local_source_valid_for_this_point_(false)
-    {}
+    {
+    }
 
   protected:
     void post_bind(const TargetElement& target_element)

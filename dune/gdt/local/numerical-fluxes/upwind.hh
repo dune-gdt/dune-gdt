@@ -24,7 +24,8 @@ public:
   template <class... Args>
   explicit NumericalUpwindFlux(Args&&... /*args*/)
     : internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>()
-  {}
+  {
+  }
 };
 
 template <class I, size_t d, class R>
@@ -43,11 +44,13 @@ public:
 
   NumericalUpwindFlux(const FluxType& flx)
     : BaseType(flx)
-  {}
+  {
+  }
 
   NumericalUpwindFlux(const XIndependentFluxType& func)
     : BaseType(func)
-  {}
+  {
+  }
 
   NumericalUpwindFlux(const ThisType& other) = default;
 

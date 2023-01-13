@@ -167,7 +167,8 @@ struct end_of_recursion_tag
 {
   template <class... Args>
   static void Run(Args&&... /*args*/)
-  {}
+  {
+  }
 };
 
 template <class UTypes, // Forward Sequence, e.g. boost::mpl::vector

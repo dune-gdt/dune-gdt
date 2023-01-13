@@ -45,14 +45,16 @@ public:
   GenericNumericalFlux(const FluxType& flx, GenericFunctionType func, const XT::Common::ParameterType& param_type = {})
     : BaseType(flx, param_type)
     , numerical_flux_(func)
-  {}
+  {
+  }
 
   GenericNumericalFlux(const XIndependentFluxType& flx,
                        GenericFunctionType func,
                        const XT::Common::ParameterType& param_type = {})
     : BaseType(flx, param_type)
     , numerical_flux_(func)
-  {}
+  {
+  }
 
   std::unique_ptr<BaseType> copy() const override final
   {

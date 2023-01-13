@@ -61,7 +61,8 @@ public:
     , direction_(other.direction_->copy_as_grid_function())
     , advection_in_divergence_form_(other.advection_in_divergence_form_)
     , local_direction_(direction_->local_function())
-  {}
+  {
+  }
 
   LocalLinearAdvectionIntegrand(ThisType&& source) = default;
 

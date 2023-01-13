@@ -68,7 +68,8 @@ public:
     : Propagator(this)
     , bounding_box_(
           std::make_pair(VectorType(std::numeric_limits<D>::max()), VectorType(std::numeric_limits<D>::min())))
-  {}
+  {
+  }
 
   MinMaxCoordinateFunctor(const MinMaxCoordinateFunctor& other) = default;
 

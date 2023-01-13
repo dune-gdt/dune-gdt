@@ -36,11 +36,13 @@ public:
 
   StateFunctionAsFluxFunctionWrapper(const FunctionType& function)
     : function_storage_(function)
-  {}
+  {
+  }
 
   StateFunctionAsFluxFunctionWrapper(std::unique_ptr<const FunctionType>&& function_ptr)
     : function_storage_(std::move(function_ptr))
-  {}
+  {
+  }
 
   bool x_dependent() const final
   {
@@ -86,7 +88,8 @@ private:
     LocalFunction(const FunctionType& function)
       : BaseType()
       , function_(function)
-    {}
+    {
+    }
 
 
     int order(const Common::Parameter& param = {}) const final

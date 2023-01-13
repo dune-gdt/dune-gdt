@@ -127,7 +127,8 @@ public:
     : BaseType(integrand_parameters)
     , integrand_(integrand)
     , integrand_order_(integrand_order)
-  {}
+  {
+  }
 
   VectorizedLocalElementIntegralFunctional(const ThisType& other) = default;
 

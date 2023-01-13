@@ -60,11 +60,13 @@ public:
 
   explicit FunctionalInterface(const XT::Common::ParameterType param_tp = {})
     : XT::Common::ParametricInterface(param_tp)
-  {}
+  {
+  }
 
   FunctionalInterface(const ThisType& other)
     : XT::Common::ParametricInterface(other)
-  {}
+  {
+  }
 
   FunctionalInterface(ThisType&& source) = default;
 

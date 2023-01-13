@@ -47,13 +47,15 @@ public:
     : BaseType(diffusion_factor.parameter_type())
     , diffusion_factor_(diffusion_factor.copy_as_grid_function())
     , local_diffusion_factor_(diffusion_factor_->local_function())
-  {}
+  {
+  }
 
   LocalSymmetrizedLaplaceIntegrand(const ThisType& other)
     : BaseType(other)
     , diffusion_factor_(other.diffusion_factor_->copy_as_grid_function())
     , local_diffusion_factor_(diffusion_factor_->local_function())
-  {}
+  {
+  }
 
   LocalSymmetrizedLaplaceIntegrand(ThisType&& source) = default;
 

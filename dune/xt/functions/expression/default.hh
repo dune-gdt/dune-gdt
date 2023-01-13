@@ -135,7 +135,8 @@ public:
     , function_(variable, matrix_to_vector(expressions))
     , order_(ord)
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   ExpressionFunction(const ThisType& other)
     : BaseType(other)
@@ -330,7 +331,8 @@ public:
     , function_(variable, expressions)
     , order_(ord)
     , name_(std::move(nm))
-  {}
+  {
+  }
 
   ExpressionFunction(const ThisType& other)
     : BaseType()

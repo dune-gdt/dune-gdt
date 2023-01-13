@@ -64,7 +64,8 @@ public:
     , element_mapper_(grid_view_)
     , instance_counter_(0)
     , local_basis_(space_->basis().localize())
-  {}
+  {
+  }
 
   LocalMassMatrixProvider(const ThisType& other)
     : BaseType(other)
@@ -74,7 +75,8 @@ public:
     , element_mapper_(grid_view_)
     , instance_counter_(other.instance_counter_ + 1)
     , local_basis_(space_->basis().localize())
-  {}
+  {
+  }
 
   void apply_local(const ElementType& element) override
   {

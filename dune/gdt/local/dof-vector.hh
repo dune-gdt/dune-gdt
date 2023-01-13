@@ -102,7 +102,8 @@ public:
     , global_vector_(global_vector)
     , global_DoF_indices_(mapper_.max_local_size())
     , size_(0)
-  {}
+  {
+  }
 
   ConstLocalDofVector(const ThisType& other) = default;
   ConstLocalDofVector(ThisType&& source) = default;
@@ -212,7 +213,8 @@ public:
   LocalDofVector(const MapperType& mapper, VectorType& global_vector)
     : BaseType(mapper, global_vector)
     , global_vector_(global_vector)
-  {}
+  {
+  }
 
   LocalDofVector(const ThisType&) = default;
   LocalDofVector(ThisType&&) = default;

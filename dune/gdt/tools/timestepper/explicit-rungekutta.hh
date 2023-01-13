@@ -232,7 +232,8 @@ public:
                                 const double t_0,
                                 const RangeFieldType /*tol*/)
     : ExplicitRungeKuttaTimeStepper(op, initial_values, r, t_0)
-  {}
+  {
+  }
 
   RangeFieldType step(const RangeFieldType dt, const RangeFieldType max_dt) override final
   {

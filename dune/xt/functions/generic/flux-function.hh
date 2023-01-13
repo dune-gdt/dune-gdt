@@ -97,7 +97,8 @@ private:
       , param_type_(param_type)
       , jacobian_(jacobian_func)
       , dynamic_jacobian_(dynamic_jacobian_func)
-    {}
+    {
+    }
 
   protected:
     void post_bind(const ElementType& element) final
@@ -199,7 +200,8 @@ public:
     , name_(std::move(nm))
     , jacobian_(jacobian_func)
     , dynamic_jacobian_(default_dynamic_jacobian_function())
-  {}
+  {
+  }
 
   GenericFluxFunction(GenericOrderFunctionType order_func,
                       GenericPostBindFunctionType post_bind_func = default_post_bind_function(),
@@ -215,7 +217,8 @@ public:
     , name_(std::move(nm))
     , jacobian_(jacobian_func)
     , dynamic_jacobian_(default_dynamic_jacobian_function())
-  {}
+  {
+  }
 
   GenericFluxFunction(const int ord,
                       GenericPostBindFunctionType post_bind_func,
@@ -231,7 +234,8 @@ public:
     , name_(std::move(nm))
     , jacobian_(jacobian_from_dynamic_jacobian(jacobian_func))
     , dynamic_jacobian_(jacobian_func)
-  {}
+  {
+  }
 
   GenericFluxFunction(GenericOrderFunctionType order_func,
                       GenericPostBindFunctionType post_bind_func,
@@ -247,7 +251,8 @@ public:
     , name_(std::move(nm))
     , jacobian_(jacobian_from_dynamic_jacobian(jacobian_func))
     , dynamic_jacobian_(jacobian_func)
-  {}
+  {
+  }
 
   const Common::ParameterType& parameter_type() const final
   {

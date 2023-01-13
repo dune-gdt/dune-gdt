@@ -94,14 +94,16 @@ public:
     , DivBaseType()
     , inducing_function_(inducing_function.copy_as_grid_function())
     , local_function_(inducing_function_->local_function())
-  {}
+  {
+  }
 
   LocalElementAnsatzValueTestDivProductIntegrand(const ThisType& other)
     : BaseType(other)
     , DivBaseType()
     , inducing_function_(other.inducing_function_->copy_as_grid_function())
     , local_function_(inducing_function_->local_function())
-  {}
+  {
+  }
 
   LocalElementAnsatzValueTestDivProductIntegrand(ThisType&& source) = default;
 
@@ -178,13 +180,15 @@ public:
     : BaseType()
     , inducing_function_(inducing_function.copy_as_grid_function())
     , local_function_(inducing_function_->local_function())
-  {}
+  {
+  }
 
   LocalElementAnsatzDivTestValueProductIntegrand(const ThisType& other)
     : BaseType(other)
     , inducing_function_(other.inducing_function_->copy_as_grid_function())
     , local_function_(inducing_function_->local_function())
-  {}
+  {
+  }
 
   LocalElementAnsatzDivTestValueProductIntegrand(ThisType&& source) = default;
 

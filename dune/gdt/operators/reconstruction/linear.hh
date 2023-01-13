@@ -63,7 +63,8 @@ public:
     , eigenvector_wrapper_(analytical_flux, flux_is_affine)
     , slopes_(d)
     , stencils_(d, StencilType(stencil_size))
-  {}
+  {
+  }
 
   LinearSlopeElementFunctor(const LinearSlopeElementFunctor& other)
     : BaseType(other)
@@ -76,7 +77,8 @@ public:
     , eigenvector_wrapper_(analytical_flux_, other.eigenvector_wrapper_.affine())
     , slopes_(d)
     , stencils_(d, StencilType(stencil_size))
-  {}
+  {
+  }
 
   XT::Grid::ElementFunctor<GV>* copy() override final
   {
@@ -182,13 +184,15 @@ public:
     : slope_functor_(std::make_unique<SlopeFunctorType>(
         grid_view, source_values, boundary_values, analytical_flux, slope, param, flux_is_affine))
     , reconstructed_function_(reconstructed_function)
-  {}
+  {
+  }
 
   LocalPointwiseLinearReconstructionOperator(const ThisType& other)
     : BaseType(other)
     , slope_functor_(other.slope_functor_->copy_derived())
     , reconstructed_function_(other.reconstructed_function_)
-  {}
+  {
+  }
 
   XT::Grid::ElementFunctor<GV>* copy() override final
   {
@@ -253,7 +257,8 @@ public:
     , target_(target_space_, target_vector_, "range")
     , target_basis_(target_.space().basis().localize())
     , local_dof_vector_(target_.dofs().localize())
-  {}
+  {
+  }
 
   LocalLinearReconstructionOperator(const LocalLinearReconstructionOperator& other)
     : BaseType(other)
@@ -263,7 +268,8 @@ public:
     , target_(target_space_, target_vector_, "range")
     , target_basis_(target_.space().basis().localize())
     , local_dof_vector_(target_.dofs().localize())
-  {}
+  {
+  }
 
   XT::Grid::ElementFunctor<GV>* copy() override final
   {
@@ -347,7 +353,8 @@ public:
     , range_space_(source_space_.grid_view(), 1)
     , slope_(slope)
     , flux_is_affine_(flux_is_affine)
-  {}
+  {
+  }
 
   // pull in methods from various base classes
   using BaseType::apply;
@@ -473,7 +480,8 @@ public:
     , space_(space)
     , slope_(slope)
     , flux_is_affine_(flux_is_affine)
-  {}
+  {
+  }
 
   bool linear() const
   {

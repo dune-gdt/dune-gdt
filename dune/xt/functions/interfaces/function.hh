@@ -127,11 +127,13 @@ public:
 
   explicit FunctionInterface(const Common::ParameterType& param_type = {})
     : Common::ParametricInterface(param_type)
-  {}
+  {
+  }
 
   FunctionInterface(const ThisType& other)
     : Common::ParametricInterface(other)
-  {}
+  {
+  }
 
   FunctionInterface(ThisType&) = default;
 

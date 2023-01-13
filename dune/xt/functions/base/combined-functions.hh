@@ -102,14 +102,16 @@ public:
     : left_(std::move(left.copy_as_function()))
     , right_(std::move(right.copy_as_function()))
     , name_(nm.empty() ? "(" + left_->name() + " " + GetCombination<comb>::symbol() + " " + right_->name() + ")" : nm)
-  {}
+  {
+  }
 
   CombinedFunction(const ThisType& other)
     : BaseType(other)
     , left_(other.left_->copy_as_function())
     , right_(other.right_->copy_as_function())
     , name_(other.name_)
-  {}
+  {
+  }
 
   CombinedFunction(ThisType&& source) = default;
 
@@ -168,7 +170,8 @@ public:
   template <class... Args>
   explicit DifferenceFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class DifferenceFunction
 
 
@@ -186,7 +189,8 @@ public:
   template <class... Args>
   explicit SumFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class SumFunction
 
 
@@ -204,7 +208,8 @@ public:
   template <class... Args>
   explicit FractionFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class FractionFunction
 
 
@@ -222,7 +227,8 @@ public:
   template <class... Args>
   explicit ProductFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
-  {}
+  {
+  }
 }; // class ProductFunction
 
 

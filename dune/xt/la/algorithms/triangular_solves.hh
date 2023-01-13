@@ -62,10 +62,9 @@ void backward_solve(const MatrixType& A, VectorType& x, VectorType& rhs)
 }
 
 template <class MatrixType>
-constexpr bool has_compressed_sparse_layout = (Common::MatrixAbstraction<MatrixType>::storage_layout
-                                               == Common::StorageLayout::csr)
-                                              || (Common::MatrixAbstraction<MatrixType>::storage_layout
-                                                  == Common::StorageLayout::csc);
+constexpr bool has_compressed_sparse_layout =
+    (Common::MatrixAbstraction<MatrixType>::storage_layout == Common::StorageLayout::csr)
+    || (Common::MatrixAbstraction<MatrixType>::storage_layout == Common::StorageLayout::csc);
 
 // A forward solve to solve Ax = b with A lower triangular csr matrix
 template <class MatrixType, class VectorType>

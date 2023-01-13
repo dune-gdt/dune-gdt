@@ -12,7 +12,7 @@
 
 #include <dune/xt/grid/type_traits.hh>
 
-//#include <python/xt/dune/xt/functions/base/combined-element-function.hh>
+// #include <python/xt/dune/xt/functions/base/combined-element-function.hh>
 
 #include "element-function.hh"
 
