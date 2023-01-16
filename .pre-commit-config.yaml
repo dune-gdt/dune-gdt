@@ -31,7 +31,7 @@ repos:
         exclude: "config.h.cmake|pybind11"
         args: ["--config-files=.cmake_format.py"]
 - repo: https://github.com/charliermarsh/ruff-pre-commit
-  rev: 'v0.0.215'
+  rev: 'v0.0.223'
   hooks:
       - id: ruff
           # Respect `exclude` and `extend-exclude` settings.
