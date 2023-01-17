@@ -22,7 +22,7 @@ from setuptools.command.install import install
 requires=['ipython','numpy', 'scipy']
 
 visualization_packages = [ 'k3d', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
-                            'matplotlib',]
+                            'matplotlib', 'wurlitzer',]
 
 extras_require = {
   'visualisation': visualization_packages,
