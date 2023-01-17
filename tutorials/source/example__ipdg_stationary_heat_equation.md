@@ -39,10 +39,10 @@ This is work in progress [WIP], still missing:
 ```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
-%matplotlib notebook
+
 
 import numpy as np
-np.warnings.filterwarnings('ignore') # silence numpys warnings
+
 ```
 
 ```{code-cell}

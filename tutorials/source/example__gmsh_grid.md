@@ -34,10 +34,10 @@ We use pyMORs `PolygonalDomain`description and `discretize_gmsh` to obtain a gri
 ```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
-%matplotlib notebook
+
 
 import numpy as np
-np.warnings.filterwarnings('ignore') # silence numpys warnings
+
 ```
 
 ```{code-cell}

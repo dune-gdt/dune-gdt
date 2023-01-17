@@ -35,10 +35,10 @@ This is work in progress [WIP], still missing:
 * Robin boundary values
 
 ```{code-cell}
-%matplotlib notebook
+
 
 import numpy as np
-np.warnings.filterwarnings('ignore') # silence numpys warnings
+
 ```
 
 ## diffusion with homogeneous Dirichlet boundary condition
