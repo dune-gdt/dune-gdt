@@ -36,4 +36,4 @@ ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LI
 ASAN_OPTIONS=${ASAN_OPTIONS} UBSAN_OPTIONS=${UBSAN_OPTIONS} LD_PRELOAD=${ASAN_LIB} ${DUNECONTROL} --opts=${OPTS_PATH} --only=dune-gdt bexec ${BUILD_CMD} tutorials
 
 [[ -d ${DUNE_BUILD_DIR}/testresults/tutorials/ ]] || mkdir -p ${DUNE_BUILD_DIR}/testresults/tutorials/
-cp ${DUNE_BUILD_DIR}/dune-gdt/tutorials/html ${DUNE_BUILD_DIR}/testresults/tutorials/
+cp -r ${DUNE_BUILD_DIR}/dune-gdt/tutorials/html ${DUNE_BUILD_DIR}/testresults/tutorials/
