@@ -125,3 +125,26 @@ jobs:
           with:
             name: combined_report
             path: "*.xml"
+    pages: # needs to be skipped on not-main runs
+      needs: [tutorials]
+      environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download html
+          uses: actions/download-artifact@v3
+          with:
+            name: tutorials_html
+        - run: |
+            ls -la
+        - name: Setup Pages
+          uses: actions/configure-pages@v2
+        - name: Upload artifact
+          uses: actions/upload-pages-artifact@v1
+          with:
+            # Upload entire repository
+            path: 'html'
+        - name: Deploy to GitHub Pages
+          id: deployment
+          uses: actions/deploy-pages@v1
