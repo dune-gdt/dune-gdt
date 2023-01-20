@@ -127,6 +127,9 @@ jobs:
             name: combined_report
             path: "*.xml"
     pages: # needs to be skipped on not-main runs
+      permissions:
+        pages: write  # to deploy to Pages
+        id-token: write  # to verify the deployment originates from an appropriate source
       needs: [tutorials]
       environment:
         name: github-pages
