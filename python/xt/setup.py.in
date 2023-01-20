@@ -21,7 +21,7 @@ from setuptools.command.install import install
 
 requires=['ipython','numpy', 'scipy']
 
-visualization_packages = [ 'k3d', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
+visualization_packages = [ 'k3d>=2.15.2', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
                             'matplotlib', 'wurlitzer',]
 docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor==2022.1.0']
 
