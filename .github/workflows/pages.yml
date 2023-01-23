@@ -1,0 +1,43 @@
+---
+name: Deploy to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    branches: [main, ci_tutorials]
+    types:
+        - completed
+
+jobs:
+    pages:
+      permissions:
+        pages: write  # to deploy to Pages
+        id-token: write  # to verify the deployment originates from an appropriate source
+      needs: [tutorials]
+      environment:
+        name: github-22.04
+        url: ${{ steps.deployment.outputs.page_url }}
+      runs-on: ubuntu-latest
+      steps:
+        - name: Download html
+          uses: actions/download-artifact@v3
+          with:
+            name: tutorials_html
+        - uses: dawidd6/action-download-artifact@v2.24.3
+          with:
+            workflow: dependencies_change.yml
+            run_id: ${{ github.event.workflow_run.id }}
+            name: tutorials_html
+            path: ./constraints/
+        - run: |
+            ls -la
+        - name: Setup Pages
+          uses: actions/configure-pages@v2
+        - name: Upload artifact
+          uses: actions/upload-pages-artifact@v1
+          with:
+            # Upload entire repository
+            path: 'html'
+        - name: Deploy to GitHub Pages
+          id: deployment
+          uses: actions/deploy-pages@v1

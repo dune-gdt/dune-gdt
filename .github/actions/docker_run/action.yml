@@ -21,6 +21,9 @@ inputs:
     description: “Enable and upload ccache debug info”
     required: False
     default: 0
+  ccache_output_missing:
+    default: error
+    description: "(warn|error|ignore)"
 
 runs:
   using: "composite"
@@ -29,7 +32,7 @@ runs:
       id: substring
       with:
         value: ${{ inputs.script }}
-        index_of_str: "test_"
+        index_of_str: "_"
     - name: Login to Github Packages
       uses: docker/login-action@v2
       with:
@@ -70,6 +73,6 @@ runs:
     - uses: actions/upload-artifact@v3
       if: ${{inputs.ccache_debug}}
       with:
-        if-no-files-found: error
+        if-no-files-found: ${{inputs.ccache_output_missing}}
         name: ccache-log_${{steps.substring.outputs.substring}}_${{inputs.CC}}
         path: ${{github.workspace}}/build/testresults/ccache/*.ccache-*
