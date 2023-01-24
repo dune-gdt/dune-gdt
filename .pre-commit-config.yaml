@@ -34,5 +34,4 @@ repos:
   rev: 'v0.0.230'
   hooks:
       - id: ruff
-          # Respect `exclude` and `extend-exclude` settings.
-        args: ["--force-exclude", "--config=./python/ruff.toml"]
+        args: ["--config=./python/ruff.toml"]
