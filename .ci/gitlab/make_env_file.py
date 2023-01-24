@@ -29,4 +29,4 @@ with open(env_file, "w") as env:
     for k, v in os.environ.items():
         for pref in prefixes:
             if k.startswith(pref) and k not in blacklist:
-                env.write('{}="{}"\n'.format(k, quote(v)))
+                env.write(f'{k}="{quote(v)}"\n')

@@ -28,7 +28,7 @@ def load_all_submodule(module):
         except (TypeError, ImportError) as t:
             fails.append((module_name, t))
     if len(fails) > 0:
-        logging.getLogger(module.__name__).fatal('Failed imports: {}'.format(pprint.pformat(fails)))
+        logging.getLogger(module.__name__).fatal(f'Failed imports: {pprint.pformat(fails)}')
         raise ImportError(module.__name__)
 
 

@@ -40,15 +40,15 @@ def name_type_tuple(c, f):
 
 
 def latype(c, f):
-    return 'Dune::XT::LA::{}<{}>'.format(c, f)
+    return f'Dune::XT::LA::{c}<{f}>'
 
 
 def commontype(c, f):
-    return 'Dune::XT::Common::{}<{}>'.format(c, f)
+    return f'Dune::XT::Common::{c}<{f}>'
 
 
 def dunetype(c, f):
-    return 'Dune::{}<{}>'.format(c, f)
+    return f'Dune::{c}<{f}>'
 
 
 def fieldtypes(cache):

@@ -52,7 +52,7 @@ def la_test_tuple(args):
     o, r, s, f = args
     if f == 'complex':
         f = 'std::complex<double>'
-    return (safe_name('{}_{}_{}_{}'.format(o, r, s, f)), latype(o, f), latype(r, f), latype(s, f))
+    return (safe_name(f'{o}_{r}_{s}_{f}'), latype(o, f), latype(r, f), latype(s, f))
 
 
 def common_test_tuple(args, xt):
@@ -64,9 +64,9 @@ def common_test_tuple(args, xt):
     elif r.startswith('FieldVector'):
         fvec = '{},{}'.format(fs[0], fs[1] if len(fs) == 3 else int(fs[1]) * int(fs[2]))
     else:
-        fvec = '{},{},{}'.format(fs[0], fs[1], fs[2])
+        fvec = f'{fs[0]},{fs[1]},{fs[2]}'
     f.replace('complex', 'std::complex<double>')
-    return (safe_name('{}{}_{}_{}_{}'.format(xt, o, r, s, f)), typefunc(o, f), typefunc(r, fvec), typefunc(s, fvec))
+    return (safe_name(f'{xt}{o}_{r}_{s}_{f}'), typefunc(o, f), typefunc(r, fvec), typefunc(s, fvec))
 
 
 def type_ok(t, cache):
