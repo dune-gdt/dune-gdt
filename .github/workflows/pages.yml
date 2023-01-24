@@ -18,18 +18,12 @@ jobs:
         url: ${{ steps.deployment.outputs.page_url }}
       runs-on: ubuntu-latest
       steps:
-        - name: Download html
-          uses: actions/download-artifact@v3
-          with:
-            name: tutorials_html
         - uses: dawidd6/action-download-artifact@v2.24.3
           with:
             workflow: dependencies_change.yml
             run_id: ${{ github.event.workflow_run.id }}
             name: tutorials_html
             path: ./constraints/
-        - run: |
-            ls -la
         - name: Setup Pages
           uses: actions/configure-pages@v3
         - name: Upload artifact
