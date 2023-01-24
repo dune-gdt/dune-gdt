@@ -26,7 +26,7 @@ def function_provider(request):
         dim = 2
     if '3d' in grid_type:
         dim = 3
-    fn = "ConstantFunction{}To{}d".format(dim, 1)
+    fn = f"ConstantFunction{dim}To{1}d"
     maker = getattr(xtf, fn)
     return maker([2], 'test_function')
 

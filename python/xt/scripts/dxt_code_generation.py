@@ -32,7 +32,7 @@ cache_path = os.path.join(cmake_binary_dir, 'CMakeCache.txt')
 try:
     cache, _ = parse_cache(cache_path)
 except FileNotFoundError as fe:
-    logger.critical('using fallback cache instead of {}: {}'.format(cache_path, str(fe)))
+    logger.critical(f'using fallback cache instead of {cache_path}: {str(fe)}')
     cache, _ = parse_cache(os.path.join(backup_bindir, 'CMakeCache.txt'))
 sys.path.append(os.path.dirname(config_fn))
 config = run_path(config_fn, init_globals=locals(), run_name='__dxt_codegen__')
@@ -44,7 +44,7 @@ template = Template(open(tpl_fn).read())
 
 try:
     for postfix, cfg in config['multi_out'].items():
-        fn = '{}.{}'.format(out_fn, postfix)
+        fn = f'{out_fn}.{postfix}'
         with open(fn, 'w') as out:
             out.write(template.render(config=cfg, cache=cache))
 except KeyError:

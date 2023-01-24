@@ -14,7 +14,7 @@ def _can_import(module):
 
     if not isinstance(module, (list, tuple)):
         module = [module]
-    return all((_can_import_single(m) for m in module))
+    return all(_can_import_single(m) for m in module)
 
 
 _PACKAGES = {

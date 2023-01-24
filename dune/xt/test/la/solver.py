@@ -38,11 +38,11 @@ def test_tuple(args):
     if f == 'complex':
         f = 'std::complex<double>'
     if o == 'FieldMatrix':
-        fm = '{}, 10, 10'.format(f)
-        fv = '{}, 10'.format(f)
-        return (safe_name('{}_{}_{}_{}'.format(o, r, s, f)), commontype(o, fm), commontype(r, fv), commontype(s, fv))
+        fm = f'{f}, 10, 10'
+        fv = f'{f}, 10'
+        return (safe_name(f'{o}_{r}_{s}_{f}'), commontype(o, fm), commontype(r, fv), commontype(s, fv))
     else:
-        return (safe_name('{}_{}_{}_{}'.format(o, r, s, f)), latype(o, f), latype(r, f), latype(s, f))
+        return (safe_name(f'{o}_{r}_{s}_{f}'), latype(o, f), latype(r, f), latype(s, f))
 
 
 def type_ok(t):

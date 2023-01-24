@@ -24,7 +24,7 @@ def vectors(cache):
 
 def vectortype(c, f):
     if c == 'FieldVector':
-        f = '{}, 4'.format(f)
+        f = f'{f}, 4'
         return commontype(c, f)
     elif c == 'DynamicVector':
         return dunetype(c, f)
@@ -33,15 +33,15 @@ def vectortype(c, f):
 
 
 def latype(c, f):
-    return 'Dune::XT::LA::{}<{}>'.format(c, f)
+    return f'Dune::XT::LA::{c}<{f}>'
 
 
 def commontype(c, f):
-    return 'Dune::XT::Common::{}<{}>'.format(c, f)
+    return f'Dune::XT::Common::{c}<{f}>'
 
 
 def dunetype(c, f):
-    return 'Dune::{}<{}>'.format(c, f)
+    return f'Dune::{c}<{f}>'
 
 
 def fieldtypes(cache):
