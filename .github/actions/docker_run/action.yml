@@ -20,7 +20,8 @@ inputs:
   ccache_debug:
     description: “Enable and upload ccache debug info”
     required: False
-    default: 0
+    default: false
+    type: boolean
   ccache_output_missing:
     default: error
     description: "(warn|error|ignore)"
