@@ -23,7 +23,7 @@ jobs:
             workflow: dependencies_change.yml
             run_id: ${{ github.event.workflow_run.id }}
             name: tutorials_html
-            path: ./constraints/
+            path: .
         - name: Setup Pages
           uses: actions/configure-pages@v3
         - name: Upload artifact
