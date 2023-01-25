@@ -27,7 +27,6 @@ if config.HAVE_K3D:
                      vertices,
                      indices,
                      data,
-                     color_attribute_name='Data',
                      color_map=k3d.basic_color_maps.CoolWarm,
                      interactive=False,
                      *args,
@@ -54,7 +53,7 @@ if config.HAVE_K3D:
             self.camera_no_rotate = not interactive
             self.camera_no_zoom = not interactive
 
-    def grid_plot(gridprovider, color_attribute_name, interactive=False, color_map=DEFAULT_COLOR_MAP):
+    def grid_plot(gridprovider, interactive=False, color_map=DEFAULT_COLOR_MAP):
         ''' Generate a k3d Plot and associated controls for VTK data from file
 
         :param gridprovider: a GridProvider object
@@ -79,7 +78,6 @@ if config.HAVE_K3D:
         plot = NumpyPlot(vertices,
                          indices,
                          data,
-                         color_attribute_name=color_attribute_name,
                          grid_auto_fit=False,
                          camera_auto_fit=False,
                          color_map=color_map,
