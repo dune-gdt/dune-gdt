@@ -17,7 +17,6 @@ if config.HAVE_K3D:
     import numpy as np
     from k3d.plot import Plot as k3dPlot
     from matplotlib.cm import get_cmap
-    from matplotlib.colors import Colormap
 
     DEFAULT_COLOR_MAP = get_cmap('viridis')
 
@@ -33,7 +32,8 @@ if config.HAVE_K3D:
                      **kwargs):
             super().__init__(*args, **kwargs)
 
-            self.idx = 0
+            # TODO fix hardcoded bounds
+            combined_bounds = np.array([0, 0, 0, 1, 1, 1], dtype=np.float32)
 
             if 'transform' in kwargs.keys():
                 raise RuntimeError('supplying transforms is currently not supported for time series VTK Data')
@@ -52,39 +52,7 @@ if config.HAVE_K3D:
             self.camera_no_pan = not interactive
             self.camera_no_rotate = not interactive
             self.camera_no_zoom = not interactive
-
-    def grid_plot(gridprovider, interactive=False, color_map=DEFAULT_COLOR_MAP):
-        ''' Generate a k3d Plot and associated controls for VTK data from file
-
-        :param gridprovider: a GridProvider object
-        :param color_attribute_name: which data array from vtk to use for plot coloring
-        :param color_map: a Matplotlib Colormap object or a K3D array((step, r, g, b))
-        :return: the generated Plot object
-        '''
-        if isinstance(color_map, Colormap):
-            color_map = [(x, *color_map(x)[:3]) for x in np.linspace(0, 1, 256)]
-
-        vertices = np.array(gridprovider.centers(codim=2), copy=False).astype(np.float32)
-        if gridprovider.dimension == 2:
-            # k3d does not support 2D meshes, so pad Z direction with zeros
-            vertices = np.hstack((vertices, np.zeros((vertices.shape[0], 1), dtype=np.float32)))
-
-        indices = gridprovider.subentity_indices(codim=2)
-        data = np.linspace(0, 1, vertices.shape[0], dtype=np.float32)
-
-        # TODO fix hardcoded bounds
-        combined_bounds = np.array([0, 0, 0, 1, 1, 1], dtype=np.float32)
-
-        plot = NumpyPlot(vertices,
-                         indices,
-                         data,
-                         grid_auto_fit=False,
-                         camera_auto_fit=False,
-                         color_map=color_map,
-                         grid=combined_bounds,
-                         interactive=interactive)
-        plot.grid_visible = True
-        plot.menu_visibility = not interactive
-        plot.camera = plot.get_auto_camera(yaw=0, pitch=0, bounds=combined_bounds, factor=0.5)
-        plot.menu_visibility = True
-        return plot
+            self.grid_visible = True
+            self.menu_visibility = not interactive
+            self.camera = self.get_auto_camera(yaw=0, pitch=0, bounds=combined_bounds, factor=0.5)
+            self.menu_visibility = True

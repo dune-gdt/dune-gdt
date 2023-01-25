@@ -15,7 +15,6 @@ from numbers import Number
 
 from dune.xt import guarded_import
 from dune.xt.common.config import config
-from dune.xt.common.vtk.plot import grid_plot
 
 for mod_name in (
         '_grid_boundaryinfo_alldirichlet',
@@ -72,6 +71,5 @@ def visualize_grid(grid):
         return plt.gca()
 
     elif config.HAVE_K3D:
-
-        return grid_plot(grid,
-                         color_attribute_name='Element index')  # see visualize in python/dune/xt/grid/gridprovider.hh
+        from dune.xt.grid.visualisation import grid_plot
+        return grid_plot(grid)
