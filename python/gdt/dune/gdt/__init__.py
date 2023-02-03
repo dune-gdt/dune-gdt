@@ -91,7 +91,7 @@ for mod_name in (  # order should not matter!
 ):
     guarded_import(globals(), 'dune.gdt', mod_name)
 
-if config.HAVE_K3D:
+if config.HAVE_VISUALIZATION:
     from dune.xt.common.vtk.plot import plot
 
     def visualize_function(function, grid=None, subsampling=False):

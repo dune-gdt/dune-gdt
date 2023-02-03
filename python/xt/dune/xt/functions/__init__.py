@@ -41,7 +41,7 @@ for mod_name in (
 ):
     guarded_import(globals(), 'dune.xt.functions', mod_name)
 
-if config.HAVE_K3D:
+if config.HAVE_VISUALIZATION:
     import os
     import tempfile
     from dune.xt.common.vtk.plot import plot

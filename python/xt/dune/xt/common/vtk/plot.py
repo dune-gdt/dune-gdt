@@ -12,7 +12,7 @@
 
 from dune.xt.common.config import config
 
-if config.HAVE_K3D:
+if config.HAVE_VISUALIZATION:
     import time
     import warnings
 
