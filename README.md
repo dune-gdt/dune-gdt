@@ -26,3 +26,37 @@ While already dated (in particular, the four modules dune-xt-common, dune-xt-gri
     T. Leibner and R. Milk and F. Schindler: "Extending DUNE: The dune-xt modules"
     Archive of Numerical Software, 5:193-216, 2017
     https://www.doi.org/10.11588/ans.2017.1.27720
+
+
+Interactive development of Python bindings
+------------------------------------------
+
+We recommend running the preconfigured docker environment in a [rootless docker setup](https://docs.docker.com/engine/security/rootless/).
+After checking out the repository
+
+    git clone https://github.com/dune-gdt/dune-gdt.git
+    cd dune-gdt
+
+simply build the docker image
+
+    ./docker/build_debian-qtcreator.sh
+
+and execute
+
+    ./docker/run_debian-qtcreator.sh
+
+This will mount the working directory as `/root/dune-gdt` and run a `bash` within the docker container as user `root` (note that due to the rootless docker setup, running as root within the container is equivalent to running as your usual user outside the container; in particular, all files created within the `/root/dune-gdt` folder are persistent and have the correct permissions).
+To configure and compile the bindings, enter the mounted directory and call the initial setup script
+
+    cd dune-gdt  # /root/dune-gdt
+    ./build_interactive_bindings_venv.sh
+
+This will take a considerable amount of time and resources. Afterwards, follow the printed instructions to obtain a virtualenv where the bindings are available, i.e., running
+
+    OPTS=clang-relwithdebinfo.ninja source deps/environments/debian-full/PATH.sh
+    ipython
+
+will leave you with an iPython prompt which will allow you to
+
+    import dune.xt
+    import dune.gdt
