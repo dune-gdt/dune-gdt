@@ -71,7 +71,8 @@ public:
     , intersection_diameter_(intersection_diameter)
     , local_weight_in_(weight_in_->local_function())
     , local_weight_out_(weight_out_->local_function())
-  {}
+  {
+  }
 
   InnerPenalty(
       const double& penalty,
@@ -89,7 +90,8 @@ public:
     , intersection_diameter_(intersection_diameter)
     , local_weight_in_(weight_in_->local_function())
     , local_weight_out_(weight_out_->local_function())
-  {}
+  {
+  }
 
   InnerPenalty(const ThisType& other)
     : BaseType(other)
@@ -99,7 +101,8 @@ public:
     , intersection_diameter_(other.intersection_diameter_)
     , local_weight_in_(weight_in_->local_function())
     , local_weight_out_(weight_out_->local_function())
-  {}
+  {
+  }
 
   InnerPenalty(ThisType&& source) = default;
 
