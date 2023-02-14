@@ -169,7 +169,7 @@ if config.HAVE_K3D:
 
         return vtkplot
 
-    def plot_all_subdomains(vtkfile_path, subdomains, color_attribute_name, color_map=get_cmap('viridis')):
+    def plot_all_subdomains(vtkfile_path, subdomains, color_attribute_name, color_map=None):
         ''' Generate a k3d Plot and associated controls for VTK data from file
 
         :param vtkfile_path: the path to load vtk data from. Can be a single .vtu or a collection
@@ -182,6 +182,7 @@ if config.HAVE_K3D:
 
         import pyvista as pv
 
+        color_map = color_map or get_cmap('viridis')
         plotter = pv.Plotter(window_size=(1500, 1100))
         for ss in subdomains:
             # data.append(read_vtkfile(vtkfile_path + f'_{ss}.vtu'))
