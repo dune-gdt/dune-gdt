@@ -277,7 +277,7 @@ using GridGlue2dYaspYasp =
     Dune::XT::Grid::DD::Glued<YASP_2D_EQUIDISTANT_OFFSET, YASP_2D_EQUIDISTANT_OFFSET, Dune::XT::Grid::Layers::leaf>;
 using CouplingGridView2dYaspYasp = Dune::XT::Grid::CouplingGridView<GridGlue2dYaspYasp>;
 #if HAVE_DUNE_ALUGRID
-    // TODO: also bind YASP-ALU ! see below
+// TODO: also bind YASP-ALU ! see below
 using GridGlue2dAluSimplexConformingAluSimplexConforming =
     Dune::XT::Grid::DD::Glued<ALU_2D_SIMPLEX_CONFORMING, ALU_2D_SIMPLEX_CONFORMING, Dune::XT::Grid::Layers::leaf>;
 using GridGlue2dAluConformingAluConforming =
@@ -338,7 +338,8 @@ struct CouplingGridProvider_for_all_available_grids<Dune::XT::Common::tuple_null
 };
 
 
-template <class GridTypes = Dune::XT::Grid::bindings::AvailableGridTypes>   // TODO: check if Grid::bindings is used everywhere !
+template <class GridTypes =
+              Dune::XT::Grid::bindings::AvailableGridTypes> // TODO: check if Grid::bindings is used everywhere !
 struct MacroGridBasedBoundaryInfo_for_all_grids
 {
   using G = Dune::XT::Common::tuple_head_t<GridTypes>;

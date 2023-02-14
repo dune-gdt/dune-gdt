@@ -32,9 +32,7 @@ struct make_cube_dd_grid
 
     m.def(
         "make_cube_dd_grid",
-        [](XT::Grid::GridProvider<G_M>& macro_grid,
-           const local_element_type&,
-           const unsigned int num_refinements) {
+        [](XT::Grid::GridProvider<G_M>& macro_grid, const local_element_type&, const unsigned int num_refinements) {
           return std::make_unique<XT::Grid::DD::Glued<G_M, G_L, XT::Grid::Layers::leaf>>(
               macro_grid, num_refinements, false, true);
         },
