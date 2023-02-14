@@ -67,8 +67,8 @@ public:
   InnerCoupling(const double& symmetry_prefactor,
                 XT::Functions::GridFunction<E, d, d> diffusion_inside,
                 XT::Functions::GridFunction<E, d, d> diffusion_outside,
-                XT::Functions::GridFunction<E, d, d> weight_function_inside = {1.},
-                XT::Functions::GridFunction<E, d, d> weight_function_outside = {1.},
+                XT::Functions::GridFunction<E, d, d> weight_function_inside,
+                XT::Functions::GridFunction<E, d, d> weight_function_outside,
                 const std::string& logging_prefix = "",
                 const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType(diffusion_inside.parameter_type() + diffusion_outside.parameter_type()
