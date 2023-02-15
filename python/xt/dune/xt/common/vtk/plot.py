@@ -177,12 +177,13 @@ if config.HAVE_K3D:
         :param color_map: a Matplotlib Colormap object or a K3D array((step, r, g, b))
         :return: the generated Plot object
         '''
-        # if isinstance(color_map, Colormap):
-        #     color_map = [(x, *color_map(x)[:3]) for x in np.linspace(0, 1, 256)]
-
         import pyvista as pv
 
         color_map = color_map or get_cmap('viridis')
+        # if isinstance(color_map, Colormap):
+        #     color_map = [(x, *color_map(x)[:3]) for x in np.linspace(0, 1, 256)]
+        # TODO: add color_map
+
         plotter = pv.Plotter(window_size=(1500, 1100))
         for ss in subdomains:
             # data.append(read_vtkfile(vtkfile_path + f'_{ss}.vtu'))
