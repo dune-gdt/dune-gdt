@@ -32,7 +32,7 @@ extras_require = {
                      'cmake_format==0.4.1', 'codecov', 'yapf==0.32',
                      'pytest-notebook==0.8.0', 'notebook',
                      'jinja2', 'pytest-cov', 'docutils', 'hypothesis', "codecov"] + visualization_packages + docs_packages,
-  'parallel': ('bokeh', 'pymumps', 'metis'),
+  'parallel': ('bokeh', 'metis'),
 }
 
 if '${HAVE_MPI}' == 'TRUE':
