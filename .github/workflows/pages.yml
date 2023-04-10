@@ -18,7 +18,7 @@ jobs:
         url: ${{ steps.deployment.outputs.page_url }}
       runs-on: ubuntu-latest
       steps:
-        - uses: dawidd6/action-download-artifact@v2.26.0
+        - uses: dawidd6/action-download-artifact@v2.26.1
           with:
             workflow: dependencies_change.yml
             run_id: ${{ github.event.workflow_run.id }}
