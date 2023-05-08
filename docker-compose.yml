@@ -8,8 +8,8 @@ services:
       args:
         DEBIAN_BASE: ${DUNE_GDT_IMAGE_BASE:-debian}
         BUILD_OPTS: ${DUNE_GDT_CONFIG_OPTS:-travis.ninja}
-        BUILD_CC: ${DUNE_GDT_CC:-clang}
-        BUILD_CXX: ${DUNE_GDT_CC:-clang++}
+        BUILD_CC: ${DUNE_GDT_CC:-gcc}
+        BUILD_CXX: ${DUNE_GDT_CC:-g++}
     environment:
       # possible values: gdt, common, functions1, functions2, la, grid
       TESTS_MODULE_SUBDIR: ${DUNE_GDT_TEST_MODULE:-gdt}
