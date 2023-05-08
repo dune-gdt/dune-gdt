@@ -148,7 +148,7 @@ public:
         "logging_prefix"_a = "",
         py::keep_alive<0, 1>(),
         py::keep_alive<0, 2>(),
-	py::keep_alive<0, 3>());
+        py::keep_alive<0, 3>());
   } // ... bind_coupling_factory(...)
 
 }; // class CustomBoundaryIntersectionsFilter
