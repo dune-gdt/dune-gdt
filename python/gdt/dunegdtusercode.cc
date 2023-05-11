@@ -78,39 +78,4 @@ PYBIND11_MODULE(dunegdtusercode, m)
       },
       "param"_a);
 
-  m.def(
-      "compute_partition_of_unity",
-      [](GridGlueType& dd_grid, const size_t I /*, const std::string space_type */) {
-        const auto& coarse_grid_view = dd_grid.macro_grid_view();
-        auto coarse_space = GDT::make_discontinuous_lagrange_space(coarse_grid_view, /*order=*/1);
-        auto coarse_basis = coarse_space.basis().localize();
-        std::vector<XT::LA::IstlDenseVector<double>> interpolated_basis;
-        for (auto&& macro_element : elements(coarse_grid_view)) {
-          if (dd_grid.subdomain(macro_element) == I) {
-            // this is the subdomain we are interested in, create space
-            auto subdomain_grid_view = dd_grid.local_grid(macro_element).leaf_view();
-            auto subdomain_space = GDT::make_continuous_lagrange_space(subdomain_grid_view, /*order=*/1);
-            //              auto subdomain_space = dd_grid.local_space(macro_element);
-            coarse_basis->bind(macro_element);
-            for (size_t ii = 0; ii < coarse_basis->size(); ++ii)
-              interpolated_basis.push_back(Dune::GDT::default_interpolation<XT::LA::IstlDenseVector<double>>(
-                                               coarse_basis->order(),
-                                               [&](const auto& point_in_physical_coordinates, const auto&) {
-                                                 const auto point_macro_reference_element =
-                                                     macro_element.geometry().local(point_in_physical_coordinates);
-                                                 return coarse_basis->evaluate_set(point_macro_reference_element)[ii];
-                                               },
-                                               subdomain_space)
-                                               .dofs()
-                                               .vector());
-            break;
-          }
-        }
-        DUNE_THROW_IF(interpolated_basis.size() == 0, InvalidStateException, "This should not happen, I = " << I);
-        return interpolated_basis;
-      },
-      py::call_guard<py::gil_scoped_release>(),
-      "dd_grid"_a,
-      "I"_a //,
-      /*"space_type"_a = "discontinuous_lagrange"*/);
 } // PYBIND11_MODULE(dunegdtusercode, ...)
