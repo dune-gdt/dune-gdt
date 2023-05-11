@@ -28,6 +28,7 @@ set(EXAMPLES_IGNORE_LIST
     ${CMAKE_CURRENT_SOURCE_DIR}/adaptive-swipdg.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/adaptive_elliptic_swipdg.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/adaptive_interpolation.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/elliptic_lrbms_fom.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/gamm_2019_talk_on_conservative_rb_OS2015_academic_example.py
     ${CMAKE_CURRENT_SOURCE_DIR}/gamm_2019_talk_on_conservative_rb_OS2015_multiscale_example.py)
 

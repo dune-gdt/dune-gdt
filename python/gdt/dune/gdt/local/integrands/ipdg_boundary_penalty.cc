@@ -12,15 +12,18 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <dune/xt/grid/type_traits.hh>
+#include <dune/xt/grid/dd/glued.hh>
 #include <dune/xt/grid/grids.hh>
 #include <dune/xt/grid/gridprovider/provider.hh>
+#include <dune/xt/grid/view/coupling.hh>
+#include <dune/xt/grid/type_traits.hh>
 
 #include <dune/gdt/local/integrands/ipdg.hh>
 
 #include <python/xt/dune/xt/common/configuration.hh>
 #include <python/xt/dune/xt/common/fvector.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/traits.hh>
 
 
 namespace Dune {
@@ -28,7 +31,7 @@ namespace GDT {
 namespace bindings {
 
 
-template <class G, class I>
+template <class G, class I, class intersection_type>
 class LocalIPDGBoundaryPenaltyIntegrand
 {
   using E = XT::Grid::extract_entity_t<G>;
@@ -68,22 +71,43 @@ public:
                             logging_prefix);
           }),
           "penalty"_a,
-          "weight"_a,
+          "weight"_a = F(1),
           "logging_prefix"_a = "");
 
     // factories
     const auto FactoryName = XT::Common::to_camel_case(class_id);
-    m.def(
-        FactoryName.c_str(),
-        [](const double& penalty,
-           const XT::Functions::GridFunctionInterface<E, d, d, F>& weight,
-           const std::string& logging_prefix) {
-          return new type(
-              penalty, weight, GDT::LocalIPDGIntegrands::internal::default_intersection_diameter<I>(), logging_prefix);
-        },
-        "penalty"_a,
-        "weight"_a,
-        "logging_prefix"_a = "");
+    if (std::is_same<intersection_type, XT::Grid::bindings::LeafIntersection>::value)
+      m.def(
+          FactoryName.c_str(),
+          [](const double& penalty,
+             const XT::Functions::GridFunctionInterface<E, d, d, F>& weight,
+             const intersection_type&,
+             const std::string& logging_prefix) {
+            return new type(penalty,
+                            weight,
+                            GDT::LocalIPDGIntegrands::internal::default_intersection_diameter<I>(),
+                            logging_prefix);
+          },
+          "penalty"_a,
+          "weight"_a = F(1),
+          "intersection_type"_a = XT::Grid::bindings::LeafIntersection(),
+          "logging_prefix"_a = "");
+    else
+      m.def(
+          FactoryName.c_str(),
+          [](const double& penalty,
+             const XT::Functions::GridFunctionInterface<E, d, d, F>& weight,
+             const intersection_type&,
+             const std::string& logging_prefix) {
+            return new type(penalty,
+                            weight,
+                            GDT::LocalIPDGIntegrands::internal::default_intersection_diameter<I>(),
+                            logging_prefix);
+          },
+          "penalty"_a,
+          "weight"_a,
+          "intersection_type"_a,
+          "logging_prefix"_a = "");
 
     return c;
   } // ... bind(...)
@@ -105,8 +129,17 @@ struct LocalIPDGBoundaryPenaltyIntegrand_for_all_grids
 
   static void bind(pybind11::module& m)
   {
-    Dune::GDT::bindings::LocalIPDGBoundaryPenaltyIntegrand<G, I>::bind(m);
-
+    Dune::GDT::bindings::LocalIPDGBoundaryPenaltyIntegrand<G, I, Dune::XT::Grid::bindings::LeafIntersection>::bind(
+        m, "leaf");
+#if HAVE_DUNE_GRID_GLUE
+    if constexpr (d == 2) {
+      using GridGlueType = Dune::XT::Grid::DD::Glued<G, G, Dune::XT::Grid::Layers::leaf>;
+      using CI = typename GridGlueType::GlueType::Intersection;
+      using CCI = Dune::XT::Grid::internal::CouplingIntersectionWithCorrectNormal<CI, I>;
+      using Coupling = Dune::XT::Grid::bindings::CouplingIntersection<G, G>;
+      Dune::GDT::bindings::LocalIPDGBoundaryPenaltyIntegrand<G, CCI, Coupling>::bind(m, "coupling");
+    }
+#endif
     LocalIPDGBoundaryPenaltyIntegrand_for_all_grids<Dune::XT::Common::tuple_tail_t<GridTypes>>::bind(m);
   }
 };
