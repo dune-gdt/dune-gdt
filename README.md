@@ -28,6 +28,39 @@ While already dated (in particular, the four modules dune-xt-common, dune-xt-gri
     https://www.doi.org/10.11588/ans.2017.1.27720
 
 
+Getting started with native development
+---------------------------------------
+
+The basic steps are to
+
+1. Ensure all system requirements are installed.
+   This varies from system to system, a good starting point is the [Dockerfile used in CI](https://github.com/dune-gdt/dune-merged/blob/main/deps/Dockerfile).
+   We at least require a decent compiler (gcc or clang) and cmake.
+2. Check out the code. This usually amounts to something like
+   ```bash
+   git clone https://github.com/dune-gdt/dune-merged.git dune-gdt
+   cd dune-gdt
+   git submodule update --init --recursive
+   ```
+3. Create a Python virtualenv (using a supported Python version, check for `python` in the respective [workflow](https://github.com/dune-gdt/dune-merged/blob/main/.github/workflows/wheels.yml)):
+   ```bash
+   python3.9 -m venv venv
+   . venv/bin/activate
+   ```
+4. Select a configation to work with by means of a config file like the ones in [deps/config.opts](https://github.com/dune-gdt/dune-merged/tree/main/deps/config.opts):
+   ```bash
+   export CONFIG_OPTS=clang-relwithdebinfo.ninja
+   ```
+5. (Optionally) onfigure all modules to check for missing dependencies:
+   ```bash
+   ./deps/dune-common/bin/dunecontrol --opts=./deps/config.opts/${CONFIG_OPTS} --builddir=./deps/build-${CONFIG_OPTS} configure
+   ```
+6. Build all modules:
+   ```bash
+   ./deps/dune-common/bin/dunecontrol --opts=./deps/config.opts/${CONFIG_OPTS} --builddir=./deps/build-${CONFIG_OPTS} all
+   ```
+
+
 Interactive development of Python bindings
 ------------------------------------------
 
