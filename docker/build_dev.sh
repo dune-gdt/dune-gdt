@@ -4,4 +4,19 @@
 BASEDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P)"
 
 cd "${BASEDIR}"
-docker build -t ghcr.io/dune-gdt/dune-gdt/dev:latest -f dev/Dockerfile dev/
+export HASH=$(sha256sum dev/* | sha256sum | cut -d ' ' -f 1)
+echo "======================================================================================================="
+echo "Building ghcr.io/dune-gdt/dune-gdt/dev:${HASH}"
+echo "======================================================================================================="
+
+docker build --no-cache -t ghcr.io/dune-gdt/dune-gdt/dev:${HASH} -f dev/Dockerfile dev/
+
+echo "======================================================================================================="
+echo "... done!"
+echo "======================================================================================================="
+echo "Execute"
+echo "    docker push ghcr.io/dune-gdt/dune-gdt/dev:${HASH}"
+echo "to push the image and"
+echo "    docker tag ghcr.io/dune-gdt/dune-gdt/dev:${HASH} ghcr.io/dune-gdt/dune-gdt/dev:latest"
+echo "    docker push ghcr.io/dune-gdt/dune-gdt/dev:latest"
+echo "to overwrite the latest tag."
