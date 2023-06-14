@@ -1,0 +1,52 @@
+[ -z "$PS1" ] && return
+
+export HISTSIZE=10000
+export HISTFILESIZE=${HISTSIZE}
+export HISTCONTROL=ignoreboth
+shopt -s cdspell
+shopt -s histappend
+shopt -s checkwinsize
+shopt -s cmdhist
+shopt -s dotglob
+shopt -s expand_aliases
+shopt -s extglob
+shopt -s hostcomplete
+shopt -s nocaseglob
+
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+
+alias ls='ls --time-style=+"%d.%m.%Y %H:%M" --color=auto'
+alias ll='ls -hl  --time-style=+"%d.%m.%Y %H:%M" --color=auto'
+alias la='ls -lah --time-style=+"%d.%m.%Y %H:%M" --color=auto'
+alias grep='grep -n'
+alias psa='ps -Af | \grep -v grep | \grep'
+
+export LANG=en_US.UTF-8
+export QT_QPA_PLATFORMTHEME="qt5ct"
+
+source /etc/bash_completion.d/git-prompt
+cd
+source .bash-ps1
+
+alias qtcreator='/usr/bin/qtcreator &> /dev/null'
+
+## we need to account for the fact that a user might be starting this for the first time
+## with fresh sources and no CMakeLists.txt.user present (which will break the qtcreator
+## config)
+#[ -e /root/exampels/dune/dune-xt/CMakeLists.txt.user  ] || cp /root/.qtcreator/CMakeLists.txt.user.dune-xt /root/examples/dune/dune-xt/CMakeLists.txt.user
+#[ -e /root/exampels/dune/dune-gdt/CMakeLists.txt.user ] || cp /root/.qtcreator/CMakeLists.txt.user.dune-gdt /root/examples/dune/dune-gdt/CMakeLists.txt.user
+#
+#
+#echo "Welcome to the development docker container accompanying"
+#echo "  https://gitlab.itwm.fraunhofer.de/ml-more/examples"
+#echo "which can be obtained from"
+#echo "  https://zivgitlab.uni-muenster.de/ag-ohlberger/ml-more/docker"
+#echo
+#echo "After setting everything up (see the README.md), you can execute"
+#echo
+#echo "  qtcreator"
+#echo
+#echo "to start the preconfigured QtCreator IDE to start creating your own Python bindings"
+#echo "(in case you receive an X error: execute \"xhost +local:docker\" once before starting the container)."
+#
