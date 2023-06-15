@@ -1,12 +1,5 @@
-# This file is part of the dune-config-opts project:
-#   http://users.dune-project.org/projects/dune-config-opts
-# Copyright holders: Rene Milk, Felix Schindler
-# License: BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P )"
 
-DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
-NAME="$(basename ${BASH_SOURCE[0]})"
+CMAKE_FLAGS="-GNinja ${CMAKE_FLAGS}"
 
 source ${DIR}/gcc-debug
-CMAKE_EXTRA='-GNinja'
-
-source ${DIR}/base/gcc

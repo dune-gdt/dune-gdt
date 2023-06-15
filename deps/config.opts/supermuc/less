@@ -1,7 +1,0 @@
-CONFIGURE_FLAGS="CXX=mpicc CC=mpicc FC=mpif90 \
-  CXXFLAGS='-DNDEBUG -std=c++11  -w -pipe -Os' \
-  --enable-parallel \
-  --disable-documentation  INKSCAPE=no"
-CMAKE_FLAGS="-DGRIDDIM=2 -Wno-dev -DCMAKE_BUILD_TYPE='' -DUMFPACK_ROOT=/lrz/sys/libraries/suitesparse/4.2.1 -DSUITESPARSE_INCLUDE_DIR_HINTS=/lrz/sys/libraries/suitesparse/4.2.1/include -DSUITESPARSE_LIBRARY_DIR_HINTS=/lrz/sys/libraries/suitesparse/4.2.1/lib" \
-MAKE_FLAGS="-- -j1 -l1"
-BUILDDIR=$HOME/multiscale-build-less

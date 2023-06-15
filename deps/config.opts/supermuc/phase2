@@ -1,7 +1,0 @@
-CONFIGURE_FLAGS="CXX=mpicc CC=mpicc FC=mpif90 \
-  CXXFLAGS='-DNDEBUG -fno-alias -std=c++11 -g -w -parallel -O3 -axCORE-AVX2 -ipo -no-prec-div' \
-  --enable-parallel \
-  --disable-documentation  INKSCAPE=no"
-CMAKE_FLAGS="-DGRIDDIM=3 -DFFTW_ROOT=/lrz/sys/libraries/fftw/3.3.3/sse -Wno-dev -DCMAKE_BUILD_TYPE='' -DUMFPACK_ROOT=/lrz/sys/libraries/suitesparse/4.2.1 -DSUITESPARSE_INCLUDE_DIR_HINTS=/lrz/sys/libraries/suitesparse/4.2.1/include -DSUITESPARSE_LIBRARY_DIR_HINTS=/lrz/sys/libraries/suitesparse/4.2.1/lib" \
-MAKE_FLAGS="-- -j2 -l2"
-BUILDDIR=$HOME/multiscale-build-phase2

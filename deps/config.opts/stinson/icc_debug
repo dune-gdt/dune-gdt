@@ -1,5 +1,0 @@
-DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
-NAME="$(basename ${BASH_SOURCE[0]})"
-CXXFLAGS="'-DDNDEBUG -std=c++17 -O0 -g -Wall '"
-TYPE=DEBUG
-source ${DIR}/icc_base

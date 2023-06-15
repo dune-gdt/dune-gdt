@@ -1,11 +1,34 @@
-# This file is part of the dune-config-opts project:
-#   http://users.dune-project.org/projects/dune-config-opts
-# Copyright holders: Rene Milk, Felix Schindler
-# License: BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
+# the following variables are set within this file that may be overriden by specifying them before
+# BUILD_TYPE
+# CC
+# CXX
+# F77
 
-DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
-NAME="$(basename ${BASH_SOURCE[0]})"
+DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P )"
 
-CXXFLAGS="-g3 -ggdb -O0 -DDEBUG -DDUNE_FMatrix_WITH_CHECKING=1 -DDUNE_ISTL_WITH_CHECKING=1 -fno-var-tracking-assignments -Wall -Wextra -Wpedantic -Wredundant-decls -Wshadow -Wundef -Wnon-virtual-dtor -Wlogical-op -Werror=return-type"
+BUILD_TYPE=${BUILD_TYPE:-Debug}
+CC=${CC:-gcc}
+CXX=${CXX:-g++}
+F77=${F77:-gfortran}
 
-source ${DIR}/base/gcc
+CXXFLAGS="\
+  -DDEBUG \
+  -DDUNE_FMatrix_WITH_CHECKING=1 \
+  -DDUNE_ISTL_WITH_CHECKING=1 \
+  -O0 \
+  -Wall \
+  -Werror=return-type \
+  -Wextra \
+  -Wlogical-op \
+  -Wnon-virtual-dtor \
+  -Wpedantic \
+  -Wredundant-decls \
+  -Wshadow \
+  -Wundef \
+  -fno-var-tracking-assignments \
+  -g3 \
+  -ggdb \
+  ${CXXFLAGS}
+"
+
+source ${DIR}/common
