@@ -41,16 +41,15 @@ from dune.xt.grid import Dim, Simplex, make_cube_grid, visualize_grid
 
 grid = make_cube_grid(Dim(2), Simplex(), [-1, -1], [1, 1], [1, 1])
 print('initial grid')
-_ = visualize_grid(grid)
+visualize_grid(grid)
 print(f'grid has {grid.size(0)} elements')
 
 # we require one global refinement for simlexgrids to obtain a symmetric grid
 grid.global_refine(1)
 
 print('once refined to obtain a symmetric grid')
-_ = visualize_grid(grid)
-
 print(f'grid has {grid.size(0)} elements')
+visualize_grid(grid)
 ```
 
 ```{code-cell}
@@ -90,10 +89,9 @@ adaptation_helper.post_adapt()
 
 ```{code-cell}
 print(f'grid has {grid.size(0)} elements')
-
-_ = visualize_grid(grid)
-
 print(f'space has {V_h.num_DoFs} DoFs')
+
+visualize_grid(grid)
 ```
 
 Let us now have another look at the markers:
@@ -158,7 +156,7 @@ adaptation_helper.post_adapt(indicate_new_elements=True)
 ```
 
 ```{code-cell}
-_ = visualize_grid(grid)
+visualize_grid(grid)
 ```
 
 Download the code:

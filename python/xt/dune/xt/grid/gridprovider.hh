@@ -103,6 +103,31 @@ public:
         "codim"_a = 0,
         py::call_guard<py::gil_scoped_release>());
     c.def(
+        "subentity_indices",
+        [](type& self, const int codim) {
+          DUNE_THROW_IF(
+              codim < 0 || codim > dim, Exceptions::wrong_codimension, "dim = " << dim << "\n   codim = " << codim);
+          DUNE_THROW_IF(codim != dim && codim != 0 && !G::LeafGridView::conforming,
+                        XT::Common::Exceptions::requirements_not_met,
+                        "This is not yet implemented for non-conforming grids and codim " << codim << "!");
+          auto grid_view = self.leaf_view();
+          const MultipleCodimMultipleGeomTypeMapper<GV> mapper(self.leaf_view(), [codim](GeometryType gt, int dimgrid) {
+            return dimgrid - Common::numeric_cast<int>(gt.dim()) == codim;
+          });
+          const MultipleCodimMultipleGeomTypeMapper<GV> element_mapper(self.leaf_view(), mcmgElementLayout());
+          std::vector<std::vector<size_t>> indices(grid_view.indexSet().size(0));
+          for (auto&& element : elements(grid_view)) {
+            auto element_index = element_mapper.index(element);
+            for (auto&& ii : Common::value_range(element.subEntities(codim))) {
+              auto index = sub_entity_index(mapper, element, codim, ii);
+              indices[element_index].push_back(index);
+            }
+          }
+          return indices;
+        },
+        "codim"_a = 0,
+        py::call_guard<py::gil_scoped_release>());
+    c.def(
         "inner_intersection_indices",
         [](type& self) {
           DUNE_THROW_IF(!G::LeafGridView::conforming,
