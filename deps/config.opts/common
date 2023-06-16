@@ -11,18 +11,13 @@
 DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P )"
 
 if [[ ${WERROR} == 1 ]]; then
-  CXXFLAGS_WERROR="-Werror -Wno-error=unknown-pragmas -Wno-error=pedantic"
-else
-  CXXFLAGS_WERROR=""
+  CXXFLAGS="-Werror -Wno-error=unknown-pragmas -Wno-error=pedantic ${CXXFLAGS}"
 fi
-
-DXT_TEST_PROCS=${DXT_TEST_PROCS:(($(nproc) - 1))}
 
 CXXFLAGS=" \
   -std=c++17 \
   -fPIC \
   -fno-strict-aliasing \
-  ${CXXFLAGS_WERROR} \
   ${CXXFLAGS} \
 "
 
