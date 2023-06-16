@@ -9,7 +9,11 @@ DOCKER_BIN=${DOCKER:-docker}
 
 SOURCE=${PROJECTDIR}
 TARGET="/root/dune-gdt"
-EXEC="/bin/bash"
+if [ $# -eq 0 ] ; then
+  EXEC="/bin/bash"
+else
+  EXEC="${@}"
+fi
 DOCKER_HOME="${HOME}/.docker-homes/${CONTAINER//\//_}"
 
 
@@ -39,7 +43,7 @@ else
   echo "    ${DOCKER_HOME}"
   echo "      -> /root"
   echo "    ${SOURCE}"
-  echo "      -> ${TARGET}"
+  echo "      -> ${TARGET}  (all commands are executed within this directory)"
   echo "  so that all changes within these folders are persistent (generally applies to most"
   echo "  config files written to dotfiles)!"
   echo "  To connect to this container, execute"
@@ -62,7 +66,7 @@ else
     -v /etc/localtime:/etc/localtime:ro \
     -v "${DOCKER_HOME}":/root \
     -v "${SOURCE}":"${TARGET}" \
-    ${CONTAINER} "${EXEC}"
+    ${CONTAINER} "cd ~/dune-gdt && ${EXEC}"
 
   echo
   echo "Removing ${CID_FILE}"

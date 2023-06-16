@@ -36,7 +36,7 @@ if [[ $UID_ == 0 ]] ; then
   if [ "X$@" == "X" ]; then
     exec /bin/bash
   else
-    exec "$@"
+    exec /bin/bash -c "$@"
   fi
   exit
 fi
@@ -82,5 +82,5 @@ fi
 if [ "X$@" == "X" ]; then
   exec gosu $USERNAME_ /bin/bash
 else
-  exec gosu $USERNAME_ "$@"
+  exec gosu $USERNAME_ /bin/bash -c "$@"
 fi
