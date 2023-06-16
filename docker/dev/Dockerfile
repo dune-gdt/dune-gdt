@@ -1,7 +1,16 @@
 FROM debian:bullseye-20221004-slim
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    DXT_ENVIRONMENT=debian-full \
+# install locales before anything else to supress warnings
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -qq 1> /dev/null && \
+    apt-get upgrade -qqy --no-install-recommends 1> /dev/null && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
+    echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen && \
+    apt-get install -q=100 -y --no-install-recommends locales 1> /dev/null && \
+    dpkg-reconfigure locales
+
+# then do the rest
+ENV DXT_ENVIRONMENT=debian-full \
     CLANG_VERSION=15 \
     GCC_VERSION=10 \
     CLANG_PYTHON_PACKAGE=python3-clang \
@@ -16,18 +25,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     MOLD_VERSION=1.1.1 \
     CLANG_TOOLING_VERSION=8
 
-# bullseye-backports are enabled for manual installs
-# locale is mainly required for the interactive session
-# libdw1 is required for qtcreator
-    # echo 'APT::Default-Release "stable";' > /etc/apt/apt.conf.d/default-release && \
-    # echo "deb http://deb.debian.org/debian bullseye-backports main contrib non-free" > /etc/apt/sources.list.d/bullseye-backports.list && \
-RUN apt-get update -qq 1> /dev/null && \
-    apt-get upgrade -qqy --no-install-recommends 1> /dev/null && \
-    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && \
-    echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen && \
-    apt-get install -q=100 -y --no-install-recommends locales 1> /dev/null && \
-    dpkg-reconfigure locales && \
-    echo "deb http://deb.debian.org/debian stable contrib non-free" > /etc/apt/sources.list.d/stable-nonfree.list && \
+RUN echo "deb http://deb.debian.org/debian stable contrib non-free" > /etc/apt/sources.list.d/stable-nonfree.list && \
     apt-get update -qq 1> /dev/null && \
     apt-get install -q=100 -y --no-install-recommends automake ninja-build bison build-essential cmake flex gfortran git libboost-system-dev \
                 libboost-thread-dev libboost-filesystem-dev libboost-date-time-dev \
