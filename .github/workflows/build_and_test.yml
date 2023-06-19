@@ -8,31 +8,31 @@ on:
       - main
 
 env:
-    # to be determined automatically later on
-    DOCKER_CI_TAG: 5e87a8b019d51437440ed7fe718ea78f5ecddeebbc59535ddc6d61bb23cd000a
+  # to be determined automatically later on
+  DOCKER_CI_TAG: 5e87a8b019d51437440ed7fe718ea78f5ecddeebbc59535ddc6d61bb23cd000a
 
 concurrency:
-    group: ${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-    preflight:
-      name: "preflight"
-      runs-on: ubuntu-22.04
-      defaults:
-          run:
-              shell: bash -l {0}
+  preflight:
+    name: "preflight"
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash -l {0}
     steps:
-        - name: Checkout the repository
-          uses: actions/checkout@v3
-        - name: Login to Github Packages
-          uses: docker/login-action@v2
-          with:
-            registry: ghcr.io
-            username: ${{ inputs.registry_username }}
-            password: ${{ inputs.registry_password }}
-        - name: Get CI docker image
-          run: docker pull ghcr.io/dune-gdt/dune-gdt/ci:$DOCKER_CI_TAG
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Login to Github Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ inputs.registry_username }}
+          password: ${{ inputs.registry_password }}
+      - name: Get CI docker image
+        run: docker pull ghcr.io/dune-gdt/dune-gdt/ci:$DOCKER_CI_TAG
 
 #jobs:
 #  build:
