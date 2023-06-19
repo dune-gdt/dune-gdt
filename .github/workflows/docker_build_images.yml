@@ -1,0 +1,23 @@
+name: "Docker: build images"
+
+on:
+  workflow_dispatch:
+    inputs:
+      GIT_REF:
+        description: "Git ref to use as a basis"
+        required: False
+        default: "main"
+jobs:
+  docker_build_images:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ GIT_REF }}
+      - name: Login to Github Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
