@@ -1,7 +1,6 @@
----
 on: pull_request
 
-name: Git
+name: Sanity checks
 
 jobs:
     message-check:
@@ -17,8 +16,7 @@ jobs:
         runs-on: ubuntu-22.04
         name: Find merge conflicts
         steps:
-      # Checkout the source code so we have some files to look at.
-            - uses: actions/checkout@v3
-      # Run the actual merge conflict finder
-            - name: Merge Conflict finder
+            - name: Checkout repository
+              uses: actions/checkout@v3
+            - name: Detect merge conflicts
               uses: olivernybroe/action-conflict-finder@v4.0
