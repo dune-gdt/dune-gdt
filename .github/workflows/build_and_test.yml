@@ -32,7 +32,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Get CI docker image
-        run: docker pull ghcr.io/dune-gdt/dune-gdt/ci:$DOCKER_CI_TAG
+        run: docker pull ghcr.io/dune-gdt/dune-merged/ci:$DOCKER_CI_TAG
 
 #jobs:
 #  build:
