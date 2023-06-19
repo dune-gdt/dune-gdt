@@ -1,6 +1,6 @@
 ---
 # homepage: https://github.com/gaurav-nelson/github-action-markdown-link-check
-name: Link Check
+name: Check links in Markdown files
 
 on: [pull_request]
 
@@ -9,8 +9,10 @@ jobs:
         name: Markdown
         runs-on: ubuntu-22.04
         steps:
-            - uses: actions/checkout@v3
-            - uses: renefritze/github-action-markdown-link-check@master
+            - name: Checkout reposotiry
+              uses: actions/checkout@v3
+            - name: Check links in Markdown files
+              uses: renefritze/github-action-markdown-link-check@master
               with:
                   use-verbose-mode: yes
                   base-branch: main
