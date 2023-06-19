@@ -1,0 +1,143 @@
+name: "build and test"
+
+on:
+  merge_group:
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  # to be determined automatically later on
+  DOCKER_CI_TAG: 5e87a8b019d51437440ed7fe718ea78f5ecddeebbc59535ddc6d61bb23cd000a
+
+concurrency:
+  group: ${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    name: "preflight"
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3
+      - name: Login to Github Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get CI docker image
+        run: docker pull ghcr.io/dune-gdt/dune-merged/ci:$DOCKER_CI_TAG
+
+#jobs:
+#  build:
+#    strategy:
+#      matrix:
+#        include:
+#          - preset: "gcc-debug"
+#          #- preset: "gcc-release"
+#          #- preset: "clang-debug"
+#          #- preset: "clang-release"
+#      fail-fast: false
+#    name: '${{ matrix.preset }}'
+#    runs-on: ubuntu-22.04
+#    defaults:
+#      run:
+#        shell: bash -l {0}
+#    steps:
+#      - name: Checkout https://github.com/dune-gdt/dune-gdt.git
+#        uses: actions/checkout@v3
+#      - name: Login to Github Packages
+#        uses: docker/login-action@v2
+#        with:
+#          registry: ghcr.io
+#          username: ${{ inputs.registry_username }}
+#          password: ${{ inputs.registry_password }}
+#      - name: Get CI docker image
+#    #   # should run first, as this will setup the shell to be used further below
+#    #   - if: ${{ startsWith(matrix.preset, 'win_gcc') }}
+#    #     name: Setup MinGw toolchain
+#    #     uses: msys2/setup-msys2@v2
+#    #     with:
+#    #       release: false  # re-uses installation from the windows-2022 image
+#    #       msystem: UCRT64
+#    #       path-type: inherit
+#    #       install: >-
+#    #         base-devel
+#    #         mingw-w64-ucrt-x86_64-gcc
+#    #   - name: Install Python
+#    #     uses: actions/setup-python@v3
+#    #     with:
+#    #       python-version: 3.9
+#    #   - name: Setup Ninja
+#    #     run: pip install ninja
+#    #   # the auth setup needed for the super-module setup interferes with the default checkout action
+#    #   - if: ${{ inputs.with_submodules }}
+#    #     name: Checkout (with submodules)
+#    #     uses: actions/checkout@v3
+#    #     with:
+#    #       submodules: recursive
+#    #       token: ${{ secrets.REPO_ACCESS_PAT }}
+#    #       # we rely on git describe to create our project version, that needs all commits since the most recent tag
+#    #       # there's no easy way to only get those -> fetch all
+#    #       fetch-depth: 0
+#    #   - if: ${{ ! inputs.with_submodules }}
+#    #     name: Checkout (without submodules)
+#    #     uses: actions/checkout@v3
+#    #     with:
+#    #       fetch-depth: 0
+#    #   - name: Configure default git to allow access to internal repos
+#    #     # this mirrors what actions/checkout does to allow cloning internal repos
+#    #     run: |
+#    #       git config --global http.https://github.com/arup-group/.extraheader "AUTHORIZATION: basic $(printf "x-access-token:%s" "${{secrets.REPO_ACCESS_PAT}}" | base64)"
+#    #   - if: ${{ startsWith(matrix.preset, 'win_gcc') }}
+#    #     # We need to duplicate this to also set the credentials for the git that will be picked up by vcpkg
+#    #     name: Configure git used by vcpkg to allow access to internal repos
+#    #     shell: bash -l {0} # this is the important part
+#    #     # this mirrors what actions/checkout does to allow cloning internal repos
+#    #     run: |
+#    #       git config --global http.https://github.com/arup-group/.extraheader "AUTHORIZATION: basic $(printf "x-access-token:%s" "${{secrets.REPO_ACCESS_PAT}}" | base64)"
+#    #   - name: Restore or setup vcpkg
+#    #     uses: lukka/run-vcpkg@v10
+#    #     id: runvcpkg
+#    #     with:
+#    #       # This specifies the location of vcpkg, where it is going to be restored from cache, or create from scratch.
+#    #       vcpkgDirectory: '${{ runner.workspace }}/b/vcpkg'
+#    #       # The Git commit id of vcpkg to be checked out. This is only needed because we are not using a submodule.
+#    #       vcpkgGitCommitId: '${{ env.vcpkgCommitId}}'
+#    #       # The vcpkg.json file, which will be part of cache key computation.
+#    #       vcpkgJsonGlob: 'vcpkg.json'
+#    #   - name: Generate with cmake
+#    #     run: |
+#    #       cmake --preset=${{ matrix.preset }} -S . -B build
+#    #   - name: Upload error logs in case of failure
+#    #     if: failure()
+#    #     uses: actions/upload-artifact@v2
+#    #     with:
+#    #       name: ${{ matrix.preset }}_error-log
+#    #       path: ${{ runner.workspace }}/b/vcpkg/buildtrees/*/*.log
+#    #   - name: Build all
+#    #     run: |
+#    #       cmake --build build
+#    #   - name: Build tests
+#    #     run: |
+#    #       cmake --build build --target all_test_binaries
+#    #   - name: Run test
+#    #     run: |
+#    #       cd build
+#    #       ctest --no-tests=error --output-on-failure
+#    #   - name: Perform headerchecks
+#    #     if: always()
+#    #     run: |
+#    #       cmake --build build --target headercheck
+#    #   - name: Disable vcpkg cache on failure
+#    #     # `run-vcpkg` post step is instructed to not save anything when the workflow has been
+#    #     # cancelled or it has failed.
+#    #     run: |
+#    #      echo "RUNVCPKG_NO_CACHE=1" >> $GITHUB_ENV
+#    #     if: ${{ failure() || cancelled() }}

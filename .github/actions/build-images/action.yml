@@ -1,0 +1,23 @@
+name: "Generate docker images"
+description: "Builds docker images and published to ghcr.io"
+
+inputs:
+  GIT_REF:
+    description: "Git ref to use for generating images"
+    required: False
+    default: main
+    type: string
+
+runs:
+  - name: Checkout the repository
+    uses: actions/checkout@v3
+    with:
+      ref: ${{ GIT_REF }}
+  - name: Login to Github Packages
+    uses: docker/login-action@v2
+    with:
+      registry: ghcr.io
+      username: ${{ github.actor }}
+      password: ${{ secrets.GITHUB_TOKEN }}
+  - name: Build dev docker image
+    run: ./docker/build_dev.sh
