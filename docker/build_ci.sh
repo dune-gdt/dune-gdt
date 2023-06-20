@@ -19,19 +19,19 @@ export VCS_REF=$(git log -1 --pretty=format:"%H")
 echo "done"
 
 echo -n "patching docker/ci/Dockerfile ... "
-sed -i "s/FROM_DEV_HASH/${FROM_DEV_HASH}/" ci/Dockerfile
+sed -i "s/FROM_DEV_HASH/${DEV_HASH}/" ci/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "... failed (see above)!"
+    >&2 echo "failed (see above)!"
     exit 1
 fi
 sed -i "s/LABEL_BUILD_DATE/${DATE}/" ci/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "... failed (see above)!"
+    >&2 echo "failed (see above)!"
     exit 1
 fi
 sed -i "s/LABEL_VCS_REF/${VCS_REF}/" ci/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "... failed (see above)!"
+    >&2 echo "failed (see above)!"
     exit 1
 fi
 
@@ -43,18 +43,18 @@ docker build -t ghcr.io/dune-gdt/dune-gdt/ci:${HASH} -f ci/Dockerfile ci/
 
 if [[ $? != 0 ]] ; then
     >&2 echo "======================================================================================================="
-    >&2 echo "... failed (see above)!"
-    >&2 echo "restoring docker/ci/Dockerfile ..."
-    git restore ci/Dockerfile
+    >&2 echo "building ... failed (see above)!"
+    >&2 echo "If you see a 'manifest unknown', ensure to run ./docker/build_dev.sh beforehand!"
+    >&2 echo "Remember to git restore docker/ci/Dockerfile before trying again!"
     exit 1
 fi
 
 echo "======================================================================================================="
-echo "... done!"
+echo "building ... done!"
 echo -n "restoring docker/ci/Dockerfile ... "
 git restore ci/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "... failed (see above)!"
+    >&2 echo "failed (see above)!"
     exit 1
 fi
 echo "done"
