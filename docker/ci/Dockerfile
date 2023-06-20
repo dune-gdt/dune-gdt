@@ -1,7 +1,6 @@
-# The hash below gets set when calling ./docker/build_dev.sh
-FROM ghcr.io/dune-gdt/dune-gdt/dev:8aedb5a386ad2428c6e730623ce3aa5e976496854c4ff344ff2aaa82bed3ba49
+FROM ghcr.io/dune-gdt/dune-gdt/dev:FROM_DEV_HASH
 
-# only update the DUNE_GDT_REF if any of SUBMODULES_HASH or OPTS_HASH changes (see docker/build_ci.sh)!
+# only update the DUNE_GDT_REF if any of hashes in docker/compute_ci_hash.sh apart from CI_HASH change!
 ENV \
     DEBIAN_FRONTEND=noninteractive \
     DUNE_GDT_REF=0ca387e690d46fa7fc46a4ec364363726cb30134
@@ -36,12 +35,13 @@ ADD entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # see http://label-schema.org/rc1/#build-time-labels
-LABEL org.label-schema.build-date=2023-06-14T09:14:39Z \
-      org.label-schema.name=debian-full \
+LABEL org.label-schema.build-date=LABEL_BUILD_DATE \
+      org.label-schema.name=ci \
       org.label-schema.maintainer=felix.schindler@uni-muenster.de \
       org.label-schema.description="CI environment for dune-gdt" \
       org.label-schema.url="https://github.com/dune-gdt/dune-gdt" \
-      org.label-schema.vcs-ref=b1b052c345d0d9866c1d30d8b20264018861612a \
+      org.label-schema.vcs-ref=LABEL_VCS_REF \
       org.label-schema.vcs-url="https://github.com/dune-gdt/dune-gdt" \
       org.label-schema.schema-version="1.0" \
-      org.label-schema.usage="https://github.com/dune-gdt/dune-gdt/blob/master/README.md"
+      org.label-schema.usage="https://github.com/dune-gdt/dune-gdt/blob/master/README.md" \
+      org.opencontainers.image.source="https://github.com/dune-gdt/dune-gdt"
