@@ -19,12 +19,12 @@ echo "done"
 echo -n "patching docker/ci/Dockerfile ... "
 sed -i "s/LABEL_BUILD_DATE/${DATE}/" dev/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "... failed (see above)!"
+    >&2 echo "failed (see above)!"
     exit 1
 fi
 sed -i "s/LABEL_VCS_REF/${VCS_REF}/" dev/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "... failed (see above)!"
+    >&2 echo "failed (see above)!"
     exit 1
 fi
 
@@ -36,18 +36,17 @@ docker build -t ghcr.io/dune-gdt/dune-gdt/dev:${HASH} -f dev/Dockerfile dev/
 
 if [[ $? != 0 ]] ; then
     >&2 echo "======================================================================================================="
-    >&2 echo "... failed (see above)!"
-    >&2 echo "restoring docker/dev/Dockerfile ..."
-    git restore dev/Dockerfile
+    >&2 echo "building ... failed (see above)!"
+    >&2 echo "Remember to git restore docker/ci/Dockerfile before trying again!"
     exit 1
 fi
 
 echo "======================================================================================================="
-echo "... done!"
+echo "building ... done!"
 echo -n "restoring docker/dev/Dockerfile ... "
 git restore dev/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "... failed (see above)!"
+    >&2 echo "failed (see above)!"
     exit 1
 fi
 echo "done"
