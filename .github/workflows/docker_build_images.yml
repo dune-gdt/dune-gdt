@@ -23,3 +23,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build dev image
         run: ./docker/build_dev.sh
+      - name: Publish dev image
+        run: docker push ghcr.io/${{ github.repository }}:$(./docker/compute_dev_hash.sh)
