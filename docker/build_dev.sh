@@ -1,16 +1,25 @@
 #!/bin/bash
 
-# the dir containing this script is the base
 BASEDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P)"
-
 cd "${BASEDIR}"
-export HASH=$(sha256sum dev/* | sha256sum | cut -d ' ' -f 1)
-echo "======================================================================================================="
-echo "Building ghcr.io/dune-gdt/dune-gdt/dev:${HASH}"
-echo "======================================================================================================="
 
-docker build -t ghcr.io/dune-gdt/dune-gdt/dev:${HASH} -f dev/Dockerfile dev/
+# ensure there are no open changes, as the commit hash will enter the docker image
+./check_for_clean_working_dir.sh
+if [[ $? != 0 ]] ; then
+    >&2 echo "ERROR: refusing to build docker image in dirty working directory!"
+    exit 1
+fi
 
+echo -n "computing hash used to tag the docker image: "
+export HASH=$(./compute_dev_hash.sh)
+echo "${HASH}"
+
+DATE=$(date -u -Iseconds)
+echo -n "patching docker/dev/Dockerfile with current time ${DATE} and commit "
+export VCS_REF=$(git log -1 --pretty=format:"%H")
+echo -n "${VCS_REF::8}: "
+
+sed -i "s/LABEL_BUILD_DATE/${DATE}/" dev/Dockerfile
 if [[ $? != 0 ]] ; then
     >&2 echo "======================================================================================================="
     >&2 echo "... failed (see above)!"
@@ -18,8 +27,42 @@ if [[ $? != 0 ]] ; then
     exit 1
 fi
 
+sed -i "s/LABEL_VCS_REF/${VCS_REF}/" dev/Dockerfile
+if [[ $? != 0 ]] ; then
+    >&2 echo "======================================================================================================="
+    >&2 echo "... failed (see above)!"
+    >&2 echo "======================================================================================================="
+    exit 1
+fi
+
+echo "done"
+echo "building ghcr.io/dune-gdt/dune-gdt/dev:${HASH}"
+echo "======================================================================================================="
+
+docker build -t ghcr.io/dune-gdt/dune-gdt/dev:${HASH} -f dev/Dockerfile dev/
+
+cd "${BASEDIR}/.."
+
+if [[ $? != 0 ]] ; then
+    >&2 echo "======================================================================================================="
+    >&2 echo "... failed (see above)!"
+    >&2 echo "restoring docker/dev/Dockerfile ..."
+    git restore docker/dev/Dockerfile
+    >&2 echo "======================================================================================================="
+    exit 1
+fi
+
 echo "======================================================================================================="
 echo "... done!"
+echo -n "restoring docker/dev/Dockerfile ... "
+git restore docker/dev/Dockerfile
+if [[ $? != 0 ]] ; then
+    >&2 echo "======================================================================================================="
+    >&2 echo "... failed (see above)!"
+    >&2 echo "======================================================================================================="
+    exit 1
+fi
+echo "done"
 echo "======================================================================================================="
 echo "Execute"
 echo "    docker push ghcr.io/dune-gdt/dune-gdt/dev:${HASH}"
@@ -28,19 +71,5 @@ echo "    docker tag ghcr.io/dune-gdt/dune-gdt/dev:${HASH} ghcr.io/dune-gdt/dune
 echo "    docker push ghcr.io/dune-gdt/dune-gdt/dev:latest"
 echo "to overwrite the latest tag."
 echo "======================================================================================================="
-echo "Updating docker/ci/Dockerfile ..."
-
-sed -i \
-    "s;^FROM ghcr.io/dune-gdt/dune-gdt/dev:.*$;FROM ghcr.io/dune-gdt/dune-gdt/dev:${HASH};" \
-    "${BASEDIR}/ci/Dockerfile"
-
-if [[ $? != 0 ]] ; then
-    >&2 echo "======================================================================================================="
-    >&2 echo "... failed (see above)!"
-    >&2 echo "======================================================================================================="
-    exit 1
-fi
-
-echo "... done!"
 echo "Consider to run ./docker/build_ci.sh next!"
 echo "======================================================================================================="

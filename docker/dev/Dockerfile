@@ -84,12 +84,13 @@ ADD entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # see http://label-schema.org/rc1/#build-time-labels
-LABEL org.label-schema.build-date=2023-06-14T09:14:39Z \
+LABEL org.label-schema.build-date=LABEL_BUILD_DATE \
       org.label-schema.name=debian-full \
       org.label-schema.maintainer=felix.schindler@uni-muenster.de \
       org.label-schema.description="Development environment for dune-gdt" \
       org.label-schema.url="https://github.com/dune-gdt/dune-gdt" \
-      org.label-schema.vcs-ref=b1b052c345d0d9866c1d30d8b20264018861612a \
+      org.label-schema.vcs-ref=LABEL_VCS_REF \
       org.label-schema.vcs-url="https://github.com/dune-gdt/dune-gdt" \
       org.label-schema.schema-version="1.0" \
-      org.label-schema.usage="https://github.com/dune-gdt/dune-gdt/blob/master/README.md"
+      org.label-schema.usage="https://github.com/dune-gdt/dune-gdt/blob/master/README.md" \
+      org.opencontainers.image.source="https://github.com/dune-gdt/dune-gdt"
