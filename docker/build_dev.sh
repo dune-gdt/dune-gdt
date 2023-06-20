@@ -10,28 +10,21 @@ if [[ $? != 0 ]] ; then
     exit 1
 fi
 
-echo -n "computing hash used to tag the docker image: "
+echo -n "computing hashes of current state ... "
 export HASH=$(./compute_dev_hash.sh)
-echo "${HASH}"
-
-DATE=$(date -u -Iseconds)
-echo -n "patching docker/dev/Dockerfile with current time ${DATE} and commit "
+export DATE=$(date -u -Iseconds)
 export VCS_REF=$(git log -1 --pretty=format:"%H")
-echo -n "${VCS_REF::8}: "
+echo "done"
 
+echo -n "patching docker/ci/Dockerfile ... "
 sed -i "s/LABEL_BUILD_DATE/${DATE}/" dev/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "======================================================================================================="
     >&2 echo "... failed (see above)!"
-    >&2 echo "======================================================================================================="
     exit 1
 fi
-
 sed -i "s/LABEL_VCS_REF/${VCS_REF}/" dev/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "======================================================================================================="
     >&2 echo "... failed (see above)!"
-    >&2 echo "======================================================================================================="
     exit 1
 fi
 
@@ -41,25 +34,20 @@ echo "==========================================================================
 
 docker build -t ghcr.io/dune-gdt/dune-gdt/dev:${HASH} -f dev/Dockerfile dev/
 
-cd "${BASEDIR}/.."
-
 if [[ $? != 0 ]] ; then
     >&2 echo "======================================================================================================="
     >&2 echo "... failed (see above)!"
     >&2 echo "restoring docker/dev/Dockerfile ..."
-    git restore docker/dev/Dockerfile
-    >&2 echo "======================================================================================================="
+    git restore dev/Dockerfile
     exit 1
 fi
 
 echo "======================================================================================================="
 echo "... done!"
 echo -n "restoring docker/dev/Dockerfile ... "
-git restore docker/dev/Dockerfile
+git restore dev/Dockerfile
 if [[ $? != 0 ]] ; then
-    >&2 echo "======================================================================================================="
     >&2 echo "... failed (see above)!"
-    >&2 echo "======================================================================================================="
     exit 1
 fi
 echo "done"

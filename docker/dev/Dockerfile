@@ -85,7 +85,7 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # see http://label-schema.org/rc1/#build-time-labels
 LABEL org.label-schema.build-date=LABEL_BUILD_DATE \
-      org.label-schema.name=debian-full \
+      org.label-schema.name=dev \
       org.label-schema.maintainer=felix.schindler@uni-muenster.de \
       org.label-schema.description="Development environment for dune-gdt" \
       org.label-schema.url="https://github.com/dune-gdt/dune-gdt" \
