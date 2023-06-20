@@ -24,4 +24,8 @@ jobs:
       - name: Build dev image
         run: ./docker/build_dev.sh
       - name: Publish dev image
-        run: docker push ghcr.io/${{ github.repository }}:$(./docker/compute_dev_hash.sh)
+        run: docker push ghcr.io/${{ github.repository }}/dev:$(./docker/compute_dev_hash.sh)
+      - name: Build ci image
+        run: ./docker/build_ci.sh
+      - name: Publish ci image
+        run: docker push ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
