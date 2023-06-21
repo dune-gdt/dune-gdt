@@ -25,6 +25,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
+        name: Print debug information
+        run: |
+          git status && \
+          git log -1 --pretty=format:"%H" && \
+          ./docker/compute_dev_hash.sh && \
+          ./docker/compute_dev_hash.sh
+      -
         name: Build dev image
         run: ./docker/build_dev.sh
       -
