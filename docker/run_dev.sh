@@ -3,6 +3,7 @@
 # the dir containing this script is needed for mounting stuff into the container
 PROJECTDIR="$(cd "$(dirname ${BASH_SOURCE[0]})/.." ;  pwd -P)"
 CONTAINER=ghcr.io/dune-gdt/dune-gdt/dev
+TAG=${TAG:-$(./docker/compute_dev_hash.sh)}
 CID_FILE=/tmp/${CONTAINER//\//_}_${USER}.cid
 PORT="18$(( ( RANDOM % 10 ) ))$(( ( RANDOM % 10 ) ))$(( ( RANDOM % 10 ) ))"
 DOCKER_BIN=${DOCKER:-docker}
@@ -33,7 +34,7 @@ fi
 
 echo "======================================================================================"
 echo "  Starting a dev docker container for dune-gdt"
-echo "  - based on container ${CONTAINER}"
+echo "  - based on ${CONTAINER}:${TAG}"
 echo "  - with exposed port ${PORT}"
 echo "  The root user within the container is mapped to the current user $USER on the host"
 echo "  - files created as root within the container will belong to $USER on the host"
@@ -66,7 +67,7 @@ ${DOCKER_BIN} run --rm=true --privileged=true -t -i --hostname docker --cidfile=
   -v /etc/localtime:/etc/localtime:ro \
   -v "${DOCKER_HOME}":/root \
   -v "${SOURCE}":"${TARGET}" \
-  ${CONTAINER} "cd ~/dune-gdt && ${EXEC}"
+  ${CONTAINER}:${TAG} "cd ~/dune-gdt && ${EXEC}"
 
 echo
 echo "Removing ${CID_FILE}"

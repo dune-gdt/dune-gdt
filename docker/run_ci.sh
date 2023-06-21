@@ -7,6 +7,7 @@ fi
 # the dir containing this script is needed for mounting stuff into the container
 PROJECTDIR="$(cd "$(dirname ${BASH_SOURCE[0]})/.." ;  pwd -P)"
 CONTAINER=ghcr.io/dune-gdt/dune-gdt/ci
+TAG=${TAG:-$(./docker/compute_ci_hash.sh)}
 PORT="18$(( ( RANDOM % 10 ) ))$(( ( RANDOM % 10 ) ))$(( ( RANDOM % 10 ) ))"
 DOCKER_BIN=${DOCKER:-docker}
 SOURCE=${PROJECTDIR}
@@ -27,4 +28,4 @@ ${DOCKER_BIN} run --rm=true --privileged=true -t -i --hostname docker \
   -v /etc/localtime:/etc/localtime:ro \
   -v "${SOURCE}":"${TARGET}" \
   -v "${BUILDDIR}":"/build/${OPTS}/dune-gdt" \
-  ${CONTAINER} "${@}"
+  ${CONTAINER}:${TAG} "${@}"
