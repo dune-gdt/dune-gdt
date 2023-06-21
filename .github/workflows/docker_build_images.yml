@@ -39,7 +39,7 @@ jobs:
           name: dev
           path: |
             ./docker/dev
-            ./docker/compute_ci_hash.sh
+            ./docker/compute_dev_hash.sh
       -
         name: Upload ci artifacts
         uses: actions/upload-artifact@v3
