@@ -14,11 +14,12 @@ RUN \
     git submodule update --init --recursive && \
     for OPTS in gcc-debug.ninja; do \
         virtualenv -p python3.9 /venvs/venv-${OPTS} && \
-        echo 'export DCTL_ARGS="--opts=./deps/config.opts/${OPTS} --builddir=/build/${OPTS}"' >> /venvs/venv-${OPTS}/bin/activate && \
-        echo "cd /source" >> /venvs/venv-${OPTS}/bin/activate \
-        . /venvs/venv-${OPTS}/bin/activate && \
-        WERROR=0 ./deps/dune-common/bin/dunecontrol ${DCTL_ARGS} configure && \
-        ./deps/dune-common/bin/dunecontrol ${DCTL_ARGS} all \
+        echo "export DUNECONTROL=\"cd /source && ./deps/dune-common/bin/dunecontrol --opts=./deps/config.opts/${OPTS} --builddir=/build/${OPTS}\" " > /venvs/${OPTS}.sh && \
+        echo ". /venvs/venv-${OPTS}/bin/activate" >> /venvs/${OPTS}.sh && \
+        echo "cd /source" >> /venvs/${OPTS}.sh \
+        . /venvs/${OPTS}.sh && \
+        WERROR=0 ${DUNECONTROL} configure && \
+        ${DUNECONTROL} all \
     ; done && \
     rm -rf /build/${OPTS}/dune-gdt
 
