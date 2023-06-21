@@ -28,9 +28,9 @@ jobs:
         name: Print debug information
         run: |
           echo "Git status:" && git status && \
-          echo "\n\nGit ref: " && git log -1 --pretty=format:"%H" && \
-          echo "\n\nDev hash: " && ./docker/compute_dev_hash.sh && \
-          sha256sum ./docker/dev/* compute_dev_hash.sh | sha256sum | cut -d ' ' -f 1
+          echo "Git ref: " && git log -1 --pretty=format:"%H" && echo && x\
+          echo "Dev hash: " && ./docker/compute_dev_hash.sh && \
+          sha256sum ./docker/dev/* ./docker/compute_dev_hash.sh | sha256sum | cut -d ' ' -f 1
       -
         name: Upload dev artifacts
         uses: actions/upload-artifact@v3
