@@ -12,21 +12,27 @@ jobs:
     runs-on: ubuntu-22.04
     permissions: write-all
     steps:
-      - name: Checkout
+      -
+        name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ inputs.GIT_REF }}
-      - name: Login to Github Packages
+      -
+        name: Login to Github Packages
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build dev image
+      -
+        name: Build dev image
         run: ./docker/build_dev.sh
-      - name: Publish dev image
+      -
+        name: Publish dev image
         run: docker push ghcr.io/${{ github.repository }}/dev:$(./docker/compute_dev_hash.sh)
-      - name: Build ci image
+      -
+        name: Build ci image
         run: ./docker/build_ci.sh
-      - name: Publish ci image
+      -
+        name: Publish ci image
         run: docker push ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
