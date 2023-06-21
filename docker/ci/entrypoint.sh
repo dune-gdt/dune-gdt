@@ -12,7 +12,7 @@ echo '[entrypoint] ensure to append ${DCTL_ARGS} when calling dunecontrol'
 echo
 
 if [ "X$@" == "X" ]; then
-    exec /bin/bash --rcfile <(cat /root/.bashrc; cat /venvs/venv-${OPTS}/bin/activate)
+    exec /bin/bash --rcfile <(cat /root/.bashrc; cat /source/ENV-${OPTS})
 else
-    exec /bin/bash -c ". /venvs/venv-${OPTS}/bin/activate && $@"
+    exec /bin/bash -c ". /source/ENV-${OPTS} && $@"
 fi
