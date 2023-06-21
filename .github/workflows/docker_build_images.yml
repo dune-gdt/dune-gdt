@@ -30,7 +30,8 @@ jobs:
           echo "Git status:" && git status && \
           echo "Git ref: " && git log -1 --pretty=format:"%H" && echo && \
           echo "Dev hash: " && ./docker/compute_dev_hash.sh && \
-          sha256sum ./docker/dev/* ./docker/compute_dev_hash.sh | sha256sum | cut -d ' ' -f 1
+          echo "Individual hashes: " && sha256sum ./docker/dev/* ./docker/compute_dev_hash.sh && \
+          echo "manual dev hash: " && sha256sum ./docker/dev/* ./docker/compute_dev_hash.sh | sha256sum | cut -d ' ' -f 1
       -
         name: Upload dev artifacts
         uses: actions/upload-artifact@v3
