@@ -36,9 +36,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: dev
-          path: |
-            ./docker/dev
-            ./docker/compute_ci_hash.sh
+          path: ./docker/dev
       -
         name: Upload ci artifacts
         uses: actions/upload-artifact@v3
