@@ -1,0 +1,55 @@
+name: "build and test"
+
+on:
+  merge_group:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-22.04
+    shell: bash -l {0}
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.GIT_REF }}
+      -
+        name: Login to Github Packages
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -
+        name: Pull ci image
+        run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
+      -
+        name: Abort with meaningful error message
+        if: ${{ failure() }}
+        run: |
+          echo "There was an error pulling the required ci docker image (see previous action)!"
+          echo "This often happens if there is no image available for the required hash:"
+          echo "    ./docker/compute_ci_hash.sh gives"
+          echo "    $(./docker/compute_ci_hash.sh)"
+          echo "Consider to generate the required images by visiting"
+          echo "    https://github.com/dune-gdt/dune-gdt/actions/workflows/docker_build_images.yml"
+          echo "and running the workflow (butten in the upper right) for the current branch!"
+          exit 1
+  cpp_tests:
+    name: Build and run C++ tests
+    needs: preflight
+    runs-on: ubuntu-22.04
+    shell: bash -l {0}
+    env:
+      OPTS: gcc-debug.ninja
+    steps:
+      -
+        name: Configure
+        run: |
+          echo ${OPTS}
+
