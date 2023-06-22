@@ -1,4 +1,4 @@
-name: "build and test"
+name: "Build and test"
 
 on:
   merge_group:
@@ -41,7 +41,6 @@ jobs:
     name: Build and run C++ tests
     needs: preflight
     runs-on: ubuntu-22.04
-    shell: bash -l {0}
     env:
       OPTS: gcc-debug.ninja
     steps:
@@ -49,4 +48,3 @@ jobs:
         name: Configure
         run: |
           echo ${OPTS}
-
