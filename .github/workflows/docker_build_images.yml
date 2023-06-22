@@ -25,13 +25,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Build dev image
+        name: Try to pull dev image
+        run: docker pull ghcr.io/${{ github.repository }}/dev:$(./docker/compute_dev_hash.sh)
+      -
+        name: Build dev image (if not present)
+        if: ${{ failure() }}
         run: ./docker/build_dev.sh
       -
         name: Publish dev image
         run: docker push ghcr.io/${{ github.repository }}/dev:$(./docker/compute_dev_hash.sh)
       -
-        name: Build ci image
+        name: Try to pull ci image
+        run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
+      -
+        name: Build ci image (if not present)
+        if: ${{ failure() }}
         run: ./docker/build_ci.sh
       -
         name: Publish ci image
