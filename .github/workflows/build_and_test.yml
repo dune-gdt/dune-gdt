@@ -51,6 +51,15 @@ jobs:
         run: |
           OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
       -
+        name: Upload error logs in case of failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: configure_log_${OPTS}
+          path: |
+            /build/gcc-debug.ninja/dune-gdt/CMakeFiles/CMakeOutput.log
+            /build/gcc-debug.ninja/dune-gdt/CMakeFiles/CMakeError.log
+      -
         name: Check headers
         run: |
           OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} dxt_headercheck'
