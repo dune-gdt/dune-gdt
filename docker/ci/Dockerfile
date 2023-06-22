@@ -18,8 +18,8 @@ RUN \
         echo ". /venvs/venv-${OPTS}/bin/activate" >> /venvs/${OPTS}.sh && \
         echo "cd /source" >> /venvs/${OPTS}.sh && \
         . /venvs/${OPTS}.sh && \
-        WERROR=0 ${DUNECONTROL} configure && \
-        ${DUNECONTROL} all \
+        WERROR=0 /source/deps/dune-common/bin/dunecontrol --opts=./deps/config.opts/${OPTS} --builddir=/build/${OPTS} configure && \
+        /source/deps/dune-common/bin/dunecontrol --opts=./deps/config.opts/${OPTS} --builddir=/build/${OPTS} all \
     ; done && \
     rm -rf /build/${OPTS}/dune-gdt
 
