@@ -45,6 +45,11 @@ jobs:
       OPTS: gcc-debug.ninja
     steps:
       -
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.GIT_REF }}
+      -
         name: Configure
         run: |
           OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
@@ -61,6 +66,11 @@ jobs:
       DXT_TEST_TIMEOUT: 1200
       DXT_TEST_PROCS: 2
     steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.GIT_REF }}
       -
         name: Configure
         run: |
@@ -84,6 +94,11 @@ jobs:
     env:
       OPTS: gcc-debug.ninja
     steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.GIT_REF }}
       -
         name: Configure
         run: |
