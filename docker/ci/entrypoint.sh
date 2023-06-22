@@ -8,7 +8,7 @@ fi
 export LANG=en_US.UTF-8
 echo "127.0.0.1 ${HOSTNAME}" >> /etc/hosts
 
-echo '[entrypoint] ensure to append ${DCTL_ARGS} when calling dunecontrol'
+echo '[entrypoint] use ${DUNECONTROL} to configure and build dune-gdt'
 echo
 
 if [ "X$@" == "X" ]; then
