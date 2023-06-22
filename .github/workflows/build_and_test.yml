@@ -37,8 +37,8 @@ jobs:
           echo "    https://github.com/dune-gdt/dune-gdt/actions/workflows/docker_build_images.yml"
           echo "and running the workflow (butten in the upper right) for the current branch!"
           exit 1
-  cpp_tests:
-    name: Build and run C++ tests
+  headerchecks:
+    name: Check headers
     needs: preflight
     runs-on: ubuntu-22.04
     env:
@@ -47,4 +47,60 @@ jobs:
       -
         name: Configure
         run: |
-          echo ${OPTS}
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
+      -
+        name: Check headers
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} dxt_headercheck'
+  cpp_tests:
+    name: Build and run C++ tests
+    needs: preflight
+    runs-on: ubuntu-22.04
+    env:
+      OPTS: gcc-debug.ninja
+      DXT_TEST_TIMEOUT: 1200
+      DXT_TEST_PROCS: 2
+    steps:
+      -
+        name: Configure
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
+      -
+        name: Build all
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} all'
+      -
+        name: Build tests
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} bexec ninja test_binaries'
+      -
+        name: Run tests
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} bexec ctest '"-V --timeout ${DXT_TEST_TIMEOUT} -j ${DXT_TEST_PROCS}"
+  python_bindings_and_tests:
+    name: Build Python bindings and run Python tests
+    needs: preflight
+    runs-on: ubuntu-22.04
+    env:
+      OPTS: gcc-debug.ninja
+    steps:
+      -
+        name: Configure
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
+      -
+        name: Build all
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} all'
+      -
+        name: Build bindings
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} bexec "ninja bindings_no_ext"'
+      -
+        name: Install dependencies into virtualenv
+        run: |
+          python -m pip install pytest pytest-cov hypothesis codecov
+      -
+        name: Run Python tests
+        run: |
+          OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} bexec "ninja test_python"'
