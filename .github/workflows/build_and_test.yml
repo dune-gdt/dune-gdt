@@ -26,7 +26,7 @@ jobs:
         name: Pull ci image
         run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
       -
-        name: Abort with meaningful error message
+        name: Abort with meaningful error message (on failure)
         if: ${{ failure() }}
         run: |
           echo "There was an error pulling the required ci docker image (see previous action)!"
