@@ -9,7 +9,6 @@ jobs:
   preflight:
     name: Preflight
     runs-on: ubuntu-22.04
-    shell: bash -l {0}
     steps:
       -
         name: Checkout
