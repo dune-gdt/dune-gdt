@@ -36,7 +36,7 @@ jobs:
         runs-on: ubuntu-22.04
         needs: matrix-setup
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                 submodules: true
             - name: Docker meta
@@ -58,7 +58,7 @@ jobs:
         permissions:
             packages: write
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
               with:
                 submodules: true
                 # version info generation needs potentially all commits
