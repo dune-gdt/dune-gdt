@@ -178,8 +178,8 @@ struct EigenSolverTest : public ::testing::Test
         }
       } catch (const Dune::MathError&) {
         if (tolerance > 0) {
-          FAIL() << "Dune::MathError thrown when trying to get eigenvalues!"
-                 << "\n\ntype: " << tp << "\n\ntolerance: " << tolerance;
+          FAIL() << "Dune::MathError thrown when trying to get eigenvalues!" << "\n\ntype: " << tp
+                 << "\n\ntolerance: " << tolerance;
         }
       }
     }
@@ -221,8 +221,7 @@ struct EigenSolverTest : public ::testing::Test
           }
       } catch (const Dune::MathError&) {
         if (tolerance > 0) {
-          FAIL() << "Dune::MathError thrown in eigensolver!"
-                 << "\n\ntype: " << tp << "\n\ntolerance: " << tolerance;
+          FAIL() << "Dune::MathError thrown in eigensolver!" << "\n\ntype: " << tp << "\n\ntolerance: " << tolerance;
         }
       }
     }

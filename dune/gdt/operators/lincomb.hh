@@ -184,8 +184,7 @@ public:
         DUNE_THROW_IF(!opts.empty() && !back_op_opts.empty() && (op_opts != back_op_opts),
                       Exceptions::operator_error,
                       "Conflicting opts specified for operator " << ii << " (once as op." << ii << ", onse as back_op."
-                                                                 << back_ii << ", see below)!"
-                                                                 << "\n\n"
+                                                                 << back_ii << ", see below)!" << "\n\n"
                                                                  << opts);
       }
       if (op_opts.empty())

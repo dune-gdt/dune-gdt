@@ -132,9 +132,8 @@ protected:
     // check options
     if (!options_.has_key("type"))
       DUNE_THROW(Exceptions::matrix_invert_failed_bc_it_was_not_set_up_correctly,
-                 "Missing 'type' in given options!"
-                     << "\n\nThese were the given options:\n\n"
-                     << options_);
+                 "Missing 'type' in given options!" << "\n\nThese were the given options:\n\n"
+                                                    << options_);
     internal::ensure_matrix_inverter_type(options_.get<std::string>("type"),
                                           MatrixInverterOptions<MatrixType, true>::types());
     const Common::Configuration default_opts =

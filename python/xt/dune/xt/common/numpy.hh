@@ -52,13 +52,10 @@ auto access_array(const pybind11::array_t<T>& array,
   DUNE_THROW_IF(!all_good,
                 XT::Common::Exceptions::shapes_do_not_match,
                 (array_name.empty() ? "numpy.ndarray" : array_name)
-                    << " has wrong shape!"
-                    << "\n   "
-                    << "should be "
+                    << " has wrong shape!" << "\n   " << "should be "
                     << (required_shape_docs.empty() ? to_string(required_shape)
                                                     : required_shape_docs + ": " + to_string(required_shape))
-                    << "\n   "
-                    << "is " << print_shape(array) << "!");
+                    << "\n   " << "is " << print_shape(array) << "!");
   // return access
   return array.template unchecked<ndim>();
 } // ... access_array(...)
@@ -81,13 +78,10 @@ auto access_array(pybind11::array_t<T>& array,
   DUNE_THROW_IF(!all_good,
                 XT::Common::Exceptions::shapes_do_not_match,
                 (array_name.empty() ? "numpy.ndarray" : array_name)
-                    << " has wrong shape!"
-                    << "\n   "
-                    << "should be "
+                    << " has wrong shape!" << "\n   " << "should be "
                     << (required_shape_docs.empty() ? to_string(required_shape)
                                                     : required_shape_docs + ": " + to_string(required_shape))
-                    << "\n   "
-                    << "is " << print_shape(array) << "!");
+                    << "\n   " << "is " << print_shape(array) << "!");
   // return access
   return array.template mutable_unchecked<ndim>();
 } // ... access_array(...)

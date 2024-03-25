@@ -62,7 +62,7 @@ def common_test_tuple(args, xt):
     if len(fs) == 1:
         fvec = f
     elif r.startswith('FieldVector'):
-        fvec = '{},{}'.format(fs[0], fs[1] if len(fs) == 3 else int(fs[1]) * int(fs[2]))
+        fvec = f'{fs[0]},{fs[1] if len(fs) == 3 else int(fs[1]) * int(fs[2])}'
     else:
         fvec = f'{fs[0]},{fs[1]},{fs[2]}'
     f.replace('complex', 'std::complex<double>')

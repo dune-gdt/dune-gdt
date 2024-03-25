@@ -77,9 +77,8 @@ public:
 #ifndef NDEBUG
     if (vec.size() != SIZE)
       DUNE_THROW(Exceptions::wrong_input_given,
-                 "You are trying to construct a FieldVector< ..., " << SIZE << " > (of "
-                                                                    << "static size) from a vector of size "
-                                                                    << vec.size() << "!");
+                 "You are trying to construct a FieldVector< ..., "
+                     << SIZE << " > (of " << "static size) from a vector of size " << vec.size() << "!");
 #endif // NDEBUG
     for (size_t ii = 0; ii < SIZE; ++ii)
       this->operator[](ii) = vec[ii];
@@ -91,9 +90,8 @@ public:
 #ifndef NDEBUG
     if (list.size() != SIZE)
       DUNE_THROW(Exceptions::wrong_input_given,
-                 "You are trying to construct a FieldVector< ..., " << SIZE << " > (of "
-                                                                    << "static size) from a list of size "
-                                                                    << list.size() << "!");
+                 "You are trying to construct a FieldVector< ..., "
+                     << SIZE << " > (of " << "static size) from a list of size " << list.size() << "!");
 #endif // NDEBUG
     size_t ii = 0;
     for (auto element : list)
@@ -451,8 +449,8 @@ struct VectorAbstraction<Dune::XT::Common::FieldVector<K, SIZE>>
   {
     if (sz != SZ)
       DUNE_THROW(Exceptions::wrong_input_given,
-                 "You are trying to construct a FieldVector< ..., " << SZ << " > (of "
-                                                                    << "static size) with " << sz << " elements!");
+                 "You are trying to construct a FieldVector< ..., " << SZ << " > (of " << "static size) with " << sz
+                                                                    << " elements!");
     return VectorTypeTemplate<SZ>(val);
   }
 };
@@ -477,8 +475,8 @@ struct VectorAbstraction<Dune::XT::Common::BlockedFieldVector<K, num_blocks, blo
     static_assert(SZ == static_size, "Creation of Vector with different size not implemented!");
     if (sz != SZ)
       DUNE_THROW(Exceptions::wrong_input_given,
-                 "You are trying to construct a FieldVector< ..., " << SZ << " > (of "
-                                                                    << "static size) with " << sz << " elements!");
+                 "You are trying to construct a FieldVector< ..., " << SZ << " > (of " << "static size) with " << sz
+                                                                    << " elements!");
     return VectorType(val);
   }
 };

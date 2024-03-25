@@ -74,7 +74,8 @@ struct IntegrandTest : public ::testing::Test
     grid_provider_ = make_grid();
     // {x, x^2 y}
     scalar_ansatz_ = std::make_shared<LocalScalarBasisType>(
-        /*size = */ 2,
+        /*size = */
+        2,
         /*ord = */ 3,
         /*evaluate = */
         [](const DomainType& x, std::vector<ScalarRangeType>& ret, const XT::Common::Parameter&) {
@@ -89,7 +90,8 @@ struct IntegrandTest : public ::testing::Test
         });
     // {y, x y^3}
     scalar_test_ = std::make_shared<LocalScalarBasisType>(
-        /*size = */ 2,
+        /*size = */
+        2,
         /*ord = */ 4,
         /*evaluate = */
         [](const DomainType& x, std::vector<ScalarRangeType>& ret, const XT::Common::Parameter&) {
@@ -104,7 +106,8 @@ struct IntegrandTest : public ::testing::Test
         });
     // { (x,y)^T, (x^2, y^2)^T}
     vector_ansatz_ = std::make_shared<LocalVectorBasisType>(
-        /*size = */ 2,
+        /*size = */
+        2,
         /*ord = */ 2,
         /*evaluate = */
         [](const DomainType& x, std::vector<VectorRangeType>& ret, const XT::Common::Parameter&) {
@@ -122,7 +125,8 @@ struct IntegrandTest : public ::testing::Test
         });
     // { (x,y)^T, (x^2, y^2)^T}
     vector_test_ = std::make_shared<LocalVectorBasisType>(
-        /*size = */ 2,
+        /*size = */
+        2,
         /*ord = */ 2,
         /*evaluate = */
         [](const DomainType& x, std::vector<VectorRangeType>& ret, const XT::Common::Parameter&) {

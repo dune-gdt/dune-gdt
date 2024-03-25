@@ -300,8 +300,7 @@ public:
 
   void apply_local(const E& element) override
   {
-    LOG_(debug) << "apply_local(element=" << print(element) << ")"
-                << "\n"
+    LOG_(debug) << "apply_local(element=" << print(element) << ")" << "\n"
                 << "  applying " << element_data_.size() << " local operators ..." << std::endl;
     if (element_data_.size() > 0)
       local_range_inside_->bind(element);
@@ -318,8 +317,7 @@ public:
   void apply_local(const I& intersection, const E& inside_element, const E& outside_element) override
   {
     LOG_(debug) << "apply_local(intersection=" << print(intersection) << ", inside_element=" << print(inside_element)
-                << ", outside_element=" << print(outside_element) << ")"
-                << "\n"
+                << ", outside_element=" << print(outside_element) << ")" << "\n"
                 << "  applying " << intersection_data_.size() << " local operators ..." << std::endl;
     if (intersection_data_.size() > 0) {
       local_range_inside_->bind(inside_element);

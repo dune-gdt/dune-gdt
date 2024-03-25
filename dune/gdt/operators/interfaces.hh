@@ -256,8 +256,7 @@ public:
                      const XT::Common::Parameter& param = {}) const
   {
     LOG_(debug) << "apply(source_function=" << &source_function
-                << ", discrete_range_function=" << &discrete_range_function << ", param=" << print(param) << ")"
-                << "\n"
+                << ", discrete_range_function=" << &discrete_range_function << ", param=" << print(param) << ")" << "\n"
                 << "  redicrecting to discrete apply() variant ..." << std::endl;
     this->apply(source_function, discrete_range_function.dofs().vector(), param);
   }
@@ -265,8 +264,7 @@ public:
   virtual DiscreteRangeFunctionType apply(SourceFunctionType source_function,
                                           const XT::Common::Parameter& param = {}) const
   {
-    LOG_(debug) << "apply(source_function=" << &source_function << ", param=" << print(param) << ")"
-                << "\n"
+    LOG_(debug) << "apply(source_function=" << &source_function << ", param=" << print(param) << ")" << "\n"
                 << "  creating discrete_range_function and redicrecting to discrete apply() variant ..." << std::endl;
     DiscreteRangeFunctionType discrete_range_function(this->range_space());
     this->apply(source_function, discrete_range_function.dofs().vector(), param);
@@ -558,8 +556,7 @@ public:
       DUNE_THROW(Exceptions::operator_error,
                  "This DiscreteOperator reports to support jacobian(source_vector, opts) with any of the opts below,"
                      << "\n"
-                     << "but its implementation does not override the respective method!"
-                     << "\n\n"
+                     << "but its implementation does not override the respective method!" << "\n\n"
                      << print(opts));
     }
     DUNE_THROW(Exceptions::operator_error, "This DiscreteOperator does not support jacobian(source_vector)!");
@@ -658,8 +655,7 @@ public:
       newton_solve(*this, range_vector, source_vector, param, opts);
     } else
       DUNE_THROW(Exceptions::operator_error,
-                 "unknown apply_inverse type requested (" << type << "),"
-                                                          << "\n"
+                 "unknown apply_inverse type requested (" << type << ")," << "\n"
                                                           << "   available types are " << print(this->invert_options())
                                                           << std::endl);
   } // ... apply_inverse(...)
@@ -1053,8 +1049,8 @@ protected:
     const auto available_types = this->jacobian_options();
     DUNE_THROW_IF(!opts.has_key("type"),
                   Exceptions::operator_error,
-                  "missing key 'type' in given opts!"
-                      << "\n\n   available type: " << print(available_types) << "\n   opts = " << print(opts));
+                  "missing key 'type' in given opts!" << "\n\n   available type: " << print(available_types)
+                                                      << "\n   opts = " << print(opts));
     const auto type = opts.get<std::string>("type");
     DUNE_THROW_IF(std::find(available_types.begin(), available_types.end(), type) == available_types.end(),
                   Exceptions::operator_error,
@@ -1067,8 +1063,8 @@ protected:
     const auto available_types = this->invert_options();
     DUNE_THROW_IF(!opts.has_key("type"),
                   Exceptions::operator_error,
-                  "missing key 'type' in given opts!"
-                      << "\n\n   available type: " << print(available_types) << "\n   opts = " << print(opts));
+                  "missing key 'type' in given opts!" << "\n\n   available type: " << print(available_types)
+                                                      << "\n   opts = " << print(opts));
     const auto type = opts.get<std::string>("type");
     DUNE_THROW_IF(std::find(available_types.begin(), available_types.end(), type) == available_types.end(),
                   Exceptions::operator_error,
