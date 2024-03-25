@@ -171,14 +171,10 @@ auto bind_Matrix(pybind11::module& m)
       },
       "ii"_a,
       "jj"_a);
-  c.def(
-      "clear_row", [](C& self, const ssize_t ii) { self.clear_row(Common::numeric_cast<size_t>(ii)); }, "ii"_a);
-  c.def(
-      "clear_col", [](C& self, const ssize_t jj) { self.clear_row(Common::numeric_cast<size_t>(jj)); }, "jj"_a);
-  c.def(
-      "unit_row", [](C& self, const ssize_t ii) { self.unit_row(Common::numeric_cast<size_t>(ii)); }, "ii"_a);
-  c.def(
-      "unit_col", [](C& self, const ssize_t jj) { self.unit_col(Common::numeric_cast<size_t>(jj)); }, "jj"_a);
+  c.def("clear_row", [](C& self, const ssize_t ii) { self.clear_row(Common::numeric_cast<size_t>(ii)); }, "ii"_a);
+  c.def("clear_col", [](C& self, const ssize_t jj) { self.clear_row(Common::numeric_cast<size_t>(jj)); }, "jj"_a);
+  c.def("unit_row", [](C& self, const ssize_t ii) { self.unit_row(Common::numeric_cast<size_t>(ii)); }, "ii"_a);
+  c.def("unit_col", [](C& self, const ssize_t jj) { self.unit_col(Common::numeric_cast<size_t>(jj)); }, "jj"_a);
   c.def("valid", [](const C& self) { return self.valid(); });
   c.def("sup_norm", [](const C& self) { return self.sup_norm(); });
   c.def_property_readonly("non_zeros", [](const C& self) { return self.non_zeros(); });
@@ -231,13 +227,11 @@ auto bind_Matrix(pybind11::module& m)
       py::call_guard<py::gil_scoped_release>(),
       "prune"_a = false,
       "eps"_a = 1e-15);
-  c.def(
-      "__add__", [](const C& self, const C& other) { return std::make_unique<C>(self + other); }, py::is_operator());
+  c.def("__add__", [](const C& self, const C& other) { return std::make_unique<C>(self + other); }, py::is_operator());
   c.def("__iadd__", // function ptr signature required for the right return type
         static_cast<C& (C::*)(const C&)>(&C::operator+=),
         py::is_operator());
-  c.def(
-      "__sub__", [](const C& self, const C& other) { return std::make_unique<C>(self - other); }, py::is_operator());
+  c.def("__sub__", [](const C& self, const C& other) { return std::make_unique<C>(self - other); }, py::is_operator());
   c.def("__isub__", // function ptr signature required for the right return type
         static_cast<C& (C::*)(const C&)>(&C::operator-=),
         py::is_operator());
@@ -289,8 +283,7 @@ auto bind_Matrix(pybind11::module& m)
 template <class M, class V>
 void addbind_Matrix_Vector_interaction(pybind11::class_<M>& mat, pybind11::class_<V>& vec)
 {
-  mat.def(
-      "mv", [](const M& self, const V& xx, V& yy) { self.mv(xx, yy); }, "source", "range");
+  mat.def("mv", [](const M& self, const V& xx, V& yy) { self.mv(xx, yy); }, "source", "range");
   mat.def(
       "dot",
       [](const M& self, const V& xx) {
@@ -307,8 +300,7 @@ void addbind_Matrix_Vector_interaction(pybind11::class_<M>& mat, pybind11::class
         return yy;
       },
       "source");
-  mat.def(
-      "mtv", [](const M& self, const V& xx, V& yy) { self.mtv(xx, yy); }, "source", "range");
+  mat.def("mtv", [](const M& self, const V& xx, V& yy) { self.mtv(xx, yy); }, "source", "range");
 
   mat.def("vector_type", [vec](M& /*self*/) { return vec; });
   vec.def("matrix_type", [mat](V& /*self*/) { return mat; });

@@ -159,7 +159,8 @@ protected:
     const auto op = this->make_lhs_operator(space);
     const auto max_sup_norm = max_overshoot * u_0.dofs().vector().sup_norm();
     return XT::Common::find_largest_by_bisection(
-        /*min_dt=*/10 * std::numeric_limits<double>::epsilon(),
+        /*min_dt=*/
+            10 * std::numeric_limits<double>::epsilon(),
         /*max_dt=*/this->T_end_,
         /*success=*/
         [&](const auto& dt_to_test) {
@@ -191,7 +192,8 @@ protected:
     const auto op = this->make_lhs_operator(space);
     const auto max_sup_norm = max_overshoot * u_0.dofs().vector().sup_norm();
     return XT::Common::find_largest_by_bisection(
-        /*min_dt=*/min_dt,
+        /*min_dt=*/
+        min_dt,
         /*max_dt=*/T_end,
         /*success=*/
         [&](const auto& dt_to_test) {

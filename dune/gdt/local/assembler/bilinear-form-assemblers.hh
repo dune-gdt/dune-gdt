@@ -74,12 +74,12 @@ public:
                << std::endl;
     DUNE_THROW_IF(global_matrix_.rows() != test_space_->mapper().size(),
                   XT::Common::Exceptions::shapes_do_not_match,
-                  "global_matrix_.rows() = " << global_matrix_.rows() << "\n  "
-                                             << "test_space_->mapper().size()" << test_space_->mapper().size());
+                  "global_matrix_.rows() = " << global_matrix_.rows() << "\n  " << "test_space_->mapper().size()"
+                                             << test_space_->mapper().size());
     DUNE_THROW_IF(global_matrix_.cols() != ansatz_space_->mapper().size(),
                   XT::Common::Exceptions::shapes_do_not_match,
-                  "global_matrix_.cols() = " << global_matrix_.cols() << "\n  "
-                                             << "ansatz_space_->mapper().size()" << ansatz_space_->mapper().size());
+                  "global_matrix_.cols() = " << global_matrix_.cols() << "\n  " << "ansatz_space_->mapper().size()"
+                                             << ansatz_space_->mapper().size());
     LOG_(debug) << "   scaling_ = " << scaling_ << "\n   {test|ansatz}_space.mapper().max_local_size() = {"
                 << test_space_->mapper().max_local_size() << "|" << ansatz_space_->mapper().max_local_size() << "}"
                 << std::endl;
@@ -199,12 +199,12 @@ public:
   {
     DUNE_THROW_IF(global_matrix_.rows() != test_space_->mapper().size(),
                   XT::Common::Exceptions::shapes_do_not_match,
-                  "global_matrix_.rows() = " << global_matrix_.rows() << "\n  "
-                                             << "test_space_->mapper().size()" << test_space_->mapper().size());
+                  "global_matrix_.rows() = " << global_matrix_.rows() << "\n  " << "test_space_->mapper().size()"
+                                             << test_space_->mapper().size());
     DUNE_THROW_IF(global_matrix_.cols() != ansatz_space_->mapper().size(),
                   XT::Common::Exceptions::shapes_do_not_match,
-                  "global_matrix_.cols() = " << global_matrix_.cols() << "\n  "
-                                             << "ansatz_space_->mapper().size()" << ansatz_space_->mapper().size());
+                  "global_matrix_.cols() = " << global_matrix_.cols() << "\n  " << "ansatz_space_->mapper().size()"
+                                             << ansatz_space_->mapper().size());
   }
 
   LocalCouplingIntersectionBilinearFormAssembler(const ThisType& other)
@@ -349,12 +349,12 @@ public:
   {
     DUNE_THROW_IF(global_matrix_.rows() != test_space_->mapper().size(),
                   XT::Common::Exceptions::shapes_do_not_match,
-                  "global_matrix_.rows() = " << global_matrix_.rows() << "\n  "
-                                             << "test_space_->mapper().size()" << test_space_->mapper().size());
+                  "global_matrix_.rows() = " << global_matrix_.rows() << "\n  " << "test_space_->mapper().size()"
+                                             << test_space_->mapper().size());
     DUNE_THROW_IF(global_matrix_.cols() != ansatz_space_->mapper().size(),
                   XT::Common::Exceptions::shapes_do_not_match,
-                  "global_matrix_.cols() = " << global_matrix_.cols() << "\n  "
-                                             << "ansatz_space_->mapper().size()" << ansatz_space_->mapper().size());
+                  "global_matrix_.cols() = " << global_matrix_.cols() << "\n  " << "ansatz_space_->mapper().size()"
+                                             << ansatz_space_->mapper().size());
   }
 
   LocalIntersectionBilinearFormAssembler(const ThisType& other)

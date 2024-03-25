@@ -98,14 +98,11 @@ public:
       ss << repr(self);
       return ss.str();
     });
-    c.def(
-        "__eq__", [](type& self, const type& other) { return self == other; }, py::is_operator());
-    c.def(
-        "__neq__", [](type& self, const type& other) { return self != other; }, py::is_operator());
+    c.def("__eq__", [](type& self, const type& other) { return self == other; }, py::is_operator());
+    c.def("__neq__", [](type& self, const type& other) { return self != other; }, py::is_operator());
 
     // methods
-    c.def(
-        "sub_entities", [](type& self, const unsigned int codim) { return self.subEntities(codim); }, "codim"_a);
+    c.def("sub_entities", [](type& self, const unsigned int codim) { return self.subEntities(codim); }, "codim"_a);
     c.def(
         "to_global",
         [](type& self, const py::array_t<double>& x_local) {

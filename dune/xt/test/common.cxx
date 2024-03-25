@@ -163,33 +163,28 @@ void check_eoc_study_for_success(
     return matching_key;
   };
   EXPECT_GT(expected_results.getSubKeys().size(), 0)
-      << "you have to provide at least one category!"
-      << "\nThe actual results for instance contain the categories '" << get_keys(actual_results) << "'."
-      << "\n\n"
+      << "you have to provide at least one category!" << "\nThe actual results for instance contain the categories '"
+      << get_keys(actual_results) << "'." << "\n\n"
       << "get_unique_test_name() = " << Common::Test::get_unique_test_name();
   for (const auto& category : expected_results.getSubKeys()) {
-    EXPECT_GT(actual_results.count(category), 0) << "missing data for category " << category << "!"
-                                                 << "\n\n"
+    EXPECT_GT(actual_results.count(category), 0) << "missing data for category " << category << "!" << "\n\n"
                                                  << "get_unique_test_name() = " << Common::Test::get_unique_test_name();
     const auto expected_category_data = expected_results.sub(category);
     const auto& actual_category_data = actual_results.at(get_matching_key(actual_results, category));
     EXPECT_GT(expected_category_data.getValueKeys().size(), 0)
         << "you have to provide at least one type for category " << category
         << "!\nThe actual_results for instance contain the types '" << get_keys(actual_category_data)
-        << "' for this category."
-        << "\n\n"
+        << "' for this category." << "\n\n"
         << "get_unique_test_name() = " << Common::Test::get_unique_test_name();
     for (const auto& type : expected_category_data.getValueKeys()) {
       EXPECT_GT(actual_category_data.count(get_matching_key(actual_category_data, type)), 0)
-          << "missing data for category " << category << " and type " << type << "!"
-          << "\n\n"
+          << "missing data for category " << category << " and type " << type << "!" << "\n\n"
           << "get_unique_test_name() = " << Common::Test::get_unique_test_name();
       const auto expected_values = expected_category_data.template get<std::vector<double>>(type);
       const auto& actual_type_data = actual_category_data.at(get_matching_key(actual_category_data, type));
       for (size_t level = 0; level < expected_values.size(); ++level) {
         EXPECT_GT(actual_type_data.count(level), 0)
-            << "missing data for category " << category << ", type " << type << " and level " << level << "!"
-            << "\n\n"
+            << "missing data for category " << category << ", type " << type << " and level " << level << "!" << "\n\n"
             << "get_unique_test_name() = " << Common::Test::get_unique_test_name();
         const auto& actual_value = actual_type_data.at(level);
         const auto& expected_value = expected_values[level];
@@ -259,7 +254,7 @@ unsigned int grid_elements()
 {
   return DXTC_CONFIG.has_key("test.gridelements") // <- doing this so complicated to
              ? DXTC_CONFIG.get<unsigned int>(
-                 "test.gridelements", 3u, Common::ValidateLess<unsigned int>(2u)) //    silence the WARNING: ...
+                   "test.gridelements", 3u, Common::ValidateLess<unsigned int>(2u)) //    silence the WARNING: ...
              : 3u;
 } // ... grid_elements(...)
 

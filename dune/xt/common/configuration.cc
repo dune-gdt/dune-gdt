@@ -141,8 +141,7 @@ Configuration::sub(const std::string& sub_id, bool fail_if_missing, const Config
   if (!has_sub(sub_id))
     DUNE_THROW(Exceptions::configuration_error,
                "Subtree '" << sub_id << "' does not exist in this Configuration (see below), use has_sub(\"" << sub_id
-                           << "\") to check first!"
-                           << "\n======================\n"
+                           << "\") to check first!" << "\n======================\n"
                            << report_string());
   return Configuration(BaseType::sub(sub_id));
 } // ... sub(...)

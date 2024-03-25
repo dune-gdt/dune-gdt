@@ -324,12 +324,10 @@ public:
   {
     if (other.rows() != rows())
       DUNE_THROW(Common::Exceptions::shapes_do_not_match,
-                 "rows(): " << rows() << "\n   "
-                            << "other.rows(): " << other.rows());
+                 "rows(): " << rows() << "\n   " << "other.rows(): " << other.rows());
     if (other.cols() != cols())
       DUNE_THROW(Common::Exceptions::shapes_do_not_match,
-                 "cols(): " << cols() << "\n   "
-                            << "other.cols(): " << other.cols());
+                 "cols(): " << cols() << "\n   " << "other.cols(): " << other.cols());
     auto my_pattern = pattern();
     auto other_pattern = other.pattern();
     for (size_t ii = 0; ii < rows(); ++ii) {

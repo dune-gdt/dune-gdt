@@ -264,8 +264,7 @@ public:
     // check for sizes
     if (arg.size() != originalvars_.size())
       DUNE_THROW(Common::Exceptions::shapes_do_not_match,
-                 "arg.size(): " << arg.size() << "\n   "
-                                << "variables.size(): " << originalvars_.size());
+                 "arg.size(): " << arg.size() << "\n   " << "variables.size(): " << originalvars_.size());
     // copy arg
     for (size_t ii = 0; ii < originalvars_.size(); ++ii)
       *(arg_[ii]) = arg[ii];
@@ -282,8 +281,7 @@ private:
     // set expressions
     if (exprs.size() != range_dim)
       DUNE_THROW(Common::Exceptions::shapes_do_not_match,
-                 "expressions.size(): " << exprs.size() << "\n   "
-                                        << "range_dim: " << range_dim);
+                 "expressions.size(): " << exprs.size() << "\n   " << "range_dim: " << range_dim);
     expressions_ = exprs;
     for (const auto& ex : expressions_)
       if (ex.empty())

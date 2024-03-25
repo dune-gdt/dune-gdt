@@ -171,8 +171,7 @@ public:
                       Exceptions::mapper_error,
                       "Not a power FE, as number of local keys associated with an element not a multiple of "
                       "dim_range:\n   this->local_size(element) = "
-                          << local_sz << "\n   "
-                          << "dim_range = " << size_t(r));
+                          << local_sz << "\n   " << "dim_range = " << size_t(r));
         for (size_t s = 0; s < r; ++s) {
           offset_[s][mapper_.index(element)] = size_[s];
           size_[s] += local_sz / r;

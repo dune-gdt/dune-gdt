@@ -206,8 +206,7 @@ public:
         const S val = solution.get_entry(ii);
         if (Common::isnan(val) || Common::isinf(val)) {
           std::stringstream msg;
-          msg << "The computed solution contains inf or nan and you requested checking (see options "
-              << "below)!\n"
+          msg << "The computed solution contains inf or nan and you requested checking (see options " << "below)!\n"
               << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
               << "Those were the given options:\n\n"
               << opts;
@@ -229,8 +228,7 @@ public:
         std::stringstream msg;
         msg << "The computed solution does not solve the system (although the eigen backend reported "
             << "'Success') and you requested checking (see options below)!\n"
-            << "If you want to disable this check, set 'post_check_solves_system = 0' in the options."
-            << "\n\n"
+            << "If you want to disable this check, set 'post_check_solves_system = 0' in the options." << "\n\n"
             << "  (A * x - b).sup_norm() = " << tmp.sup_norm() << "\n\n"
             << "Those were the given options:\n\n"
             << opts;

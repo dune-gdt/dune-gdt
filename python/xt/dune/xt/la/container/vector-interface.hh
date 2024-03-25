@@ -110,13 +110,11 @@ auto bind_Vector(pybind11::module& m)
       },
       pybind11::keep_alive<0, 1>() /*Essential: keep object alive while iterator exists!*/);
 
-  c.def(
-      "__add__", [](const C& self, const C& other) { return std::make_unique<C>(self + other); }, py::is_operator());
+  c.def("__add__", [](const C& self, const C& other) { return std::make_unique<C>(self + other); }, py::is_operator());
   c.def("__iadd__", // function ptr signature required for the right return type
         static_cast<C& (C::*)(const C&)>(&C::operator+=),
         py::is_operator());
-  c.def(
-      "__sub__", [](const C& self, const C& other) { return std::make_unique<C>(self - other); }, py::is_operator());
+  c.def("__sub__", [](const C& self, const C& other) { return std::make_unique<C>(self - other); }, py::is_operator());
   c.def("__isub__", // function ptr signature required for the right return type
         static_cast<C& (C::*)(const C&)>(&C::operator-=),
         py::is_operator());
@@ -174,8 +172,7 @@ auto bind_Vector(pybind11::module& m)
       "get_entry",
       [](const C& self, const ssize_t ii) { return self.get_entry(Common::numeric_cast<size_t>(ii)); },
       "jj"_a);
-  c.def(
-      "set_all", [](C& self, const S& value) { self.set_all(value); }, "value"_a);
+  c.def("set_all", [](C& self, const S& value) { self.set_all(value); }, "value"_a);
   c.def("valid", [](const C& self) { return self.valid(); });
   c.def("dim", [](const C& self) { return self.size(); });
   c.def("mean", [](const C& self) { return self.mean(); });

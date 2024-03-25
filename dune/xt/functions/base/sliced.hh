@@ -117,9 +117,7 @@ public:
     for (size_t ii = 0; ii < r; ++ii)
       if (dims_[ii] >= GF::r)
         DUNE_THROW(InvalidStateException,
-                   "GF::r = " << GF::r << "\n   "
-                              << "r = " << r << "\n   "
-                              << "dims[" << ii << "] = " << dims_[ii]);
+                   "GF::r = " << GF::r << "\n   " << "r = " << r << "\n   " << "dims[" << ii << "] = " << dims_[ii]);
   }
 
   SlicedGridFunction(const ThisType& other)

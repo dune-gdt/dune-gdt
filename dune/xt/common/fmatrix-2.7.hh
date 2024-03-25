@@ -77,8 +77,8 @@ public:
     if (list_of_rows.size() != ROWS)
       DUNE_THROW(Exceptions::wrong_input_given,
                  "You are trying to construct a FieldMatrix< ..., "
-                     << ROWS << ", " << COLS << " > (of "
-                     << "static size) from a list modeling a matrix with " << list_of_rows.size() << " rows!");
+                     << ROWS << ", " << COLS << " > (of " << "static size) from a list modeling a matrix with "
+                     << list_of_rows.size() << " rows!");
 #endif // NDEBUG
     size_t rr = 0;
     for (auto row : list_of_rows) {
@@ -86,8 +86,8 @@ public:
       if (row.size() != COLS)
         DUNE_THROW(Exceptions::wrong_input_given,
                    "You are trying to construct a FieldMatrix< ..., "
-                       << ROWS << ", " << COLS << " > (of "
-                       << "static size) from a list with a row of length " << row.size() << "!");
+                       << ROWS << ", " << COLS << " > (of " << "static size) from a list with a row of length "
+                       << row.size() << "!");
 #endif // NDEBUG
       size_t cc = 0;
       for (auto entry : row)

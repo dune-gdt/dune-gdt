@@ -52,8 +52,8 @@ public:
   {
     DUNE_THROW_IF(global_vector_.size() != space_->mapper().size(),
                   XT::Common::Exceptions::shapes_do_not_match,
-                  "global_vector.size() = " << global_vector_.size() << "\n  "
-                                            << "space.mapper().size()" << space_->mapper().size());
+                  "global_vector.size() = " << global_vector_.size() << "\n  " << "space.mapper().size()"
+                                            << space_->mapper().size());
   }
 
   LocalElementFunctionalAssembler(const ThisType& other)
@@ -129,8 +129,8 @@ public:
   {
     DUNE_THROW_IF(global_vector_.size() != space_->mapper().size(),
                   XT::Common::Exceptions::shapes_do_not_match,
-                  "global_vector.size() = " << global_vector_.size() << "\n  "
-                                            << "space.mapper().size()" << space_->mapper().size());
+                  "global_vector.size() = " << global_vector_.size() << "\n  " << "space.mapper().size()"
+                                            << space_->mapper().size());
   }
 
   LocalIntersectionFunctionalAssembler(const ThisType& other)

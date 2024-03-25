@@ -61,11 +61,9 @@ void addbind_ContainerInterface(pybind11::class_<C>& c)
       },
       "deep"_a = false);
 #endif
-  c.def(
-      "scal", [](C& self, const S& alpha) { self.scal(alpha); }, "alpha"_a);
+  c.def("scal", [](C& self, const S& alpha) { self.scal(alpha); }, "alpha"_a);
   c.def("axpy", [](C& self, const S& alpha, const C& xx) { self.axpy(alpha, xx); });
-  c.def(
-      "has_equal_shape", [](const C& self, const C& other) { return self.has_equal_shape(other); }, "other"_a);
+  c.def("has_equal_shape", [](const C& self, const C& other) { return self.has_equal_shape(other); }, "other"_a);
   c.def(py::self *= S());
   c.def(py::self * S());
   c.def("__sub__", [](const C& self, const C& other) {

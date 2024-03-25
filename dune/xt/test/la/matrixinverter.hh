@@ -124,8 +124,8 @@ struct MatrixInverterTest : public ::testing::Test
         }
       } catch (const Dune::MathError&) {
         if (tolerance > 0) {
-          FAIL() << "Dune::MathError thrown when trying to get inverse!"
-                 << "\n\ntype: " << tp << "\n\ntolerance: " << tolerance;
+          FAIL() << "Dune::MathError thrown when trying to get inverse!" << "\n\ntype: " << tp
+                 << "\n\ntolerance: " << tolerance;
         }
       }
     }

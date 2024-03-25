@@ -40,8 +40,7 @@ public:
   {
     if (vector_.size() != mapper_.size())
       DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
-                 "mapper_.size() = " << mapper_.size() << "\n   "
-                                     << "vector_.size() = " << vector_.size());
+                 "mapper_.size() = " << mapper_.size() << "\n   " << "vector_.size() = " << vector_.size());
   }
 
   ConstDofVector(const ThisType&) = default;

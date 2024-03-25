@@ -39,7 +39,8 @@ struct SymmetrizedLaplaceIntegrandTest : public IntegrandTest<G>
         2, [](const E&) {}, [](const DomainType& x, const XT::Common::Parameter&) { return x[0] * x[1]; });
     // { (x,x+y)^T, (x^2, x^2 + y^2)^T}
     vector_ansatz_ = std::make_shared<LocalVectorBasisType>(
-        /*size = */ 2,
+        /*size = */
+        2,
         /*ord = */ 2,
         /*evaluate = */
         [](const DomainType& x, std::vector<VectorRangeType>& ret, const XT::Common::Parameter&) {

@@ -133,8 +133,7 @@ public:
       parsed_param = this->parse_parameter(param);
       if (parsed_param.type() != this->parameter_type())
         DUNE_THROW(Common::Exceptions::parameter_error,
-                   "parameter_type(): " << this->parameter_type() << "\n   "
-                                        << "param.type(): " << param.type());
+                   "parameter_type(): " << this->parameter_type() << "\n   " << "param.type(): " << param.type());
     }
     DynamicVector<D> args(num_parameter_variables_ + domain_dim);
     size_t II = 0;
@@ -168,13 +167,11 @@ public:
       if (failure)
         DUNE_THROW(Common::Exceptions::internal_error,
                    "evaluating this function yielded:     "
-                       << error_type << "\n   "
-                       << "The variables of this function are:   " << function_->variables() << "\n   "
-                       << "The expressions of this function are: " << function_->expressions() << "\n   "
+                       << error_type << "\n   " << "The variables of this function are:   " << function_->variables()
+                       << "\n   " << "The expressions of this function are: " << function_->expressions() << "\n   "
                        << "You evaluated it with            point_in_global_coordinates : "
-                       << point_in_global_coordinates << "\n   "
-                       << "                                 param : " << param << "\n   "
-                       << "The result was:                       " << ret[rr] << "\n\n"
+                       << point_in_global_coordinates << "\n   " << "                                 param : " << param
+                       << "\n   " << "The result was:                       " << ret[rr] << "\n\n"
                        << "You can disable this check by defining DUNE_XT_FUNCTIONS_EXPRESSION_DISABLE_CHECKS\n");
     }
 #  endif // DUNE_XT_FUNCTIONS_EXPRESSION_DISABLE_CHECKS
