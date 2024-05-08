@@ -1,9 +1,10 @@
 ---
-name: "Build and test"
+name: build and test
 
 on:
   merge_group:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   preflight:
