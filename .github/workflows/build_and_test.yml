@@ -13,8 +13,6 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
-        with:
-          ref: ${{ inputs.GIT_REF }}
       -
         name: Pull ci image
         run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
@@ -41,7 +39,6 @@ jobs:
         name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.GIT_REF }}
           submodules: recursive
       -
         name: Pull ci image
@@ -76,7 +73,6 @@ jobs:
         name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.GIT_REF }}
           submodules: recursive
       -
         name: Pull ci image
@@ -108,7 +104,6 @@ jobs:
         name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.GIT_REF }}
           submodules: recursive
       -
         name: Pull ci image
