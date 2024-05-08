@@ -1,22 +1,23 @@
+---
 on: pull_request
 
 name: Sanity checks
 
 jobs:
-    message-check:
-        name: Block Autosquash Commits
-        runs-on: ubuntu-22.04
-        steps:
-            - name: Block Autosquash Commits
-              uses: xt0rted/block-autosquash-commits-action@v2
-              with:
-                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+  message-check:
+    name: Block Autosquash Commits
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Block Autosquash Commits
+      uses: xt0rted/block-autosquash-commits-action@v2
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-    merge_conflict_job:
-        runs-on: ubuntu-22.04
-        name: Find merge conflicts
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v3
-            - name: Detect merge conflicts
-              uses: olivernybroe/action-conflict-finder@v4.0
+  merge_conflict_job:
+    runs-on: ubuntu-22.04
+    name: Find merge conflicts
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Detect merge conflicts
+      uses: olivernybroe/action-conflict-finder@v4.0

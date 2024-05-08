@@ -1,19 +1,25 @@
+---
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
-    hooks:
-    -   id: trailing-whitespace
-    -   id: check-yaml
-        args: [--allow-multiple-documents]
-    -   id: check-added-large-files
-    -   id: debug-statements
--   repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: 'v15.0.7'
-    hooks:
-    -   id: clang-format
-        exclude: "^(dune/xt/test/gtest/|pybind11)"
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+  - id: trailing-whitespace
+  - id: check-yaml
+    args: [--allow-multiple-documents]
+  - id: check-added-large-files
+  - id: debug-statements
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: 'v15.0.7'
+  hooks:
+  - id: clang-format
+    exclude: "^(dune/xt/test/gtest/|pybind11)"
+- repo: https://github.com/google/yamlfmt
+  rev: v0.11.0
+  hooks:
+  - id: yamlfmt
+    exclude: ".clang-format|.clang-tidy"
 - repo: https://github.com/rhysd/actionlint
   rev: v1.6.27
   hooks:
@@ -21,22 +27,22 @@ repos:
 - repo: https://github.com/charliermarsh/ruff-pre-commit
   rev: 'v0.0.237'
   hooks:
-      - id: ruff
-        args: ["--config=./python/ruff.toml"]
--   repo: https://github.com/cheshirekow/cmake-format-precommit
-    rev: 'v0.6.13'
-    hooks:
-    -   id: cmake-format
-        additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-        exclude: "config.h.cmake|pybind11"
-        args: ["-i", "--config-files=.cmake_format.py"]
-    -   id: cmake-lint
-        additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-        exclude: "config.h.cmake|pybind11"
-        args: ["--config-files=.cmake_format.py"]
+  - id: ruff
+    args: ["--config=./python/ruff.toml"]
+- repo: https://github.com/cheshirekow/cmake-format-precommit
+  rev: 'v0.6.13'
+  hooks:
+  - id: cmake-format
+    additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
+    exclude: "config.h.cmake|pybind11"
+    args: ["-i", "--config-files=.cmake_format.py"]
+  - id: cmake-lint
+    additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
+    exclude: "config.h.cmake|pybind11"
+    args: ["--config-files=.cmake_format.py"]
 # this should always run after anythin that might modify python files
--   repo: https://github.com/google/yapf
-    rev: 'v0.32.0'
-    hooks:
-    -   id: yapf
-        args: ["--in-place", "--style=.vcsetup/.style.yapf"]
+- repo: https://github.com/google/yapf
+  rev: 'v0.32.0'
+  hooks:
+  - id: yapf
+    args: ["--in-place", "--style=.vcsetup/.style.yapf"]
