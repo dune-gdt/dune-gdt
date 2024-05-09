@@ -24,11 +24,11 @@ repos:
   rev: v1.6.27
   hooks:
   - id: actionlint
-- repo: https://github.com/charliermarsh/ruff-pre-commit
-  rev: 'v0.0.237'
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.4.2
   hooks:
   - id: ruff
-    args: ["--config=./python/ruff.toml"]
+  - id: ruff-format
 - repo: https://github.com/cheshirekow/cmake-format-precommit
   rev: 'v0.6.13'
   hooks:
@@ -40,9 +40,3 @@ repos:
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
     exclude: "config.h.cmake|pybind11"
     args: ["--config-files=.cmake_format.py"]
-# this should always run after anythin that might modify python files
-- repo: https://github.com/google/yapf
-  rev: 'v0.32.0'
-  hooks:
-  - id: yapf
-    args: ["--in-place", "--style=.vcsetup/.style.yapf"]
