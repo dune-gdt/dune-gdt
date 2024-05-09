@@ -57,7 +57,7 @@ jobs:
         echo "To reproduce the failure locally, execute"
         echo "    git clone https://github.com/dune-gdt/dune-gdt.git"
         echo "    cd dune-gdt"
-        echo "    git checkout ${{ github.ref }}"
+        echo "    git checkout ${{ github.sha }}"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'"
         exit 1
     - name: Check headers
@@ -78,9 +78,30 @@ jobs:
         submodules: recursive
     - name: Pull ci image
       run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: |
+        echo "There was an error pulling the required ci docker image (see previous action)!"
+        echo "This often happens if there is no image available for the required hash:"
+        echo "    ./docker/compute_ci_hash.sh gives"
+        echo "    $(./docker/compute_ci_hash.sh)"
+        echo "Consider to generate the required images by visiting"
+        echo "    https://github.com/dune-gdt/dune-gdt/actions/workflows/docker_build_images.yml"
+        echo "and running the workflow (butten in the upper right) for the current branch!"
+        exit 1
     - name: Configure
       run: |
         OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: |
+        echo "There was an error configuring (see above)!"
+        echo "To reproduce the failure locally, execute"
+        echo "    git clone https://github.com/dune-gdt/dune-gdt.git"
+        echo "    cd dune-gdt"
+        echo "    git checkout ${{ github.sha }}"
+        echo "    OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'"
+        exit 1
     - name: Build all
       run: |
         OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} all'
@@ -103,9 +124,30 @@ jobs:
         submodules: recursive
     - name: Pull ci image
       run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: |
+        echo "There was an error pulling the required ci docker image (see previous action)!"
+        echo "This often happens if there is no image available for the required hash:"
+        echo "    ./docker/compute_ci_hash.sh gives"
+        echo "    $(./docker/compute_ci_hash.sh)"
+        echo "Consider to generate the required images by visiting"
+        echo "    https://github.com/dune-gdt/dune-gdt/actions/workflows/docker_build_images.yml"
+        echo "and running the workflow (butten in the upper right) for the current branch!"
+        exit 1
     - name: Configure
       run: |
         OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: |
+        echo "There was an error configuring (see above)!"
+        echo "To reproduce the failure locally, execute"
+        echo "    git clone https://github.com/dune-gdt/dune-gdt.git"
+        echo "    cd dune-gdt"
+        echo "    git checkout ${{ github.sha }}"
+        echo "    OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'"
+        exit 1
     - name: Build all
       run: |
         OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} all'
