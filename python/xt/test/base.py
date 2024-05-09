@@ -21,26 +21,28 @@ def test_load_all():
 def test_empty():
     from dune.xt.common._common_empty import Dog, Pet, Terrier
 
-    dog = Dog('Susi')
-    pet = Pet('Bello')
+    dog = Dog("Susi")
+    pet = Pet("Bello")
     ter = Terrier()
 
-    assert ter.getName() == 'Berti'
-    assert pet.getName() == 'Bello'
-    assert ter.bark() == 'woof!'
-    assert dog.bark() == 'woof!'
+    assert ter.getName() == "Berti"
+    assert pet.getName() == "Bello"
+    assert ter.bark() == "woof!"
+    assert dog.bark() == "woof!"
 
 
 def test_logging():
     import dune.xt.common.logging as lg
+
     lg.create(lg.log_max)
-    lg.info('log info test')
-    lg.error('log error test')
-    lg.debug('log debug test')
+    lg.info("log info test")
+    lg.error("log error test")
+    lg.debug("log debug test")
 
 
 def test_timings():
     from dune.xt.common.timings import instance
+
     timings = instance()
     timings.reset()
     timings.start("foo.bar")
@@ -48,8 +50,9 @@ def test_timings():
     timings.output_simple()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from dune.xt.test.base import runmodule
+
     runmodule(__file__)
 
 

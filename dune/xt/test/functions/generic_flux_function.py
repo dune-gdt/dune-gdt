@@ -20,11 +20,16 @@ dim_state = [1, 2]
 dim_range_cols = [1, 3]
 dimDomain = [1, 3]
 
-multi_out = {grids.pretty_print(g[0], g[1]): g[0] for g in grids.type_and_dim(cache, dimDomain)}  # noqa: F821
+multi_out = {
+    grids.pretty_print(g[0], g[1]): g[0] for g in grids.type_and_dim(cache, dimDomain)
+}  # noqa: F821
 
 multi_out = {
-    filename + '.cc': {
-        'types': [(filename, grid, s, r, rC) for s, r, rC in itertools.product(dim_state, dim_range, dim_range_cols)]
+    filename + ".cc": {
+        "types": [
+            (filename, grid, s, r, rC)
+            for s, r, rC in itertools.product(dim_state, dim_range, dim_range_cols)
+        ]
     }
     for filename, grid in multi_out.items()
 }

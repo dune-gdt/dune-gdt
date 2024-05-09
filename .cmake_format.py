@@ -15,16 +15,11 @@
 # Options affecting listfile parsing
 # ----------------------------------
 with section("parse"):  # noqa: F821
-
     # Specify structure for custom cmake functions
     additional_commands = {
         "foo": {
             "flags": ["BAR", "BAZ"],
-            "kwargs": {
-                "DEPENDS": "*",
-                "HEADERS": "*",
-                "SOURCES": "*"
-            },
+            "kwargs": {"DEPENDS": "*", "HEADERS": "*", "SOURCES": "*"},
         }
     }
 
@@ -41,7 +36,6 @@ with section("parse"):  # noqa: F821
 # Options affecting formatting.
 # -----------------------------
 with section("format"):  # noqa: F821
-
     # Disable formatting entirely, making cmake-format a no-op
     disable = False
 
@@ -139,7 +133,6 @@ with section("format"):  # noqa: F821
 # Options affecting comment reflow and formatting.
 # ------------------------------------------------
 with section("markup"):  # noqa: F821
-
     # What character to use for bulleted lists
     bullet_char = "*"
 
@@ -183,7 +176,6 @@ with section("markup"):  # noqa: F821
 # Options affecting the linter
 # ----------------------------
 with section("lint"):  # noqa: F821
-
     # a list of lint codes to disable
     # These codes checks for proper documentation. We should really do this, but disabling this for now.
     disabled_codes = ["C0111", "C0113"]
@@ -241,7 +233,6 @@ with section("lint"):  # noqa: F821
 # Options affecting file encoding
 # -------------------------------
 with section("encode"):  # noqa: F821
-
     # If true, emit the unicode byte-order mark (BOM) at the start of the file
     emit_byteorder_mark = False
 
@@ -256,7 +247,6 @@ with section("encode"):  # noqa: F821
 # Miscellaneous configurations options.
 # -------------------------------------
 with section("misc"):  # noqa: F821
-
     # A dictionary containing any per-command configuration overrides. Currently
     # only `command_case` is supported.
     per_command = {}

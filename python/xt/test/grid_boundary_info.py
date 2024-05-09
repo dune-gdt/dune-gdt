@@ -24,6 +24,7 @@ def test_types():
         RobinBoundary,
         UnknownBoundary,
     )
+
     NoBoundary()
     UnknownBoundary()
     DirichletBoundary()
@@ -46,6 +47,7 @@ def test_initless_boundary_infos():
         AllReflectingBoundaryInfo,
         make_cube_grid,
     )
+
     for args in grid_init_args:
         grid = make_cube_grid(*args)
         AllDirichletBoundaryInfo(grid)
@@ -57,11 +59,16 @@ def test_normalbased_boundary_inf():
     from grid_provider_cube import init_args as grid_init_args
 
     from dune.xt.grid import NoBoundary, NormalBasedBoundaryInfo, make_cube_grid
+
     for args in grid_init_args:
         grid = make_cube_grid(*args)
-        NormalBasedBoundaryInfo(grid_provider=grid,
-                                default_boundary_type=NoBoundary(),
-                                tolerance=1e-10,
-                                logging_prefix='')
-        NormalBasedBoundaryInfo(grid_provider=grid, default_boundary_type=NoBoundary(), tolerance=1e-10)
+        NormalBasedBoundaryInfo(
+            grid_provider=grid,
+            default_boundary_type=NoBoundary(),
+            tolerance=1e-10,
+            logging_prefix="",
+        )
+        NormalBasedBoundaryInfo(
+            grid_provider=grid, default_boundary_type=NoBoundary(), tolerance=1e-10
+        )
         NormalBasedBoundaryInfo(grid_provider=grid, default_boundary_type=NoBoundary())

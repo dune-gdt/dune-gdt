@@ -14,39 +14,39 @@ from dune.xt import codegen
 
 
 def vectors(cache):
-    vecs = ['FieldVector', 'DynamicVector', 'CommonDenseVector', 'CommonSparseVector']
+    vecs = ["FieldVector", "DynamicVector", "CommonDenseVector", "CommonSparseVector"]
     if codegen.have_eigen(cache):
-        vecs.extend(['EigenDenseVector', 'EigenMappedDenseVector'])
+        vecs.extend(["EigenDenseVector", "EigenMappedDenseVector"])
     if codegen.have_istl(cache):
-        vecs.append('IstlDenseVector')
+        vecs.append("IstlDenseVector")
     return vecs
 
 
 def vectortype(c, f):
-    if c == 'FieldVector':
-        f = f'{f}, 4'
+    if c == "FieldVector":
+        f = f"{f}, 4"
         return commontype(c, f)
-    elif c == 'DynamicVector':
+    elif c == "DynamicVector":
         return dunetype(c, f)
     else:
         return latype(c, f)
 
 
 def latype(c, f):
-    return f'Dune::XT::LA::{c}<{f}>'
+    return f"Dune::XT::LA::{c}<{f}>"
 
 
 def commontype(c, f):
-    return f'Dune::XT::Common::{c}<{f}>'
+    return f"Dune::XT::Common::{c}<{f}>"
 
 
 def dunetype(c, f):
-    return f'Dune::{c}<{f}>'
+    return f"Dune::{c}<{f}>"
 
 
 def fieldtypes(cache):
-    return ['double', 'std::complex<double>']
+    return ["double", "std::complex<double>"]
 
 
 def vector_filter(vector, field):
-    return not ('EigenMappedDenseVector' in vector and 'complex' in field)
+    return not ("EigenMappedDenseVector" in vector and "complex" in field)

@@ -15,6 +15,11 @@ import grids
 
 dimDomain = [1]
 
-multi_out = {grids.pretty_print(g[0], g[1]): g[0] for g in grids.type_and_dim(cache, dimDomain)}  # noqa: F821
+multi_out = {
+    grids.pretty_print(g[0], g[1]): g[0] for g in grids.type_and_dim(cache, dimDomain)
+}  # noqa: F821
 
-multi_out = {filename + '.cc': {'types': [(filename, grid)]} for filename, grid in multi_out.items()}
+multi_out = {
+    filename + ".cc": {"types": [(filename, grid)]}
+    for filename, grid in multi_out.items()
+}

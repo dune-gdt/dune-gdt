@@ -32,12 +32,9 @@ from dune.xt.grid import (
 )
 
 
-def discretize_elliptic_ipdg_dirichlet_zero(grid,
-                                            diffusion,
-                                            source,
-                                            symmetry_factor=1,
-                                            penalty_parameter=None,
-                                            weight=1):
+def discretize_elliptic_ipdg_dirichlet_zero(
+    grid, diffusion, source, symmetry_factor=1, penalty_parameter=None, weight=1
+):
     """
     Discretizes the stationary heat equation with homogeneous Dirichlet boundary values everywhere
     with dune-gdt using an interior penalty (IP) discontinuous Galerkin (DG) method based on first
@@ -100,7 +97,9 @@ def discretize_elliptic_ipdg_dirichlet_zero(grid,
     assert penalty_parameter > 0
 
     l_h = VectorFunctional(grid, source_space=V_h)
-    l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source))
+    l_h += LocalElementIntegralFunctional(
+        LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source)
+    )
 
     a_h = MatrixOperator(
         grid,
@@ -112,14 +111,16 @@ def discretize_elliptic_ipdg_dirichlet_zero(grid,
     a_h += (
         LocalCouplingIntersectionIntegralBilinearForm(
             LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
-            + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)),
+            + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)
+        ),
         {},
         ApplyOnInnerIntersectionsOnce(grid),
     )
     a_h += (
         LocalIntersectionIntegralBilinearForm(
             LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
-            + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)),
+            + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)
+        ),
         {},
         ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()),
     )
