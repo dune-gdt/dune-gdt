@@ -57,7 +57,8 @@ jobs:
         echo "To reproduce the failure locally, execute"
         echo "    git clone https://github.com/dune-gdt/dune-gdt.git"
         echo "    cd dune-gdt"
-        echo "    git checkout ${{ github.sha }}"
+        echo "    git checkout ${{ github.event.pull_request.base.sha }}"
+        echo "    git merge ${{ github.event.pull_request.head.sha }}"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'"
         exit 1
     - name: Check headers
@@ -99,7 +100,8 @@ jobs:
         echo "To reproduce the failure locally, execute"
         echo "    git clone https://github.com/dune-gdt/dune-gdt.git"
         echo "    cd dune-gdt"
-        echo "    git checkout ${{ github.sha }}"
+        echo "    git checkout ${{ github.event.pull_request.base.sha }}"
+        echo "    git merge ${{ github.event.pull_request.head.sha }}"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'"
         exit 1
     - name: Build all
@@ -145,7 +147,8 @@ jobs:
         echo "To reproduce the failure locally, execute"
         echo "    git clone https://github.com/dune-gdt/dune-gdt.git"
         echo "    cd dune-gdt"
-        echo "    git checkout ${{ github.sha }}"
+        echo "    git checkout ${{ github.event.pull_request.base.sha }}"
+        echo "    git merge ${{ github.event.pull_request.head.sha }}"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'"
         exit 1
     - name: Build all
