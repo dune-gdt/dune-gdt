@@ -21,7 +21,7 @@ echo "  as persistent build-dir"
 echo "======================================================================================"
 mkdir -p ${BUILDDIR}
 
-${DOCKER_BIN} run --rm=true --privileged=true -t --hostname docker \
+${DOCKER_BIN} run --rm=true --privileged=true -t ${DOCKER_RUN_CI_ARGS} --hostname docker \
   -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix \
   -e OPTS=${OPTS} \
   -e EXPOSED_PORT=$PORT -p 127.0.0.1:$PORT:$PORT \
