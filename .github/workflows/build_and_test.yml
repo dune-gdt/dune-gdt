@@ -61,6 +61,9 @@ jobs:
         echo "    git merge ${{ github.event.pull_request.head.sha }}"
         echo "    git submodule update --init --recursive"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '\${DUNECONTROL} configure'"
+        echo ""
+        echo "An interactive shell can afterwards be obtained by"
+        echo "    DOCKER_RUN_CI_ARGS=-i OPTS=${OPTS} ./docker/run_ci.sh /bin/bash"
         exit 1
     - name: Check headers
       run: |
@@ -105,6 +108,9 @@ jobs:
         echo "    git merge ${{ github.event.pull_request.head.sha }}"
         echo "    git submodule update --init --recursive"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '\${DUNECONTROL} configure'"
+        echo ""
+        echo "An interactive shell can afterwards be obtained by"
+        echo "    DOCKER_RUN_CI_ARGS=-i OPTS=${OPTS} ./docker/run_ci.sh /bin/bash"
         exit 1
     - name: Build all
       run: |
@@ -153,6 +159,9 @@ jobs:
         echo "    git merge ${{ github.event.pull_request.head.sha }}"
         echo "    git submodule update --init --recursive"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '\${DUNECONTROL} configure'"
+        echo ""
+        echo "An interactive shell can afterwards be obtained by"
+        echo "    DOCKER_RUN_CI_ARGS=-i OPTS=${OPTS} ./docker/run_ci.sh /bin/bash"
         exit 1
     - name: Build all
       run: |
