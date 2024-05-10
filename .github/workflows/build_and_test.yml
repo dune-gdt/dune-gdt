@@ -59,6 +59,7 @@ jobs:
         echo "    cd dune-gdt"
         echo "    git checkout -b ${{ github.ref }} ${{ github.event.pull_request.base.sha }}"
         echo "    git merge ${{ github.event.pull_request.head.sha }}"
+        echo "    git submodule update --init --recursive"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '\${DUNECONTROL} configure'"
         exit 1
     - name: Check headers
@@ -102,6 +103,7 @@ jobs:
         echo "    cd dune-gdt"
         echo "    git checkout -b ${{ github.ref }} ${{ github.event.pull_request.base.sha }}"
         echo "    git merge ${{ github.event.pull_request.head.sha }}"
+        echo "    git submodule update --init --recursive"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '\${DUNECONTROL} configure'"
         exit 1
     - name: Build all
@@ -149,6 +151,7 @@ jobs:
         echo "    cd dune-gdt"
         echo "    git checkout -b ${{ github.ref }} ${{ github.event.pull_request.base.sha }}"
         echo "    git merge ${{ github.event.pull_request.head.sha }}"
+        echo "    git submodule update --init --recursive"
         echo "    OPTS=${OPTS} ./docker/run_ci.sh '\${DUNECONTROL} configure'"
         exit 1
     - name: Build all
