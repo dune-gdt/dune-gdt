@@ -1,8 +1,0 @@
-
-# Enable Pyflakes and pycodestyle rules.
-# see https://github.com/charliermarsh/ruff#supported-rules
-select = ["E", "F", "RUF100", "I001", "UP", "B"]
-fix = true
-line-length = 120
-
-exclude = ["__init__.py", "deps/*", "pybind11/*", "examples/gamm*"]

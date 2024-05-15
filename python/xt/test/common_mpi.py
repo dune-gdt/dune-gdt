@@ -18,11 +18,12 @@ def test_mpi4py():
     try:
         from mpi4py import MPI
     except ImportError:
-        pytest.skip('optional mpi4py is missing')
+        pytest.skip("optional mpi4py is missing")
         return
 
     mpi_comm = MPI.COMM_WORLD
     from dune.xt.common import CollectiveCommunication
+
     comm_def = CollectiveCommunication()
     comm = CollectiveCommunication(mpi_comm)
     assert type(comm) is type(comm_def)
@@ -35,12 +36,13 @@ def test_wrapper():
     try:
         from mpi4py import MPI
     except ImportError:
-        pytest.skip('optional mpi4py is missing')
+        pytest.skip("optional mpi4py is missing")
         return
 
     mpi_comm = MPI.COMM_WORLD  # noqa: F841
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from dune.xt.common.test import runmodule
+
     runmodule(__file__)

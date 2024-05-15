@@ -27,15 +27,15 @@ tpl_fn = sys.argv[2]
 cmake_binary_dir = sys.argv[3]
 out_fn = sys.argv[4]
 backup_bindir = sys.argv[5]
-logger = logging.getLogger('Codegen')
-cache_path = os.path.join(cmake_binary_dir, 'CMakeCache.txt')
+logger = logging.getLogger("Codegen")
+cache_path = os.path.join(cmake_binary_dir, "CMakeCache.txt")
 try:
     cache, _ = parse_cache(cache_path)
 except FileNotFoundError as fe:
-    logger.critical(f'using fallback cache instead of {cache_path}: {str(fe)}')
-    cache, _ = parse_cache(os.path.join(backup_bindir, 'CMakeCache.txt'))
+    logger.critical(f"using fallback cache instead of {cache_path}: {str(fe)}")
+    cache, _ = parse_cache(os.path.join(backup_bindir, "CMakeCache.txt"))
 sys.path.append(os.path.dirname(config_fn))
-config = run_path(config_fn, init_globals=locals(), run_name='__dxt_codegen__')
+config = run_path(config_fn, init_globals=locals(), run_name="__dxt_codegen__")
 
 dir_base = os.path.dirname(out_fn)
 if not os.path.isdir(dir_base):
@@ -43,10 +43,10 @@ if not os.path.isdir(dir_base):
 template = Template(open(tpl_fn).read())
 
 try:
-    for postfix, cfg in config['multi_out'].items():
-        fn = f'{out_fn}.{postfix}'
-        with open(fn, 'w') as out:
+    for postfix, cfg in config["multi_out"].items():
+        fn = f"{out_fn}.{postfix}"
+        with open(fn, "w") as out:
             out.write(template.render(config=cfg, cache=cache))
 except KeyError:
-    with open(out_fn, 'w') as out:
+    with open(out_fn, "w") as out:
         out.write(template.render(config=config, cache=cache))

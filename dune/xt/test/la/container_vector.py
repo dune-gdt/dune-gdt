@@ -18,7 +18,7 @@ from matrices import fieldtypes, latype, vector_filter, vectors
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 testtypes = [
-    (safe_name(f'{mv}_{f}'), latype(mv, f))
+    (safe_name(f"{mv}_{f}"), latype(mv, f))
     for mv, f in product(vectors(cache), fieldtypes(cache))  # noqa: F821
     if vector_filter(mv, f)
 ]

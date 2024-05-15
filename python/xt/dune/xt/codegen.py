@@ -12,10 +12,9 @@
 # ~~~
 
 
-def typeid_to_typedef_name(typeid, replacement='_'):
-    """returns a sanitized typeid
-    """
-    illegal_chars = ['-', '>', '<', ':', ' ', ',', '+', '.']
+def typeid_to_typedef_name(typeid, replacement="_"):
+    """returns a sanitized typeid"""
+    illegal_chars = ["-", ">", "<", ":", " ", ",", "+", "."]
     for ch in illegal_chars:
         typeid = typeid.replace(ch, replacement)
     return typeid
@@ -23,22 +22,22 @@ def typeid_to_typedef_name(typeid, replacement='_'):
 
 def is_found(cache, name):
     if name in cache.keys():
-        return 'notfound' not in cache[name].lower()
+        return "notfound" not in cache[name].lower()
     return False
 
 
 def have_eigen(cache):
-    return is_found(cache, 'EIGEN3_INCLUDE_DIR')
+    return is_found(cache, "EIGEN3_INCLUDE_DIR")
 
 
 def have_istl(cache):
-    return is_found(cache, 'dune-istl_DIR')
+    return is_found(cache, "dune-istl_DIR")
 
 
 def la_backends(cache):
     ret = []
     if have_eigen(cache):
-        ret.append('eigen_sparse')
+        ret.append("eigen_sparse")
     if have_istl:
-        ret.append('istl_sparse')
+        ret.append("istl_sparse")
     return ret

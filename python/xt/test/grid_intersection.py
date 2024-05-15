@@ -26,7 +26,10 @@ def test_boundary():
 def test_boundary_segment_index():
     grid = make_cube_grid(Dim(2), Cube(), [0, 0], [1, 1], [2, 2])
     call_on_each_intersection(
-        grid, lambda intersection: intersection.boundary and print(intersection.boundary_segment_index))
+        grid,
+        lambda intersection: intersection.boundary
+        and print(intersection.boundary_segment_index),
+    )
 
 
 def test_neighbor():
@@ -36,14 +39,20 @@ def test_neighbor():
 
 def test_index_in_inside():
     grid = make_cube_grid(Dim(2), Cube(), [0, 0], [1, 1], [2, 2])
-    call_on_each_intersection(grid, lambda intersection: print(intersection.index_in_inside))
+    call_on_each_intersection(
+        grid, lambda intersection: print(intersection.index_in_inside)
+    )
 
 
 def test_index_in_outside():
     grid = make_cube_grid(Dim(2), Cube(), [0, 0], [1, 1], [2, 2])
-    call_on_each_intersection(grid, lambda intersection: print(intersection.index_in_outside))
+    call_on_each_intersection(
+        grid, lambda intersection: print(intersection.index_in_outside)
+    )
 
 
 def test_center_unit_outer_normal():
     grid = make_cube_grid(Dim(2), Cube(), [0, 0], [1, 1], [2, 2])
-    call_on_each_intersection(grid, lambda intersection: print(intersection.center_unit_outer_normal))
+    call_on_each_intersection(
+        grid, lambda intersection: print(intersection.center_unit_outer_normal)
+    )

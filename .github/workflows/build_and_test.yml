@@ -1,0 +1,147 @@
+---
+name: build and test
+
+on:
+  merge_group:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Pull ci image
+      run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: |
+        echo "There was an error pulling the required ci docker image (see previous action)!"
+        echo "This often happens if there is no image available for the required hash:"
+        echo "    ./docker/compute_ci_hash.sh gives"
+        echo "    $(./docker/compute_ci_hash.sh)"
+        echo "Consider to generate the required images by visiting"
+        echo "    https://github.com/dune-gdt/dune-gdt/actions/workflows/docker_build_images.yml"
+        echo "and running the workflow (butten in the upper right) for the current branch!"
+        exit 1
+  headerchecks:
+    name: Check headers
+    needs: preflight
+    runs-on: ubuntu-22.04
+    env:
+      OPTS: gcc-debug.ninja
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+        submodules: recursive
+    - name: Pull ci image
+      run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: echo "See the preflight job for details on how to resolve this!"
+    - name: Configure
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
+    - name: Upload error logs (on failure)
+      if: ${{ failure() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: configure_log_${OPTS}
+        if-no-files-found: error
+        path: |
+          build-dune-gdt-ci/*/CMakeFiles/CMakeError.log
+          build-dune-gdt-ci/*/CMakeFiles/CMakeOutput.log
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: |
+        echo "There was an error configuring (see above)!"
+        echo "To reproduce the failure locally, execute"
+        echo "    git clone https://github.com/dune-gdt/dune-gdt.git"
+        echo "    cd dune-gdt"
+        echo "    git checkout -b ${{ github.ref }} ${{ github.event.pull_request.base.sha }}"
+        echo "    git merge ${{ github.event.pull_request.head.sha }}"
+        echo "    git submodule update --init --recursive"
+        echo "    OPTS=${OPTS} ./docker/run_ci.sh '\${DUNECONTROL} configure'"
+        echo ""
+        echo "An interactive shell can afterwards be obtained by"
+        echo "    DOCKER_RUN_CI_ARGS=-i OPTS=${OPTS} ./docker/run_ci.sh /bin/bash"
+        exit 1
+    - name: Check headers
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} dxt_headercheck'
+  cpp_tests:
+    name: Build and run C++ tests
+    needs: preflight
+    runs-on: ubuntu-22.04
+    env:
+      OPTS: gcc-debug.ninja
+      DXT_TEST_TIMEOUT: 1200
+      DXT_TEST_PROCS: 2
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+        submodules: recursive
+    - name: Pull ci image
+      run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: echo "See the preflight job for details on how to resolve this!"
+    - name: Configure
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: echo "See the headercheck job for details on how to resolve this!"
+    - name: Build all
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} all'
+    - name: Build tests
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} bexec ninja test_binaries'
+    - name: Run tests
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} bexec ctest '"-V --timeout ${DXT_TEST_TIMEOUT} -j ${DXT_TEST_PROCS}"
+  python_bindings_and_tests:
+    name: Build Python bindings and run Python tests
+    needs: preflight
+    runs-on: ubuntu-22.04
+    env:
+      OPTS: gcc-debug.ninja
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+        submodules: recursive
+    - name: Pull ci image
+      run: docker pull ghcr.io/${{ github.repository }}/ci:$(./docker/compute_ci_hash.sh)
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: echo "See the preflight job for details on how to resolve this!"
+    - name: Configure
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} configure'
+    - name: Abort with meaningful error message (on failure)
+      if: ${{ failure() }}
+      run: echo "See the headercheck job for details on how to resolve this!"
+    - name: Build all
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} all'
+    - name: Build bindings
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} bexec "ninja bindings_no_ext"'
+    - name: Install dependencies into virtualenv
+      run: |
+        python -m pip install pytest pytest-cov hypothesis codecov
+    - name: Run Python tests
+      run: |
+        OPTS=${OPTS} ./docker/run_ci.sh '${DUNECONTROL} bexec "ninja test_python"'

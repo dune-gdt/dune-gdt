@@ -22,13 +22,13 @@ from dune.xt.test import grid_types as types
 def function_provider(request):
     grid_type = request.param
     dim = 1
-    if '2d' in grid_type:
+    if "2d" in grid_type:
         dim = 2
-    if '3d' in grid_type:
+    if "3d" in grid_type:
         dim = 3
     fn = f"ConstantFunction{dim}To{1}d"
     maker = getattr(xtf, fn)
-    return maker([2], 'test_function')
+    return maker([2], "test_function")
 
 
 def test_available():
@@ -36,7 +36,7 @@ def test_available():
 
 
 def test_grid_provider(function_provider):
-    assert function_provider.name == 'test_function'
+    assert function_provider.name == "test_function"
 
 
 def test_count():

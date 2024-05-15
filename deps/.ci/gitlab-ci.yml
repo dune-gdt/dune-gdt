@@ -1,3 +1,4 @@
+---
 variables:
   DUNE_XT_OR_DUNE_GDT: dune-gdt
 

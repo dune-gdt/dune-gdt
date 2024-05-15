@@ -18,4 +18,5 @@ from dune.xt.codegen import typeid_to_typedef_name as safe_name
 all_grids = (
     (safe_name(g), g)
     for g in grid_types.all_types(cache, list(range(1, 4)))  # noqa: F821
-    if "Alberta" not in g)
+    if "Alberta" not in g
+)
