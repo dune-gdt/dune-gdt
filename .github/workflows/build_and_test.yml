@@ -54,8 +54,8 @@ jobs:
         name: configure_log_${OPTS}
         if-no-files-found: error
         path: |
-          build-dune-gdt-ci/${OPTS}/CMakeFiles/CMakeError.log
-          build-dune-gdt-ci/${OPTS}/CMakeFiles/CMakeOutput.log
+          build-dune-gdt-ci/*/CMakeFiles/CMakeError.log
+          build-dune-gdt-ci/*/CMakeFiles/CMakeOutput.log
     - name: Abort with meaningful error message (on failure)
       if: ${{ failure() }}
       run: |
