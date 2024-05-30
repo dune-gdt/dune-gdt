@@ -59,7 +59,7 @@ class CouplingIntersectionWithCorrectNormal : public CouplingIntersectionType
   using BaseType = CouplingIntersectionType;
 
 public:
-  using Entity = typename MacroIntersectionType::Entity;
+  using Entity = typename CouplingIntersectionType::InsideEntity;
   static constexpr auto dimensionworld = MacroIntersectionType::dimensionworld;
   static constexpr auto dimension = MacroIntersectionType::Entity::dimension;
   static constexpr auto mydimension = MacroIntersectionType::mydimension;
@@ -135,10 +135,10 @@ class CouplingGridViewWrapper;
 
 //! Traits for CouplingGridViewWrapper
 template <class GridGlueImp>
-class CouplingGridViewWrapperTraits : public GridGlueImp::MacroGridViewType::Traits
+class CouplingGridViewWrapperTraits : public GridGlueImp::LocalViewType::Traits
 {
 public:
-  using BaseGridViewType = typename GridGlueImp::MacroGridViewType;
+  using BaseGridViewType = typename GridGlueImp::LocalViewType;
   using GridGlueType = GridGlueImp;
   // use types from BaseGridViewType...
   using GridViewImp = CouplingGridViewWrapper<GridGlueType>;
@@ -150,7 +150,7 @@ public:
 
   using GlueType = typename GridGlueType::GlueType;
   using CouplingIntersectionType = typename GlueType::Intersection;
-  using MacroInterSectionType = typename BaseGridViewTraits::Intersection;
+  using MacroInterSectionType = typename GridGlueType::MacroGridViewType::Intersection;
   using CorrectedCouplingIntersectionType =
       CouplingIntersectionWithCorrectNormal<CouplingIntersectionType, MacroInterSectionType>;
   using Intersection = CorrectedCouplingIntersectionType;
@@ -196,9 +196,9 @@ public:
  *  \see CouplingGridView
  */
 template <class GridGlueType>
-class CouplingGridViewWrapper : public GridGlueType::MacroGridViewType
+class CouplingGridViewWrapper : public GridGlueType::LocalViewType
 {
-  using BaseType = typename GridGlueType::MacroGridViewType;
+  using BaseType = typename GridGlueType::LocalViewType;
   using ThisType = CouplingGridViewWrapper;
   using Traits = CouplingGridViewWrapperTraits<GridGlueType>;
 
@@ -234,7 +234,7 @@ public:
                           const MacroElementType& nn,
                           GridGlueType& dd_grid,
                           const MacroIntersectionType macro_intersection)
-    : BaseType(dd_grid.macro_grid_view())
+    : BaseType(dd_grid.local_grid(ss).leaf_view()) // <- Bad assumption: locally leaf instead of level!
     , inside_element_(ss)
     , outside_element_(nn)
     , dd_grid_(dd_grid)
@@ -265,7 +265,7 @@ public:
         std::vector<std::set<CorrectedCouplingIntersectionType, CompareType<CorrectedCouplingIntersectionType>>>>();
     local_to_inside_indices_ = std::make_shared<std::vector<std::pair<size_t, size_t>>>();
 
-    auto& coupling = dd_grid_.coupling(inside_element_, -1, outside_element_, -1, true);
+    auto& coupling = dd_grid_.coupling(inside_element_, outside_element_, true);
     coupling_size_ = Common::numeric_cast<size_t>(coupling.size());
     // Note: This iterator iterates over all interesctions in the coupling grid. Not only over all intersections w.r.t.
     //       a single element

@@ -16,6 +16,14 @@
 #include <python/xt/dune/xt/common/parameter.hh>
 #include <dune/xt/la/container/istl.hh>
 #include <dune/xt/common/print.hh>
+#include <dune/xt/grid/type_traits.hh>
+
+// new for partition of unity
+#include <dune/gdt/interpolations.hh>
+#include <dune/gdt/spaces/l2/discontinuous-lagrange.hh>
+#include <dune/gdt/spaces/h1/continuous-lagrange.hh>
+#include <dune/xt/grid/dd/glued.hh>
+
 
 namespace py = pybind11;
 using namespace Dune;
@@ -41,6 +49,9 @@ V& get_vec_ref(py::handle list_element)
                  << "  - [2]: " << XT::Common::Typename<V>::value() << "&");
 } // ... get_vec_ref(...)
 
+using G = YASP_2D_EQUIDISTANT_OFFSET;
+using MG = YASP_2D_EQUIDISTANT_OFFSET;
+using GridGlueType = XT::Grid::DD::Glued<MG, G, XT::Grid::Layers::leaf>;
 
 PYBIND11_MODULE(dunegdtusercode, m)
 {
@@ -66,4 +77,5 @@ PYBIND11_MODULE(dunegdtusercode, m)
         }
       },
       "param"_a);
+
 } // PYBIND11_MODULE(dunegdtusercode, ...)
