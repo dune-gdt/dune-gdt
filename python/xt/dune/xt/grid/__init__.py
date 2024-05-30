@@ -71,10 +71,5 @@ def visualize_grid(grid):
         return plt.gca()
 
     elif config.HAVE_K3D:
-        from tempfile import NamedTemporaryFile
-        from dune.xt.common.vtk.plot import plot
-
-        tmpfile = NamedTemporaryFile(mode='wb', delete=False, suffix='.vtu').name
-        grid.visualize(tmpfile[:-4])
-        return plot(tmpfile,
-                    color_attribute_name='Element index')  # see visualize in python/dune/xt/grid/gridprovider.hh
+        from dune.xt.grid.visualisation import grid_plot
+        return grid_plot(grid)
