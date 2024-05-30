@@ -19,6 +19,10 @@ def _can_import(module):
 
 _PACKAGES = {
     'K3D': lambda: _can_import('k3d'),
+    'VTK': lambda: _can_import('vtk'),
+    'IPYWIDGETS': lambda: _can_import('ipywidgets'),
+    'MATPLOTLIB': lambda: _can_import('matplotlib'),
+    'VISUALIZATION': lambda: _can_import(['vtk', 'k3d', 'ipywidgets', 'matplotlib']),
 }
 
 
