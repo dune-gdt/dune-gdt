@@ -570,9 +570,7 @@ public:
     c.def(py::init([](int order,
                       typename GFT::GenericEvaluateFunctionType evaluate,
                       typename GFT::GenericJacobianFunctionType jacobian,
-                      const std::string& name) {
-            return new type({order, evaluate, jacobian, name});
-          }),
+                      const std::string& name) { return new type({order, evaluate, jacobian, name}); }),
           "order"_a,
           "evaluate_lambda"_a,
           "jacobian_lambda"_a,
@@ -587,9 +585,7 @@ public:
              int order,
              typename GFT::GenericEvaluateFunctionType evaluate,
              const Grid::bindings::Dimension<r>&,
-             const std::string& name) {
-            return new type({order, evaluate, name});
-          },
+             const std::string& name) { return new type({order, evaluate, name}); },
           "grid"_a,
           "order"_a,
           "evaluate_lambda"_a,
@@ -602,9 +598,7 @@ public:
              typename GFT::GenericEvaluateFunctionType evaluate,
              typename GFT::GenericJacobianFunctionType jacobian,
              const Grid::bindings::Dimension<r>&,
-             const std::string& name) {
-            return new type({order, evaluate, jacobian, name});
-          },
+             const std::string& name) { return new type({order, evaluate, jacobian, name}); },
           "grid"_a,
           "order"_a,
           "evaluate_lambda"_a,
@@ -618,9 +612,7 @@ public:
              int order,
              typename GFT::GenericEvaluateFunctionType evaluate,
              const std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>>&,
-             const std::string& name) {
-            return new type({order, evaluate, name});
-          },
+             const std::string& name) { return new type({order, evaluate, name}); },
           "grid"_a,
           "order"_a,
           "evaluate_lambda"_a,
@@ -633,9 +625,7 @@ public:
              typename GFT::GenericEvaluateFunctionType evaluate,
              typename GFT::GenericJacobianFunctionType jacobian,
              const std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>>&,
-             const std::string& name) {
-            return new type({order, evaluate, jacobian, name});
-          },
+             const std::string& name) { return new type({order, evaluate, jacobian, name}); },
           "grid"_a,
           "order"_a,
           "evaluate_lambda"_a,

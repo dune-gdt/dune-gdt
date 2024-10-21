@@ -63,12 +63,9 @@ PYBIND11_MODULE(_common_mpi, m)
 
     cls.def("barrier", &Comm::barrier);
 
-    cls.def(
-        "min", [](const Comm& self, double x) { return self.min(x); }, "x"_a);
-    cls.def(
-        "max", [](const Comm& self, double x) { return self.max(x); }, "x"_a);
-    cls.def(
-        "sum", [](const Comm& self, double x) { return self.sum(x); }, "x"_a);
+    cls.def("min", [](const Comm& self, double x) { return self.min(x); }, "x"_a);
+    cls.def("max", [](const Comm& self, double x) { return self.max(x); }, "x"_a);
+    cls.def("sum", [](const Comm& self, double x) { return self.sum(x); }, "x"_a);
   });
 
   XT::Common::bindings::guarded_bind([&]() {

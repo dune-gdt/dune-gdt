@@ -213,16 +213,13 @@ public:
     // ... and discrete fucntions
     //    addbind_vector_or_function_methods<SF, RF>(c);   // <-- does not work yet (GridFunction -> DiscreteFunction)
 
-    c.def(
-        "assemble", [](T& self, const bool parallel) { self.assemble(parallel); }, "parallel"_a = false);
+    c.def("assemble", [](T& self, const bool parallel) { self.assemble(parallel); }, "parallel"_a = false);
 
     c.def("invert_options", [](T& self) { return self.invert_options(); });
-    c.def(
-        "invert_options", [](T& self, const std::string& tpe) { return self.invert_options(tpe); }, "type"_a);
+    c.def("invert_options", [](T& self, const std::string& tpe) { return self.invert_options(tpe); }, "type"_a);
 
     c.def("jacobian_options", [](T& self) { return self.jacobian_options(); });
-    c.def(
-        "jacobian_options", [](T& self, const std::string& tpe) { return self.jacobian_options(tpe); }, "type"_a);
+    c.def("jacobian_options", [](T& self, const std::string& tpe) { return self.jacobian_options(tpe); }, "type"_a);
 
     // operators. These are delicate: we need to mimic the C++ situation, e.g. som operators here, others in
     // ConstLinccomb and Lincomb...

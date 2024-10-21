@@ -83,10 +83,8 @@ public:
       ss << repr(self);
       return ss.str();
     });
-    c.def(
-        "__eq__", [](type& self, const type& other) { return self == other; }, pybind11::is_operator());
-    c.def(
-        "__neq__", [](type& self, const type& other) { return self != other; }, pybind11::is_operator());
+    c.def("__eq__", [](type& self, const type& other) { return self == other; }, pybind11::is_operator());
+    c.def("__neq__", [](type& self, const type& other) { return self != other; }, pybind11::is_operator());
 
     // methods
     c.def(

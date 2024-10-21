@@ -361,7 +361,7 @@ public:
   // Ensure assignment from another view copies the contents
   ThisType& operator=(const ThisType& other)
   {
-    return operator=<ThisType>(other);
+    return operator= <ThisType>(other);
   }
 
   inline ThisType copy() const
