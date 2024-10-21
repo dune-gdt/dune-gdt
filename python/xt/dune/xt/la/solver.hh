@@ -43,8 +43,7 @@ auto bind_Solver(pybind11::module& m)
 
   c.def(py::init<M>());
 
-  c.def(
-      "apply", [](const C& self, const V& rhs, V& solution) { self.apply(rhs, solution); }, "rhs"_a, "solution"_a);
+  c.def("apply", [](const C& self, const V& rhs, V& solution) { self.apply(rhs, solution); }, "rhs"_a, "solution"_a);
   c.def(
       "apply",
       [](const C& self, const V& rhs, V& solution, const std::string& type) { self.apply(rhs, solution, type); },
@@ -60,8 +59,7 @@ auto bind_Solver(pybind11::module& m)
       "solution"_a,
       "options"_a);
 
-  m.def(
-      "make_solver", [](const M& matrix) { return C(matrix); }, pybind11::keep_alive<0, 1>());
+  m.def("make_solver", [](const M& matrix) { return C(matrix); }, pybind11::keep_alive<0, 1>());
 
   return c;
 } // ... bind_Solver(...)

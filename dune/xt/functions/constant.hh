@@ -116,10 +116,10 @@ public:
 
   ConstantGridFunction(const typename LocalFunctionType::RangeReturnType value, const std::string& nm = "")
     : BaseType(ConstantFunction<E::dimension, r, rC, R>(
-        value,
-        nm.empty() ? ((r == 1 && rC == 1) ? std::string("ConstantGridFunction(" + Common::to_string(value) + ")")
-                                          : "ConstantGridFunction")
-                   : nm))
+          value,
+          nm.empty() ? ((r == 1 && rC == 1) ? std::string("ConstantGridFunction(" + Common::to_string(value) + ")")
+                                            : "ConstantGridFunction")
+                     : nm))
   {
   }
   std::unique_ptr<ThisType> copy_as_grid_function() const

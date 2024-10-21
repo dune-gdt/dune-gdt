@@ -69,8 +69,7 @@ public:
         py::keep_alive<1, 2>());
     c.def(
         "op", (const typename T::OperatorType& (T::*)(const size_t) const) & T::op, "index"_a, py::keep_alive<0, 1>());
-    c.def(
-        "coeff", [](T& self, const size_t ii) { return self.coeff(ii); }, "index"_a);
+    c.def("coeff", [](T& self, const size_t ii) { return self.coeff(ii); }, "index"_a);
 
     // our operators
     // (function ptr signature required for the right return type)

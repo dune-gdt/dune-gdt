@@ -20,7 +20,7 @@ class TryOnBinder(Directive):
         # this is somewhat confusing, but the docs repository's branches are named after the
         # directories which are slugs to avoid slashes and such
         node[
-            "target"] = f"https://mybinder.org/v2/gh/dune-community/dune-gdt-tutorials-pages/{slug}?filepath={generated_nb}"  # noqa: E501
+            "target"] = f"https://mybinder.org/v2/gh/dune-community/dune-gdt-tutorials-pages/{slug}?filepath={generated_nb}"
         node["badge"] = "https://mybinder.org/badge_logo.svg"
         return [node]
 

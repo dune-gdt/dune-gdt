@@ -1053,8 +1053,8 @@ protected:
     const auto available_types = this->jacobian_options();
     DUNE_THROW_IF(!opts.has_key("type"),
                   Exceptions::operator_error,
-                  "missing key 'type' in given opts!"
-                      << "\n\n   available type: " << print(available_types) << "\n   opts = " << print(opts));
+                  "missing key 'type' in given opts!" << "\n\n   available type: " << print(available_types)
+                                                      << "\n   opts = " << print(opts));
     const auto type = opts.get<std::string>("type");
     DUNE_THROW_IF(std::find(available_types.begin(), available_types.end(), type) == available_types.end(),
                   Exceptions::operator_error,
@@ -1067,8 +1067,8 @@ protected:
     const auto available_types = this->invert_options();
     DUNE_THROW_IF(!opts.has_key("type"),
                   Exceptions::operator_error,
-                  "missing key 'type' in given opts!"
-                      << "\n\n   available type: " << print(available_types) << "\n   opts = " << print(opts));
+                  "missing key 'type' in given opts!" << "\n\n   available type: " << print(available_types)
+                                                      << "\n   opts = " << print(opts));
     const auto type = opts.get<std::string>("type");
     DUNE_THROW_IF(std::find(available_types.begin(), available_types.end(), type) == available_types.end(),
                   Exceptions::operator_error,

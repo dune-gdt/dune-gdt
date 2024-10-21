@@ -59,8 +59,7 @@ public:
   static void bind_leaf_factory(pybind11::module& m, const std::string& class_id = "bounding_box_functor")
   {
     using namespace pybind11::literals;
-    m.def(
-        Common::to_camel_case(class_id).c_str(), [](GridProvider<G>&) { return new type(); }, "grid_provider"_a);
+    m.def(Common::to_camel_case(class_id).c_str(), [](GridProvider<G>&) { return new type(); }, "grid_provider"_a);
   }
 
   static void bind_coupling_factory(pybind11::module& m, const std::string& class_id = "bounding_box_functor")

@@ -33,12 +33,10 @@ class MatrixInverterOptions<FieldMatrix<K, ROWS, COLS>, true>
 public:
   static std::vector<std::string> types()
   {
-    return
-    {
-      "direct"
+    return {"direct"
 #if HAVE_EIGEN
-          ,
-          "moore_penrose"
+            ,
+            "moore_penrose"
 #endif
     };
   }

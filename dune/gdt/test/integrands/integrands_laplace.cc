@@ -57,9 +57,8 @@ struct LaplaceIntegrandTest : public IntegrandTest<G>
     [[maybe_unused]] ScalarIntegrandType scalar_integrand1;
     [[maybe_unused]] ScalarIntegrandType scalar_integrand2(XT::LA::eye_matrix<FieldMatrix<D, d, d>>(d, d));
     const XT::Functions::GenericFunction<d, 2, 2> matrix_function(
-        1, [](const DomainType& x, const XT::Common::Parameter&) {
-          return VectorJacobianType{{x[0], x[1]}, {1., 2.}};
-        });
+        1,
+        [](const DomainType& x, const XT::Common::Parameter&) { return VectorJacobianType{{x[0], x[1]}, {1., 2.}}; });
     [[maybe_unused]] ScalarIntegrandType scalar_integrand3(matrix_function);
     [[maybe_unused]] ScalarIntegrandType scalar_integrand4(*diffusion_tensor_);
     [[maybe_unused]] VectorIntegrandType vector_integrand1;

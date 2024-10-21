@@ -307,7 +307,7 @@ namespace internal {
 template <std::size_t>
 struct Any
 {
-  Any(...){}; // NOLINT(modernize-use-equals-default)
+  Any(...) {}; // NOLINT(modernize-use-equals-default)
 };
 
 template <typename T>

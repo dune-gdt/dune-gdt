@@ -365,7 +365,7 @@ protected:
     const auto fv_dt =
         (this->boundary_treatment == "inflow_from_the_left_by_heuristic_euler_treatment_impermeable_wall_right")
             ? estimate_dt_for_hyperbolic_system(
-                space.grid_view(), u_0, this->flux(), /*boundary_data_range=*/{{0.5, 0., 0.4}, {1.5, 0.5, 0.4}})
+                  space.grid_view(), u_0, this->flux(), /*boundary_data_range=*/{{0.5, 0., 0.4}, {1.5, 0.5, 0.4}})
             : estimate_dt_for_hyperbolic_system(space.grid_view(), u_0, this->flux());
     auto dt = fv_dt;
     if (this->space_type_ != "fv") {

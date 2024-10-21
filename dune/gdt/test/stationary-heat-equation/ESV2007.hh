@@ -107,10 +107,10 @@ class ESV2007DiffusionTest : public StationaryDiffusionIpdgEocStudy<G>
 public:
   ESV2007DiffusionTest()
     : BaseType(
-        /*symmetry_prefactor=*/1,
-        /*inner_penalty=*/8,
-        /*dirichlet_penalty=*/14,
-        /*intersection_diameter=*/[](const auto& intersection) { return intersection.geometry().volume(); })
+          /*symmetry_prefactor=*/1,
+          /*inner_penalty=*/8,
+          /*dirichlet_penalty=*/14,
+          /*intersection_diameter=*/[](const auto& intersection) { return intersection.geometry().volume(); })
     , problem(DXTC_TEST_CONFIG_GET("setup.force_order", 2))
   {
   }
