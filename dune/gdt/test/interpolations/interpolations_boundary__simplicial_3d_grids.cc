@@ -27,7 +27,7 @@ using Simplicial3dGrids = ::testing::Types<
 #endif
     >;
 
-
+#if HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
 template <class G>
 using BoundaryInterpolation = Dune::GDT::Test::BoundaryInterpolationOnLeafViewTest<G>;
 TYPED_TEST_SUITE(BoundaryInterpolation, Simplicial3dGrids);
@@ -35,3 +35,4 @@ TYPED_TEST(BoundaryInterpolation, interpolates_correctly)
 {
   this->interpolates_correctly();
 }
+#endif // HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
