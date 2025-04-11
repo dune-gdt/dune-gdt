@@ -25,10 +25,10 @@
 	url = https://github.com/dune-gdt/scripts.git
 [submodule "dune-testtools"]
 	path = deps/dune-testtools
-	url = https://github.com/dune-community/dune-testtools.git
+	url = https://gitlab.dune-project.org/quality/dune-testtools
 [submodule "dune-alugrid"]
 	path = deps/dune-alugrid
-	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-alugrid.git
+	url = https://gitlab.dune-project.org/extensions/dune-alugrid.git
 [submodule "dune-functions"]
 	path = deps/dune-functions
 	url = https://github.com/dune-mirrors/dune-functions.git
