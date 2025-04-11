@@ -94,7 +94,7 @@ auto write_visualization(VTKWriter<GridViewType>& vtk_writer,
     DUNE_THROW(Exceptions::wrong_input_given, "path must not be empty!");
   const auto directory = Common::directory_only(path);
   Common::test_create_directory(directory);
-  if (MPIHelper::getCollectiveCommunication().size() == 1)
+  if (MPIHelper::getCommunication().size() == 1)
     vtk_writer.write(path, vtk_output_type);
   else
     vtk_writer.pwrite(Common::filename_only(path), directory, "", vtk_output_type);

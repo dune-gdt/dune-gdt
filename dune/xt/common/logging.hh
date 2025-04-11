@@ -160,11 +160,8 @@ DUNE_EXPORT inline Logging& Logger()
 #define DXTC_LOG_ERROR DXTC_LOG.error()
 #define DXTC_LOG_DEVNULL DXTC_LOG.devnull()
 
-#define DXTC_LOG_INFO_0                                                                                                \
-  (Dune::MPIHelper::getCollectiveCommunication().rank() == 0 ? DXTC_LOG.info() : DXTC_LOG.devnull())
-#define DXTC_LOG_DEBUG_0                                                                                               \
-  (Dune::MPIHelper::getCollectiveCommunication().rank() == 0 ? DXTC_LOG.debug() : DXTC_LOG.devnull())
-#define DXTC_LOG_ERROR_0                                                                                               \
-  (Dune::MPIHelper::getCollectiveCommunication().rank() == 0 ? DXTC_LOG.error() : DXTC_LOG.devnull())
+#define DXTC_LOG_INFO_0 (Dune::MPIHelper::getCommunication().rank() == 0 ? DXTC_LOG.info() : DXTC_LOG.devnull())
+#define DXTC_LOG_DEBUG_0 (Dune::MPIHelper::getCommunication().rank() == 0 ? DXTC_LOG.debug() : DXTC_LOG.devnull())
+#define DXTC_LOG_ERROR_0 (Dune::MPIHelper::getCommunication().rank() == 0 ? DXTC_LOG.error() : DXTC_LOG.devnull())
 
 #endif // DUNE_XT_COMMON_LOGGING_HH

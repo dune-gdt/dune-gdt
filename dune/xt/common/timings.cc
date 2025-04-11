@@ -147,7 +147,7 @@ void Timings::set_outputdir(std::string dir)
 
 void Timings::output_per_rank(std::string csv_base) const
 {
-  const auto rank = MPIHelper::getCollectiveCommunication().rank();
+  const auto rank = MPIHelper::getCommunication().rank();
   boost::filesystem::path dir(output_dir_);
   boost::filesystem::path filename = dir / (boost::format("%s_p%08d.csv") % csv_base % rank).str();
   boost::filesystem::ofstream out(filename);
@@ -175,7 +175,7 @@ void Timings::output_simple(std::ostream& out) const
 
 void Timings::output_all_measures(std::ostream& out, MPIHelper::MPICommunicator mpi_comm) const
 {
-  CollectiveCommunication<MPIHelper::MPICommunicator> comm(mpi_comm);
+  Communication<MPIHelper::MPICommunicator> comm(mpi_comm);
   std::stringstream stash;
 
   stash << "threads" << csv_sep_ << "ranks";

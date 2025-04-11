@@ -488,16 +488,7 @@ public:
   {
   }
 
-  ThisType& operator=(const ThisType& other)
-  {
-    BaseType::operator=(other);
-    base_grid_view_ = other.base_grid_view_;
-    element_ = other.element_;
-    has_boundary_intersections_ = other.has_boundary_intersections_;
-    periodic_neighbors_ = other.periodic_neighbors_;
-    current_intersection_ = nullptr;
-    return *this;
-  }
+  ThisType& operator=(const ThisType& other) = default;
 
   PeriodicIntersectionIterator(ThisType&& other) = default;
   ThisType& operator=(ThisType&& other) = default;
