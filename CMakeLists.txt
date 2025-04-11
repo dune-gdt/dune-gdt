@@ -13,7 +13,7 @@
 # Tobias Leibner  (2016, 2018 - 2021)
 # ~~~
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.24)
 # To allow VERSION
 cmake_policy(SET CMP0048 NEW)
 
@@ -27,27 +27,25 @@ project(
   HOMEPAGE_URL "https://github.com/dune-gdt/dune-gdt/"
   LANGUAGES CXX)
 
-cmake_minimum_required(VERSION 3.13)
-
 if("${TRAVIS}" EQUAL "1")
   add_compile_options(-Werror -Wno-error=unknown-pragmas -Wno-error=pedantic)
 endif()
 
-if(NOT
-   (dune-common_DIR
-    OR dune-common_ROOT
-    OR "${CMAKE_PREFIX_PATH}" MATCHES ".*dune-common.*"))
-  string(REPLACE ${CMAKE_PROJECT_NAME} dune-common dune-common_DIR ${PROJECT_BINARY_DIR})
-endif()
+# allow dune to see imported targets across modules
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 
-# find dune-common and set the module path
-find_package(dune-common REQUIRED)
-list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
+# let 'find_package' know where modules can be found once configured
+list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/deps)
+set(DUNE_SUBMODULES
+    "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-alugrid;dune-grid-glue;dune-localfunctions")
+foreach(module IN LISTS DUNE_SUBMODULES)
+  add_subdirectory(deps/${module})
+endforeach()
 
-find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
-                                                         ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED)
+# find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
+# ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED)
 
-execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)
+# execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)
 set(DXT_TEST_TIMEOUT
     1000
     CACHE STRING "gtest timeout in seconds")
