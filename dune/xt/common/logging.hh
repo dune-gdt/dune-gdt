@@ -16,6 +16,7 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include <dune/common/visibility.hh>
 
