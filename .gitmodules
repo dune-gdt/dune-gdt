@@ -29,9 +29,6 @@
 [submodule "dune-alugrid"]
 	path = deps/dune-alugrid
 	url = https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-alugrid.git
-[submodule "dune-uggrid"]
-	path = deps/dune-uggrid
-	url = https://github.com/dune-community/dune-uggrid.git
 [submodule "dune-functions"]
 	path = deps/dune-functions
 	url = https://github.com/dune-mirrors/dune-functions.git
