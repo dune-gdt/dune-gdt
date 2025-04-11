@@ -19,6 +19,7 @@ cmake_policy(SET CMP0048 NEW)
 
 # We automatically determine our PROJECT_VERSION from git, which needs to happen before the project() call.
 include(cmake/DuneGdtVersioneer.cmake)
+include(cmake/VcpkgBootStrap.cmake)
 
 project(
   dune-gdt
@@ -40,6 +41,7 @@ set(DUNE_SUBMODULES
     "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-alugrid;dune-grid-glue;dune-localfunctions")
 foreach(module IN LISTS DUNE_SUBMODULES)
   add_subdirectory(deps/${module})
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/deps/${module}/cmake/modules)
 endforeach()
 
 # find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
@@ -51,6 +53,7 @@ set(DXT_TEST_TIMEOUT
     CACHE STRING "gtest timeout in seconds")
 
 # include the dune macros
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 include(DuneMacros)
 include(DuneUtils)
 
@@ -66,9 +69,6 @@ endif()
 # (re-)set version info from git if available
 include(DuneXtVersionHelper)
 dune_xt_module_version_from_git()
-
-# dune-gdt cmake includes
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(Python3 COMPONENTS Interpreter Development)
 add_subdirectory(deps/pybind11)
@@ -102,7 +102,6 @@ find_file(
   NO_DEFAULT_PATH)
 
 # silence most warnings we are not responsible for
-include(DuneUtils)
 make_dependent_modules_sys_included()
 
 # do not change order here

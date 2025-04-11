@@ -1,0 +1,20 @@
+{
+  "name": "ana-timehistory-sketch",
+  "version": "0.0.1",
+  "description": "Time History Analysis for Dynamic Systems",
+  "homepage": "https://github.com/arup-group/ana-timehistory-sketch",
+  "dependencies": [
+    "boost-core",
+    "boost-atomic",
+    "boost-chrono",
+    "boost-date-time",
+    "boost-filesystem",
+    "boost-system",
+    "boost-thread",
+    "boost-timer",
+    "gtest",
+    "eigen3",
+    "tbb"
+  ],
+  "builtin-baseline": "a4275b7eee79fb24ec2e135481ef5fce8b41c339"
+}

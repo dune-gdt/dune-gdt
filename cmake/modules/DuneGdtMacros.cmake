@@ -30,61 +30,37 @@ set(DXT_DONT_LINK_PYTHON_LIB
 # library checks  #########################################################################
 find_package(PkgConfig)
 
-set(DS_REQUIRED_BOOST_LIBS
-    atomic
-    chrono
-    date_time
-    filesystem
-    system
-    thread
-    timer)
-set(_boost_root_hints "$ENV{BOOST_ROOT}" ${root_hints})
+find_package(
+  Boost 1.48.0 REQUIRED
+  COMPONENTS atomic
+             chrono
+             date_time
+             filesystem
+             system
+             thread
+             timer)
+dune_register_package_flags(INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 
-# check if any hints are provided by user
-if(DEFINED BOOST_ROOT
-   OR DEFINED BOOOST_INCLUDEDIR
-   OR DEFINED BOOST_LIBRARYDIR)
-  find_package(Boost 1.48.0 REQUIRED COMPONENTS ${DS_REQUIRED_BOOST_LIBS})
-else(
-  DEFINED BOOST_ROOT
-  OR DEFINED BOOOST_INCLUDEDIR
-  OR DEFINED BOOST_LIBRARYDIR)
-  # FindBoost can only take a single hint directory from BOOST_ROOT, so we loop over all hints
-  foreach(boost_root_hint ${_boost_root_hints})
-    set(BOOST_ROOT ${boost_root_hint})
-    find_package(Boost 1.48.0 COMPONENTS ${DS_REQUIRED_BOOST_LIBS})
-
-    if(${Boost_FOUND})
-      break()
-    endif()
-  endforeach(boost_root_hint ${_boost_root_hints})
-
-  # check for Boost again with REQUIRED keyword to make boost mandatory
-  find_package(Boost 1.48.0 REQUIRED COMPONENTS ${DS_REQUIRED_BOOST_LIBS})
-endif(
-  DEFINED BOOST_ROOT
-  OR DEFINED BOOOST_INCLUDEDIR
-  OR DEFINED BOOST_LIBRARYDIR)
-
-if(${Boost_INCLUDE_DIRS})
-  dune_register_package_flags(INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-endif(${Boost_INCLUDE_DIRS})
-
-# if imported targets are available, use them
 if(TARGET Boost::headers)
   dune_register_package_flags(LIBRARIES Boost::headers)
-endif(TARGET Boost::headers)
+endif()
 
-foreach(boost_lib ${DS_REQUIRED_BOOST_LIBS})
-  set(_boost_lib "")
-  string(TOUPPER "${boost_lib}" _boost_lib)
-
+foreach(
+  boost_lib IN
+  ITEMS atomic
+        chrono
+        date_time
+        filesystem
+        system
+        thread
+        timer)
   if(TARGET Boost::${boost_lib})
     dune_register_package_flags(LIBRARIES Boost::${boost_lib})
-  else(TARGET Boost::${boost_lib})
+  else()
+    string(TOUPPER "${boost_lib}" _boost_lib)
     dune_register_package_flags(LIBRARIES ${Boost_${_boost_lib}_LIBRARY})
-  endif(TARGET Boost::${boost_lib})
-endforeach(boost_lib ${DS_REQUIRED_BOOST_LIBS})
+  endif()
+endforeach()
 
 find_package(Eigen3 3.2.0)
 
