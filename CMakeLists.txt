@@ -34,6 +34,8 @@ endif()
 
 # allow dune to see imported targets across modules
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
+# testtools tries to find  source files
+set(dune-testtools_PREFIX ${CMAKE_SOURCE_DIR}/deps/dune-testtools)
 
 # let 'find_package' know where modules can be found once configured
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/deps)
