@@ -1,0 +1,212 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF"
+      }
+    },
+    {
+      "name": "ninja-base",
+      "hidden": true,
+      "inherits": [
+        "base"
+      ],
+      "generator": "Ninja",
+      "cacheVariables": {
+        "CMAKE_C_FLAGS": "-Wall -Wextra -Wpedantic",
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic"
+      }
+    },
+    {
+      "name": "vs2022-base",
+      "hidden": true,
+      "inherits": [
+        "base"
+      ],
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CMAKE_MSVC_RUNTIME_LIBRARY":
+          "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL",
+        "CMAKE_C_FLAGS": "/W3",
+        "CMAKE_CXX_FLAGS": "/W3"
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug Config (Ninja)",
+      "inherits": [
+        "ninja-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TIMEHISTORY_WARNINGS_AS_ERRORS": "OFF"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release Config (Ninja)",
+      "inherits": [
+        "ninja-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TIMEHISTORY_WARNINGS_AS_ERRORS": "OFF"
+      }
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "Windows Debug Config (VS 2022)",
+      "inherits": [
+        "vs2022-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TIMEHISTORY_WARNINGS_AS_ERRORS": "OFF"
+      }
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows Release Config (VS 2022)",
+      "inherits": [
+        "vs2022-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TIMEHISTORY_WARNINGS_AS_ERRORS": "OFF"
+      }
+    },
+    {
+      "name": "clang-debug",
+      "displayName": "Debug Config (Clang)",
+      "inherits": [
+        "ninja-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TIMEHISTORY_WARNINGS_AS_ERRORS": "OFF",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "TIMEHISTORY_ENABLE_CLANG_TIDY": "ON",
+        "TIMEHISTORY_CLANG_TIDY_FIX": "OFF",
+        "TIMEHISTORY_ENABLE_COVERAGE": "ON",
+        "CMAKE_CXX_FLAGS":
+          "-Wall -Wextra -Wpedantic --coverage -fprofile-instr-generate -fcoverage-mapping"
+      }
+    },
+    {
+      "name": "clang-release",
+      "displayName": "Release Config (Clang)",
+      "inherits": [
+        "ninja-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TIMEHISTORY_WARNINGS_AS_ERRORS": "OFF",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "TIMEHISTORY_ENABLE_CLANG_TIDY": "ON",
+        "TIMEHISTORY_CLANG_TIDY_FIX": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "windows-debug",
+      "configurePreset": "windows-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-release",
+      "configurePreset": "windows-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "clang-debug",
+      "configurePreset": "clang-debug"
+    },
+    {
+      "name": "clang-release",
+      "configurePreset": "clang-release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test-base",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false,
+        "timeout": 20
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Debug Tests",
+      "configurePreset": "debug",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "release",
+      "displayName": "Release Tests",
+      "configurePreset": "release",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "Windows Debug Tests",
+      "configurePreset": "windows-debug",
+      "configuration": "Debug",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows Release Tests",
+      "configurePreset": "windows-release",
+      "configuration": "Release",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "clang-debug",
+      "displayName": "Clang Debug Tests",
+      "configurePreset": "clang-debug",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "clang-release",
+      "displayName": "Clang Release Tests",
+      "configurePreset": "clang-release",
+      "inherits": [
+        "test-base"
+      ]
+    }
+  ]
+}
