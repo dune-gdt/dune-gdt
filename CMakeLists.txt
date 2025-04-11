@@ -37,8 +37,7 @@ set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 
 # let 'find_package' know where modules can be found once configured
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/deps)
-set(DUNE_SUBMODULES
-    "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-alugrid;dune-grid-glue;dune-localfunctions")
+set(DUNE_SUBMODULES "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-grid-glue;dune-localfunctions")
 foreach(module IN LISTS DUNE_SUBMODULES)
   add_subdirectory(deps/${module})
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/deps/${module}/cmake/modules)
