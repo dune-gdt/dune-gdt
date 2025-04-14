@@ -95,9 +95,9 @@ if config.HAVE_K3D:
     from dune.xt.common.vtk.plot import plot
 
     def visualize_function(function, grid=None, subsampling=False):
-        assert (
-            function.dim_domain <= 2
-        ), f"Not implemented yet for {function.dim_domain}-dimensional grids!"
+        assert function.dim_domain <= 2, (
+            f"Not implemented yet for {function.dim_domain}-dimensional grids!"
+        )
         if function.dim_domain == 1:
             import numpy as np
             from matplotlib import pyplot as plt
@@ -120,9 +120,9 @@ if config.HAVE_K3D:
 
             return plt.gca()
         elif function.dim_domain == 2:
-            assert (
-                function.dim_range == 1
-            ), f"Not implemented yet for {function.dim_domain}-dimensional functions!"
+            assert function.dim_range == 1, (
+                f"Not implemented yet for {function.dim_domain}-dimensional functions!"
+            )
             tmpfile = NamedTemporaryFile(mode="wb", delete=False, suffix=".vtu").name
             failed = False
             try:  # discrete function

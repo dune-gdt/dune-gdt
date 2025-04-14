@@ -29,8 +29,8 @@ def html_visit_binder_link_node(self, node):
     html = f"""
 <div class="admonition">
 <p class="admonition-title">Run this tutorial</p>
-    <a href=\"{node['target']}\">Click here</a> to run this tutorial on mybinder.org: <a href=\"{node['target']}\">
-        <img src=\"{node['badge']}\" alt=\"try on mybinder.org\">
+    <a href=\"{node["target"]}\">Click here</a> to run this tutorial on mybinder.org: <a href=\"{node["target"]}\">
+        <img src=\"{node["badge"]}\" alt=\"try on mybinder.org\">
     </a><br/>
     <emph>Please note that starting the notebook server may take a couple of minutes.</emph>
 </div>
