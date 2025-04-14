@@ -3,7 +3,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v5.0.0
   hooks:
   - id: trailing-whitespace
   - id: check-yaml
@@ -16,16 +16,16 @@ repos:
   - id: clang-format
     exclude: "^(dune/xt/test/gtest/|pybind11)"
 - repo: https://github.com/google/yamlfmt
-  rev: v0.11.0
+  rev: v0.16.0
   hooks:
   - id: yamlfmt
     exclude: ".clang-format|.clang-tidy"
 - repo: https://github.com/rhysd/actionlint
-  rev: v1.6.27
+  rev: v1.7.7
   hooks:
   - id: actionlint
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.4.2
+  rev: v0.11.5
   hooks:
   - id: ruff
   - id: ruff-format
