@@ -156,6 +156,11 @@
         "noTestsAction": "error",
         "stopOnFailure": false,
         "timeout": 20
+      },
+      "filter": {
+        "include": {
+          "label": "dune-gdt-test"
+        }
       }
     },
     {

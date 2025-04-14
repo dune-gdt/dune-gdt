@@ -74,7 +74,7 @@ macro(_process_sources test_sources subdir)
           list(APPEND ${subdir}_dxt_test_binaries ${target})
           set(dxt_test_names_${target} ${testlist_${testbase}_${target}})
           foreach(test_name ${dxt_test_names_${target}})
-            set_tests_properties(${test_name} PROPERTIES LABELS subdir_${subdir})
+            set_tests_properties(${test_name} PROPERTIES LABELS "subdir_${subdir} dune-gdt-test")
           endforeach()
         endforeach(target)
       else(dune-testtools_FOUND)
@@ -101,10 +101,12 @@ macro(_process_sources test_sources subdir)
         TIMEOUT
         ${DXT_TEST_TIMEOUT}
         MPI_RANKS
-        ${ranks})
+        ${ranks}
+        LABELS
+        dune-gdt-test
+        subdir_${subdir})
       list(APPEND ${subdir}_dxt_test_binaries ${target})
       set(dxt_test_names_${target} ${target})
-      set_tests_properties(${target} PROPERTIES LABELS subdir_${subdir})
     endif(EXISTS ${minifile})
   endforeach(source)
 endmacro()
