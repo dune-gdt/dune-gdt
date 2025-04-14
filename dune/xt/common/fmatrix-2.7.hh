@@ -184,20 +184,20 @@ public:
 
   /** \brief Matrix-matrix multiplication
    */
-  template <class OtherScalar, int otherCols>
-  friend auto operator*(const ThisType& matrixA, const Dune::FieldMatrix<OtherScalar, COLS, otherCols>& matrixB)
-  {
-    FieldMatrix<typename PromotionTraits<K, OtherScalar>::PromotedType, ROWS, otherCols> result;
-
-    for (size_type i = 0; i < matrixA.mat_rows(); ++i)
-      for (size_type j = 0; j < matrixB.mat_cols(); ++j) {
-        result[i][j] = 0;
-        for (size_type k = 0; k < matrixA.mat_cols(); ++k)
-          result[i][j] += matrixA[i][k] * matrixB[k][j];
-      }
-
-    return result;
-  }
+  // template <class OtherScalar, int otherCols>
+  // friend auto operator*(const ThisType& matrixA, const Dune::FieldMatrix<OtherScalar, COLS, otherCols>& matrixB)
+  // {
+  //   FieldMatrix<typename PromotionTraits<K, OtherScalar>::PromotedType, ROWS, otherCols> result;
+  //
+  //   for (size_type i = 0; i < matrixA.mat_rows(); ++i)
+  //     for (size_type j = 0; j < matrixB.mat_cols(); ++j) {
+  //       result[i][j] = 0;
+  //       for (size_type k = 0; k < matrixA.mat_cols(); ++k)
+  //         result[i][j] += matrixA[i][k] * matrixB[k][j];
+  //     }
+  //
+  //   return result;
+  // }
 
   template <class OtherScalar, int otherRows>
   friend auto operator*(const Dune::FieldMatrix<OtherScalar, otherRows, ROWS>& matrixA, const ThisType& matrixB)
@@ -972,15 +972,15 @@ void rightmultiply(Dune::FieldMatrix<K, L_ROWS, R_COLS>& ret,
   }
 }
 
-
-template <class K, int rows, int cols>
-XT::Common::FieldVector<K, rows> operator*(const Dune::FieldMatrix<K, rows, cols>& mat,
-                                           const Dune::FieldVector<K, cols>& vec)
-{
-  XT::Common::FieldVector<K, rows> ret;
-  mat.mv(vec, ret);
-  return ret;
-}
+//! TODO enabling this leads to ambig calls, check that those are actually equivalent
+// template <class K, int rows, int cols>
+// XT::Common::FieldVector<K, rows> operator*(const Dune::FieldMatrix<K, rows, cols>& mat,
+//                                            const Dune::FieldVector<K, cols>& vec)
+// {
+//   XT::Common::FieldVector<K, rows> ret;
+//   mat.mv(vec, ret);
+//   return ret;
+// }
 
 
 // versions that do not allocate matrices on the stack (for large matrices)
