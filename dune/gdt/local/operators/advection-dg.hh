@@ -134,7 +134,7 @@ public:
     const auto u_order = u_->order(param);
     const auto local_basis_order = basis.order(param);
     const auto integrand_order = local_flux_->order(param) * u_order + std::max(local_basis_order - 1, 0);
-    for (const auto& quadrature_point : QuadratureRules<D, d>::rule(element().type(), integrand_order)) {
+    for (auto&& quadrature_point : QuadratureRules<D, d>::rule(element().type(), integrand_order)) {
       // prepare
       const auto point_in_reference_element = quadrature_point.position();
       const auto integration_factor = element().geometry().integrationElement(point_in_reference_element);
@@ -815,7 +815,7 @@ public:
     // evaluate artificial viscosity form (8.183)
     if (smoothed_discrete_jump_indicator > 0) {
       const auto h = element().geometry().volume();
-      for (const auto& quadrature_point : QuadratureRules<D, d>::rule(
+      for (auto&& quadrature_point : QuadratureRules<D, d>::rule(
                element().type(), std::max(0, u_->order(param) - 1) + std::max(0, basis.order(param) - 1))) {
         const auto point_in_reference_element = quadrature_point.position();
         const auto integration_factor = element().geometry().integrationElement(point_in_reference_element);
