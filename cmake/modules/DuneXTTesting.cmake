@@ -66,8 +66,7 @@ macro(_process_sources test_sources subdir)
           targetlist_${testbase}
           ADDED_TESTS
           testlist_${testbase}
-          SCRIPT
-          dune_xt_execute.py
+          # SCRIPT dune_xt_execute.py
           ${DEBUG_MACRO_TESTS})
         foreach(target ${targetlist_${testbase}})
           target_link_libraries(${target} PRIVATE ${link_xt_libs} ${COMMON_LIBS} ${GRID_LIBS} gtest_dune_xt)
@@ -95,8 +94,6 @@ macro(_process_sources test_sources subdir)
         gtest_dune_xt
         COMMAND
         ${RUN_IN_ENV_SCRIPT}
-        CMD_ARGS
-        ${CMAKE_CURRENT_BINARY_DIR}/${target}
         --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${target}.xml
         TIMEOUT
         ${DXT_TEST_TIMEOUT}
