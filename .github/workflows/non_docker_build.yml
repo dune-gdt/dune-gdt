@@ -1,0 +1,91 @@
+---
+name: Non-docker Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Add concurrency to cancel in-progress jobs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-linux:
+    name: Build on Linux
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Restore build cache
+      uses: actions/cache/restore@v3
+      with:
+        path: build
+        key: ${{ runner.os }}-build
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build
+
+    - name: Configure CMake
+      id: configure_cmake
+      run: cmake --preset=debug
+
+    - name: Build
+      run: cmake --build --preset=debug --parallel
+
+    - name: Build test binaries
+      run: |
+        cmake --build --preset=debug --target test_binaries --parallel
+
+    - name: Test with CTest
+      run: |
+        ctest --preset=debug
+
+    - name: Save build cache
+      if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
+      uses: actions/cache/save@v3
+      with:
+        path: build
+        key: ${{ runner.os }}-build
+
+  build-windows:
+    name: Build on Windows
+    runs-on: windows-2022
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Restore build cache
+      uses: actions/cache/restore@v3
+      with:
+        path: build
+        key: ${{ runner.os }}-build
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@58cfbbe248a38878146e7240e9f5ad8a1d58be35 # v1
+
+    - name: Configure CMake
+      id: configure_cmake
+      run: cmake --preset=windows-release
+
+    - name: Build
+      run: cmake --build --preset=windows-release --parallel
+
+    - name: Test
+      run: ctest --preset=windows-release
+
+    - name: Save build cache
+      if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
+      uses: actions/cache/save@v3
+      with:
+        path: build
+        key: ${{ runner.os }}-build
