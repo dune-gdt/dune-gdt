@@ -1,0 +1,16 @@
+{
+  "name": "dune-geometry",
+  "version": "0.1.0",
+  "description": "Local overlay port for dune-geometry",
+  "homepage": "https://github.com/dune-community/dune-geometry",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

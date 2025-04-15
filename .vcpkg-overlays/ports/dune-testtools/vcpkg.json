@@ -1,0 +1,16 @@
+{
+  "name": "dune-testtools",
+  "version": "0.1.0",
+  "description": "Local overlay port for dune-testtools",
+  "homepage": "https://github.com/dune-community/dune-testtools",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}

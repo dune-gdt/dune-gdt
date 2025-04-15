@@ -1,0 +1,16 @@
+{
+  "name": "dune-istl",
+  "version": "0.1.0",
+  "description": "Local overlay port for dune-istl",
+  "homepage": "https://github.com/dune-community/dune-istl",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ]
+}
