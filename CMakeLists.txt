@@ -13,9 +13,11 @@
 # Tobias Leibner  (2016, 2018 - 2021)
 # ~~~
 
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.29)
 # To allow VERSION
 cmake_policy(SET CMP0048 NEW)
+# do not load custom FindBoost, use standard find_package mechanisms
+cmake_policy(SET CMP0167 NEW)
 
 # We automatically determine our PROJECT_VERSION from git, which needs to happen before the project() call.
 include(cmake/DuneGdtVersioneer.cmake)
@@ -34,15 +36,12 @@ endif()
 
 # allow dune to see imported targets across modules
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
-# testtools tries to find  source files
-set(dune-testtools_PREFIX ${CMAKE_SOURCE_DIR}/deps/dune-testtools)
 
 # let 'find_package' know where modules can be found once configured
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_CURRENT_BINARY_DIR}/deps)
 set(DUNE_SUBMODULES "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-grid-glue;dune-localfunctions")
 foreach(module IN LISTS DUNE_SUBMODULES)
-  add_subdirectory(deps/${module})
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/deps/${module}/cmake/modules)
+  find_package(${module} CONFIG REQUIRED)
+  list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
 endforeach()
 
 # find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
@@ -60,6 +59,17 @@ include(DuneUtils)
 
 # start a dune project with information from dune.module
 dune_project()
+
+# can't use the run-in-env script here, because it will try to use dune.common which we're trying to install can't use
+# dune-common_WHEELHOUSE here, because it is not set yet can't use a wildcard here, because no shell expansion is done
+execute_process(
+  COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install
+          ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse/dune_common-2.10.0-py3-none-any.whl
+  COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install
+          ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse/dune_testtools-2.4-py3-none-any.whl
+  OUTPUT_VARIABLE pip_install_log ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+  ERROR_VARIABLE pip_install_log
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 if(DUNE_XT_WITH_PYTHON_BINDINGS)
   dune_enable_all_packages(INCLUDE_DIRS ${dune-gdt_SOURCE_DIR}/dune ${Python3_INCLUDE_DIRS} MODULE_LIBRARIES dunegdt)
