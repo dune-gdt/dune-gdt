@@ -20,8 +20,8 @@ fi
 # Pre-defined map of additional dependencies for specific ports
 declare -A PORT_DEPENDENCIES
 
-PORT_DEPENDENCIES[dune-alugrid]="dune-grid"
-PORT_DEPENDENCIES[dune-grid]="dune-common dune-geometry"
+PORT_DEPENDENCIES[dune-alugrid]="dune-grid dune-uggrid"
+PORT_DEPENDENCIES[dune-grid]="dune-common dune-geometry alberta"
 PORT_DEPENDENCIES[dune-geometry]="dune-common"
 PORT_DEPENDENCIES[dune-grid-glue]="dune-grid"
 PORT_DEPENDENCIES[dune-istl]="dune-common"
@@ -141,4 +141,5 @@ while read submodule_dir; do
     mkdir -p .vcpkg-overlays/ports/$submodule_name
 
     create_port_files "$submodule_name" "$submodule_dir"
+    pre-commit run --files "$submodule_dir/*"
 done < tmp/submodule_list.txt

@@ -4,6 +4,7 @@
   "description": "DUNE Generic Discretization Toolbox",
   "homepage": "https://github.com/dune-gdt/dune-gdt",
   "dependencies": [
+    "alberta",
     "dune-common",
     "dune-geometry",
     "dune-grid",
