@@ -29,6 +29,7 @@
 [submodule "dune-alugrid"]
 	path = deps/dune-alugrid
 	url = https://gitlab.dune-project.org/extensions/dune-alugrid.git
+	branch = releases/2.10
 [submodule "dune-functions"]
 	path = deps/dune-functions
 	url = https://github.com/dune-mirrors/dune-functions.git
