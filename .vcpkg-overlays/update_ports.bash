@@ -17,6 +17,20 @@ if ! git submodule foreach --quiet '([ -f CMakeLists.txt ] && echo $path) || tru
     echo "Warning: Some submodules could not be processed. Continuing with the rest." >&2
 fi
 
+# Pre-defined map of additional dependencies for specific ports
+declare -A PORT_DEPENDENCIES
+
+PORT_DEPENDENCIES[dune-alugrid]="dune-grid"
+PORT_DEPENDENCIES[dune-grid]="dune-common dune-geometry"
+PORT_DEPENDENCIES[dune-geometry]="dune-common"
+PORT_DEPENDENCIES[dune-grid-glue]="dune-grid"
+PORT_DEPENDENCIES[dune-istl]="dune-common"
+PORT_DEPENDENCIES[dune-localfunctions]="dune-geometry"
+PORT_DEPENDENCIES[dune-testtools]="dune-common"
+PORT_DEPENDENCIES[dune-uggrid]="dune-grid"
+
+# Add more as needed
+
 create_port_files() {
     local name=$1
     local source_path=$2
@@ -33,6 +47,26 @@ create_port_files() {
         version=$(grep "project.*VERSION" "$source_path/CMakeLists.txt" | sed -E 's/.*VERSION\s+([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
     fi
 
+    # Prepare dependencies JSON array
+    local dependencies='        {
+            "name": "vcpkg-cmake",
+            "host": true
+        },
+        {
+            "name": "vcpkg-cmake-config",
+            "host": true
+        }'
+
+    # Add extra dependencies if present in the map
+    if [[ -n "${PORT_DEPENDENCIES[$name]:-}" ]]; then
+        for dep in ${PORT_DEPENDENCIES[$name]}; do
+            dependencies="$dependencies,
+        {
+            \"name\": \"$dep\"
+        }"
+        done
+    fi
+
     # Create vcpkg.json
     cat > "$port_dir/vcpkg.json" << EOF
 {
@@ -41,14 +75,7 @@ create_port_files() {
     "description": "Local overlay port for $name",
     "homepage": "https://github.com/dune-community/$name",
     "dependencies": [
-        {
-            "name": "vcpkg-cmake",
-            "host": true
-        },
-        {
-            "name": "vcpkg-cmake-config",
-            "host": true
-        }
+$dependencies
     ]
 }
 EOF
