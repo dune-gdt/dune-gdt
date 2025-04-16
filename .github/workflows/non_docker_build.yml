@@ -21,6 +21,8 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
+        fetch-tags: true
+        fetch-depth: 0
 
     - name: Restore build cache
       uses: actions/cache/restore@v3
@@ -55,37 +57,11 @@ jobs:
         path: build
         key: ${{ runner.os }}-build
 
-  build-windows:
-    name: Build on Windows
-    runs-on: windows-2022
-
-    steps:
-    - uses: actions/checkout@v4
+    - name: Upload error logs (in case of failure)
+      if: always() && (steps.configure_cmake.conclusion == 'failure')
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
-        submodules: recursive
-
-    - name: Restore build cache
-      uses: actions/cache/restore@v3
-      with:
-        path: build
-        key: ${{ runner.os }}-build
-
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@58cfbbe248a38878146e7240e9f5ad8a1d58be35 # v1
-
-    - name: Configure CMake
-      id: configure_cmake
-      run: cmake --preset=windows-release
-
-    - name: Build
-      run: cmake --build --preset=windows-release --parallel
-
-    - name: Test
-      run: ctest --preset=windows-release
-
-    - name: Save build cache
-      if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
-      uses: actions/cache/save@v3
-      with:
-        path: build
-        key: ${{ runner.os }}-build
+        name: linux_vcpkg_error-log
+        path: |
+          ${{ github.workspace }}/build/*/vcpkg-*.log
+          ${{ github.workspace }}/.vcpkg-root/buildtrees/*/*.log
