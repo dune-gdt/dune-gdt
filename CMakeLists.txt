@@ -37,12 +37,17 @@ endif()
 # allow dune to see imported targets across modules
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 
-# let 'find_package' know where modules can be found once configured
-set(DUNE_SUBMODULES "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-grid-glue;dune-localfunctions")
+# let 'find_package' know where modules can be found once configured removed dune-grid-glue: our gridview wrapper will
+# need changes to work again. Seems Entity types on the glued view are different than in 2.7 removed dune-uggrid: lots
+# of undefined refs
+set(DUNE_SUBMODULES "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-localfunctions;dune-alugrid")
 foreach(module IN LISTS DUNE_SUBMODULES)
   find_package(${module} CONFIG REQUIRED)
   list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
 endforeach()
+
+# Dune::UGGrid
+set(GRID_LIBS Dune::ALUGrid)
 
 # find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
 # ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED)
