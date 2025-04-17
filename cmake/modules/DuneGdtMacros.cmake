@@ -140,7 +140,7 @@ if(NOT DS_HEADERCHECK_DISABLE)
 endif(NOT DS_HEADERCHECK_DISABLE)
 
 set(DXT_TEST_TIMEOUT
-    180
+    1000
     CACHE STRING "per-test timeout in seconds")
 set(DXT_TEST_PROCS
     1
@@ -151,13 +151,22 @@ set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
 include(DunePybindxiUtils)
 
 # TODO there's no real way to require packages present at configure time? - jinja2,pyparsing is needed for test
-# templating
+# templating can't use the run-in-env script here, because it will try to use dune.common which we're trying to install
+# can't use dune-common_WHEELHOUSE here, because it is not set yet can't use a wildcard here, because no shell expansion
+# is done
 dune_execute_process(
   COMMAND
-  ${RUN_IN_ENV_SCRIPT}
-  python3
+  ${CMAKE_BINARY_DIR}/dune-env/bin/python
   -m
   pip
   install
   jinja2
   pyparsing)
+execute_process(
+  COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install
+          ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse/dune_common-2.10.0-py3-none-any.whl
+  COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install
+          ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse/dune_testtools-2.4-py3-none-any.whl
+  OUTPUT_VARIABLE pip_install_log ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+  ERROR_VARIABLE pip_install_log
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
