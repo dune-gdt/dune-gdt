@@ -1,0 +1,9 @@
+{
+  "name": "libtirpc",
+  "version": "1.3.6",
+  "description": "Transport-independent RPC library",
+  "homepage": "http://sourceforge.net/projects/libtirpc",
+  "license": "BSD-3-Clause",
+  "supports": "linux",
+  "dependencies": []
+}
