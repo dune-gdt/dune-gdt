@@ -35,7 +35,10 @@ vcpkg_configure_make(
   DETERMINE_BUILD_TRIPLET
   OPTIONS
   --disable-fem-toolbox
-  --disable-graphics)
+  --disable-graphics
+  CPPFLAGS=-I${CURRENT_INSTALLED_DIR}/include/tirpc
+  CFLAGS=-I${CURRENT_INSTALLED_DIR}/include/tirpc
+  LDFLAGS=-L${CURRENT_INSTALLED_DIR}/lib)
 
 vcpkg_install_make()
 
