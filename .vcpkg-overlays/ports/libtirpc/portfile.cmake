@@ -28,3 +28,4 @@ file(
   RENAME copyright)
 
 vcpkg_copy_pdbs()
+vcpkg_fixup_pkgconfig()

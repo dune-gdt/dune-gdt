@@ -26,7 +26,7 @@ vcpkg_execute_required_process(
   LOGNAME
   "generate-automakefiles-${TARGET_TRIPLET}")
 
-# Configure and build
+# alerbta doesnt find the libtirpc include directory, so we need to set it manually Configure and build
 vcpkg_configure_make(
   AUTOCONFIG
   SOURCE_PATH
@@ -35,9 +35,7 @@ vcpkg_configure_make(
   DETERMINE_BUILD_TRIPLET
   OPTIONS
   --disable-fem-toolbox
-  --disable-graphics
-  --disable-dependency-tracking
-  --disable-debug)
+  --disable-graphics)
 
 vcpkg_install_make()
 
@@ -52,3 +50,4 @@ file(
   RENAME copyright)
 
 vcpkg_copy_pdbs()
+vcpkg_fixup_pkgconfig()
