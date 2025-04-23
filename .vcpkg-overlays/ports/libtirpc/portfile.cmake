@@ -13,7 +13,7 @@ vcpkg_download_distfile(
 
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
 
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" AUTOCONFIG OPTIONS --disable-gssapi)
+vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" DETERMINE_BUILD_TRIPLET AUTOCONFIG OPTIONS --disable-gssapi)
 
 vcpkg_install_make()
 

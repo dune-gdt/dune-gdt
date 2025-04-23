@@ -31,7 +31,6 @@ vcpkg_configure_make(
   AUTOCONFIG
   SOURCE_PATH
   "${SOURCE_PATH}"
-  NO_DEBUG
   DETERMINE_BUILD_TRIPLET
   OPTIONS
   --disable-fem-toolbox
