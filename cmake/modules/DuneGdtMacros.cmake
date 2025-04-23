@@ -12,13 +12,6 @@
 
 set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
 
-# enables "IN_LIST operator
-cmake_policy(SET CMP0057 NEW)
-
-# For some reason, the minimum required version is set to 2.8.3 by the find_package(Vc ...) call in
-# DuneCommonMacros.cmake in dune-common. This causes some warnings, so we reset it here.
-cmake_minimum_required(VERSION 3.8)
-
 include(XtCompilerSupport)
 include(XtTooling)
 include(DuneXTHints)
@@ -62,7 +55,7 @@ foreach(
   endif()
 endforeach()
 
-find_package(Eigen3 3.2.0)
+find_package(Eigen3 3.4.0)
 
 if(EIGEN3_FOUND)
   dune_register_package_flags(INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR} COMPILE_DEFINITIONS "ENABLE_EIGEN=1")
@@ -143,7 +136,7 @@ set(DXT_TEST_TIMEOUT
     1000
     CACHE STRING "per-test timeout in seconds")
 set(DXT_TEST_PROCS
-    1
+    3
     CACHE STRING "run N tests in parallel")
 
 set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)

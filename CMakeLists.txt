@@ -45,13 +45,14 @@ foreach(module IN LISTS DUNE_SUBMODULES)
   find_package(${module} CONFIG REQUIRED)
   list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
 endforeach()
+find_library(TIRPC_LIB tirpc REQUIRED)
 
-# Dune::UGGrid
-set(GRID_LIBS Dune::ALUGrid)
+# tirpc is a requirement of alberta, which has no exports
+set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry Dune::AlbertaGrid3D)
 
 # find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
-# ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED)
-# execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)
+# ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED) execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT}
+# ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)
 
 # include the dune macros
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
@@ -109,8 +110,7 @@ make_dependent_modules_sys_included()
 add_subdirectory(python)
 make_dependent_modules_sys_included()
 
-# enable headercheck
-add_definitions("-DENABLE_HEADERCHECK=1")
+# TODO: this isn't actually the way to do it??? enable headercheck add_definitions("-DENABLE_HEADERCHECK=1")
 include(GridUtils)
 
 add_header_listing()
@@ -122,6 +122,8 @@ add_subdirectory(tutorials)
 
 add_tidy(${CMAKE_CURRENT_SOURCE_DIR})
 add_pylicense()
+
+dxt_exclude_from_headercheck(${CMAKE_SOURCE_DIR}/.vcpkg-root)
 
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
 # patch config.h to remove warnings about unused HAVE_GRIDTYPE
