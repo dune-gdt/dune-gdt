@@ -45,10 +45,10 @@ foreach(module IN LISTS DUNE_SUBMODULES)
   find_package(${module} CONFIG REQUIRED)
   list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
 endforeach()
+# alberta itself does not export its dependencies, so we need to find them manually
 find_library(TIRPC_LIB tirpc REQUIRED)
 
-# tirpc is a requirement of alberta, which has no exports
-set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry Dune::AlbertaGrid3D)
+set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry)
 
 # find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
 # ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED) execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT}

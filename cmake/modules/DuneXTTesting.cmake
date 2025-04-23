@@ -268,8 +268,10 @@ macro(FINALIZE_TEST_SETUP)
   endif()
 
   foreach(test ${dxt_test_binaries})
-    target_link_libraries(${test} PRIVATE ${TIRPC_LIBRARIES})
+    # this makes sure `libtirpc` is linked LAST
+    set_target_properties(${test} PROPERTIES LINK_FLAGS "-Wl,--whole-archive ${TIRPC_LIB} -Wl,--no-whole-archive")
   endforeach()
+
 endmacro(FINALIZE_TEST_SETUP)
 
 macro(DXT_EXCLUDE_FROM_HEADERCHECK)
