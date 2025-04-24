@@ -16,6 +16,7 @@ jobs:
   build-linux:
     name: Build on Linux
     runs-on: ubuntu-24.04
+    timeout-minutes: 120
 
     steps:
     - uses: actions/checkout@v4
@@ -44,7 +45,7 @@ jobs:
 
     - name: Build test binaries
       run: |
-        cmake --build --preset=debug --target test_binaries --parallel
+        cmake --build --preset=debug --target test_binaries --parallel -- -l 2
 
     - name: Test with CTest
       run: |
