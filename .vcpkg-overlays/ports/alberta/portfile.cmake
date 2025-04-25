@@ -12,7 +12,8 @@ vcpkg_from_gitlab(
   main
   SHA512
   c3912500cf9181be075a5a79f75646cf69539f268e151ff0a33cd1099f379dc2d8b868bd9772d91c43ae9457cb7e658d3cd7b72534b81ccee802a9aac163c3f0
-)
+  PATCHES
+  001-fix-pkgconfigdir.patch)
 
 # Ideally we'd use the pre-run shell arg in configure_cmake for this, but despite the name the provided script runs
 # AFTER the autoconf step
@@ -26,9 +27,21 @@ vcpkg_execute_required_process(
   LOGNAME
   "generate-automakefiles-${TARGET_TRIPLET}")
 
+vcpkg_execute_required_process(
+  COMMAND
+  libtoolize
+  --copy
+  --force
+  WORKING_DIRECTORY
+  "${SOURCE_PATH}"
+  LOGNAME
+  "libtoolize-${TARGET_TRIPLET}")
+
+vcpkg_execute_required_process(COMMAND "autoreconf || automake --add-missing" WORKING_DIRECTORY "${SOURCE_PATH}"
+                               LOGNAME "automake-${TARGET_TRIPLET}")
+
 # alerbta doesnt find the libtirpc include directory, so we need to set it manually Configure and build
 vcpkg_configure_make(
-  AUTOCONFIG
   SOURCE_PATH
   "${SOURCE_PATH}"
   DETERMINE_BUILD_TRIPLET
