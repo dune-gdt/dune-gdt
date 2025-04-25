@@ -1,34 +1,32 @@
 #!/bin/bash -l
 set -exuo pipefail
 
-# TODO why?
-rm -rf ${DUNE_SRC_DIR}/deps/dune-uggrid
+# TODO: should these have come from outside?
+PYTHON_VERSION=${GDT_PYTHON_VERSION:-3.13}
+WHEEL_DIR=${DUNE_SRC_DIR}/wheelhouse
 
-OPTS=${DUNE_SRC_DIR}/deps/config.opts/manylinux
-
-# sets Python path, etc.
-source /usr/local/bin/pybin.sh
 export CCACHE_DIR=${WHEEL_DIR}/cache
 mkdir ${WHEEL_DIR}/{tmp,final} -p || true
 
-python3 -m venv ${WHEEL_DIR}/venv
+git config --global --add safe.directory ${DUNE_SRC_DIR}
+
+python${PYTHON_VERSION} -m venv ${WHEEL_DIR}/venv
 . ${WHEEL_DIR}/venv/bin/activate
-python3 -m pip install auditwheel wheel build
+python${PYTHON_VERSION} -m pip install auditwheel wheel build
 
 cd ${DUNE_SRC_DIR}
-DUNE_CTRL=./deps/dune-common/bin/dunecontrol
-${DUNE_CTRL} --opts=${OPTS} all
-${DUNE_CTRL} --opts=${OPTS} make -j $(nproc --ignore 1) -l $(nproc --ignore 1)
 
+cmake --preset release
+cmake --build --preset release --target bindings -- $(nproc --ignore 1) -l $(nproc --ignore 1)
 
-${DUNE_CTRL} --opts=${OPTS} --only=dune-gdt  make -j $(nproc --ignore 1) -l $(nproc --ignore 1) bindings
-python3 -m pip wheel ${DUNE_BUILD_DIR}/dune-gdt/python/xt/ -w ${WHEEL_DIR}/tmp
+DUNE_BUILD_DIR=${DUNE_SRC_DIR}/build/release
+python${PYTHON_VERSION} -m pip wheel ${DUNE_BUILD_DIR}/dune-gdt/python/xt/ -w ${WHEEL_DIR}/tmp
 # xt is an exact-version dependency of gdt -> needs `--find-links`
-python3 -m pip install ${WHEEL_DIR}/tmp/dune.xt*whl
-python3 -m pip wheel ${DUNE_BUILD_DIR}/dune-gdt/python/gdt/ -w ${WHEEL_DIR}/tmp --find-links ${WHEEL_DIR}/tmp/
+python${PYTHON_VERSION} -m pip install ${WHEEL_DIR}/tmp/dune.xt*whl
+python${PYTHON_VERSION} -m pip wheel ${DUNE_BUILD_DIR}/dune-gdt/python/gdt/ -w ${WHEEL_DIR}/tmp --find-links ${WHEEL_DIR}/tmp/
 # Bundle external shared libraries into the wheels
-python3 -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*xt*.whl -w ${WHEEL_DIR}/final
-python3 -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*gdt*.whl -w ${WHEEL_DIR}/final
+python${PYTHON_VERSION} -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*xt*.whl -w ${WHEEL_DIR}/final
+python${PYTHON_VERSION} -m auditwheel repair --plat ${PLATFORM} ${WHEEL_DIR}/tmp/*gdt*.whl -w ${WHEEL_DIR}/final
 
 deactivate
 ccache -s
