@@ -45,8 +45,10 @@ foreach(module IN LISTS DUNE_SUBMODULES)
   find_package(${module} CONFIG REQUIRED)
   list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
 endforeach()
-# alberta itself does not export its dependencies, so we need to find them manually
-find_library(TIRPC_LIB tirpc REQUIRED)
+if(albertagrid_FOUND)
+  # alberta itself does not export its dependencies, so we need to find them manually
+  find_library(TIRPC_LIB tirpc REQUIRED)
+endif()
 
 set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry)
 

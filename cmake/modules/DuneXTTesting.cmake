@@ -263,14 +263,14 @@ macro(FINALIZE_TEST_SETUP)
         add_dune_alberta_flags(GRIDDIM 3 ${test})
       endif()
     endforeach()
-  else()
-    message(FATAL_ERROR "Alberta not found, but tests require it")
   endif()
 
-  foreach(test ${dxt_test_binaries})
-    # this makes sure `libtirpc` is linked LAST
-    set_target_properties(${test} PROPERTIES LINK_FLAGS "-Wl,--whole-archive ${TIRPC_LIB} -Wl,--no-whole-archive")
-  endforeach()
+  if(Alberta_FOUND)
+    foreach(test ${dxt_test_binaries})
+      # this makes sure `libtirpc` is linked LAST
+      set_target_properties(${test} PROPERTIES LINK_FLAGS "-Wl,--whole-archive ${TIRPC_LIB} -Wl,--no-whole-archive")
+    endforeach()
+  endif()
 
 endmacro(FINALIZE_TEST_SETUP)
 
