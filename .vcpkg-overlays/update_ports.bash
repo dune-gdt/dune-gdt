@@ -141,5 +141,6 @@ while read submodule_dir; do
     mkdir -p .vcpkg-overlays/ports/$submodule_name
 
     create_port_files "$submodule_name" "$submodule_dir"
-    pre-commit run --files "$submodule_dir/*"
+    pre-commit run cmake-format --files .vcpkg-overlays/ports/$submodule_name/* || true
+    pre-commit run clang-format --files .vcpkg-overlays/ports/$submodule_name/* || true
 done < tmp/submodule_list.txt
