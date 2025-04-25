@@ -10,10 +10,11 @@ mkdir ${WHEEL_DIR}/{tmp,final} -p || true
 
 git config --global --add safe.directory ${DUNE_SRC_DIR}
 
+yum install -y curl zip unzip tar
+
 python${PYTHON_VERSION} -m venv ${WHEEL_DIR}/venv
 . ${WHEEL_DIR}/venv/bin/activate
 python${PYTHON_VERSION} -m pip install auditwheel wheel build
-
 cd ${DUNE_SRC_DIR}
 
 cmake --preset release
