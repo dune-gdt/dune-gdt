@@ -3,7 +3,7 @@ set(VCPKG_BUILD_TYPE release)
 vcpkg_from_git(
     OUT_SOURCE_PATH SOURCE_PATH
     URL "${CMAKE_CURRENT_LIST_DIR}/../../../deps/pybind11"
-    REF aa304c9c7d725ffb9d10af08a3b34cb372307020
+    REF a2e59f0e7065404b44dfe92a28aca47ba1378dc4
 )
 
 vcpkg_cmake_configure(
