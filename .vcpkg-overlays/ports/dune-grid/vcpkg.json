@@ -17,9 +17,6 @@
     },
     {
       "name": "dune-geometry"
-    },
-    {
-      "name": "dune-uggrid"
     }
   ]
 }

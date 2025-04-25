@@ -14,9 +14,6 @@
     },
     {
       "name": "dune-grid"
-    },
-    {
-      "name": "dune-uggrid"
     }
   ]
 }
