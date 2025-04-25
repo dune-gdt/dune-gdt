@@ -1,16 +1,20 @@
 {
-  "name": "pybind11",
-  "version": "0.1.0",
-  "description": "Local overlay port for pybind11",
-  "homepage": "https://github.com/dune-community/pybind11",
   "dependencies": [
     {
-      "name": "vcpkg-cmake",
-      "host": true
+      "host": true,
+      "name": "vcpkg-cmake"
     },
     {
-      "name": "vcpkg-cmake-config",
-      "host": true
+      "host": true,
+      "name": "vcpkg-cmake-config"
     }
-  ]
+  ],
+  "description":
+    "pybind11 is a lightweight header-only library that exposes C++ types in Python and vice versa, mainly to create Python bindings of existing C++ code",
+  "homepage": "https://github.com/pybind/pybind11",
+  "license": "BSD-3-Clause",
+  "name": "pybind11",
+  "port-version": 0,
+  "supports": "!(arm & windows)",
+  "version": "2.13.6"
 }
