@@ -21,7 +21,7 @@ fi
 declare -A PORT_DEPENDENCIES
 
 PORT_DEPENDENCIES[dune-alugrid]="dune-grid dune-uggrid"
-PORT_DEPENDENCIES[dune-grid]="dune-common dune-geometry alberta"
+PORT_DEPENDENCIES[dune-grid]="dune-common dune-geometry dune-uggrid"
 PORT_DEPENDENCIES[dune-geometry]="dune-common"
 PORT_DEPENDENCIES[dune-grid-glue]="dune-grid"
 PORT_DEPENDENCIES[dune-istl]="dune-common"
