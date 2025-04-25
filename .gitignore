@@ -75,3 +75,4 @@ wheelhouse
 venvs
 /.vcpkg-root/
 tmp
+/.ci/docker.env

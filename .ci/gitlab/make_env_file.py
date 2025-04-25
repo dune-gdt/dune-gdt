@@ -31,6 +31,5 @@ env_file = Path(os.environ.get("DOCKER_ENVFILE", os.path.join(home, "env")))
 env_file.parent.mkdir(parents=True, exist_ok=True)
 with env_file.open("wt") as env:
     for k, v in os.environ.items():
-        for pref in prefixes:
-            if k.startswith(pref) and k not in blacklist:
-                env.write(f'{k}="{quote(v)}"\n')
+        if any(k.startswith(pref) and k not in blacklist for pref in prefixes):
+            env.write(f'{k}="{quote(v)}"\n')
