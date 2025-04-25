@@ -25,6 +25,7 @@
     "boost-serialization",
     "boost-timer",
     "gtest",
+    "pybind11",
     "eigen3",
     "tbb"
   ],

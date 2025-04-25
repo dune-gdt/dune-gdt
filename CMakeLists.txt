@@ -13,7 +13,7 @@
 # Tobias Leibner  (2016, 2018 - 2021)
 # ~~~
 
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.29...4.0)
 # To allow VERSION
 cmake_policy(SET CMP0048 NEW)
 # do not load custom FindBoost, use standard find_package mechanisms
@@ -49,6 +49,8 @@ if(albertagrid_FOUND)
   # alberta itself does not export its dependencies, so we need to find them manually
   find_library(TIRPC_LIB tirpc REQUIRED)
 endif()
+find_package(Python COMPONENTS Interpreter Development)
+find_package(pybind11 CONFIG REQUIRED)
 
 set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry)
 
@@ -74,8 +76,6 @@ endif()
 include(DuneXtVersionHelper)
 dune_xt_module_version_from_git()
 
-find_package(Python3 COMPONENTS Interpreter Development)
-add_subdirectory(deps/pybind11)
 dune_enable_all_packages(
   INCLUDE_DIRS
   ${dune-gdt_SOURCE_DIR}/dune
