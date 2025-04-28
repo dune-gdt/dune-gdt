@@ -66,3 +66,58 @@ jobs:
         path: |
           ${{ github.workspace }}/build/*/vcpkg-*.log
           ${{ github.workspace }}/.vcpkg-root/buildtrees/*/*.log
+
+  build_wheels:
+    name: Build wheels
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      matrix:
+        python-version: ["3.13"] #, "3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-tags: true
+        fetch-depth: 0
+
+    - run: |
+        ./.ci/make_docker_wheels.bash
+      env:
+        GDT_PYTHON_VERSION: ${{ matrix.python-version }}
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: wheels_${{ matrix.python-version }}
+        path: build/wheelhouse/final/
+        if-no-files-found: error
+
+  test_publish:
+    name: Publish to Test PyPI
+    runs-on: ubuntu-24.04
+    needs: build_wheels
+    timeout-minutes: 120
+    environment: test-pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for PyPi Trusted Publishing
+      id-token: write
+
+    steps:
+    - name: Download wheels
+      uses: actions/download-artifact@v4
+      with:
+        pattern: wheels_*
+        merge-multiple: true
+        path: wheels/
+    - run: |
+        ls -l wheels/*
+      shell: bash
+    - name: Upload wheels to PyPI
+      uses: pypa/gh-action-pypi-publish@v1.12.4
+      id: upload-pypi_on_tag
+      with:
+        packages-dir: wheels/
+        repository-url: https://test.pypi.org/legacy/
+        verbose: true
