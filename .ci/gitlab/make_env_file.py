@@ -15,6 +15,7 @@
 import os
 from os.path import expanduser
 from shlex import quote
+from pathlib import Path
 
 home = expanduser("~")
 
@@ -26,8 +27,9 @@ blacklist = [
     "CI_COMMIT_MESSAGE",
     "CI_COMMIT_DESCRIPTION",
 ]
-env_file = os.environ.get("DOCKER_ENVFILE", os.path.join(home, "env"))
-with open(env_file, "w") as env:
+env_file = Path(os.environ.get("DOCKER_ENVFILE", os.path.join(home, "env")))
+env_file.parent.mkdir(parents=True, exist_ok=True)
+with env_file.open("wt") as env:
     for k, v in os.environ.items():
         for pref in prefixes:
             if k.startswith(pref) and k not in blacklist:
