@@ -1,5 +1,6 @@
 #!/bin/bash
 
- . /venv/bin/activate
+# shellcheck disable=SC1091
+. /venv/bin/activate
 
- exec "${@}"
+exec "${@}"

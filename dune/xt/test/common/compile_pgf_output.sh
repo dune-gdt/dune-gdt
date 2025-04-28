@@ -15,4 +15,4 @@
 
 make grid_output_pgf
 ./grid_output_pgf
-find . -name "*.tex" | xargs echo pdflatex
+find . -name "*.tex" -print0 | xargs -0 echo pdflatex
