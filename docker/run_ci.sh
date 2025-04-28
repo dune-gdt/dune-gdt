@@ -5,10 +5,10 @@ if [[ "X${OPTS}" == "X" ]] ; then
 fi
 
 # the dir containing this script is needed for mounting stuff into the container
-PROJECTDIR="$(cd "$(dirname ${BASH_SOURCE[0]})/.." ;  pwd -P)"
+PROJECTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit ;  pwd -P)"
 CONTAINER=ghcr.io/dune-gdt/dune-gdt/ci
 TAG=${TAG:-$(./docker/compute_ci_hash.sh)}
-PORT="18$(( ( RANDOM % 10 ) ))$(( ( RANDOM % 10 ) ))$(( ( RANDOM % 10 ) ))"
+PORT="18$((  RANDOM % 10  ))$((  RANDOM % 10  ))$((  RANDOM % 10  ))"
 DOCKER_BIN=${DOCKER:-docker}
 SOURCE=${PROJECTDIR}
 TARGET="/source"
@@ -19,13 +19,13 @@ echo "  Starting a CI docker container for dune-gdt using"
 echo "    ${BUILDDIR}"
 echo "  as persistent build-dir"
 echo "======================================================================================"
-mkdir -p ${BUILDDIR}
+mkdir -p "${BUILDDIR}"
 
-${DOCKER_BIN} run --rm=true --privileged=true -t ${DOCKER_RUN_CI_ARGS} --hostname docker \
-  -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -e OPTS=${OPTS} \
+${DOCKER_BIN} run --rm=true --privileged=true -t "${DOCKER_RUN_CI_ARGS}" --hostname docker \
+  -e DISPLAY="$DISPLAY" -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -e OPTS="${OPTS}" \
   -e EXPOSED_PORT=$PORT -p 127.0.0.1:$PORT:$PORT \
   -v /etc/localtime:/etc/localtime:ro \
   -v "${SOURCE}":"${TARGET}" \
   -v "${BUILDDIR}":"/build/${OPTS}/dune-gdt" \
-  ${CONTAINER}:${TAG} "${@}"
+  ${CONTAINER}:"${TAG}" "${@}"

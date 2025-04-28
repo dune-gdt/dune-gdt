@@ -13,7 +13,7 @@ cd "$REPO_ROOT"
 mkdir -p tmp
 
 # Generate the list of submodules dynamically, filtering only those that are CMake-based projects
-if ! git submodule foreach --quiet '([ -f CMakeLists.txt ] && echo $path) || true' > tmp/submodule_list.txt; then
+if ! git submodule foreach --quiet "([ -f CMakeLists.txt ] && echo $path) || true" > tmp/submodule_list.txt; then
     echo "Warning: Some submodules could not be processed. Continuing with the rest." >&2
 fi
 
@@ -134,13 +134,13 @@ EOF
 }
 
 # Process all submodules
-while read submodule_dir; do
+while read -r submodule_dir; do
     submodule_name=$(basename "$submodule_dir")
 
     # Create the overlay port directory
-    mkdir -p .vcpkg-overlays/ports/$submodule_name
+    mkdir -p .vcpkg-overlays/ports/"$submodule_name"
 
     create_port_files "$submodule_name" "$submodule_dir"
-    pre-commit run cmake-format --files .vcpkg-overlays/ports/$submodule_name/* || true
-    pre-commit run clang-format --files .vcpkg-overlays/ports/$submodule_name/* || true
+    pre-commit run cmake-format --files .vcpkg-overlays/ports/"$submodule_name"/* || true
+    pre-commit run clang-format --files .vcpkg-overlays/ports/"$submodule_name"/* || true
 done < tmp/submodule_list.txt

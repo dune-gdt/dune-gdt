@@ -1,10 +1,11 @@
 #!/bin/bash
 
-BASEDIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P)"
-cd "${BASEDIR}"
+BASEDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit ;  pwd -P)"
+cd "${BASEDIR}" || exit
 
 # ensure there are no open changes, as the commit hash will enter the docker image
 ./check_for_clean_working_dir.sh
+# shellcheck disable=SC2181
 if [[ $? != 0 ]] ; then
     >&2 echo "ERROR: refusing to build docker image in dirty working directory!"
     exit 1
@@ -18,11 +19,13 @@ echo "done"
 
 echo -n "patching docker/ci/Dockerfile ... "
 sed -i "s/LABEL_BUILD_DATE/${DATE}/" dev/Dockerfile
+# shellcheck disable=SC2181
 if [[ $? != 0 ]] ; then
     >&2 echo "failed (see above)!"
     exit 1
 fi
 sed -i "s/LABEL_VCS_REF/${VCS_REF}/" dev/Dockerfile
+# shellcheck disable=SC2181
 if [[ $? != 0 ]] ; then
     >&2 echo "failed (see above)!"
     exit 1
@@ -34,6 +37,7 @@ echo "==========================================================================
 
 docker build -t ghcr.io/dune-gdt/dune-gdt/dev:${HASH} -f dev/Dockerfile dev/
 
+# shellcheck disable=SC2181
 if [[ $? != 0 ]] ; then
     >&2 echo "======================================================================================================="
     >&2 echo "building ... failed (see above)!"
@@ -45,6 +49,7 @@ echo "==========================================================================
 echo "building ... done!"
 echo -n "restoring docker/dev/Dockerfile ... "
 git restore dev/Dockerfile
+# shellcheck disable=SC2181
 if [[ $? != 0 ]] ; then
     >&2 echo "failed (see above)!"
     exit 1
