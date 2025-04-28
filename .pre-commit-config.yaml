@@ -40,3 +40,17 @@ repos:
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
     exclude: "config.h.cmake|pybind11"
     args: ["--config-files=.cmake_format.py"]
+- repo: https://github.com/python-jsonschema/check-jsonschema
+  rev: 0.33.0
+  hooks:
+  - id: check-github-actions
+    additional_dependencies:
+    - pip_system_certs==4.0
+  - id: check-dependabot
+    additional_dependencies:
+    - pip_system_certs==4.0
+- repo: https://github.com/Mateusz-Grzelinski/actionlint-py
+  rev: v1.7.7.23
+  hooks:
+  - id: actionlint
+    additional_dependencies: [pyflakes>=3.0.1, shellcheck-py>=0.9.0.5]
