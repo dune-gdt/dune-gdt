@@ -26,7 +26,7 @@ vcpkg_execute_required_process(
   LOGNAME
   "generate-automakefiles-${TARGET_TRIPLET}")
 
-# alerbta doesnt find the libtirpc include directory, so we need to set it manually Configure and build
+# alberta doesnt find the libtirpc include directory, so we need to set it manually Configure and build
 vcpkg_configure_make(
   AUTOCONFIG
   SOURCE_PATH
