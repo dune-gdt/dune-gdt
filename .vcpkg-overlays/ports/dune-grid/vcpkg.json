@@ -27,6 +27,14 @@
           "name": "alberta"
         }
       ]
+    },
+    "uggrid": {
+      "description": "Support for UG grid implementation",
+      "dependencies": [
+        {
+          "name": "dune-uggrid"
+        }
+      ]
     }
   }
 }

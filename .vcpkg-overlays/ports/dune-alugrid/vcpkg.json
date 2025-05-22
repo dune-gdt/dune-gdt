@@ -15,15 +15,5 @@
     {
       "name": "dune-grid"
     }
-  ],
-  "features": {
-    "uggrid": {
-      "description": "Support for UG grid implementation",
-      "dependencies": [
-        {
-          "name": "dune-uggrid"
-        }
-      ]
-    }
-  }
+  ]
 }

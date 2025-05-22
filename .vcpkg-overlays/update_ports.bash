@@ -18,7 +18,7 @@ source "$REPO_ROOT/deps/module_list.bash"
 declare -A PORT_DEPENDENCIES
 
 PORT_DEPENDENCIES[dune-alugrid]="dune-grid"
-PORT_DEPENDENCIES[dune-uggrid]="dune-grid"
+PORT_DEPENDENCIES[dune-uggrid]="dune-common"
 PORT_DEPENDENCIES[dune-grid]="dune-common dune-geometry"
 PORT_DEPENDENCIES[dune-geometry]="dune-common"
 PORT_DEPENDENCIES[dune-grid-glue]="dune-grid"
@@ -28,14 +28,13 @@ PORT_DEPENDENCIES[dune-testtools]="dune-common"
 
 # Define features and their dependencies
 declare -A PORT_FEATURES
-PORT_FEATURES[dune-grid]="alberta:Support for Alberta grid implementation"
-PORT_FEATURES[dune-alugrid]="uggrid:Support for UG grid implementation"
+PORT_FEATURES[dune-grid]="alberta:Support for Alberta grid implementation;uggrid:Support for UG grid implementation"
 
 # Define feature dependencies
 declare -A FEATURE_DEPENDENCIES
 FEATURE_DEPENDENCIES[dune-grid,alberta]="alberta"
-FEATURE_DEPENDENCIES[dune-alugrid,uggrid]="dune-uggrid"
-
+FEATURE_DEPENDENCIES[dune-grid,uggrid]="dune-uggrid"
+# Define the submodule information
 # Iterate over all submodules from the associative array
 for submodule_name in "${!SUBMODULE_INFO_HASH[@]}"; do
     submodule_dir="deps/$submodule_name"

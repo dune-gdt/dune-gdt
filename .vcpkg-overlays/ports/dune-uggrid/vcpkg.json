@@ -13,7 +13,7 @@
       "host": true
     },
     {
-      "name": "dune-grid"
+      "name": "dune-common"
     }
   ]
 }
