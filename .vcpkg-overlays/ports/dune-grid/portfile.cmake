@@ -3,7 +3,7 @@ set(VCPKG_BUILD_TYPE release)
 vcpkg_from_git(OUT_SOURCE_PATH SOURCE_PATH URL "https://github.com/dune-mirrors/dune-grid.git" REF
                954436b88247e904628ec4d7c8bb7b2eaac08900)
 
-vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_TESTING=OFF)
+vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_TESTING=OFF -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE)
 
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(CONFIG_PATH lib/cmake/dune-grid)
