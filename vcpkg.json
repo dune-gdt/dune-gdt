@@ -54,7 +54,9 @@
     "gtest",
     "pybind11",
     "eigen3",
-    "tbb"
+    "tbb",
+    "openblas",
+    "suitesparse"
   ],
-  "builtin-baseline": "a4275b7eee79fb24ec2e135481ef5fce8b41c339"
+  "builtin-baseline": "ce613c41372b23b1f51333815feb3edd87ef8a8b"
 }
