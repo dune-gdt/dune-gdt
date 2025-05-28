@@ -20,24 +20,27 @@
 #include <dune/istl/operators.hh>
 #include <dune/istl/solvers.hh>
 
-#include <dune/xt/common/exceptions.hh>
-#include <dune/xt/common/configuration.hh>
-#include <dune/xt/la/container/istl.hh>
-#include <dune/xt/la/solver.hh>
-
-#include "preconditioners.hh"
-#include "schurcomplement.hh"
+#include "dune/xt/common/exceptions.hh"
+#include "dune/xt/common/configuration.hh"
+#include "dune/xt/la/container/istl.hh"
+#include "dune/xt/la/solver.hh"
+#if HAVE_DUNE_ISTL
+#  include <dune/xt/la/solver/istl/preconditioners.hh>
+#  include <dune/xt/la/solver/istl/schurcomplement.hh>
+#endif // HAVE_DUNE_ISTL
 
 namespace Dune::XT::LA {
 
 
 // Solver for saddle point system (A B1; B2^T C) (u; p) = (f; g) using the Schur complement, i.e., solve (B2^T A^{-1} B1
 // - C) p = B2^T A^{-1} f - g first and then u = A^{-1} (F - B1 p)
-template <class VectorType = IstlDenseVector<double>,
-          class MatrixType = IstlRowMajorSparseMatrix<double>,
-          class CommunicatorType = SequentialCommunication>
+template <class VectorType, class MatrixType, class CommunicatorType = SequentialCommunication>
 class SaddlePointSolver
 {
+  // dune-istl backend results in NaN runtime errors since the DUNE 2.7 -> 2.10 transition
+  static_assert(!std::is_same_v<VectorType, IstlDenseVector<double>>);
+  static_assert(!std::is_same_v<MatrixType, IstlRowMajorSparseMatrix<double>>);
+
 public:
   using Vector = VectorType;
   using Matrix = MatrixType;
@@ -55,7 +58,14 @@ public:
 
   static std::vector<std::string> types()
   {
-    std::vector<std::string> ret{"direct", "cg_cg_schurcomplement", "cg_direct_schurcomplement"};
+    std::vector<std::string> ret
+    {
+      "direct"
+#if HAVE_DUNE_ISTL
+          ,
+          "cg_cg_schurcomplement", "cg_direct_schurcomplement"
+#endif // HAVE_DUNE_ISTL
+    };
     return ret;
   } // ... types()
 
@@ -68,8 +78,10 @@ public:
     iterative_options += general_opts;
     if (tp == "direct")
       return general_opts;
+#if HAVE_DUNE_ISTL
     if (tp == "cg_direct_schurcomplement" || tp == "cg_cg_schurcomplement")
       return iterative_options;
+#endif // HAVE_DUNE_ISTL
     return general_opts;
   } // ... options(...)
 
@@ -147,7 +159,9 @@ public:
         u[ii] = solution_vector[ii];
       for (size_t ii = 0; ii < n; ++ii)
         p[ii] = solution_vector[m + ii];
-    } else if (type == "cg_direct_schurcomplement" || type == "cg_cg_schurcomplement") {
+    }
+#if HAVE_DUNE_ISTL
+    else if (type == "cg_direct_schurcomplement" || type == "cg_cg_schurcomplement") {
       // calculate rhs B2^T A^{-1} f - g
       auto Ainv_f = f;
       auto rhs_p = g;
@@ -175,6 +189,7 @@ public:
       rhs_u -= B1_ * p;
       schur_complement_op.A_inv().apply(rhs_u, u);
     }
+#endif // HAVE_DUNE_ISTL
   } // ... apply(...)
 
 private:
