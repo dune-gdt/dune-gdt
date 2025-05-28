@@ -138,7 +138,7 @@ public:
 
   IntersectionFilter(IntersectionFilter<GL>&&) = default;
 
-  virtual ~IntersectionFilter<GridViewType>() = default;
+  virtual ~IntersectionFilter() = default;
 
   virtual IntersectionFilter<GridViewType>* copy() const = 0;
 

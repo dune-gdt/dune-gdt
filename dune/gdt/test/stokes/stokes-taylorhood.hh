@@ -16,7 +16,7 @@
 
 #include <dune/xt/la/algorithms/cholesky.hh>
 #include <dune/xt/la/container/istl.hh>
-#include <dune/xt/la/solver/istl/saddlepoint.hh>
+#include "dune/xt/la/solver/saddlepoint.hh"
 
 #include <dune/xt/grid/boundaryinfo/alldirichlet.hh>
 #include <dune/xt/grid/gridprovider/cube.hh>
@@ -161,9 +161,9 @@ class StokesDirichletTest : public ::testing::Test
   using GV = typename G::LeafGridView;
   static constexpr size_t d = GV::dimension;
 
-  using Matrix = XT::LA::IstlRowMajorSparseMatrix<double>;
+  using Matrix = XT::LA::EigenRowMajorSparseMatrix<double>;
   using DenseMatrix = XT::LA::CommonDenseMatrix<double>;
-  using Vector = XT::LA::IstlDenseVector<double>;
+  using Vector = XT::LA::EigenDenseVector<double>;
   using VelocitySpace = ContinuousLagrangeSpace<GV, d>;
   using PressureSpace = ContinuousLagrangeSpace<GV, 1>;
   using E = XT::Grid::extract_entity_t<GV>;

@@ -712,7 +712,7 @@ public:
     for (auto it = element_range.begin(); it != it_end; ++it) {
       const ElementType& element = *it;
 #else
-    for (const ElementType& element : element_range) {
+    for (auto&& element : element_range) {
 #endif
       // apply element functors
       apply_local(element, element_functor_wrappers, element_and_intersection_functor_wrappers);

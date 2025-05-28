@@ -41,7 +41,8 @@ function(dune_pybindxi_install_python_package)
   # Check for the presence of the pip package
   dune_python_find_package(PACKAGE pip INTERPRETER ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE})
   if(NOT DUNE_PYTHON_pip_FOUND)
-    message(FATAL_ERROR "dune_python_install_package: Requested installations, but pip was not found!")
+    execute_process(COMMAND ${DUNE_PYTHON_VIRTUALENV_EXECUTABLE} "-m" "ensurepip" COMMAND_ECHO STDERR
+                            COMMAND_ERROR_IS_FATAL ERROR_MESSAGE "dune_python_install_package: Error installing pip!")
   endif()
 
   set(pyinst_fullpath ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})

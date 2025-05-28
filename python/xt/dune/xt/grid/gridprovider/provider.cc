@@ -33,12 +33,14 @@ struct InitlessIntersectionFilter_for_all_grids
     using Dune::XT::Grid::bindings::grid_name;
     Dune::XT::Grid::bindings::InitlessIntersectionFilter<Filter, LGV>::bind(m, class_id, "leaf");
     Dune::XT::Grid::bindings::InitlessIntersectionFilter<Filter, LGV>::bind_leaf_factory(m, class_id);
+#if HAVE_DUNE_GRID_GLUE
     if constexpr (d < 3) {
       using GridGlueType = Dune::XT::Grid::DD::Glued<G, G, Dune::XT::Grid::Layers::leaf>;
       using CGV = Dune::XT::Grid::CouplingGridView<GridGlueType>;
       Dune::XT::Grid::bindings::InitlessIntersectionFilter<Filter, CGV>::bind(m, class_id, "coupling");
       Dune::XT::Grid::bindings::InitlessIntersectionFilter<Filter, CGV>::bind_coupling_factory(m, class_id);
     }
+#endif
     InitlessIntersectionFilter_for_all_grids<Filter, Dune::XT::Common::tuple_tail_t<GridTypes>>::bind(m, class_id);
   }
 };

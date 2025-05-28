@@ -56,7 +56,7 @@ DUNE_XT_COMMON_TYPENAME(UG_2D)
 DUNE_XT_COMMON_TYPENAME(ALBERTA_2D)
 #  endif
 
-
+#  if HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
 template <class G>
 using StokesTestSimplex = StokesTestcase1<G>;
 TYPED_TEST_SUITE(StokesTestSimplex, SimplexGrids2D);
@@ -65,6 +65,7 @@ TYPED_TEST(StokesTestSimplex, order2)
 {
   this->run(2, 2e-5, 3e-3);
 }
+#  endif // HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
 
 template <class G>
 using StokesTestCube = StokesTestcase1<G>;

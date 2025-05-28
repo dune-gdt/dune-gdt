@@ -19,6 +19,7 @@
 #include <string>
 
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include <dune/xt/common/logstreams.hh>
 

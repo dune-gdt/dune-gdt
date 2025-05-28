@@ -71,7 +71,7 @@ class Config:
             for p in _PACKAGES
         }
         key_width = max(len(p) for p in _PACKAGES) + 2
-        package_info = [f"{p+':':{key_width}} {v}" for p, v in sorted(status.items())]
+        package_info = [f"{p + ':':{key_width}} {v}" for p, v in sorted(status.items())]
         separator = "-" * max(map(len, package_info))
         package_info = "\n".join(package_info)
         info = f"""

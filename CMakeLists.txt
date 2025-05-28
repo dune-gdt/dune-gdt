@@ -13,12 +13,15 @@
 # Tobias Leibner  (2016, 2018 - 2021)
 # ~~~
 
-cmake_minimum_required(VERSION 3.13)
+cmake_minimum_required(VERSION 3.29...4.0)
 # To allow VERSION
 cmake_policy(SET CMP0048 NEW)
+# do not load custom FindBoost, use standard find_package mechanisms
+cmake_policy(SET CMP0167 NEW)
 
 # We automatically determine our PROJECT_VERSION from git, which needs to happen before the project() call.
 include(cmake/DuneGdtVersioneer.cmake)
+include(cmake/VcpkgBootStrap.cmake)
 
 project(
   dune-gdt
@@ -27,32 +30,44 @@ project(
   HOMEPAGE_URL "https://github.com/dune-gdt/dune-gdt/"
   LANGUAGES CXX)
 
-cmake_minimum_required(VERSION 3.13)
-
-if("${TRAVIS}" EQUAL "1")
-  add_compile_options(-Werror -Wno-error=unknown-pragmas -Wno-error=pedantic)
-endif()
-
-if(NOT
-   (dune-common_DIR
-    OR dune-common_ROOT
-    OR "${CMAKE_PREFIX_PATH}" MATCHES ".*dune-common.*"))
-  string(REPLACE ${CMAKE_PROJECT_NAME} dune-common dune-common_DIR ${PROJECT_BINARY_DIR})
-endif()
-
-# find dune-common and set the module path
+# needs to come before anything else DUNE
 find_package(dune-common REQUIRED)
-list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/modules")
 
-find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
-                                                         ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED)
+# allow dune to see imported targets across modules
+set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 
-execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT} ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)
-set(DXT_TEST_TIMEOUT
-    1000
-    CACHE STRING "gtest timeout in seconds")
+set(FEATURE_MODULES)
+set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry)
+
+if("uggrid" IN_LIST VCPKG_MANIFEST_FEATURES)
+  list(APPEND FEATURE_MODULES "dune-uggrid")
+  list(APPEND GRID_LIBS Dune::UGGrid)
+endif()
+
+if("alberta" IN_LIST VCPKG_MANIFEST_FEATURES)
+  # alberta itself does not export its dependencies, so we need to find them manually
+  find_library(TIRPC_LIB tirpc REQUIRED)
+endif()
+
+# let 'find_package' know where modules can be found once configured removed dune-grid-glue: our gridview wrapper will
+# need changes to work again. Seems Entity types on the glued view are different than in 2.7 removed dune-uggrid: lots
+# of undefined refs
+set(DUNE_SUBMODULES "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-localfunctions;dune-alugrid")
+foreach(module IN LISTS FEATURE_MODULES DUNE_SUBMODULES)
+  find_package(${module} CONFIG REQUIRED)
+  list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
+endforeach()
+
+find_package(Python COMPONENTS Interpreter Development)
+find_package(pybind11 CONFIG REQUIRED)
+
+# find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
+# ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED) execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT}
+# ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)
 
 # include the dune macros
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 include(DuneMacros)
 include(DuneUtils)
 
@@ -69,11 +84,6 @@ endif()
 include(DuneXtVersionHelper)
 dune_xt_module_version_from_git()
 
-# dune-gdt cmake includes
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-find_package(Python3 COMPONENTS Interpreter Development)
-add_subdirectory(deps/pybind11)
 dune_enable_all_packages(
   INCLUDE_DIRS
   ${dune-gdt_SOURCE_DIR}/dune
@@ -104,15 +114,13 @@ find_file(
   NO_DEFAULT_PATH)
 
 # silence most warnings we are not responsible for
-include(DuneUtils)
 make_dependent_modules_sys_included()
 
 # do not change order here
 add_subdirectory(python)
 make_dependent_modules_sys_included()
 
-# enable headercheck
-add_definitions("-DENABLE_HEADERCHECK=1")
+# TODO: this isn't actually the way to do it??? enable headercheck add_definitions("-DENABLE_HEADERCHECK=1")
 include(GridUtils)
 
 add_header_listing()
@@ -124,6 +132,9 @@ add_subdirectory(tutorials)
 
 add_tidy(${CMAKE_CURRENT_SOURCE_DIR})
 add_pylicense()
+
+dxt_exclude_from_headercheck(${CMAKE_SOURCE_DIR}/.vcpkg-root)
+dxt_exclude_from_headercheck(${CMAKE_BINARY_DIR}/vcpkg_installed)
 
 finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
 # patch config.h to remove warnings about unused HAVE_GRIDTYPE

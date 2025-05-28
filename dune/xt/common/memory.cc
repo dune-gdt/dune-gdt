@@ -23,7 +23,7 @@ namespace Dune::XT::Common {
 
 void mem_usage(std::string filename)
 {
-  auto comm = Dune::MPIHelper::getCollectiveCommunication();
+  auto comm = Dune::MPIHelper::getCommunication();
   // Compute the peak memory consumption of each processes
   int who = RUSAGE_SELF;
   struct rusage usage;

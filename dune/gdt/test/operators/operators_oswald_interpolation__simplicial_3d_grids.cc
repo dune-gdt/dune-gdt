@@ -25,7 +25,7 @@ using Simplicial3dGrids = ::testing::Types<
 #endif
     >;
 
-
+#if HAVE_DUNE_UGGRID || HAVE_UG || HAVE_DUNE_ALUGRID
 template <class G>
 using OswaldInterpolationOperator = Dune::GDT::Test::OswaldInterpolationOperatorOnLeafViewTest<G>;
 TYPED_TEST_SUITE(OswaldInterpolationOperator, Simplicial3dGrids);
@@ -37,3 +37,4 @@ TYPED_TEST(OswaldInterpolationOperator, fulfills_h1_interpolation_estimate)
 {
   this->fulfills_h1_interpolation_estimate();
 }
+#endif // HAVE_DUNE_UGGRID || HAVE_UG || HAVE_DUNE_ALUGRID

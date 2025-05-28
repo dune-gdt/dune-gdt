@@ -1,5 +1,0 @@
-DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P )"
-
-CMAKE_FLAGS="-GNinja ${CMAKE_FLAGS}"
-
-source ${DIR}/gcc-debug

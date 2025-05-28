@@ -73,3 +73,6 @@ build-cmake
 wheelhouse
 /tutorials/source/*.vtu
 venvs
+/.vcpkg-root/
+tmp
+/.ci/docker.env

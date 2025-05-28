@@ -38,7 +38,7 @@ struct PeriodicViewTest : public testing::Test
   using PeriodicIntersectionIteratorType =
       typename Dune::XT::Grid::internal::template PeriodicIntersectionIterator<GridViewType>;
   using PeriodicIntersectionType = typename PeriodicGridViewType::Intersection;
-  using CollectiveCommunication = typename GridViewType::CollectiveCommunication;
+  using Communication = typename GridViewType::Communication;
   static constexpr size_t dimDomain = GridViewType::dimension;
 
   static constexpr int factorial(int n)
@@ -94,7 +94,7 @@ struct PeriodicViewTest : public testing::Test
     EXPECT_EQ(grid_view.overlapSize(1), periodic_grid_view.overlapSize(1));
     EXPECT_EQ(grid_view.ghostSize(0), periodic_grid_view.ghostSize(0));
     EXPECT_EQ(grid_view.ghostSize(1), periodic_grid_view.ghostSize(1));
-    [[maybe_unused]] const CollectiveCommunication& test_comm = periodic_grid_view.comm();
+    [[maybe_unused]] const Communication& test_comm = periodic_grid_view.comm();
 
 
     size_t neighbor_count = 0;

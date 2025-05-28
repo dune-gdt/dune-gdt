@@ -98,7 +98,7 @@ public:
 
   static GridProvider<GridType> create(const std::string& filename, MPIHelper::MPICommunicator mpi_comm)
   {
-    DUNE_THROW_IF(CollectiveCommunication<MPIHelper::MPICommunicator>(mpi_comm).size() > 1,
+    DUNE_THROW_IF(Communication<MPIHelper::MPICommunicator>(mpi_comm).size() > 1,
                   InvalidStateException,
                   "Gmsh reading not implemented in parallel");
     return GridProvider<GridType>(GmshReader<GridType>::read(filename));
