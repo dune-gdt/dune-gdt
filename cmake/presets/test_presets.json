@@ -1,0 +1,266 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 27,
+    "patch": 0
+  },
+  "testPresets": [
+    {
+      "name": "linux_clang_coverage",
+      "displayName": "Coverage",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_clang",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "linux_clang_debug",
+      "displayName": "Debug",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_clang",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux_clang_release",
+      "displayName": "Release",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_clang",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux_clang_relwithchecks",
+      "displayName": "RelWithChecks",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_clang",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "linux_gcc_coverage",
+      "displayName": "Coverage",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_gcc",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "linux_gcc_debug",
+      "displayName": "Debug",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_gcc",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux_gcc_release",
+      "displayName": "Release",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_gcc",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux_gcc_relwithchecks",
+      "displayName": "RelWithChecks",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_gcc",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "linux_wheelbuilder_coverage",
+      "displayName": "Coverage",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_wheelbuilder",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "linux_wheelbuilder_debug",
+      "displayName": "Debug",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_wheelbuilder",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux_wheelbuilder_release",
+      "displayName": "Release",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_wheelbuilder",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux_wheelbuilder_relwithchecks",
+      "displayName": "RelWithChecks",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "linux_wheelbuilder",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "test_base",
+      "displayName": "Test Base",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true,
+        "outputJUnitFile": "junit-${presetName}.xml"
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "win_clangcl_coverage",
+      "displayName": "Coverage",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_clangcl",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "win_clangcl_debug",
+      "displayName": "Debug",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_clangcl",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win_clangcl_release",
+      "displayName": "Release",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_clangcl",
+      "configuration": "Release"
+    },
+    {
+      "name": "win_clangcl_relwithchecks",
+      "displayName": "RelWithChecks",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_clangcl",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "win_msvc_coverage",
+      "displayName": "Coverage",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_msvc",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "win_msvc_debug",
+      "displayName": "Debug",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_msvc",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win_msvc_release",
+      "displayName": "Release",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_msvc",
+      "configuration": "Release"
+    },
+    {
+      "name": "win_msvc_relwithchecks",
+      "displayName": "RelWithChecks",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_msvc",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "win_wheelbuilder_coverage",
+      "displayName": "Coverage",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_wheelbuilder",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "win_wheelbuilder_debug",
+      "displayName": "Debug",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_wheelbuilder",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win_wheelbuilder_release",
+      "displayName": "Release",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_wheelbuilder",
+      "configuration": "Release"
+    },
+    {
+      "name": "win_wheelbuilder_relwithchecks",
+      "displayName": "RelWithChecks",
+      "hidden": false,
+      "inherits": [
+        "test_base"
+      ],
+      "configurePreset": "win_wheelbuilder",
+      "configuration": "RelWithChecks"
+    }
+  ],
+  "include": [
+    "configure_presets.json",
+    "build_presets.json"
+  ]
+}

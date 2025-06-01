@@ -1,0 +1,1501 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 27,
+    "patch": 0
+  },
+  "buildPresets": [
+    {
+      "name": "linux_clang_coverage",
+      "configurePreset": "linux_clang",
+      "displayName": "Coverage",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "linux_gcc_coverage",
+      "configurePreset": "linux_gcc",
+      "displayName": "Coverage",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "linux_wheelbuilder_coverage",
+      "configurePreset": "linux_wheelbuilder",
+      "displayName": "Coverage",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "win_clangcl_coverage",
+      "configurePreset": "win_clangcl",
+      "displayName": "Coverage",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "win_msvc_coverage",
+      "configurePreset": "win_msvc",
+      "displayName": "Coverage",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "win_wheelbuilder_coverage",
+      "configurePreset": "win_wheelbuilder",
+      "displayName": "Coverage",
+      "configuration": "Coverage"
+    },
+    {
+      "name": "linux_clang_debug",
+      "configurePreset": "linux_clang",
+      "displayName": "Debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux_gcc_debug",
+      "configurePreset": "linux_gcc",
+      "displayName": "Debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux_wheelbuilder_debug",
+      "configurePreset": "linux_wheelbuilder",
+      "displayName": "Debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win_clangcl_debug",
+      "configurePreset": "win_clangcl",
+      "displayName": "Debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win_msvc_debug",
+      "configurePreset": "win_msvc",
+      "displayName": "Debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "win_wheelbuilder_debug",
+      "configurePreset": "win_wheelbuilder",
+      "displayName": "Debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux_clang_relwithchecks",
+      "configurePreset": "linux_clang",
+      "displayName": "RelWithChecks",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "linux_gcc_relwithchecks",
+      "configurePreset": "linux_gcc",
+      "displayName": "RelWithChecks",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "linux_wheelbuilder_relwithchecks",
+      "configurePreset": "linux_wheelbuilder",
+      "displayName": "RelWithChecks",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "win_clangcl_relwithchecks",
+      "configurePreset": "win_clangcl",
+      "displayName": "RelWithChecks",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "win_msvc_relwithchecks",
+      "configurePreset": "win_msvc",
+      "displayName": "RelWithChecks",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "win_wheelbuilder_relwithchecks",
+      "configurePreset": "win_wheelbuilder",
+      "displayName": "RelWithChecks",
+      "configuration": "RelWithChecks"
+    },
+    {
+      "name": "linux_clang_release",
+      "configurePreset": "linux_clang",
+      "displayName": "Release",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux_gcc_release",
+      "configurePreset": "linux_gcc",
+      "displayName": "Release",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux_wheelbuilder_release",
+      "configurePreset": "linux_wheelbuilder",
+      "displayName": "Release",
+      "configuration": "Release"
+    },
+    {
+      "name": "win_clangcl_release",
+      "configurePreset": "win_clangcl",
+      "displayName": "Release",
+      "configuration": "Release"
+    },
+    {
+      "name": "win_msvc_release",
+      "configurePreset": "win_msvc",
+      "displayName": "Release",
+      "configuration": "Release"
+    },
+    {
+      "name": "win_wheelbuilder_release",
+      "configurePreset": "win_wheelbuilder",
+      "displayName": "Release",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux_clang_benchmarks_coverage",
+      "displayName": "Workflow targets: benchmarks - Coverage",
+      "inherits": [
+        "linux_clang_coverage"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_clang_benchmarks_debug",
+      "displayName": "Workflow targets: benchmarks - Debug",
+      "inherits": [
+        "linux_clang_debug"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_clang_benchmarks_release",
+      "displayName": "Workflow targets: benchmarks - Release",
+      "inherits": [
+        "linux_clang_release"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_clang_benchmarks_relwithchecks",
+      "displayName": "Workflow targets: benchmarks - RelWithChecks",
+      "inherits": [
+        "linux_clang_relwithchecks"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_clang_build_coverage",
+      "displayName": "Workflow targets: build - Coverage",
+      "inherits": [
+        "linux_clang_coverage"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_clang_build_debug",
+      "displayName": "Workflow targets: build - Debug",
+      "inherits": [
+        "linux_clang_debug"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_clang_build_release",
+      "displayName": "Workflow targets: build - Release",
+      "inherits": [
+        "linux_clang_release"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_clang_build_relwithchecks",
+      "displayName": "Workflow targets: build - RelWithChecks",
+      "inherits": [
+        "linux_clang_relwithchecks"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_clang_docs_coverage",
+      "displayName": "Workflow targets: docs - Coverage",
+      "inherits": [
+        "linux_clang_coverage"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_clang_docs_debug",
+      "displayName": "Workflow targets: docs - Debug",
+      "inherits": [
+        "linux_clang_debug"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_clang_docs_release",
+      "displayName": "Workflow targets: docs - Release",
+      "inherits": [
+        "linux_clang_release"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_clang_docs_relwithchecks",
+      "displayName": "Workflow targets: docs - RelWithChecks",
+      "inherits": [
+        "linux_clang_relwithchecks"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_clang_examples_coverage",
+      "displayName": "Workflow targets: examples - Coverage",
+      "inherits": [
+        "linux_clang_coverage"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_clang_examples_debug",
+      "displayName": "Workflow targets: examples - Debug",
+      "inherits": [
+        "linux_clang_debug"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_clang_examples_release",
+      "displayName": "Workflow targets: examples - Release",
+      "inherits": [
+        "linux_clang_release"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_clang_examples_relwithchecks",
+      "displayName": "Workflow targets: examples - RelWithChecks",
+      "inherits": [
+        "linux_clang_relwithchecks"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_clang_tests_coverage",
+      "displayName": "Workflow targets: tests - Coverage",
+      "inherits": [
+        "linux_clang_coverage"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_clang_tests_debug",
+      "displayName": "Workflow targets: tests - Debug",
+      "inherits": [
+        "linux_clang_debug"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_clang_tests_release",
+      "displayName": "Workflow targets: tests - Release",
+      "inherits": [
+        "linux_clang_release"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_clang_tests_relwithchecks",
+      "displayName": "Workflow targets: tests - RelWithChecks",
+      "inherits": [
+        "linux_clang_relwithchecks"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_gcc_benchmarks_coverage",
+      "displayName": "Workflow targets: benchmarks - Coverage",
+      "inherits": [
+        "linux_gcc_coverage"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_gcc_benchmarks_debug",
+      "displayName": "Workflow targets: benchmarks - Debug",
+      "inherits": [
+        "linux_gcc_debug"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_gcc_benchmarks_release",
+      "displayName": "Workflow targets: benchmarks - Release",
+      "inherits": [
+        "linux_gcc_release"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_gcc_benchmarks_relwithchecks",
+      "displayName": "Workflow targets: benchmarks - RelWithChecks",
+      "inherits": [
+        "linux_gcc_relwithchecks"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_gcc_build_coverage",
+      "displayName": "Workflow targets: build - Coverage",
+      "inherits": [
+        "linux_gcc_coverage"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_gcc_build_debug",
+      "displayName": "Workflow targets: build - Debug",
+      "inherits": [
+        "linux_gcc_debug"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_gcc_build_release",
+      "displayName": "Workflow targets: build - Release",
+      "inherits": [
+        "linux_gcc_release"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_gcc_build_relwithchecks",
+      "displayName": "Workflow targets: build - RelWithChecks",
+      "inherits": [
+        "linux_gcc_relwithchecks"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_gcc_docs_coverage",
+      "displayName": "Workflow targets: docs - Coverage",
+      "inherits": [
+        "linux_gcc_coverage"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_gcc_docs_debug",
+      "displayName": "Workflow targets: docs - Debug",
+      "inherits": [
+        "linux_gcc_debug"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_gcc_docs_release",
+      "displayName": "Workflow targets: docs - Release",
+      "inherits": [
+        "linux_gcc_release"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_gcc_docs_relwithchecks",
+      "displayName": "Workflow targets: docs - RelWithChecks",
+      "inherits": [
+        "linux_gcc_relwithchecks"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_gcc_examples_coverage",
+      "displayName": "Workflow targets: examples - Coverage",
+      "inherits": [
+        "linux_gcc_coverage"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_gcc_examples_debug",
+      "displayName": "Workflow targets: examples - Debug",
+      "inherits": [
+        "linux_gcc_debug"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_gcc_examples_release",
+      "displayName": "Workflow targets: examples - Release",
+      "inherits": [
+        "linux_gcc_release"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_gcc_examples_relwithchecks",
+      "displayName": "Workflow targets: examples - RelWithChecks",
+      "inherits": [
+        "linux_gcc_relwithchecks"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_gcc_tests_coverage",
+      "displayName": "Workflow targets: tests - Coverage",
+      "inherits": [
+        "linux_gcc_coverage"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_gcc_tests_debug",
+      "displayName": "Workflow targets: tests - Debug",
+      "inherits": [
+        "linux_gcc_debug"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_gcc_tests_release",
+      "displayName": "Workflow targets: tests - Release",
+      "inherits": [
+        "linux_gcc_release"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_gcc_tests_relwithchecks",
+      "displayName": "Workflow targets: tests - RelWithChecks",
+      "inherits": [
+        "linux_gcc_relwithchecks"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_benchmarks_coverage",
+      "displayName": "Workflow targets: benchmarks - Coverage",
+      "inherits": [
+        "linux_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_benchmarks_debug",
+      "displayName": "Workflow targets: benchmarks - Debug",
+      "inherits": [
+        "linux_wheelbuilder_debug"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_benchmarks_release",
+      "displayName": "Workflow targets: benchmarks - Release",
+      "inherits": [
+        "linux_wheelbuilder_release"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_benchmarks_relwithchecks",
+      "displayName": "Workflow targets: benchmarks - RelWithChecks",
+      "inherits": [
+        "linux_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_build_coverage",
+      "displayName": "Workflow targets: build - Coverage",
+      "inherits": [
+        "linux_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_build_debug",
+      "displayName": "Workflow targets: build - Debug",
+      "inherits": [
+        "linux_wheelbuilder_debug"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_build_release",
+      "displayName": "Workflow targets: build - Release",
+      "inherits": [
+        "linux_wheelbuilder_release"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_build_relwithchecks",
+      "displayName": "Workflow targets: build - RelWithChecks",
+      "inherits": [
+        "linux_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_docs_coverage",
+      "displayName": "Workflow targets: docs - Coverage",
+      "inherits": [
+        "linux_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_docs_debug",
+      "displayName": "Workflow targets: docs - Debug",
+      "inherits": [
+        "linux_wheelbuilder_debug"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_docs_release",
+      "displayName": "Workflow targets: docs - Release",
+      "inherits": [
+        "linux_wheelbuilder_release"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_docs_relwithchecks",
+      "displayName": "Workflow targets: docs - RelWithChecks",
+      "inherits": [
+        "linux_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_examples_coverage",
+      "displayName": "Workflow targets: examples - Coverage",
+      "inherits": [
+        "linux_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_examples_debug",
+      "displayName": "Workflow targets: examples - Debug",
+      "inherits": [
+        "linux_wheelbuilder_debug"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_examples_release",
+      "displayName": "Workflow targets: examples - Release",
+      "inherits": [
+        "linux_wheelbuilder_release"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_examples_relwithchecks",
+      "displayName": "Workflow targets: examples - RelWithChecks",
+      "inherits": [
+        "linux_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_tests_coverage",
+      "displayName": "Workflow targets: tests - Coverage",
+      "inherits": [
+        "linux_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_tests_debug",
+      "displayName": "Workflow targets: tests - Debug",
+      "inherits": [
+        "linux_wheelbuilder_debug"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_tests_release",
+      "displayName": "Workflow targets: tests - Release",
+      "inherits": [
+        "linux_wheelbuilder_release"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_tests_relwithchecks",
+      "displayName": "Workflow targets: tests - RelWithChecks",
+      "inherits": [
+        "linux_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_clangcl_benchmarks_coverage",
+      "displayName": "Workflow targets: benchmarks - Coverage",
+      "inherits": [
+        "win_clangcl_coverage"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_clangcl_benchmarks_debug",
+      "displayName": "Workflow targets: benchmarks - Debug",
+      "inherits": [
+        "win_clangcl_debug"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_clangcl_benchmarks_release",
+      "displayName": "Workflow targets: benchmarks - Release",
+      "inherits": [
+        "win_clangcl_release"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_clangcl_benchmarks_relwithchecks",
+      "displayName": "Workflow targets: benchmarks - RelWithChecks",
+      "inherits": [
+        "win_clangcl_relwithchecks"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_clangcl_build_coverage",
+      "displayName": "Workflow targets: build - Coverage",
+      "inherits": [
+        "win_clangcl_coverage"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_clangcl_build_debug",
+      "displayName": "Workflow targets: build - Debug",
+      "inherits": [
+        "win_clangcl_debug"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_clangcl_build_release",
+      "displayName": "Workflow targets: build - Release",
+      "inherits": [
+        "win_clangcl_release"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_clangcl_build_relwithchecks",
+      "displayName": "Workflow targets: build - RelWithChecks",
+      "inherits": [
+        "win_clangcl_relwithchecks"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_clangcl_docs_coverage",
+      "displayName": "Workflow targets: docs - Coverage",
+      "inherits": [
+        "win_clangcl_coverage"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_clangcl_docs_debug",
+      "displayName": "Workflow targets: docs - Debug",
+      "inherits": [
+        "win_clangcl_debug"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_clangcl_docs_release",
+      "displayName": "Workflow targets: docs - Release",
+      "inherits": [
+        "win_clangcl_release"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_clangcl_docs_relwithchecks",
+      "displayName": "Workflow targets: docs - RelWithChecks",
+      "inherits": [
+        "win_clangcl_relwithchecks"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_clangcl_examples_coverage",
+      "displayName": "Workflow targets: examples - Coverage",
+      "inherits": [
+        "win_clangcl_coverage"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_clangcl_examples_debug",
+      "displayName": "Workflow targets: examples - Debug",
+      "inherits": [
+        "win_clangcl_debug"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_clangcl_examples_release",
+      "displayName": "Workflow targets: examples - Release",
+      "inherits": [
+        "win_clangcl_release"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_clangcl_examples_relwithchecks",
+      "displayName": "Workflow targets: examples - RelWithChecks",
+      "inherits": [
+        "win_clangcl_relwithchecks"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_clangcl_tests_coverage",
+      "displayName": "Workflow targets: tests - Coverage",
+      "inherits": [
+        "win_clangcl_coverage"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_clangcl_tests_debug",
+      "displayName": "Workflow targets: tests - Debug",
+      "inherits": [
+        "win_clangcl_debug"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_clangcl_tests_release",
+      "displayName": "Workflow targets: tests - Release",
+      "inherits": [
+        "win_clangcl_release"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_clangcl_tests_relwithchecks",
+      "displayName": "Workflow targets: tests - RelWithChecks",
+      "inherits": [
+        "win_clangcl_relwithchecks"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_msvc_benchmarks_coverage",
+      "displayName": "Workflow targets: benchmarks - Coverage",
+      "inherits": [
+        "win_msvc_coverage"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_msvc_benchmarks_debug",
+      "displayName": "Workflow targets: benchmarks - Debug",
+      "inherits": [
+        "win_msvc_debug"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_msvc_benchmarks_release",
+      "displayName": "Workflow targets: benchmarks - Release",
+      "inherits": [
+        "win_msvc_release"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_msvc_benchmarks_relwithchecks",
+      "displayName": "Workflow targets: benchmarks - RelWithChecks",
+      "inherits": [
+        "win_msvc_relwithchecks"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_msvc_build_coverage",
+      "displayName": "Workflow targets: build - Coverage",
+      "inherits": [
+        "win_msvc_coverage"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_msvc_build_debug",
+      "displayName": "Workflow targets: build - Debug",
+      "inherits": [
+        "win_msvc_debug"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_msvc_build_release",
+      "displayName": "Workflow targets: build - Release",
+      "inherits": [
+        "win_msvc_release"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_msvc_build_relwithchecks",
+      "displayName": "Workflow targets: build - RelWithChecks",
+      "inherits": [
+        "win_msvc_relwithchecks"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_msvc_docs_coverage",
+      "displayName": "Workflow targets: docs - Coverage",
+      "inherits": [
+        "win_msvc_coverage"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_msvc_docs_debug",
+      "displayName": "Workflow targets: docs - Debug",
+      "inherits": [
+        "win_msvc_debug"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_msvc_docs_release",
+      "displayName": "Workflow targets: docs - Release",
+      "inherits": [
+        "win_msvc_release"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_msvc_docs_relwithchecks",
+      "displayName": "Workflow targets: docs - RelWithChecks",
+      "inherits": [
+        "win_msvc_relwithchecks"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_msvc_examples_coverage",
+      "displayName": "Workflow targets: examples - Coverage",
+      "inherits": [
+        "win_msvc_coverage"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_msvc_examples_debug",
+      "displayName": "Workflow targets: examples - Debug",
+      "inherits": [
+        "win_msvc_debug"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_msvc_examples_release",
+      "displayName": "Workflow targets: examples - Release",
+      "inherits": [
+        "win_msvc_release"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_msvc_examples_relwithchecks",
+      "displayName": "Workflow targets: examples - RelWithChecks",
+      "inherits": [
+        "win_msvc_relwithchecks"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_msvc_tests_coverage",
+      "displayName": "Workflow targets: tests - Coverage",
+      "inherits": [
+        "win_msvc_coverage"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_msvc_tests_debug",
+      "displayName": "Workflow targets: tests - Debug",
+      "inherits": [
+        "win_msvc_debug"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_msvc_tests_release",
+      "displayName": "Workflow targets: tests - Release",
+      "inherits": [
+        "win_msvc_release"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_msvc_tests_relwithchecks",
+      "displayName": "Workflow targets: tests - RelWithChecks",
+      "inherits": [
+        "win_msvc_relwithchecks"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_benchmarks_coverage",
+      "displayName": "Workflow targets: benchmarks - Coverage",
+      "inherits": [
+        "win_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_benchmarks_debug",
+      "displayName": "Workflow targets: benchmarks - Debug",
+      "inherits": [
+        "win_wheelbuilder_debug"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_benchmarks_release",
+      "displayName": "Workflow targets: benchmarks - Release",
+      "inherits": [
+        "win_wheelbuilder_release"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_benchmarks_relwithchecks",
+      "displayName": "Workflow targets: benchmarks - RelWithChecks",
+      "inherits": [
+        "win_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "all_benchmark_binaries",
+        "run_benchmarks",
+        "copy_benchmark_reports_to_sphinx"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_build_coverage",
+      "displayName": "Workflow targets: build - Coverage",
+      "inherits": [
+        "win_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_build_debug",
+      "displayName": "Workflow targets: build - Debug",
+      "inherits": [
+        "win_wheelbuilder_debug"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_build_release",
+      "displayName": "Workflow targets: build - Release",
+      "inherits": [
+        "win_wheelbuilder_release"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_build_relwithchecks",
+      "displayName": "Workflow targets: build - RelWithChecks",
+      "inherits": [
+        "win_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "all",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_docs_coverage",
+      "displayName": "Workflow targets: docs - Coverage",
+      "inherits": [
+        "win_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_docs_debug",
+      "displayName": "Workflow targets: docs - Debug",
+      "inherits": [
+        "win_wheelbuilder_debug"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_docs_release",
+      "displayName": "Workflow targets: docs - Release",
+      "inherits": [
+        "win_wheelbuilder_release"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_docs_relwithchecks",
+      "displayName": "Workflow targets: docs - RelWithChecks",
+      "inherits": [
+        "win_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "docs"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_examples_coverage",
+      "displayName": "Workflow targets: examples - Coverage",
+      "inherits": [
+        "win_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_examples_debug",
+      "displayName": "Workflow targets: examples - Debug",
+      "inherits": [
+        "win_wheelbuilder_debug"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_examples_release",
+      "displayName": "Workflow targets: examples - Release",
+      "inherits": [
+        "win_wheelbuilder_release"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_examples_relwithchecks",
+      "displayName": "Workflow targets: examples - RelWithChecks",
+      "inherits": [
+        "win_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "all_example_binaries",
+        "run_examples"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_tests_coverage",
+      "displayName": "Workflow targets: tests - Coverage",
+      "inherits": [
+        "win_wheelbuilder_coverage"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_tests_debug",
+      "displayName": "Workflow targets: tests - Debug",
+      "inherits": [
+        "win_wheelbuilder_debug"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_tests_release",
+      "displayName": "Workflow targets: tests - Release",
+      "inherits": [
+        "win_wheelbuilder_release"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_tests_relwithchecks",
+      "displayName": "Workflow targets: tests - RelWithChecks",
+      "inherits": [
+        "win_wheelbuilder_relwithchecks"
+      ],
+      "targets": [
+        "all_test_binaries",
+        "headercheck",
+        "bindings"
+      ]
+    }
+  ],
+  "include": [
+    "configure_presets.json"
+  ]
+}
