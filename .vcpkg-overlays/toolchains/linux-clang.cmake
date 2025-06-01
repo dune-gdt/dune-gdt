@@ -1,0 +1,11 @@
+if(NOT X_VCPKG_LINUX_TOOLCHAIN_OVERRIDE_OSS_CLANG)
+  set(X_VCPKG_LINUX_TOOLCHAIN_OVERRIDE_OSS_CLANG 1)
+
+  set(CMAKE_C_COMPILER "clang")
+  set(CMAKE_CXX_COMPILER "clang++")
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+  include(${CMAKE_CURRENT_LIST_DIR}/clang_include.cmake)
+  include(${CMAKE_CURRENT_LIST_DIR}/try_compile_common.cmake)
+
+endif()

@@ -1,0 +1,13 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 27,
+    "patch": 0
+  },
+  "packagePresets": [],
+  "include": [
+    "configure_presets.json",
+    "build_presets.json"
+  ]
+}

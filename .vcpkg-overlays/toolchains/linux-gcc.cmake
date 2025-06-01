@@ -1,0 +1,11 @@
+if(NOT X_VCPKG_LINUX_TOOLCHAIN_OVERRIDE_OSS_GCC)
+  set(X_VCPKG_LINUX_TOOLCHAIN_OVERRIDE_OSS_GCC 1)
+
+  set(CMAKE_C_COMPILER "gcc")
+  set(CMAKE_CXX_COMPILER "g++")
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+  include(${CMAKE_CURRENT_LIST_DIR}/gcc_include.cmake)
+  include(${CMAKE_CURRENT_LIST_DIR}/try_compile_common.cmake)
+
+endif()

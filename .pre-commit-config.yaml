@@ -34,11 +34,11 @@ repos:
   hooks:
   - id: cmake-format
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-    exclude: "config.h.cmake|pybind11"
+    exclude: "config.h.cmake|pybind11|cmake/toolchains"
     args: ["-i", "--config-files=.cmake_format.py"]
   - id: cmake-lint
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-    exclude: "config.h.cmake|pybind11"
+    exclude: "config.h.cmake|pybind11|cmake/toolchains"
     args: ["--config-files=.cmake_format.py"]
 - repo: https://github.com/python-jsonschema/check-jsonschema
   rev: 0.33.0

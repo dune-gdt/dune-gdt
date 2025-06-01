@@ -58,18 +58,18 @@ jobs:
 
     - name: Configure CMake
       id: configure_cmake
-      run: cmake --preset=debug
+      run: cmake --preset=linux_gcc
 
     - name: Build
-      run: cmake --build --preset=debug --parallel
+      run: cmake --build --preset=linux_gcc_coverage --parallel
 
     - name: Build test binaries
       run: |
-        cmake --build --preset=debug --target test_binaries --parallel -- -l 2
+        cmake --build --preset=linux_gcc_coverage --target test_binaries --parallel -- -l 2
 
     - name: Test with CTest
       run: |
-        ctest --preset=debug
+        ctest --preset=linux_gcc_coverage
 
     - name: Save build cache
       if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
