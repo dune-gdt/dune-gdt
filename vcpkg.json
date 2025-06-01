@@ -28,6 +28,15 @@
           ]
         }
       ]
+    },
+    "la": {
+      "description": "Enable optional LA related packages",
+      "dependencies": [
+        "openblas",
+        "suitesparse",
+        "tbb",
+        "lapack"
+      ]
     }
   },
   "dependencies": [
@@ -53,11 +62,21 @@
     "boost-timer",
     "gtest",
     "pybind11",
-    "eigen3",
-    "tbb",
-    "openblas",
-    "suitesparse",
-    "lapack"
+    "eigen3"
   ],
-  "builtin-baseline": "ce613c41372b23b1f51333815feb3edd87ef8a8b"
+  "vcpkg-configuration": {
+    "default-registry": {
+      "kind": "git",
+      "repository": "https://github.com/Microsoft/vcpkg",
+      "baseline": "ce613c41372b23b1f51333815feb3edd87ef8a8b",
+      "reference": "master"
+    },
+    "overlay-ports": [
+      ".vcpkg-overlays/ports/"
+    ],
+    "overlay-triplets": [
+      ".vcpkg-overlays/triplets/"
+    ]
+  }
+
 }

@@ -14,7 +14,7 @@ repos:
   rev: 'v15.0.7'
   hooks:
   - id: clang-format
-    exclude: "^(dune/xt/test/gtest/|pybind11)"
+    exclude: "^(dune/xt/test/gtest/|pybind11|vcpkg.json)"
 - repo: https://github.com/google/yamlfmt
   rev: v0.16.0
   hooks:
