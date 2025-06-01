@@ -114,13 +114,11 @@ def _configure_presets() -> list[dict[str, object]]:
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES": ";".join(cmake_configuration_types),
                 "CMAKE_CXX_SCAN_FOR_MODULES": "Off",
-                "CMAKE_CXX_STANDARD": "20",
-                "DUNE_PYTHON_ALLOW_GET_PIP": "ON",
-                "CMAKE_DISABLE_FIND_PACKAGE_MPI": "TRUE",
+                "CMAKE_CXX_STANDARD": "23",
             },
             "environment": {
-                "VCPKG_KEEP_ENV_VARS": "CCACHE_LOGFILE;CCACHE_DIR;CCACHE_DISABLE;CCACHE_NOHASHDIR;CCACHE_BASEDIR;CCACHE_MAXSIZE;CMAKE_CXX_COMPILER_LAUNCHER;CMAKE_C_COMPILER_LAUNCHER;$penv{VCPKG_KEEP_ENV_VARS}",
-                "VCPKG_MANIFEST_FEATURES": "alberta;uggrid",
+                "_VCPKG_KEEP_ENV_VARS_BASE_PRESET": "UV_INDEX_OSS_PYPI_PASSWORD;UV_INDEX_OSS_PYPI_USERNAME;CCACHE_LOGFILE;CCACHE_DIR;CCACHE_DISABLE;CCACHE_NOHASHDIR;CCACHE_BASEDIR;CCACHE_MAXSIZE;CMAKE_CXX_COMPILER_LAUNCHER;CMAKE_C_COMPILER_LAUNCHER",
+                "VCPKG_KEEP_ENV_VARS": "$env{_VCPKG_KEEP_ENV_VARS_BASE_PRESET};$penv{VCPKG_KEEP_ENV_VARS}",
                 "CCACHE_NOHASHDIR": "1",
             },
             "binaryDir": "${sourceDir}/build/${presetName}",
