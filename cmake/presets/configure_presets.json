@@ -14,12 +14,12 @@
         "CMAKE_CXX_SCAN_FOR_MODULES": "Off",
         "CMAKE_CXX_STANDARD": "20",
         "DUNE_PYTHON_ALLOW_GET_PIP": "ON",
-        "CMAKE_DISABLE_FIND_PACKAGE_MPI": "TRUE"
+        "CMAKE_DISABLE_FIND_PACKAGE_MPI": "TRUE",
+        "VCPKG_MANIFEST_FEATURES": "alberta;uggrid"
       },
       "environment": {
         "VCPKG_KEEP_ENV_VARS":
           "CCACHE_LOGFILE;CCACHE_DIR;CCACHE_DISABLE;CCACHE_NOHASHDIR;CCACHE_BASEDIR;CCACHE_MAXSIZE;CMAKE_CXX_COMPILER_LAUNCHER;CMAKE_C_COMPILER_LAUNCHER;$penv{VCPKG_KEEP_ENV_VARS}",
-        "VCPKG_MANIFEST_FEATURES": "alberta;uggrid",
         "CCACHE_NOHASHDIR": "1"
       },
       "binaryDir": "${sourceDir}/build/${presetName}",
