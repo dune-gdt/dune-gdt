@@ -35,10 +35,10 @@ pipx install --force "cmake<4"
 "${PYTHON_BIN}" -m pip install auditwheel wheel build
 cd "${DUNE_SRC_DIR}"
 
-cmake --preset wheelbuilder-release -DDXT_DONT_LINK_PYTHON_LIB=1
-cmake --build --preset wheelbuilder-release --target bindings -- -j "$(nproc --ignore 1)" -l "$(nproc --ignore 1)"
+cmake --preset linux_wheelbuilder -DDXT_DONT_LINK_PYTHON_LIB=1
+cmake --build --preset linux_wheelbuilder_release --target bindings -- -j "$(nproc --ignore 1)" -l "$(nproc --ignore 1)"
 
-DUNE_BUILD_DIR="${DUNE_SRC_DIR}/build/wheelbuilder-release"
+DUNE_BUILD_DIR="${DUNE_SRC_DIR}/build/linux/wheelbuilder"
 "${PYTHON_BIN}" -m pip wheel "${DUNE_BUILD_DIR}/python/xt/" -w "${TMP_WHEEL_DIR}"
 # xt is an exact-version dependency of gdt -> needs `--find-links`
 "${PYTHON_BIN}" -m pip install "${TMP_WHEEL_DIR}"/dune_xt*whl
