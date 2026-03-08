@@ -1,0 +1,14 @@
+diff --git a/dune/testtools/CMakeLists.txt b/dune/testtools/CMakeLists.txt
+index 66deb99..2eabf09 100644
+--- a/dune/testtools/CMakeLists.txt
++++ b/dune/testtools/CMakeLists.txt
+@@ -1,5 +1,7 @@
+-add_subdirectory(test)
+-add_subdirectory(tutorial)
++if(BUILD_TESTING)
++  add_subdirectory(test)
++  add_subdirectory(tutorial)
++endif()
+
+ install(FILES gridconstruction.hh
+               outputtree.hh
