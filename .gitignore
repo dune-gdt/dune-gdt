@@ -10,7 +10,8 @@
 #   René Fritze     (2017 - 2018)
 # ~~~
 
-.vscode
+.vscode/*
+!.vscode/settings.json
 tags
 *.user
 *Makefile
@@ -65,7 +66,6 @@ cmake/modules/petsc
 *.pyc
 .idea
 tags
-.vscode
 compile_commands.json
 .cache
 build-cmake

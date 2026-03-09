@@ -12,11 +12,19 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  packages: write
+
 jobs:
   build-linux:
     name: Build on Linux
     runs-on: ubuntu-24.04
     timeout-minutes: 120
+    env:
+      USERNAME: dune-gdt
+      VCPKG_EXE: ${{ github.workspace }}/.vcpkg-root/vcpkg
+      FEED_URL: https://nuget.pkg.github.com/dune-gdt/index.json
+      VCPKG_BINARY_SOURCES: "clear;nuget,https://nuget.pkg.github.com/dune-gdt/index.json,readwrite"
 
     steps:
     - uses: actions/checkout@v4
@@ -34,22 +42,36 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build
+        sudo apt-get install -y ninja-build mono-complete
+
+    - name: Setup vcpkg binary caching
+      shell: bash
+      run: |
+        mono "$(${{ env.VCPKG_EXE }} fetch nuget | tail -n 1)" \
+          sources add \
+          -Source "${{ env.FEED_URL }}" \
+          -StorePasswordInClearText \
+          -Name GitHubPackages \
+          -UserName "${{ env.USERNAME }}" \
+          -Password "${{ secrets.GITHUB_TOKEN }}"
+        mono "$(${{ env.VCPKG_EXE }} fetch nuget | tail -n 1)" \
+          setapikey "${{ secrets.GITHUB_TOKEN }}" \
+          -Source "${{ env.FEED_URL }}"
 
     - name: Configure CMake
       id: configure_cmake
-      run: cmake --preset=debug
+      run: cmake --preset=linux_gcc
 
     - name: Build
-      run: cmake --build --preset=debug --parallel
+      run: cmake --build --preset=linux_gcc_coverage --parallel
 
     - name: Build test binaries
       run: |
-        cmake --build --preset=debug --target test_binaries --parallel -- -l 2
+        cmake --build --preset=linux_gcc_coverage --target test_binaries --parallel -- -l 2
 
     - name: Test with CTest
       run: |
-        ctest --preset=debug
+        ctest --preset=linux_gcc_coverage
 
     - name: Save build cache
       if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
