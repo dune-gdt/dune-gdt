@@ -1,3 +1,4 @@
+# ruff: noqa: F403, F405  (pymor talk/demo script: `from pymor.basic import *` is intentional)
 from pymor.basic import *
 
 logger = getLogger("main.simulate_single_greedy_step")

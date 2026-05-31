@@ -1,3 +1,4 @@
+# ruff: noqa: F403, F405, E402  (pymor talk/demo script: `from pymor.basic import *` is intentional)
 import numpy as np
 
 from pymor.basic import *

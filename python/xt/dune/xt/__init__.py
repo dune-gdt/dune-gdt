@@ -17,7 +17,7 @@
 # libscotchmetis.
 
 try:
-    import metis
+    import metis  # noqa: F401  (imported for its side effect, see comment above)
 except ImportError:
     pass
 except RuntimeError:  # metis actually fires a RuntimeError if the module is installed but the system package not
@@ -51,4 +51,4 @@ def guarded_import(globs, base_name, mod_name):
     globs.update({k: getattr(mod, k) for k in names})
 
 
-from ._version import __version__
+from ._version import __version__ as __version__  # noqa: E402  (must follow the metis import above)
