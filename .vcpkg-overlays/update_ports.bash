@@ -17,6 +17,11 @@ source "$REPO_ROOT/deps/module_list.bash"
 # Pre-defined map of additional dependencies for specific ports
 declare -A PORT_DEPENDENCIES
 
+# dune-common needs BLAS/LAPACK available at build time so that HAVE_LAPACK is
+# defined and the LAPACK wrappers (e.g. eigenValuesNonsymLapackCall) are
+# compiled into libdunecommon. vcpkg builds each port in isolation, so this must
+# be declared on the port itself, not only in the top-level manifest.
+PORT_DEPENDENCIES[dune-common]="lapack openblas"
 PORT_DEPENDENCIES[dune-alugrid]="dune-grid"
 PORT_DEPENDENCIES[dune-uggrid]="dune-common"
 PORT_DEPENDENCIES[dune-grid]="dune-common dune-geometry"
