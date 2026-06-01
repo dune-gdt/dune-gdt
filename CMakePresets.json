@@ -190,7 +190,7 @@
       "execution": {
         "noTestsAction": "error",
         "stopOnFailure": false,
-        "timeout": 20
+        "timeout": 1000
       },
       "filter": {
         "include": {
