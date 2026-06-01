@@ -10,10 +10,9 @@
 #   Tobias Leibner (2018 - 2020)
 # ~~~
 
-from matrices import commontype, dunetype, latype
-
 from dune.xt.codegen import have_eigen, have_istl
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
+from matrices import commontype, dunetype, latype
 
 
 def la_types_creator():
@@ -62,7 +61,7 @@ def common_test_tuple(args, xt):
     if len(fs) == 1:
         fvec = f
     elif r.startswith('FieldVector'):
-        fvec = '{},{}'.format(fs[0], fs[1] if len(fs) == 3 else int(fs[1]) * int(fs[2]))
+        fvec = f'{fs[0]},{fs[1] if len(fs) == 3 else int(fs[1]) * int(fs[2])}'
     else:
         fvec = f'{fs[0]},{fs[1]},{fs[2]}'
     f.replace('complex', 'std::complex<double>')

@@ -44,13 +44,9 @@ struct GradientValueIntegrandTest : public IntegrandTest<G>
     const XT::Functions::GenericGridFunction<E, d> vector_grid_function(
         2,
         [](const E&) {},
-        [](const DomainType& x, const XT::Common::Parameter&) {
-          return FieldVector<D, d>{{x[0], x[0] * x[1]}};
-        });
-    const XT::Functions::GenericFunction<d, d> vector_function(2,
-                                                               [](const DomainType& x, const XT::Common::Parameter&) {
-                                                                 return FieldVector<D, d>{{x[0], x[0] * x[1]}};
-                                                               });
+        [](const DomainType& x, const XT::Common::Parameter&) { return FieldVector<D, d>{{x[0], x[0] * x[1]}}; });
+    const XT::Functions::GenericFunction<d, d> vector_function(
+        2, [](const DomainType& x, const XT::Common::Parameter&) { return FieldVector<D, d>{{x[0], x[0] * x[1]}}; });
     [[maybe_unused]] ScalarIntegrandType scalar_integrand1(vector_grid_function);
     [[maybe_unused]] ScalarIntegrandType scalar_integrand2(vector_function);
     [[maybe_unused]] VectorIntegrandType vector_integrand1(vector_grid_function);
@@ -62,9 +58,7 @@ struct GradientValueIntegrandTest : public IntegrandTest<G>
     const XT::Functions::GenericGridFunction<E, d> vector_grid_function(
         2,
         [](const E&) {},
-        [](const DomainType& x, const XT::Common::Parameter&) {
-          return FieldVector<D, d>{{x[0], x[0] * x[1]}};
-        });
+        [](const DomainType& x, const XT::Common::Parameter&) { return FieldVector<D, d>{{x[0], x[0] * x[1]}}; });
     ScalarIntegrandType scalar_integrand(vector_grid_function);
     ScalarIntegrandTestGradType scalar_integrand2(vector_grid_function);
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
@@ -99,9 +93,7 @@ struct GradientValueIntegrandTest : public IntegrandTest<G>
     const XT::Functions::GenericGridFunction<E, d> vector_grid_function(
         2,
         [](const E&) {},
-        [](const DomainType& x, const XT::Common::Parameter&) {
-          return FieldVector<D, d>{{x[0], x[0] * x[1]}};
-        });
+        [](const DomainType& x, const XT::Common::Parameter&) { return FieldVector<D, d>{{x[0], x[0] * x[1]}}; });
     VectorIntegrandType integrand(vector_grid_function);
     VectorIntegrandTestGradType integrand2(vector_grid_function);
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
@@ -135,9 +127,7 @@ struct GradientValueIntegrandTest : public IntegrandTest<G>
   virtual void is_integrated_correctly()
   {
     const XT::Functions::GenericFunction<d, d> vector_function(
-        0, [](const DomainType& /*x*/, const XT::Common::Parameter&) {
-          return FieldVector<D, d>{{1., 1.}};
-        });
+        0, [](const DomainType& /*x*/, const XT::Common::Parameter&) { return FieldVector<D, d>{{1., 1.}}; });
     VectorIntegrandType ansatz_grad_integrand(vector_function);
     VectorIntegrandTestGradType test_grad_integrand(vector_function);
     const auto& grid_view = grid_provider_->leaf_view();

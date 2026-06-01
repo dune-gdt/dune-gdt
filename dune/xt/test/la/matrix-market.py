@@ -12,9 +12,8 @@
 
 from itertools import product
 
-from matrices import fieldtypes, latype, matrices
-
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
+from matrices import fieldtypes, latype, matrices
 
 testtypes = [
     (safe_name(f"{m}_{f}"), latype(m, f)) for m, f in product(matrices(cache), fieldtypes(cache))  # noqa: F821

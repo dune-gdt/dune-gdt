@@ -18,9 +18,8 @@ import os
 import sys
 from runpy import run_path
 
-from jinja2 import Template
-
 from dune.xt.cmake import parse_cache
+from jinja2 import Template
 
 config_fn = sys.argv[1]
 tpl_fn = sys.argv[2]

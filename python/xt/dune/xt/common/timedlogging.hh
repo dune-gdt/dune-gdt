@@ -36,8 +36,7 @@ public:
     c.def("info_enabled", &type::info_enabled);
     c.def("debug_enabled", &type::debug_enabled);
     c.def("warn_enabled", &type::warn_enabled);
-    c.def(
-        "enable", [](type& self, const std::string& prefix) { self.enable(prefix); }, ""_a = "");
+    c.def("enable", [](type& self, const std::string& prefix) { self.enable(prefix); }, ""_a = "");
     c.def("disable", [](type& self) { self.disable(); });
     c.def("info", [](type& self, const std::string& to_print) { self.info() << to_print << std::endl; });
     c.def("debug", [](type& self, const std::string& to_print) { self.debug() << to_print << std::endl; });

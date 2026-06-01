@@ -11,8 +11,9 @@
 #   Tobias Leibner  (2018 - 2020)
 # ~~~
 
-from dune.xt.grid import Cube, Dim, Simplex, Walker, make_cube_grid
 from dune.xt.test.base import runmodule
+
+from dune.xt.grid import Cube, Dim, Simplex, Walker, make_cube_grid
 
 init_args = (
     (Dim(1), [0], [1], [2]),

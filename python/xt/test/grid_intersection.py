@@ -9,8 +9,9 @@
 #   Felix Schindler (2020)
 # ~~~
 
-from dune.xt.grid import Cube, Dim, make_cube_grid
 from dune.xt.test._test_grid_intersection import call_on_each_intersection
+
+from dune.xt.grid import Cube, Dim, make_cube_grid
 
 
 def test_print():

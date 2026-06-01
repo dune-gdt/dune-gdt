@@ -125,8 +125,7 @@ public:
     using namespace pybind11::literals;
 
     // our methods
-    c.def(
-        "size", [](type& self, const Common::Parameter& mu) { return self.size(mu); }, "mu"_a = Common::Parameter());
+    c.def("size", [](type& self, const Common::Parameter& mu) { return self.size(mu); }, "mu"_a = Common::Parameter());
     c.def(
         "max_size",
         [](type& self, const Common::Parameter& mu) { return self.max_size(mu); },

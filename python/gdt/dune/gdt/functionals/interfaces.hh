@@ -47,8 +47,7 @@ public:
     namespace py = pybind11;
     using namespace pybind11::literals;
 
-    c.def(
-        "assemble", [](type& self, const bool parallel) { self.assemble(parallel); }, "parallel"_a = false);
+    c.def("assemble", [](type& self, const bool parallel) { self.assemble(parallel); }, "parallel"_a = false);
     c.def(
         "apply",
         [](type& self, const V& source, const XT::Common::Parameter& param) { return self.apply(source, param); },

@@ -182,7 +182,7 @@ public:
                                                       const XT::Common::Parameter& param,
                                                       const bool flux_is_affine = false)
     : slope_functor_(std::make_unique<SlopeFunctorType>(
-        grid_view, source_values, boundary_values, analytical_flux, slope, param, flux_is_affine))
+          grid_view, source_values, boundary_values, analytical_flux, slope, param, flux_is_affine))
     , reconstructed_function_(reconstructed_function)
   {
   }
@@ -251,7 +251,7 @@ public:
                                              const XT::Common::Parameter& param,
                                              const bool flux_is_affine = false)
     : slope_functor_(std::make_unique<SlopeFunctorType>(
-        target_space.grid_view(), source_values, boundary_values, analytical_flux, slope, param, flux_is_affine))
+          target_space.grid_view(), source_values, boundary_values, analytical_flux, slope, param, flux_is_affine))
     , target_space_(target_space)
     , target_vector_(target_vector)
     , target_(target_space_, target_vector_, "range")

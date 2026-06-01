@@ -805,12 +805,13 @@ public:
     const auto& type_index = GlobalGeometryTypeIndex::index(entity.type());
     assert(!entity.hasBoundaryIntersections()
            || (*boundary_entity_to_periodic_neighbors_maps_)[type_index].count(index_set_->index(entity)));
-    return IntersectionIterator(BaseType::ibegin(entity),
-                                *this,
-                                entity,
-                                entity.hasBoundaryIntersections() ? &(
-                                    *boundary_entity_to_periodic_neighbors_maps_)[type_index][index_set_->index(entity)]
-                                                                  : nullptr);
+    return IntersectionIterator(
+        BaseType::ibegin(entity),
+        *this,
+        entity,
+        entity.hasBoundaryIntersections()
+            ? &(*boundary_entity_to_periodic_neighbors_maps_)[type_index][index_set_->index(entity)]
+            : nullptr);
 
   } // ... ibegin(...)
 
@@ -819,12 +820,13 @@ public:
     const auto& type_index = GlobalGeometryTypeIndex::index(entity.type());
     assert(!entity.hasBoundaryIntersections()
            || (*boundary_entity_to_periodic_neighbors_maps_)[type_index].count(index_set_->index(entity)));
-    return IntersectionIterator(BaseType::iend(entity),
-                                *this,
-                                entity,
-                                entity.hasBoundaryIntersections() ? &(
-                                    *boundary_entity_to_periodic_neighbors_maps_)[type_index][index_set_->index(entity)]
-                                                                  : nullptr);
+    return IntersectionIterator(
+        BaseType::iend(entity),
+        *this,
+        entity,
+        entity.hasBoundaryIntersections()
+            ? &(*boundary_entity_to_periodic_neighbors_maps_)[type_index][index_set_->index(entity)]
+            : nullptr);
   } // ... iend(...)
 
 private:

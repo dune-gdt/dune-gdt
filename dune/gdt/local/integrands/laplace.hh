@@ -42,7 +42,7 @@ public:
       const std::string& logging_prefix = "",
       const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType(
-        diffusion.parameter_type(), logging_prefix.empty() ? "LocalLaplaceIntegrand" : logging_prefix, logging_state)
+          diffusion.parameter_type(), logging_prefix.empty() ? "LocalLaplaceIntegrand" : logging_prefix, logging_state)
     , weight_(diffusion.copy_as_grid_function())
     , local_weight_(weight_->local_function())
   {

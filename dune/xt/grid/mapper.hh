@@ -25,8 +25,7 @@ template <typename G,
           typename IndexType,
           int dim,
           class GridImp,
-          template <int, int, class>
-          class EntityImp,
+          template <int, int, class> class EntityImp,
           int cd = GridImp::dimension>
 size_t sub_entity_index(const Dune::Mapper<G, MapperImp, IndexType>& mapper,
                         const Dune::Entity<0, dim, GridImp, EntityImp> element,

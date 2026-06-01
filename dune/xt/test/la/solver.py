@@ -11,10 +11,9 @@
 #   Tobias Leibner  (2015 - 2017, 2019 - 2020)
 # ~~~
 
-from matrices import commontype, latype
-
 from dune.xt.codegen import have_eigen, have_istl
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
+from matrices import commontype, latype
 
 types = [
     f.split('_') for f in [

@@ -13,9 +13,8 @@
 
 from itertools import product
 
-from vectors import fieldtypes, vector_filter, vectors, vectortype
-
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
+from vectors import fieldtypes, vector_filter, vectors, vectortype
 
 testtypes = [
     (safe_name(f'{mv}_{f}'), vectortype(mv, f))
