@@ -173,6 +173,19 @@ jobs:
           "${GITHUB_WORKSPACE}/tutorials/source" \
           "${GITHUB_WORKSPACE}/build/tutorials_html"
 
+    - name: Dump notebook execution error reports
+      # myst-nb writes a per-notebook traceback here for every cell that failed;
+      # surface them directly in the job log so failures are diagnosable without
+      # downloading the artifact
+      if: failure()
+      run: |
+        shopt -s nullglob
+        for f in "${GITHUB_WORKSPACE}"/build/tutorials_html/reports/*.err.log; do
+          echo "::group::$(basename "${f}")"
+          cat "${f}"
+          echo "::endgroup::"
+        done
+
     - name: Upload built tutorials HTML
       if: always()
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

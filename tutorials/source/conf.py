@@ -60,8 +60,11 @@ nb_execution_mode = "cache"
 nb_execution_timeout = 240  # there is an interpolation test
 # print tracebacks to stdout
 nb_execution_show_tb = True
-# fail the (sphinx -W) build if any notebook cell raises during execution
-nb_execution_raise_on_error = True
+# Do not abort on the first failing notebook: let myst-nb execute every notebook
+# and emit a warning (with traceback) for each failure, so a single build reports
+# all broken notebooks. The build still fails because sphinx is run with -W
+# (warnings treated as errors).
+nb_execution_raise_on_error = False
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
