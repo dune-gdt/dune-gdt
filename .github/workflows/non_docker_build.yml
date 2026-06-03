@@ -86,6 +86,10 @@ jobs:
         ./.ci/make_docker_wheels.bash
       env:
         GDT_PYTHON_VERSION: ${{ matrix.python-version }}
+        # mark this as a CI build (selects versioneer's pep440-pre style) and
+        # provide a unique build number so every upload gets a distinct version
+        CI: "true"
+        GITHUB_RUN_NUMBER: ${{ github.run_number }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -98,6 +102,8 @@ jobs:
     name: Publish to Test PyPI
     runs-on: ubuntu-24.04
     needs: build_wheels
+    # only publish to Test PyPI on pushes to main, never on PRs or manual runs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     timeout-minutes: 120
     environment: test-pypi
     permissions:
