@@ -148,7 +148,10 @@ jobs:
 
     - name: Install system dependencies
       run: |
-        sudo apt-get update
+        # Do not fail the whole job if an unrelated third-party apt repo (e.g.
+        # google-chrome on the GitHub runner) has a transient index mismatch; the
+        # Ubuntu repos that provide xvfb/gmsh update fine.
+        sudo apt-get update || true
         # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
         # discretizer used in example__gmsh_grid
         sudo apt-get install -y xvfb gmsh
