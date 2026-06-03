@@ -20,4 +20,4 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     - name: Detect merge conflicts
-      uses: olivernybroe/action-conflict-finder@v4.0
+      uses: olivernybroe/action-conflict-finder@v4.1
