@@ -74,6 +74,21 @@ std::string get_unique_test_name()
        "ALU_3D_SIMPLEX_NONCONFORMING"},
       {"Dune::ALUGrid<3, 3, (Dune::ALUGridElementType)1, (Dune::ALUGridRefinementType)1, Dune::ALUGridMPIComm>",
        "ALU_3D_CUBE"},
+      // ALUGrid is parametrized on the communicator, which is ALUGridNoComm when building without MPI (as in the
+      // vcpkg/non-docker CI, which configures with CMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE). Provide the same short
+      // names for the NoComm variants so that get_unique_test_name() (and thus the expected-results lookup) matches.
+      {"Dune::ALUGrid<2, 2, (Dune::ALUGridElementType)0, (Dune::ALUGridRefinementType)0, Dune::ALUGridNoComm>",
+       "ALU_2D_SIMPLEX_CONFORMING"},
+      {"Dune::ALUGrid<2, 2, (Dune::ALUGridElementType)0, (Dune::ALUGridRefinementType)1, Dune::ALUGridNoComm>",
+       "ALU_2D_SIMPLEX_NONCONFORMING"},
+      {"Dune::ALUGrid<2, 2, (Dune::ALUGridElementType)1, (Dune::ALUGridRefinementType)1, Dune::ALUGridNoComm>",
+       "ALU_2D_CUBE"},
+      {"Dune::ALUGrid<3, 3, (Dune::ALUGridElementType)0, (Dune::ALUGridRefinementType)0, Dune::ALUGridNoComm>",
+       "ALU_3D_SIMPLEX_CONFORMING"},
+      {"Dune::ALUGrid<3, 3, (Dune::ALUGridElementType)0, (Dune::ALUGridRefinementType)1, Dune::ALUGridNoComm>",
+       "ALU_3D_SIMPLEX_NONCONFORMING"},
+      {"Dune::ALUGrid<3, 3, (Dune::ALUGridElementType)1, (Dune::ALUGridRefinementType)1, Dune::ALUGridNoComm>",
+       "ALU_3D_CUBE"},
       {"Dune::OneDGrid", "ONED_1D"},
       {"Dune::UGGrid<2>", "UG_2D"},
       {"Dune::UGGrid<3>", "UG_3D"},

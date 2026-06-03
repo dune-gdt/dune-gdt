@@ -9,7 +9,6 @@ class binder_link_node(nodes.General, nodes.Element):
 
 
 class TryOnBinder(Directive):
-
     def run(self):
         env = self.state.document.settings.env
         app = env.app
@@ -19,8 +18,9 @@ class TryOnBinder(Directive):
         node = binder_link_node()
         # this is somewhat confusing, but the docs repository's branches are named after the
         # directories which are slugs to avoid slashes and such
-        node[
-            "target"] = f"https://mybinder.org/v2/gh/dune-community/dune-gdt-tutorials-pages/{slug}?filepath={generated_nb}"  # noqa: E501
+        node["target"] = (
+            f"https://mybinder.org/v2/gh/dune-community/dune-gdt-tutorials-pages/{slug}?filepath={generated_nb}"  # noqa: E501
+        )
         node["badge"] = "https://mybinder.org/badge_logo.svg"
         return [node]
 
@@ -29,8 +29,8 @@ def html_visit_binder_link_node(self, node):
     html = f"""
 <div class="admonition">
 <p class="admonition-title">Run this tutorial</p>
-    <a href=\"{node['target']}\">Click here</a> to run this tutorial on mybinder.org: <a href=\"{node['target']}\">
-        <img src=\"{node['badge']}\" alt=\"try on mybinder.org\">
+    <a href=\"{node["target"]}\">Click here</a> to run this tutorial on mybinder.org: <a href=\"{node["target"]}\">
+        <img src=\"{node["badge"]}\" alt=\"try on mybinder.org\">
     </a><br/>
     <emph>Please note that starting the notebook server may take a couple of minutes.</emph>
 </div>

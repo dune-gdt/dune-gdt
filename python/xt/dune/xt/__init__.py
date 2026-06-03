@@ -17,7 +17,7 @@
 # libscotchmetis.
 
 try:
-    import metis
+    import metis  # noqa: F401  (imported for its side effect, see comment above)
 except ImportError:
     pass
 except RuntimeError:  # metis actually fires a RuntimeError if the module is installed but the system package not
@@ -29,10 +29,13 @@ from importlib import import_module
 def guarded_import(globs, base_name, mod_name):
     # see https://stackoverflow.com/questions/43059267/how-to-do-from-module-import-using-importlib
     try:
-        mod = import_module('.{}'.format(mod_name), base_name)
+        mod = import_module(".{}".format(mod_name), base_name)
     except ImportError as e:
         import logging
-        logging.getLogger('dune.xt').fatal(f'cannot load {mod_name} into {base_name}:\n{e}')
+
+        logging.getLogger("dune.xt").fatal(
+            f"cannot load {mod_name} into {base_name}:\n{e}"
+        )
         raise e
     if "__all__" in mod.__dict__:
         names = mod.__dict__["__all__"]
@@ -41,9 +44,11 @@ def guarded_import(globs, base_name, mod_name):
     # check for duplicity
     for nm in names:
         if nm in globs:
-            raise ImportError(f'{base_name}: name \'{nm}\' already exists (when importing from \'{mod_name}\'!)')
+            raise ImportError(
+                f"{base_name}: name '{nm}' already exists (when importing from '{mod_name}'!)"
+            )
     # and import
     globs.update({k: getattr(mod, k) for k in names})
 
 
-from ._version import __version__
+from ._version import __version__ as __version__  # noqa: E402  (must follow the metis import above)

@@ -12,13 +12,6 @@
 
 set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
 
-# enables "IN_LIST operator
-cmake_policy(SET CMP0057 NEW)
-
-# For some reason, the minimum required version is set to 2.8.3 by the find_package(Vc ...) call in
-# DuneCommonMacros.cmake in dune-common. This causes some warnings, so we reset it here.
-cmake_minimum_required(VERSION 3.8)
-
 include(XtCompilerSupport)
 include(XtTooling)
 include(DuneXTHints)
@@ -30,63 +23,39 @@ set(DXT_DONT_LINK_PYTHON_LIB
 # library checks  #########################################################################
 find_package(PkgConfig)
 
-set(DS_REQUIRED_BOOST_LIBS
-    atomic
-    chrono
-    date_time
-    filesystem
-    system
-    thread
-    timer)
-set(_boost_root_hints "$ENV{BOOST_ROOT}" ${root_hints})
+find_package(
+  Boost 1.48.0 REQUIRED
+  COMPONENTS atomic
+             chrono
+             date_time
+             filesystem
+             system
+             thread
+             timer)
+dune_register_package_flags(INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
 
-# check if any hints are provided by user
-if(DEFINED BOOST_ROOT
-   OR DEFINED BOOOST_INCLUDEDIR
-   OR DEFINED BOOST_LIBRARYDIR)
-  find_package(Boost 1.48.0 REQUIRED COMPONENTS ${DS_REQUIRED_BOOST_LIBS})
-else(
-  DEFINED BOOST_ROOT
-  OR DEFINED BOOOST_INCLUDEDIR
-  OR DEFINED BOOST_LIBRARYDIR)
-  # FindBoost can only take a single hint directory from BOOST_ROOT, so we loop over all hints
-  foreach(boost_root_hint ${_boost_root_hints})
-    set(BOOST_ROOT ${boost_root_hint})
-    find_package(Boost 1.48.0 COMPONENTS ${DS_REQUIRED_BOOST_LIBS})
-
-    if(${Boost_FOUND})
-      break()
-    endif()
-  endforeach(boost_root_hint ${_boost_root_hints})
-
-  # check for Boost again with REQUIRED keyword to make boost mandatory
-  find_package(Boost 1.48.0 REQUIRED COMPONENTS ${DS_REQUIRED_BOOST_LIBS})
-endif(
-  DEFINED BOOST_ROOT
-  OR DEFINED BOOOST_INCLUDEDIR
-  OR DEFINED BOOST_LIBRARYDIR)
-
-if(${Boost_INCLUDE_DIRS})
-  dune_register_package_flags(INCLUDE_DIRS ${Boost_INCLUDE_DIRS})
-endif(${Boost_INCLUDE_DIRS})
-
-# if imported targets are available, use them
 if(TARGET Boost::headers)
   dune_register_package_flags(LIBRARIES Boost::headers)
-endif(TARGET Boost::headers)
+endif()
 
-foreach(boost_lib ${DS_REQUIRED_BOOST_LIBS})
-  set(_boost_lib "")
-  string(TOUPPER "${boost_lib}" _boost_lib)
-
+foreach(
+  boost_lib IN
+  ITEMS atomic
+        chrono
+        date_time
+        filesystem
+        system
+        thread
+        timer)
   if(TARGET Boost::${boost_lib})
     dune_register_package_flags(LIBRARIES Boost::${boost_lib})
-  else(TARGET Boost::${boost_lib})
+  else()
+    string(TOUPPER "${boost_lib}" _boost_lib)
     dune_register_package_flags(LIBRARIES ${Boost_${_boost_lib}_LIBRARY})
-  endif(TARGET Boost::${boost_lib})
-endforeach(boost_lib ${DS_REQUIRED_BOOST_LIBS})
+  endif()
+endforeach()
 
-find_package(Eigen3 3.2.0)
+find_package(Eigen3 3.4.0)
 
 if(EIGEN3_FOUND)
   dune_register_package_flags(INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR} COMPILE_DEFINITIONS "ENABLE_EIGEN=1")
@@ -164,10 +133,10 @@ if(NOT DS_HEADERCHECK_DISABLE)
 endif(NOT DS_HEADERCHECK_DISABLE)
 
 set(DXT_TEST_TIMEOUT
-    180
+    1000
     CACHE STRING "per-test timeout in seconds")
 set(DXT_TEST_PROCS
-    1
+    3
     CACHE STRING "run N tests in parallel")
 
 set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
@@ -175,13 +144,22 @@ set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
 include(DunePybindxiUtils)
 
 # TODO there's no real way to require packages present at configure time? - jinja2,pyparsing is needed for test
-# templating
+# templating can't use the run-in-env script here, because it will try to use dune.common which we're trying to install
+# can't use dune-common_WHEELHOUSE here, because it is not set yet can't use a wildcard here, because no shell expansion
+# is done
 dune_execute_process(
   COMMAND
-  ${RUN_IN_ENV_SCRIPT}
-  python3
+  ${CMAKE_BINARY_DIR}/dune-env/bin/python
   -m
   pip
   install
   jinja2
   pyparsing)
+execute_process(
+  COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install
+          ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse/dune_common-2.10.0-py3-none-any.whl
+  COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install
+          ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse/dune_testtools-2.4-py3-none-any.whl
+  OUTPUT_VARIABLE pip_install_log ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+  ERROR_VARIABLE pip_install_log
+  OUTPUT_STRIP_TRAILING_WHITESPACE)

@@ -15,26 +15,34 @@ from dune.xt.codegen import have_eigen
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
 matrix = [
-    'EigenDenseMatrix<double>', 'FieldMatrix<double, 5, 5>', 'CommonDenseMatrix<double>',
-    'XT::Common::BlockedFieldMatrix<double, 1, 5, 5>'
+    "EigenDenseMatrix<double>",
+    "FieldMatrix<double, 5, 5>",
+    "CommonDenseMatrix<double>",
+    "XT::Common::BlockedFieldMatrix<double, 1, 5, 5>",
 ]
-field = ['double', 'double', 'double', 'double']
+field = ["double", "double", "double", "double"]
 complex_matrix = [
-    'EigenDenseMatrix<std::complex<double>>', 'FieldMatrix<std::complex<double>, 5, 5>',
-    'CommonDenseMatrix<std::complex<double>>', 'XT::Common::BlockedFieldMatrix<std::complex<double>, 1, 5, 5>'
+    "EigenDenseMatrix<std::complex<double>>",
+    "FieldMatrix<std::complex<double>, 5, 5>",
+    "CommonDenseMatrix<std::complex<double>>",
+    "XT::Common::BlockedFieldMatrix<std::complex<double>, 1, 5, 5>",
 ]
 real_matrix = [
-    'EigenDenseMatrix<double>', 'FieldMatrix<double, 5, 5>', 'CommonDenseMatrix<double>',
-    'XT::Common::BlockedFieldMatrix<double, 1, 5, 5>'
+    "EigenDenseMatrix<double>",
+    "FieldMatrix<double, 5, 5>",
+    "CommonDenseMatrix<double>",
+    "XT::Common::BlockedFieldMatrix<double, 1, 5, 5>",
 ]
 
 
 def _ok(ft):
-    if 'Eigen' in ft[0]:
+    if "Eigen" in ft[0]:
         return have_eigen(cache)  # noqa: F821
     return True
 
 
-testtypes = [(safe_name('_'.join(ft)), *ft)
-             for ft in zip(matrix, field, complex_matrix, real_matrix, strict=True)
-             if _ok(ft)]
+testtypes = [
+    (safe_name("_".join(ft)), *ft)
+    for ft in zip(matrix, field, complex_matrix, real_matrix, strict=True)
+    if _ok(ft)
+]

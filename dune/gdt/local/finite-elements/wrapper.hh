@@ -183,31 +183,6 @@ class LocalFiniteElementInterpolationWrapper : public LocalFiniteElementInterpol
     using type = FieldVector<R_, r_>;
   };
 
-  // This is what dune-localfunctions expects for interpolation.
-  struct FunctionWrapper
-  {
-    // really?
-    struct Traits
-    {
-      using DomainType = typename BaseType::DomainType;
-      using RangeType = typename RangeTypeSelector<>::type;
-    };
-    // really!
-    using DomainType = typename Traits::DomainType;
-    using RangeType = typename RangeTypeSelector<>::type;
-
-    FunctionWrapper(const std::function<RangeType(DomainType)>& im)
-      : imp(im)
-    {
-    }
-
-    void evaluate(const DomainType& point_in_reference_element, RangeType& ret) const
-    {
-      ret = imp(point_in_reference_element);
-    }
-
-    const std::function<RangeType(DomainType)>& imp;
-  };
 
 public:
   using typename BaseType::DomainType;
@@ -262,7 +237,8 @@ public:
                    const int /*order*/,
                    DynamicVector<R>& dofs) const override final
   {
-    imp_->localInterpolation().interpolate(FunctionWrapper(local_function), dofs_);
+    //! TODO this manually instantied a FunctionWrapper, which is not (no longer?) necessary
+    imp_->localInterpolation().interpolate(local_function, dofs_);
     const size_t sz = this->size();
     if (dofs.size() != sz)
       dofs.resize(sz);

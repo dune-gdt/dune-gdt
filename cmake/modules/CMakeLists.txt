@@ -32,7 +32,6 @@ install(
         Hints.cmake
         XtCompilerSupport.cmake
         XtTooling.cmake
-        versioneer.py
   DESTINATION ${DUNE_INSTALL_MODULEDIR})
 set(_modules DuneGdtMacros.cmake)
 install(FILES "${_modules}" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/cmake/modules)

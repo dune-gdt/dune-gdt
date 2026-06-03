@@ -297,12 +297,13 @@ struct extract_collective_communication : public AlwaysFalse<T>
 template <class T>
 struct extract_collective_communication<T, true, false>
 {
-  using type = typename T::CollectiveCommunication;
+  using type = typename T::Communication;
 };
 
 template <class T>
 struct extract_collective_communication<T, false, true>
 {
+  //! TODO prolly also needs changing
   using type = typename T::CollectiveCommunicationType;
 };
 

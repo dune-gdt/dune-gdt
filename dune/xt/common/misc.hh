@@ -38,6 +38,7 @@
 
 #include <dune/xt/common/disable_warnings.hh>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <dune/xt/common/reenable_warnings.hh>
 
 #include <dune/xt/common/exceptions.hh>

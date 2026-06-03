@@ -20,6 +20,7 @@ def test_tags():
         Pyramid,
         Simplex,
     )
+
     Simplex()
     Cube()
     Pyramid()

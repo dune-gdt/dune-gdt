@@ -49,8 +49,8 @@ if (a.size() != b.size())
     th__msg << m;                                                                                                      \
     std::ostringstream th__out;                                                                                        \
     th__out << th__red << #E << th__clear;                                                                             \
-    if (Dune::MPIHelper::getCollectiveCommunication().size() > 1)                                                      \
-      th__out << " (on rank " << Dune::MPIHelper::getCollectiveCommunication().rank() << ")";                          \
+    if (Dune::MPIHelper::getCommunication().size() > 1)                                                                \
+      th__out << " (on rank " << Dune::MPIHelper::getCommunication().rank() << ")";                                    \
     th__out << "\n";                                                                                                   \
     th__out << th__brown << "[" << th__clear;                                                                          \
     th__out << th__red << __func__ << th__clear;                                                                       \

@@ -1,8 +1,0 @@
-DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ;  pwd -P )"
-. ${DIR}/stinson_common
-
-CXX=${CXX:-icpc}
-CC=${CC:-icc}
-CMAKE_FLAGS="-GNinja -Wno-dev -DCMAKE_BUILD_TYPE=${TYPE} ${CMAKE_EXTRA} -DCMAKE_CXX_COMPILER=${CXX} -DCMAKE_C_COMPILER=${CC}  -DCMAKE_CXX_FLAGS=-fPIC ${CXXFLAGS}"
-
-

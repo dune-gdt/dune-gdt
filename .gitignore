@@ -72,3 +72,7 @@ build-cmake
 .secrets
 wheelhouse
 /tutorials/source/*.vtu
+venvs
+/.vcpkg-root/
+tmp
+/.ci/docker.env

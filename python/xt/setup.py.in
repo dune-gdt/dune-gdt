@@ -57,7 +57,7 @@ scripts = [str(p) for p in Path('./scripts').glob('*.py')]
 scripts.append('./wrapper/dune_xt_execute.py')
 
 setup(name='dune.xt',
-      version='${DUNE_GDT_GIT_VERSION}',
+      version='${PROJECT_VERSION}',
       namespace_packages=['dune'],
       description='Python for Dune-Gdt',
       long_description=open('README.md').read(),

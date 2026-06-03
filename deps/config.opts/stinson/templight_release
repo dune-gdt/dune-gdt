@@ -1,9 +1,0 @@
-DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
-NAME="$(basename ${BASH_SOURCE[0]})"
-
-CXXFLAGS='-DNDEBUG -g3 -ggdb -std=c++11  -O4 -Xtemplight -profiler -Xtemplight -ignore-system'
-CXX=templight++
-CC=clang
-
-source ${DIR}/clang_base
-

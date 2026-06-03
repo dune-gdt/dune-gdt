@@ -118,7 +118,7 @@ struct ElementVisualization
 
     double operator()(const Element& /*ent*/) const
     {
-      return Dune::MPIHelper::getCollectiveCommunication().rank();
+      return Dune::MPIHelper::getCommunication().rank();
     }
   };
 

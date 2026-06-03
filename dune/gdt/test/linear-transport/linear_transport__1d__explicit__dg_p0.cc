@@ -55,7 +55,8 @@ TEST_F(LinearTransport1dExplicitDgP0Test, periodic_boundaries__numerical_engquis
   XT::Test::check_eoc_study_for_success(
       expected_results, actual_results, DXTC_TEST_CONFIG_GET("results.zero_tolerance", 1e-15));
 }
-TEST_F(LinearTransport1dExplicitDgP0Test, periodic_boundaries__numerical_vijayasundaram_flux)
+// Disabled: routes through the Vijayasundaram flux whose apply() is commented out in 230c3f93 (see #106).
+TEST_F(LinearTransport1dExplicitDgP0Test, DISABLED_periodic_boundaries__numerical_vijayasundaram_flux)
 {
   this->visualization_steps_ = DXTC_TEST_CONFIG_GET("setup.visualization_steps", 0);
   this->space_type_ = "dg_p0";

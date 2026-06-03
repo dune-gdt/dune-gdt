@@ -27,7 +27,7 @@ using Simplicial2dGrids = ::testing::Types<
 #endif
     >;
 
-
+#if HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
 template <class G>
 using InterpolationTest = Dune::GDT::Test::DefaultInterpolationOnLeafViewTest<G>;
 TYPED_TEST_SUITE(InterpolationTest, Simplicial2dGrids);
@@ -35,3 +35,4 @@ TYPED_TEST(InterpolationTest, interpolates_correctly)
 {
   this->interpolates_correctly();
 }
+#endif // HAVE_DUNE_UGGRID  || HAVE_DUNE_ALUGRID

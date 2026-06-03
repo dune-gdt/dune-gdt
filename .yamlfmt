@@ -1,0 +1,7 @@
+line_ending: lf
+formatter:
+  type: basic
+  include_document_start: true
+  indent: 2
+  indentless_arrays: true
+  retain_line_breaks: true

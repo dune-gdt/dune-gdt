@@ -268,7 +268,9 @@ qt_documentation = "PySide2"
 
 # this must match GDT_TUTORIALS_ROOT/.ci/gitlab/deploy_docs
 try_on_binder_branch = branch.replace("github/PUSH_", "from_fork__")
-try_on_binder_slug = os.environ.get("CI_COMMIT_REF_SLUG", slugify.slugify(try_on_binder_branch))
+try_on_binder_slug = os.environ.get(
+    "CI_COMMIT_REF_SLUG", slugify.slugify(try_on_binder_branch)
+)
 
 
 def linkcode_resolve(domain, info):

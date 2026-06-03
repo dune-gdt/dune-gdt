@@ -1,3 +1,0 @@
-# Use this by setting LSAN_OPTIONS=suppressions=/path/to/this/file upon execution
-leak:__interceptor_strdup
-leak:__interceptor_malloc

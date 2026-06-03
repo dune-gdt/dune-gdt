@@ -115,14 +115,14 @@ public:
     result *= 0;
     // loop over all quadrature points
     const auto integrand_order = integrand_->order(test_basis, ansatz_basis) + over_integrate_;
-    for (const auto& quadrature_point : QuadratureRules<D, d>::rule(element.type(), integrand_order)) {
-      const auto& point_in_reference_element = quadrature_point.position();
+    for (auto [point_in_reference_element, quadrature_weight] :
+         QuadratureRules<D, d>::rule(element.type(), integrand_order)) {
       // integration factors
-      const auto factor = element.geometry().integrationElement(point_in_reference_element) * quadrature_point.weight();
+      const auto factor = element.geometry().integrationElement(point_in_reference_element) * quadrature_weight;
       // evaluate the integrand
       LOG_(debug) << "   point_in_{reference_element|physical_space} = {" << print(point_in_reference_element) << "|"
                   << print(element.geometry().global(point_in_reference_element))
-                  << "},\n   integration_factor = " << factor << ", quadrature_weight = " << quadrature_point.weight()
+                  << "},\n   integration_factor = " << factor << ", quadrature_weight = " << quadrature_weight
                   << std::endl;
       integrand_->evaluate(test_basis, ansatz_basis, point_in_reference_element, integrand_values_, param);
       assert(integrand_values_.rows() >= rows && "This must not happen!");

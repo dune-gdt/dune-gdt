@@ -1,9 +1,0 @@
-DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
-NAME="$(basename ${BASH_SOURCE[0]})"
-
-CXXFLAGS="'-g3 -ggdb -std=c++17 -O3 -mllvm -polly '"
-#F77=/bin/false
-#CMAKE_EXTRA="-DCMAKE_Fortran_COMPILER=/bin/false"
-
-source ${DIR}/clang_base
-

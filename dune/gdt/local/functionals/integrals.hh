@@ -86,11 +86,10 @@ public:
     result *= 0;
     // loop over all quadrature points
     const auto integrand_order = integrand_->order(basis, param) + over_integrate_;
-    for (auto&& quadrature_point : QuadratureRules<D, d>::rule(element.type(), integrand_order)) {
-      const auto point_in_reference_element = quadrature_point.position();
+    for (auto [point_in_reference_element, quadrature_weight] :
+         QuadratureRules<D, d>::rule(element.type(), integrand_order)) {
       // integration factors
       const auto integration_factor = element.geometry().integrationElement(point_in_reference_element);
-      const auto quadrature_weight = quadrature_point.weight();
       // evaluate the integrand
       integrand_->evaluate(basis, point_in_reference_element, integrand_values_, param);
       assert(integrand_values_.size() >= size && "This must not happen!");

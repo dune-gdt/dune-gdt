@@ -13,8 +13,8 @@ DEPENDENCIES=@REQUIRES@
 
 Name: @PACKAGE_NAME@
 Version: @VERSION@
-Description: dune-gdt module
-URL: https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt
-Requires: dune-common dune-xt
+Description: dune-gdt
+URL: https://github.com/dune-gdt/dune-gdt
+Requires: dune-common
 Libs: -L
 Cflags: -I

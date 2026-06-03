@@ -67,14 +67,14 @@ macro(_process_sources test_sources subdir)
           ADDED_TESTS
           testlist_${testbase}
           SCRIPT
-          dune_xt_execute.py
+          ${CMAKE_BINARY_DIR}/python/xt/wrapper/dune_xt_execute.py
           ${DEBUG_MACRO_TESTS})
         foreach(target ${targetlist_${testbase}})
           target_link_libraries(${target} PRIVATE ${link_xt_libs} ${COMMON_LIBS} ${GRID_LIBS} gtest_dune_xt)
           list(APPEND ${subdir}_dxt_test_binaries ${target})
           set(dxt_test_names_${target} ${testlist_${testbase}_${target}})
           foreach(test_name ${dxt_test_names_${target}})
-            set_tests_properties(${test_name} PROPERTIES LABELS subdir_${subdir})
+            set_tests_properties(${test_name} PROPERTIES LABELS "subdir_${subdir} dune-gdt-test")
           endforeach()
         endforeach(target)
       else(dune-testtools_FOUND)
@@ -93,18 +93,17 @@ macro(_process_sources test_sources subdir)
         ${COMMON_LIBS}
         ${GRID_LIBS}
         gtest_dune_xt
-        COMMAND
-        ${RUN_IN_ENV_SCRIPT}
         CMD_ARGS
-        ${CMAKE_CURRENT_BINARY_DIR}/${target}
         --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${target}.xml
         TIMEOUT
         ${DXT_TEST_TIMEOUT}
         MPI_RANKS
-        ${ranks})
+        ${ranks}
+        LABELS
+        dune-gdt-test
+        subdir_${subdir})
       list(APPEND ${subdir}_dxt_test_binaries ${target})
       set(dxt_test_names_${target} ${target})
-      set_tests_properties(${target} PROPERTIES LABELS subdir_${subdir})
     endif(EXISTS ${minifile})
   endforeach(source)
 endmacro()
@@ -243,10 +242,10 @@ macro(FINALIZE_TEST_SETUP)
       add_dependencies(${target} ${subdir}_${target})
     endforeach()
 
-    set(dxt_test_binaries "${dxt_test_binaries} ${${subdir}_dxt_test_binaries}")
+    list(APPEND dxt_test_binaries "${${subdir}_dxt_test_binaries}")
   endforeach()
 
-  if(ALBERTA_FOUND)
+  if(Alberta_FOUND)
     foreach(test ${dxt_test_binaries})
       if(${test} MATCHES alberta_1d)
         add_dune_alberta_flags(GRIDDIM 1 ${test})
@@ -265,6 +264,14 @@ macro(FINALIZE_TEST_SETUP)
       endif()
     endforeach()
   endif()
+
+  if(Alberta_FOUND)
+    foreach(test ${dxt_test_binaries})
+      # this makes sure `libtirpc` is linked LAST
+      set_target_properties(${test} PROPERTIES LINK_FLAGS "-Wl,--whole-archive ${TIRPC_LIB} -Wl,--no-whole-archive")
+    endforeach()
+  endif()
+
 endmacro(FINALIZE_TEST_SETUP)
 
 macro(DXT_EXCLUDE_FROM_HEADERCHECK)

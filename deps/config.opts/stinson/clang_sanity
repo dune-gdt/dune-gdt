@@ -1,8 +1,0 @@
-DIR="$(cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
-NAME="$(basename ${BASH_SOURCE[0]})"
-
-CXXFLAGS="'-DDXT_DISABLE_LARGE_TESTS=1 -g3 -ggdb -O2 -fsanitize=undefined'"
-F77=/bin/false
-CMAKE_EXTRA="-DCMAKE_Fortran_COMPILER=/bin/false"
-
-source ${DIR}/clang_base

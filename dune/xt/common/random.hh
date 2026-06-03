@@ -104,7 +104,7 @@ public:
   inline std::string operator()()
   {
     std::string ret(length, '\0');
-    std::generate(std::begin(ret), std::end(ret), [=]() { return alphanums[distribution(generator)]; });
+    std::generate(std::begin(ret), std::end(ret), [this]() { return alphanums[distribution(generator)]; });
     return ret;
   }
 };

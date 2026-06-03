@@ -19,16 +19,16 @@ from setuptools import setup, find_packages
 from setuptools.dist import Distribution
 from setuptools.command.install import install
 
-requires = ["dune.xt==${DUNE_GDT_GIT_VERSION}"]
+requires = ["dune.xt==${PROJECT_VERSION}"]
 
 extras_require = {
     "visualisation": [
-        "dune-xt[visualisation]==${DUNE_GDT_GIT_VERSION}",
+        "dune-xt[visualisation]==${PROJECT_VERSION}",
     ],
     "infrastructure": [
-        "dune-xt[infrastructure]==${DUNE_GDT_GIT_VERSION}",
+        "dune-xt[infrastructure]==${PROJECT_VERSION}",
     ],
-    "parallel": ["dune-xt[parallel]==${DUNE_GDT_GIT_VERSION}"],
+    "parallel": ["dune-xt[parallel]==${PROJECT_VERSION}"],
 }
 
 extras_require["all"] = [p for plist in extras_require.values() for p in plist]
@@ -52,14 +52,14 @@ class InstallPlatlib(install):
 
 setup(
     name="dune.gdt",
-    version="${DUNE_GDT_GIT_VERSION}",
+    version="${PROJECT_VERSION}",
     namespace_packages=["dune"],
-    description="Python for Dune-Gdt",
+    description="Python bindings for dune-gdt",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     author="The dune-gdt devs",
-    author_email="felix.schindler@wwu.de",
-    url="https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt",
+    author_email="felix.schindler@uni-muenster.de",
+    url="https://github.com/dune-gdt/dune-gdt",
     packages=find_packages(),
     package_data={"": ["*.so"]},
     include_package_data=True,

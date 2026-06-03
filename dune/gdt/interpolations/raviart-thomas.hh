@@ -187,12 +187,10 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
       XT::LA::CommonDenseMatrix<R> lhs(local_keys_assosiated_with_element.size(), element_Pkminus1_basis.size(), 0);
       XT::LA::CommonDenseVector<R> rhs(element_Pkminus1_basis.size(), 0);
       // do a volume quadrature
-      for (auto&& quadrature_point :
+      for (auto [point_in_reference_element, quadrature_weight] :
            QuadratureRules<D, d>::rule(element.type(),
                                        std::max(rt_basis->order() + element_Pkminus1_basis.order(),
                                                 local_source_element->order(param) + element_Pkminus1_basis.order()))) {
-        const auto point_in_reference_element = quadrature_point.position();
-        const auto quadrature_weight = quadrature_point.weight();
         const auto integration_factor = element.geometry().integrationElement(point_in_reference_element);
         const auto rt_basis_values = rt_basis->evaluate_set(point_in_reference_element);
         const auto element_Pkminus1_basis_values = element_Pkminus1_basis.evaluate(point_in_reference_element);
