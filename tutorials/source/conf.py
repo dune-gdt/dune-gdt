@@ -56,10 +56,12 @@ myst_heading_anchors = 2
 import substitutions  # noqa
 
 myst_substitutions = substitutions.myst_substitutions
-nb_execute_notebooks = "cache"
+nb_execution_mode = "cache"
 nb_execution_timeout = 240  # there is an interpolation test
 # print tracebacks to stdout
 nb_execution_show_tb = True
+# fail the (sphinx -W) build if any notebook cell raises during execution
+nb_execution_raise_on_error = True
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.

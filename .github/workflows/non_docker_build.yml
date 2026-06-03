@@ -120,6 +120,67 @@ jobs:
         path: build/wheelhouse/final/
         if-no-files-found: error
 
+  build_tutorials:
+    name: Build tutorials docs (executes notebooks via myst-nb)
+    runs-on: ubuntu-24.04
+    needs: build_wheels
+    timeout-minutes: 60
+    env:
+      # the tutorials are executed against the freshly built wheels (current,
+      # git-derived version), not the stale dune-gdt release on PyPI
+      PYTHON_VERSION: "3.13"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-tags: true
+        fetch-depth: 0
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Download freshly built wheels
+      uses: actions/download-artifact@v4
+      with:
+        name: wheels_${{ env.PYTHON_VERSION }}
+        path: wheelhouse/
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
+        # discretizer used in example__gmsh_grid
+        sudo apt-get install -y xvfb gmsh
+
+    - name: Install bindings and docs/visualisation dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # install the built dune-xt/dune-gdt wheels (xt is an exact-version dep of gdt)
+        python -m pip install --find-links wheelhouse/ wheelhouse/*.whl
+        # docs + visualisation extras (myst-nb executes the notebook cells; k3d
+        # provides visualize_function rendering when the wheels were built with K3D)
+        python -m pip install \
+          "myst-nb>=0.16" furo sphinxcontrib-bibtex python-slugify pymor \
+          "k3d>=2.15.2" vtk ipywidgets lxml xmljson matplotlib wurlitzer
+
+    - name: Build tutorials (sphinx + myst-nb notebook execution)
+      # run from a neutral directory so the repo-root `dune/` source tree does not
+      # shadow the installed bindings; mirror SPHINXOPTS from tutorials/CMakeLists.txt
+      run: |
+        cd "${RUNNER_TEMP}"
+        xvfb-run -a python -m sphinx -W --keep-going -j auto -b html \
+          "${GITHUB_WORKSPACE}/tutorials/source" \
+          "${GITHUB_WORKSPACE}/build/tutorials_html"
+
+    - name: Upload built tutorials HTML
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: tutorials_html
+        path: build/tutorials_html
+        if-no-files-found: warn
+
   test_publish:
     name: Publish to Test PyPI
     runs-on: ubuntu-24.04
