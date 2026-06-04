@@ -135,7 +135,8 @@
         "outputJUnitFile": "junit-${presetName}.xml"
       },
       "execution": {
-        "noTestsAction": "error"
+        "noTestsAction": "error",
+        "timeout": 1000
       }
     },
     {

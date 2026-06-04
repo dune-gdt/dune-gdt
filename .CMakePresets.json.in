@@ -346,7 +346,7 @@ def _test_presets(build_presets: list[dict[str, object]]) -> list[dict[str, obje
             "displayName": "Test Base",
             "hidden": True,
             "output": {"outputOnFailure": True, "outputJUnitFile": "junit-${presetName}.xml"},
-            "execution": {"noTestsAction": "error"},
+            "execution": {"noTestsAction": "error", "timeout": 1000},
         }
     )
     # only create test presets for unspecific build presets
