@@ -28,8 +28,23 @@ jobs:
     - name: Restore build cache
       uses: actions/cache/restore@v3
       with:
-        path: build
-        key: ${{ runner.os }}-build
+        # The configured build/ tree embeds absolute paths into the vcpkg
+        # toolchain that lives in .vcpkg-root (set up by cmake/VcpkgBootStrap.cmake
+        # at configure time). Both must be cached together, otherwise a restored
+        # build/ references a .vcpkg-root that does not exist on a fresh runner and
+        # the configure step fails (missing vcpkg.cmake -> LAPACKE/BLAS not found).
+        # The transient vcpkg dirs (buildtrees/downloads/packages) are excluded to
+        # keep the cache lean; the installed deps live under build/*/vcpkg_installed.
+        path: |
+          build
+          .vcpkg-root
+          !.vcpkg-root/buildtrees
+          !.vcpkg-root/downloads
+          !.vcpkg-root/packages
+        # Content-addressed key: invalidates when the vcpkg/toolchain inputs change
+        # and (by dropping the old static "Linux-build" key) abandons any stale,
+        # poisoned cache from before this fix.
+        key: ${{ runner.os }}-build-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake', '.vcpkg-overlays/ports/**') }}
 
     - name: Install dependencies
       run: |
@@ -55,8 +70,13 @@ jobs:
       if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
       uses: actions/cache/save@v3
       with:
-        path: build
-        key: ${{ runner.os }}-build
+        path: |
+          build
+          .vcpkg-root
+          !.vcpkg-root/buildtrees
+          !.vcpkg-root/downloads
+          !.vcpkg-root/packages
+        key: ${{ runner.os }}-build-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake', '.vcpkg-overlays/ports/**') }}
 
     - name: Upload error logs (in case of failure)
       if: always() && (steps.configure_cmake.conclusion == 'failure')
