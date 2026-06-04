@@ -14,6 +14,8 @@ COMMON_PYTEST_OPTS="--junitxml=${BINARY_DIR}/dune/pytest_results_tutorials.xml \
 export COVERAGE_FILE=${BINARY_DIR}/coverage-tutorials
 # manually add plugins to load that are excluded for other runs
 cd "${THIS_DIR}"/../.. || exit
-xvfb-run -a pytest "${COMMON_PYTEST_OPTS}" --nb-coverage -s -p no:pycharm -v -s\
+# COMMON_PYTEST_OPTS intentionally holds multiple options that must be word-split
+# shellcheck disable=SC2086
+xvfb-run -a pytest ${COMMON_PYTEST_OPTS} --nb-coverage -s -p no:pycharm -v -s\
   -p nb_regression -p notebook tutorials/test_tutorials.py
 
