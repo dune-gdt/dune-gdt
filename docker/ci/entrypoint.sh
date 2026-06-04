@@ -13,7 +13,9 @@ export VENV_TARGET_DIR="/build/${OPTS}/venv"
 
 if [[ -e "${VENV_TARGET_DIR}" ]] ; then
     echo "[entrypoint] using existing venv in ${VENV_TARGET_DIR}"
-    export VENV_SITE_PKG_PATH=$(. /venvs/${OPTS}.sh && python -c "import site; print(site.getsitepackages()[0])")
+    # shellcheck disable=SC1090
+    VENV_SITE_PKG_PATH=$(. "/venvs/${OPTS}.sh" && python -c "import site; print(site.getsitepackages()[0])")
+    export VENV_SITE_PKG_PATH
     for FILE in "${VENV_SITE_PKG_PATH}/dune.xt-nspkg.pth" "${VENV_SITE_PKG_PATH}/dune.gdt-nspkg.pth" ; do
         if [[ -e "${FILE}" ]] ; then
             echo "[entrypoint] ensuring short lines in ${FILE}"
@@ -25,13 +27,15 @@ else
     cp -ar "${VENV_PREP_DIR}" "${VENV_TARGET_DIR}"
 fi
 
+# intentionally not expanded: ${DUNECONTROL} is meant to appear literally
+# shellcheck disable=SC2016
 echo '[entrypoint] use ${DUNECONTROL} to configure and build dune-gdt'
 echo
 
 git config --global --add safe.directory /source
 
-if [ "X$@" == "X" ]; then
-    exec /bin/bash --rcfile <(cat /root/.bashrc; cat /venvs/${OPTS}.sh)
+if [ "$#" -eq 0 ]; then
+    exec /bin/bash --rcfile <(cat /root/.bashrc; cat "/venvs/${OPTS}.sh")
 else
-    exec /bin/bash -c ". /venvs/${OPTS}.sh && $@"
+    exec /bin/bash -c ". /venvs/${OPTS}.sh && $*"
 fi

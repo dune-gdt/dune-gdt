@@ -16,9 +16,9 @@ git config user.name "DUNE Community Bot"
 git config user.email "dune-community.bot@wwu.de"
 
 TARGET=docs/${MODULE}/${ID}/
-mkdir -p ${TARGET}
-rsync -a --delete  ${BUILDDIR}/${MODULE}/doc/doxygen/html/ ${TARGET}/
-git add ${TARGET}
+mkdir -p "${TARGET}"
+rsync -a --delete  "${BUILDDIR}"/"${MODULE}"/doc/doxygen/html/ "${TARGET}"/
+git add "${TARGET}"
 
 git commit -m "Updated documentation for ${MODULE} ${ID}"
 git push
