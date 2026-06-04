@@ -27,7 +27,7 @@ jobs:
         fetch-depth: 0
 
     - name: Restore build cache
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v5
       with:
         # .vcpkg-root holds the vcpkg toolchain that VcpkgBootStrap.cmake bakes
         # into build/.../CMakeSystem.cmake. It must be cached together with build/,
@@ -73,7 +73,7 @@ jobs:
 
     - name: Save build cache
       if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
-      uses: actions/cache/save@v3
+      uses: actions/cache/save@v5
       with:
         path: |
           build
