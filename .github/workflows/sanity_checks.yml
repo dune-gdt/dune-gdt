@@ -1,5 +1,5 @@
 ---
-on: pull_request
+on: [pull_request, merge_group]
 
 name: Sanity checks
 
@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Block Autosquash Commits
+      # Only meaningful on a PR; in the merge queue this step is skipped so the
+      # required "Block Autosquash Commits" check still resolves successfully.
+      if: github.event_name == 'pull_request'
       uses: xt0rted/block-autosquash-commits-action@v2
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -16,6 +19,9 @@ jobs:
   merge_conflict_job:
     runs-on: ubuntu-22.04
     name: Find merge conflicts
+    # Conflict detection is a PR-only concern; the merge queue already operates
+    # on the merged result.
+    if: github.event_name == 'pull_request'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4

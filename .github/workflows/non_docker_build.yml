@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
   workflow_dispatch:
 
 # Add concurrency to cancel in-progress jobs
@@ -28,8 +29,27 @@ jobs:
     - name: Restore build cache
       uses: actions/cache/restore@v3
       with:
-        path: build
-        key: ${{ runner.os }}-build
+        # .vcpkg-root holds the vcpkg toolchain that VcpkgBootStrap.cmake bakes
+        # into build/.../CMakeSystem.cmake. It must be cached together with build/,
+        # otherwise the restored CMake config points at a toolchain that does not
+        # exist on a fresh checkout and configure fails immediately.
+        path: |
+          build
+          .vcpkg-root
+        # Key on the inputs that determine the toolchain/manifest so the cache is
+        # rebuilt when they change. The trailing-dash restore-key only matches
+        # caches written by this (consistent) scheme, never the legacy build-only one.
+        key: ${{ runner.os }}-build-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+        restore-keys: |
+          ${{ runner.os }}-build-
+
+    - name: Drop stale build cache if vcpkg toolchain is missing
+      run: |
+        if [ -d build ] && [ ! -f .vcpkg-root/scripts/buildsystems/vcpkg.cmake ]; then
+          echo "Restored build/ but .vcpkg-root toolchain is missing; clearing stale" \
+               "build/ so CMake re-bootstraps vcpkg from scratch."
+          rm -rf build
+        fi
 
     - name: Install dependencies
       run: |
@@ -55,8 +75,10 @@ jobs:
       if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
       uses: actions/cache/save@v3
       with:
-        path: build
-        key: ${{ runner.os }}-build
+        path: |
+          build
+          .vcpkg-root
+        key: ${{ runner.os }}-build-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
 
     - name: Upload error logs (in case of failure)
       if: always() && (steps.configure_cmake.conclusion == 'failure')
@@ -86,6 +108,10 @@ jobs:
         ./.ci/make_docker_wheels.bash
       env:
         GDT_PYTHON_VERSION: ${{ matrix.python-version }}
+        # mark this as a CI build (selects versioneer's pep440-pre style) and
+        # provide a unique build number so every upload gets a distinct version
+        CI: "true"
+        GITHUB_RUN_NUMBER: ${{ github.run_number }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -98,6 +124,9 @@ jobs:
     name: Publish to Test PyPI
     runs-on: ubuntu-24.04
     needs: build_wheels
+    # only publish to Test PyPI on pushes to main, never on PRs, the merge
+    # queue, or manual runs
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     timeout-minutes: 120
     environment: test-pypi
     permissions:
