@@ -9,28 +9,43 @@ updates:
   directory: /
   schedule:
     interval: weekly
+  cooldown-days: 7
   allow:
   - dependency-type: all
   commit-message:
     prefix: ':arrow_up:'
   open-pull-requests-limit: 50
+  groups:
+    pip-dependencies:
+      patterns:
+      - "*"
 
 - package-ecosystem: github-actions
   directory: /
   schedule:
     interval: weekly
+  cooldown-days: 7
   allow:
   - dependency-type: all
   commit-message:
     prefix: ':arrow_up:'
   open-pull-requests-limit: 50
+  groups:
+    github-actions-dependencies:
+      patterns:
+      - "*"
 
 - package-ecosystem: docker
   directory: ./
   schedule:
     interval: weekly
+  cooldown-days: 7
   allow:
   - dependency-type: all
   commit-message:
     prefix: ':arrow_up:'
   open-pull-requests-limit: 50
+  groups:
+    docker-dependencies:
+      patterns:
+      - "*"
