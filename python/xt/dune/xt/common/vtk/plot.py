@@ -89,8 +89,13 @@ if config.HAVE_K3D:
                     "supplying transforms is currently not supported for time series VTK Data"
                 )
 
-            self.vtk_data = np.stack(
-                [_transform_to_k3d(v[0], v[1], color_attribute_name) for v in vtk_data]
+            # NumPy >= 2 refuses to build an array from a ragged sequence (the
+            # per-timestep tuples mix scalars and arrays of differing shapes) and
+            # raises "inhomogeneous shape", whereas np.stack used to yield an
+            # object array. Build the object array explicitly to stay compatible.
+            self.vtk_data = np.array(
+                [_transform_to_k3d(v[0], v[1], color_attribute_name) for v in vtk_data],
+                dtype=object,
             )
             self.value_minmax = (
                 np.nanmin(self.vtk_data[:, 2]),

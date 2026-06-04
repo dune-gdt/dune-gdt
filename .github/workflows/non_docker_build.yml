@@ -120,6 +120,91 @@ jobs:
         path: build/wheelhouse/final/
         if-no-files-found: error
 
+  build_tutorials:
+    name: Build tutorials docs (executes notebooks via myst-nb)
+    runs-on: ubuntu-24.04
+    needs: build_wheels
+    timeout-minutes: 60
+    env:
+      # the tutorials are executed against the freshly built wheels (current,
+      # git-derived version), not the stale dune-gdt release on PyPI
+      PYTHON_VERSION: "3.13"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-tags: true
+        fetch-depth: 0
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Download freshly built wheels
+      uses: actions/download-artifact@v4
+      with:
+        name: wheels_${{ env.PYTHON_VERSION }}
+        path: wheelhouse/
+
+    - name: Install system dependencies
+      run: |
+        # Do not fail the whole job if an unrelated third-party apt repo (e.g.
+        # google-chrome on the GitHub runner) has a transient index mismatch; the
+        # Ubuntu repos that provide xvfb/gmsh update fine.
+        sudo apt-get update || true
+        # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
+        # discretizer used in example__gmsh_grid
+        sudo apt-get install -y xvfb gmsh
+
+    - name: Install bindings and docs/visualisation dependencies
+      run: |
+        python -m pip install --upgrade pip
+        # install the built dune-xt/dune-gdt wheels (xt is an exact-version dep of gdt)
+        python -m pip install --find-links wheelhouse/ wheelhouse/*.whl
+        # docs + visualisation extras (myst-nb executes the notebook cells; k3d
+        # provides visualize_function rendering when the wheels were built with K3D)
+        python -m pip install \
+          "myst-nb>=0.16" furo sphinxcontrib-bibtex python-slugify pymor \
+          "k3d>=2.15.2" vtk ipywidgets lxml xmljson matplotlib wurlitzer
+
+    - name: Build tutorials (sphinx + myst-nb notebook execution)
+      # Run from a neutral directory so the repo-root `dune/` source tree does not
+      # shadow the installed bindings. Notebook execution is the actual test: myst-nb
+      # is configured with nb_execution_raise_on_error=False, so a failing notebook
+      # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
+      # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
+      # inventory fetches emit network-dependent warnings unrelated to the tutorials.
+      run: |
+        cd "${RUNNER_TEMP}"
+        OUT="${GITHUB_WORKSPACE}/build/tutorials_html"
+        xvfb-run -a python -m sphinx --keep-going -j 1 -b html \
+          "${GITHUB_WORKSPACE}/tutorials/source" "${OUT}"
+        if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
+          echo "::error::one or more executed tutorial notebooks failed (see dumped reports below)"
+          exit 1
+        fi
+
+    - name: Dump notebook execution error reports
+      # myst-nb writes a per-notebook traceback here for every cell that failed;
+      # surface them directly in the job log so failures are diagnosable without
+      # downloading the artifact
+      if: failure()
+      run: |
+        shopt -s nullglob
+        for f in "${GITHUB_WORKSPACE}"/build/tutorials_html/reports/*.err.log; do
+          echo "::group::$(basename "${f}")"
+          cat "${f}"
+          echo "::endgroup::"
+        done
+
+    - name: Upload built tutorials HTML
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: tutorials_html
+        path: build/tutorials_html
+        if-no-files-found: warn
+
   test_publish:
     name: Publish to Test PyPI
     runs-on: ubuntu-24.04
