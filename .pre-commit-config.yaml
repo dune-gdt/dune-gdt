@@ -3,7 +3,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
   - id: trailing-whitespace
   - id: check-yaml
@@ -11,21 +11,21 @@ repos:
   - id: check-added-large-files
   - id: debug-statements
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 'v15.0.7'
+  rev: 'v22.1.5'
   hooks:
   - id: clang-format
     exclude: "^(dune/xt/test/gtest/|pybind11)"
 - repo: https://github.com/google/yamlfmt
-  rev: v0.16.0
+  rev: v0.21.0
   hooks:
   - id: yamlfmt
     exclude: ".clang-format|.clang-tidy"
 - repo: https://github.com/rhysd/actionlint
-  rev: v1.7.7
+  rev: v1.7.12
   hooks:
   - id: actionlint
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.11.5
+  rev: v0.15.16
   hooks:
   - id: ruff
   - id: ruff-format
@@ -41,7 +41,7 @@ repos:
     exclude: "config.h.cmake|pybind11"
     args: ["--config-files=.cmake_format.py"]
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 0.33.0
+  rev: 0.37.2
   hooks:
   - id: check-github-actions
     additional_dependencies:
@@ -50,7 +50,7 @@ repos:
     additional_dependencies:
     - pip_system_certs==4.0
 - repo: https://github.com/Mateusz-Grzelinski/actionlint-py
-  rev: v1.7.7.23
+  rev: v1.7.12.24
   hooks:
   - id: actionlint
     additional_dependencies: [pyflakes>=3.0.1, shellcheck-py>=0.9.0.5]

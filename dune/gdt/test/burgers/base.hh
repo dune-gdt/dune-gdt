@@ -38,11 +38,11 @@ struct BurgersProblem
 
   BurgersProblem()
     : flux(
-        2,
-        [&](const auto& u, const auto& /*param*/) { return 0.5 * u * u; },
-        "burgers",
-        {},
-        [&](const auto& u, const auto& /*param*/) { return u; })
+          2,
+          [&](const auto& u, const auto& /*param*/) { return 0.5 * u * u; },
+          "burgers",
+          {},
+          [&](const auto& u, const auto& /*param*/) { return u; })
     , T_end(1.)
   {
   }
