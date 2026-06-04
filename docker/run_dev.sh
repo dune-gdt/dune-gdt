@@ -48,10 +48,7 @@ echo "      -> ${TARGET}  (all commands are executed within this directory)"
 echo "  so that all changes within these folders are persistent (generally applies to most"
 echo "  config files written to dotfiles)!"
 echo "  To connect to this container, execute"
-echo -n "      ${DOCKER_BIN} exec -it "
-echo -n                               '$(cat '
-echo -n                                      "${CID_FILE}"
-echo                                                     ') /bin/bash'
+echo "      ${DOCKER_BIN} exec -it \$(cat ${CID_FILE}) /bin/bash"
 echo "======================================================================================"
 echo
 

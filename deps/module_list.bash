@@ -1,3 +1,5 @@
+# This file is meant to be sourced; the arrays below are consumed by the sourcing scripts.
+# shellcheck disable=SC2034
 declare -A SUBMODULE_INFO_HASH
 declare -A SUBMODULE_INFO_URL
 SUBMODULE_INFO_HASH['dune-common']='145a243305ca3ee096600feb9e06405729830553'

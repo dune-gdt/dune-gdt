@@ -12,9 +12,9 @@ if [[ $? != 0 ]] ; then
 fi
 
 echo -n "computing hashes of current state ... "
-export HASH=$(./compute_dev_hash.sh)
-export DATE=$(date -u -Iseconds)
-export VCS_REF=$(git log -1 --pretty=format:"%H")
+HASH=$(./compute_dev_hash.sh); export HASH
+DATE=$(date -u -Iseconds); export DATE
+VCS_REF=$(git log -1 --pretty=format:"%H"); export VCS_REF
 echo "done"
 
 echo -n "patching docker/ci/Dockerfile ... "
@@ -35,7 +35,7 @@ echo "done"
 echo "building ghcr.io/dune-gdt/dune-gdt/dev:${HASH}"
 echo "======================================================================================================="
 
-docker build -t ghcr.io/dune-gdt/dune-gdt/dev:${HASH} -f dev/Dockerfile dev/
+docker build -t "ghcr.io/dune-gdt/dune-gdt/dev:${HASH}" -f dev/Dockerfile dev/
 
 # shellcheck disable=SC2181
 if [[ $? != 0 ]] ; then

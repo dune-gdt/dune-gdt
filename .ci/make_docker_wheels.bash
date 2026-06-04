@@ -41,7 +41,8 @@ docker pull -q "${TEST_IMAGE}" &
 
 # make sure we only have one whl per module _after_ the build
 for md in xt gdt; do
-  if [ $(ls -1q "${WHEEL_DIR_ABSOLUTE}"/final/dune_"${md}"*.whl 2>/dev/null | wc -l) -gt 1 ]; then
+  # shellcheck disable=SC2012
+  if [ "$(ls -1q "${WHEEL_DIR_ABSOLUTE}"/final/dune_"${md}"*.whl 2>/dev/null | wc -l)" -gt 1 ]; then
     echo "Error: More than one dune_${md} wheel file found in the final wheelhouse directory." >&2
     exit 1
   fi

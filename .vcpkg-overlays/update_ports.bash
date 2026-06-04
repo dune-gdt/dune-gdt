@@ -12,6 +12,7 @@ cd "$REPO_ROOT"
 mkdir -p tmp
 
 # Source the submodule info from module_list.bash
+# shellcheck disable=SC1091
 source "$REPO_ROOT/deps/module_list.bash"
 
 # Pre-defined map of additional dependencies for specific ports
@@ -42,9 +43,8 @@ FEATURE_DEPENDENCIES[dune-grid,uggrid]="dune-uggrid"
 # Define the submodule information
 # Iterate over all submodules from the associative array
 for submodule_name in "${!SUBMODULE_INFO_HASH[@]}"; do
-    submodule_dir="deps/$submodule_name"
     # Create the overlay port directory
-    mkdir -p .vcpkg-overlays/ports/$submodule_name
+    mkdir -p .vcpkg-overlays/ports/"$submodule_name"
 
     # Only use information from module_list.bash
     git_hash="${SUBMODULE_INFO_HASH[$submodule_name]}"
@@ -165,7 +165,7 @@ else()
     file(WRITE "\${CURRENT_PACKAGES_DIR}/share/\${PORT}/copyright" "No license file found in the source repository. Please check the source code for license information.")
 endif()
 EOF
-    pre-commit run cmake-format --files .vcpkg-overlays/ports/$submodule_name/* &> /dev/null || \
-        pre-commit run clang-format --files .vcpkg-overlays/ports/$submodule_name/* &> /dev/null || true
+    pre-commit run cmake-format --files .vcpkg-overlays/ports/"$submodule_name"/* &> /dev/null || \
+        pre-commit run clang-format --files .vcpkg-overlays/ports/"$submodule_name"/* &> /dev/null || true
     echo "Created overlay port for $submodule_name"
 done
