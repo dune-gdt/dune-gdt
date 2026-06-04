@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  merge_group:
   workflow_dispatch:
 
 # Add concurrency to cancel in-progress jobs
@@ -98,6 +99,8 @@ jobs:
     name: Publish to Test PyPI
     runs-on: ubuntu-24.04
     needs: build_wheels
+    # Don't republish from the merge queue; wheels are already built/tested there.
+    if: github.event_name != 'merge_group'
     timeout-minutes: 120
     environment: test-pypi
     permissions:
