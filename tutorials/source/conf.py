@@ -69,7 +69,7 @@ nb_execution_raise_on_error = False
 # `MatrixOperator += local_form`, `BilinearForm.result`/`apply2`, the
 # oswald/IPDG-flux-reconstruction operators). They are restored and rendered, but
 # not executed, until the bindings are restored / the notebooks are migrated to the
-# current API. Tracked in the GitHub issues referenced from #41.
+# current API. Tracked in #127 (blocked on #126).
 nb_execution_excludepatterns = [
     "*dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.md",
     "*dune_gdt_tutorial_on_data_functions_and_interpolation.md",
