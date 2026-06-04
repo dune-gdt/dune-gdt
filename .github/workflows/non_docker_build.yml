@@ -168,13 +168,21 @@ jobs:
           "k3d>=2.15.2" vtk ipywidgets lxml xmljson matplotlib wurlitzer
 
     - name: Build tutorials (sphinx + myst-nb notebook execution)
-      # run from a neutral directory so the repo-root `dune/` source tree does not
-      # shadow the installed bindings; mirror SPHINXOPTS from tutorials/CMakeLists.txt
+      # Run from a neutral directory so the repo-root `dune/` source tree does not
+      # shadow the installed bindings. Notebook execution is the actual test: myst-nb
+      # is configured with nb_execution_raise_on_error=False, so a failing notebook
+      # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
+      # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
+      # inventory fetches emit network-dependent warnings unrelated to the tutorials.
       run: |
         cd "${RUNNER_TEMP}"
-        xvfb-run -a python -m sphinx -W --keep-going -j auto -b html \
-          "${GITHUB_WORKSPACE}/tutorials/source" \
-          "${GITHUB_WORKSPACE}/build/tutorials_html"
+        OUT="${GITHUB_WORKSPACE}/build/tutorials_html"
+        xvfb-run -a python -m sphinx --keep-going -j 1 -b html \
+          "${GITHUB_WORKSPACE}/tutorials/source" "${OUT}"
+        if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
+          echo "::error::one or more executed tutorial notebooks failed (see dumped reports below)"
+          exit 1
+        fi
 
     - name: Dump notebook execution error reports
       # myst-nb writes a per-notebook traceback here for every cell that failed;

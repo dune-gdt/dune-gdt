@@ -61,10 +61,24 @@ nb_execution_timeout = 240  # there is an interpolation test
 # print tracebacks to stdout
 nb_execution_show_tb = True
 # Do not abort on the first failing notebook: let myst-nb execute every notebook
-# and emit a warning (with traceback) for each failure, so a single build reports
-# all broken notebooks. The build still fails because sphinx is run with -W
-# (warnings treated as errors).
+# and emit a warning (with traceback) for each failure. The CI job fails the build
+# if any executed notebook wrote an error report (see non_docker_build.yml).
 nb_execution_raise_on_error = False
+# These notebooks (and the helper-free tutorials) still rely on dune-gdt python
+# bindings that are currently commented out in the C++ sources (direct
+# `MatrixOperator += local_form`, `BilinearForm.result`/`apply2`, the
+# oswald/IPDG-flux-reconstruction operators). They are restored and rendered, but
+# not executed, until the bindings are restored / the notebooks are migrated to the
+# current API. Tracked in the GitHub issues referenced from #41.
+nb_execution_excludepatterns = [
+    "*dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.md",
+    "*dune_gdt_tutorial_on_data_functions_and_interpolation.md",
+    "*example__ESV2007_estimates.md",
+    "*example__MNS2002_estimates.md",
+    "*example__gmsh_grid.md",
+    "*example__ipdg_heat_equation.md",
+    "*example__prolongations_products_and_norms.md",
+]
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.

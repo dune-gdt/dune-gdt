@@ -1,4 +1,5 @@
 from dune.gdt import (
+    BilinearForm,
     ContinuousLagrangeSpace,
     DirichletConstraints,
     DiscreteFunction,
@@ -50,13 +51,15 @@ def discretize_elliptic_cg_dirichlet_zero(grid, diffusion, source):
         LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source)
     )
 
+    a_form = BilinearForm(grid)
+    a_form += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
     a_h = MatrixOperator(
         grid,
         source_space=V_h,
         range_space=V_h,
         sparsity_pattern=make_element_sparsity_pattern(V_h),
     )
-    a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
+    a_h.append(a_form)
 
     dirichlet_constraints = DirichletConstraints(boundary_info, V_h)
 
@@ -112,13 +115,15 @@ def discretize_elliptic_cg_dirichlet(grid, diffusion, source, dirichlet_values):
         LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source)
     )
 
+    a_form = BilinearForm(grid)
+    a_form += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
     a_h = MatrixOperator(
         grid,
         source_space=V_h,
         range_space=V_h,
         sparsity_pattern=make_element_sparsity_pattern(V_h),
     )
-    a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
+    a_h.append(a_form)
 
     dirichlet_constraints = DirichletConstraints(boundary_info, V_h)
     dirichlet_values = boundary_interpolation(
