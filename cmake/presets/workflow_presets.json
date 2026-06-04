@@ -1,0 +1,3052 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 27,
+    "patch": 0
+  },
+  "workflowPresets": [
+    {
+      "name": "linux_clang_benchmarks_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_benchmarks_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_benchmarks_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_benchmarks_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_build_coverage",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_build_debug",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_build_release",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_build_relwithchecks",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_docs_coverage",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_docs_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_docs_debug",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_docs_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_docs_release",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_docs_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_docs_relwithchecks",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_docs_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_everything",
+      "description": "Build and run Benchmarks (for ALL build configs)",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_everything_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_everything_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_everything_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_everything_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_examples_coverage",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_examples_debug",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_examples_release",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_examples_relwithchecks",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_tests_coverage",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_coverage"
+        },
+        {
+          "type": "test",
+          "name": "linux_clang_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_tests_debug",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_debug"
+        },
+        {
+          "type": "test",
+          "name": "linux_clang_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_tests_release",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_release"
+        },
+        {
+          "type": "test",
+          "name": "linux_clang_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_clang_tests_relwithchecks",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_clang"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_clang_tests_relwithchecks"
+        },
+        {
+          "type": "test",
+          "name": "linux_clang_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_benchmarks_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_benchmarks_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_benchmarks_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_benchmarks_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_build_coverage",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_build_debug",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_build_release",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_build_relwithchecks",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_docs_coverage",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_docs_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_docs_debug",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_docs_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_docs_release",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_docs_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_docs_relwithchecks",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_docs_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_everything",
+      "description": "Build and run Benchmarks (for ALL build configs)",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_everything_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_everything_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_everything_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_everything_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_examples_coverage",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_examples_debug",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_examples_release",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_examples_relwithchecks",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_tests_coverage",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_coverage"
+        },
+        {
+          "type": "test",
+          "name": "linux_gcc_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_tests_debug",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_debug"
+        },
+        {
+          "type": "test",
+          "name": "linux_gcc_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_tests_release",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_release"
+        },
+        {
+          "type": "test",
+          "name": "linux_gcc_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_gcc_tests_relwithchecks",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_gcc"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_gcc_tests_relwithchecks"
+        },
+        {
+          "type": "test",
+          "name": "linux_gcc_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_benchmarks_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_benchmarks_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_benchmarks_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_benchmarks_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_build_coverage",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_build_debug",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_build_release",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_build_relwithchecks",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_docs_coverage",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_docs_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_docs_debug",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_docs_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_docs_release",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_docs_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_docs_relwithchecks",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_docs_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_everything",
+      "description": "Build and run Benchmarks (for ALL build configs)",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_everything_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_everything_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_everything_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_everything_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_examples_coverage",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_examples_debug",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_examples_release",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_examples_relwithchecks",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_tests_coverage",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_coverage"
+        },
+        {
+          "type": "test",
+          "name": "linux_wheelbuilder_coverage"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_tests_debug",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_debug"
+        },
+        {
+          "type": "test",
+          "name": "linux_wheelbuilder_debug"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_tests_release",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_release"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_release"
+        },
+        {
+          "type": "test",
+          "name": "linux_wheelbuilder_release"
+        }
+      ]
+    },
+    {
+      "name": "linux_wheelbuilder_tests_relwithchecks",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "linux_wheelbuilder_tests_relwithchecks"
+        },
+        {
+          "type": "test",
+          "name": "linux_wheelbuilder_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_benchmarks_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_benchmarks_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_benchmarks_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_release"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_benchmarks_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_build_coverage",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_build_debug",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_build_release",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_release"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_build_relwithchecks",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_docs_coverage",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_docs_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_docs_debug",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_docs_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_docs_release",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_docs_release"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_docs_relwithchecks",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_docs_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_everything",
+      "description": "Build and run Benchmarks (for ALL build configs)",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_everything_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_everything_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_everything_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_everything_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_examples_coverage",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_examples_debug",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_examples_release",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_examples_relwithchecks",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_tests_coverage",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_coverage"
+        },
+        {
+          "type": "test",
+          "name": "win_clangcl_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_tests_debug",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_debug"
+        },
+        {
+          "type": "test",
+          "name": "win_clangcl_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_tests_release",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_release"
+        },
+        {
+          "type": "test",
+          "name": "win_clangcl_release"
+        }
+      ]
+    },
+    {
+      "name": "win_clangcl_tests_relwithchecks",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_clangcl"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_clangcl_tests_relwithchecks"
+        },
+        {
+          "type": "test",
+          "name": "win_clangcl_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_benchmarks_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_benchmarks_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_benchmarks_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_release"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_benchmarks_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_build_coverage",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_build_debug",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_build_release",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_release"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_build_relwithchecks",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_docs_coverage",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_docs_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_docs_debug",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_docs_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_docs_release",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_docs_release"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_docs_relwithchecks",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_docs_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_everything",
+      "description": "Build and run Benchmarks (for ALL build configs)",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_everything_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_everything_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_everything_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_everything_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_examples_coverage",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_examples_debug",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_examples_release",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_examples_relwithchecks",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_tests_coverage",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_coverage"
+        },
+        {
+          "type": "test",
+          "name": "win_msvc_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_tests_debug",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_debug"
+        },
+        {
+          "type": "test",
+          "name": "win_msvc_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_tests_release",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_release"
+        },
+        {
+          "type": "test",
+          "name": "win_msvc_release"
+        }
+      ]
+    },
+    {
+      "name": "win_msvc_tests_relwithchecks",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_msvc"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_msvc_tests_relwithchecks"
+        },
+        {
+          "type": "test",
+          "name": "win_msvc_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_benchmarks_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_benchmarks_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_benchmarks_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_release"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_benchmarks_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_build_coverage",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_build_debug",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_build_release",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_release"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_build_relwithchecks",
+      "description": "Configure and build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_docs_coverage",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_docs_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_docs_debug",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_docs_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_docs_release",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_docs_release"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_docs_relwithchecks",
+      "description": "run benchmarks and build docs",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_docs_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_everything",
+      "description": "Build and run Benchmarks (for ALL build configs)",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_everything_coverage",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_everything_debug",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_everything_release",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_everything_relwithchecks",
+      "description": "Build and run Benchmarks",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_benchmarks_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_examples_coverage",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_examples_debug",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_examples_release",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_release"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_examples_relwithchecks",
+      "description": "Build and run Examples",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_examples_relwithchecks"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_tests_coverage",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_coverage"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_coverage"
+        },
+        {
+          "type": "test",
+          "name": "win_wheelbuilder_coverage"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_tests_debug",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_debug"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_debug"
+        },
+        {
+          "type": "test",
+          "name": "win_wheelbuilder_debug"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_tests_release",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_release"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_release"
+        },
+        {
+          "type": "test",
+          "name": "win_wheelbuilder_release"
+        }
+      ]
+    },
+    {
+      "name": "win_wheelbuilder_tests_relwithchecks",
+      "description": "Build and run tests",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "win_wheelbuilder"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_build_relwithchecks"
+        },
+        {
+          "type": "build",
+          "name": "win_wheelbuilder_tests_relwithchecks"
+        },
+        {
+          "type": "test",
+          "name": "win_wheelbuilder_relwithchecks"
+        }
+      ]
+    }
+  ],
+  "include": [
+    "configure_presets.json",
+    "build_presets.json",
+    "test_presets.json",
+    "package_presets.json"
+  ]
+}

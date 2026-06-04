@@ -147,6 +147,7 @@ include(DunePybindxiUtils)
 # templating can't use the run-in-env script here, because it will try to use dune.common which we're trying to install
 # can't use dune-common_WHEELHOUSE here, because it is not set yet can't use a wildcard here, because no shell expansion
 # is done
+
 dune_execute_process(
   COMMAND
   ${CMAKE_BINARY_DIR}/dune-env/bin/python
@@ -155,11 +156,25 @@ dune_execute_process(
   install
   jinja2
   pyparsing)
+
+# Find the wheelhouse directory automatically
+set(DUNE_COMMON_WHL "dune_common-2.10.0-py3-none-any.whl")
+file(
+  GLOB_RECURSE DUNE_WHEELHOUSE_DIR
+  RELATIVE ${CMAKE_BINARY_DIR}
+  ${CMAKE_CURRENT_BINARY_DIR}/**/${DUNE_COMMON_WHL})
+if(DUNE_WHEELHOUSE_DIR)
+  cmake_path(GET DUNE_WHEELHOUSE_DIR PARENT_PATH DUNE_WHEELHOUSE_DIR)
+  set(DUNE_WHEELHOUSE_DIR_FULL ${CMAKE_BINARY_DIR}/${DUNE_WHEELHOUSE_DIR})
+  message(STATUS "Found dune wheelhouse directory: ${DUNE_WHEELHOUSE_DIR_FULL}")
+else()
+  message(FATAL_ERROR "Could not find the dune wheelhouse directory!")
+endif()
+
 execute_process(
+  COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install ${DUNE_WHEELHOUSE_DIR_FULL}/${DUNE_COMMON_WHL}
   COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install
-          ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse/dune_common-2.10.0-py3-none-any.whl
-  COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install
-          ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse/dune_testtools-2.4-py3-none-any.whl
+          ${DUNE_WHEELHOUSE_DIR_FULL}/dune_testtools-2.4-py3-none-any.whl
   OUTPUT_VARIABLE pip_install_log ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
   ERROR_VARIABLE pip_install_log
   OUTPUT_STRIP_TRAILING_WHITESPACE)

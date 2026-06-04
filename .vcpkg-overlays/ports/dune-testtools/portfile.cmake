@@ -1,7 +1,14 @@
 set(VCPKG_BUILD_TYPE release)
 
-vcpkg_from_git(OUT_SOURCE_PATH SOURCE_PATH URL "https://github.com/dune-community/dune-testtools.git" REF
-               449c352e1803718db5caf4874d331c437f2dbc92)
+vcpkg_from_git(
+  OUT_SOURCE_PATH
+  SOURCE_PATH
+  URL
+  "https://github.com/dune-community/dune-testtools.git"
+  REF
+  449c352e1803718db5caf4874d331c437f2dbc92
+  PATCHES
+  disable-tests-when-build-testing-off.patch)
 
 vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_TESTING=OFF -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE)
 
