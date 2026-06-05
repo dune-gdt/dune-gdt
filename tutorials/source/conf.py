@@ -83,14 +83,21 @@ nb_execution_raise_on_error = False
 #   vector), there is no MatrixOperator-based workaround.
 # * example__gmsh_grid.md: needs `meshio` (and a gmsh v2 mesh) for pymor's
 #   `discretize_gmsh`; the runners ship gmsh v4, which dune-grid cannot read.
+# * example__ipdg_heat_equation.md: its assembly was migrated to the `BilinearForm`
+#   + `append` API (and that part executes fine), but the time-stepping cells form
+#   `m_h + dt*a_h`, i.e. a `GDT::LincombOperator`, whose pybind type is not registered
+#   ("Unregistered type ... LincombOperator" / "Could not activate keep_alive!"). The
+#   migration is kept so that only the LincombOperator registration remains to re-enable.
 #
-# The CG/IPDG FEM tutorials, the data-functions tutorial and the IPDG heat equation
-# example were re-enabled by migrating their bodies to the `BilinearForm` + `append`
-# assembly API. Tracked in #127 (blocked on #126).
+# The CG-FEM tutorial and the data-functions tutorial were re-enabled: the former by
+# migrating its assembly cells to the `BilinearForm` + `append` API, the latter
+# unchanged (it already relied solely on the migrated discretize_elliptic_cg helper).
+# Tracked in #127 (blocked on #126).
 nb_execution_excludepatterns = [
     "*example__ESV2007_estimates.md",
     "*example__MNS2002_estimates.md",
     "*example__gmsh_grid.md",
+    "*example__ipdg_heat_equation.md",
     "*example__prolongations_products_and_norms.md",
 ]
 
