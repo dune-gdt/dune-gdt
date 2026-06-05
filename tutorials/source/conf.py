@@ -77,10 +77,6 @@ nb_execution_raise_on_error = False
 # * example__ESV2007_estimates.md: same generic `Operator +=` blocker, plus
 #   `oswald_interpolation` and `LaplaceIpdgFluxReconstructionOperator` expose no symbols
 #   (their bindings are guarded by `#if 0`).
-# * example__prolongations_products_and_norms.md: evaluates `a(u, u)` for analytical
-#   grid functions via `BilinearForm(grid, u, u)` + `.result`/`.apply2`, all commented
-#   out in operators/bilinear-form.cc. As the operands are grid functions (no DoF
-#   vector), there is no MatrixOperator-based workaround.
 # * example__gmsh_grid.md: needs `meshio` (and a gmsh v2 mesh) for pymor's
 #   `discretize_gmsh`; the runners ship gmsh v4, which dune-grid cannot read.
 # * example__ipdg_heat_equation.md: its assembly was migrated to the `BilinearForm`
@@ -92,13 +88,16 @@ nb_execution_raise_on_error = False
 # The CG-FEM tutorial and the data-functions tutorial were re-enabled: the former by
 # migrating its assembly cells to the `BilinearForm` + `append` API, the latter
 # unchanged (it already relied solely on the migrated discretize_elliptic_cg helper).
+#
+# example__prolongations_products_and_norms.md is also executed again: the
+# `BilinearForm` product/norm bindings used for `a(u, u)` have been finalized
+# (`BilinearForm.apply2(u, u)` / `BilinearForm.norm(u)`) and the notebook migrated.
 # Tracked in #127 (blocked on #126).
 nb_execution_excludepatterns = [
     "*example__ESV2007_estimates.md",
     "*example__MNS2002_estimates.md",
     "*example__gmsh_grid.md",
     "*example__ipdg_heat_equation.md",
-    "*example__prolongations_products_and_norms.md",
 ]
 
 bibtex_bibfiles = ["bibliography.bib"]

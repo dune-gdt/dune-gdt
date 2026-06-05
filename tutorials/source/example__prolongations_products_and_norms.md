@@ -101,11 +101,10 @@ $$
 $$
 
 
-Either comupte all in one grid walk ...
+We collect the local integrands of each product in a `BilinearForm` (via `+=`) and evaluate
+`a(u, u)` with `apply2(u, u)`, which walks the grid and returns the scalar:
 
 ```{code-cell}
-from dune.xt.grid import Walker
-
 from dune.gdt import (
     BilinearForm,
     LocalElementProductIntegrand,
@@ -113,46 +112,35 @@ from dune.gdt import (
     LocalLaplaceIntegrand,
 )
 
-L2_product = BilinearForm(grid, u, u)
+L2_product = BilinearForm(grid)
 L2_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
 
-H1_semi_product = BilinearForm(grid, u, u)
+H1_semi_product = BilinearForm(grid)
 H1_semi_product += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(GF(grid, 1, dim_range=(Dim(d), Dim(d)))))
 
-H1_product = BilinearForm(grid, u, u)
+H1_product = BilinearForm(grid)
 H1_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
 H1_product += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(GF(grid, 1, dim_range=(Dim(d), Dim(d)))))
 
-walker = Walker(grid)
-walker.append(L2_product)
-walker.append(H1_semi_product)
-walker.append(H1_product)
-walker.walk()
+l2 = L2_product.apply2(u, u)
+h1_semi = H1_semi_product.apply2(u, u)
+h1 = H1_product.apply2(u, u)
 
-print(f'|| u ||_L2 = {np.sqrt(L2_product.result)}')
-print(f' | u |_H1  = {np.sqrt(H1_semi_product.result)}')
-print(f'|| u ||_H1 = {np.sqrt(H1_product.result)}')
+print(f'|| u ||_L2 = {np.sqrt(l2)}')
+print(f' | u |_H1  = {np.sqrt(h1_semi)}')
+print(f'|| u ||_H1 = {np.sqrt(h1)}')
 ```
 
 ```{code-cell}
-np.allclose(L2_product.result + H1_semi_product.result, H1_product.result)
+np.allclose(l2 + h1_semi, h1)
 ```
 
-... or let each product do the grid walking in `apply2` (possibly less runtime efficient, but maybe more intuitive)
+Equivalently, `norm` returns the induced norm directly (`norm(u) == sqrt(apply2(u, u))`):
 
 ```{code-cell}
-L2_product = BilinearForm(grid, u, u)
-L2_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
-print(f'|| u ||_L2 = {np.sqrt(L2_product.apply2())}')
-
-H1_semi_product = BilinearForm(grid, u, u)
-H1_semi_product += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(GF(grid, 1, dim_range=(Dim(d), Dim(d)))))
-print(f' | u |_H1  = {np.sqrt(H1_semi_product.apply2())}')
-
-H1_product = BilinearForm(grid, u, u)
-H1_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
-H1_product += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(GF(grid, 1, dim_range=(Dim(d), Dim(d)))))
-print(f'|| u ||_H1 = {np.sqrt(H1_product.apply2())}')
+print(f'|| u ||_L2 = {L2_product.norm(u)}')
+print(f' | u |_H1  = {H1_semi_product.norm(u)}')
+print(f'|| u ||_H1 = {H1_product.norm(u)}')
 ```
 
 ## 3: computing errors w.r.t. a known reference solution
@@ -170,9 +158,9 @@ u_h = prolong(u_H, V_h)
 error = GF(grid, u - u_h)
 
 # compute norms on reference grid
-L2_product = BilinearForm(reference_grid, error, error)
+L2_product = BilinearForm(reference_grid)
 L2_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
-print(f'|| error ||_L2 = {np.sqrt(L2_product.apply2())}')
+print(f'|| error ||_L2 = {L2_product.norm(error)}')
 ```
 
 Download the code:
