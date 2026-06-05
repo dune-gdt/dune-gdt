@@ -24,7 +24,9 @@ def _products(grid):
     d = grid.dimension
 
     L2_product = BilinearForm(grid)
-    L2_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
+    L2_product += LocalElementIntegralBilinearForm(
+        LocalElementProductIntegrand(GF(grid, 1))
+    )
 
     H1_semi_product = BilinearForm(grid)
     H1_semi_product += LocalElementIntegralBilinearForm(
@@ -32,7 +34,9 @@ def _products(grid):
     )
 
     H1_product = BilinearForm(grid)
-    H1_product += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
+    H1_product += LocalElementIntegralBilinearForm(
+        LocalElementProductIntegrand(GF(grid, 1))
+    )
     H1_product += LocalElementIntegralBilinearForm(
         LocalLaplaceIntegrand(GF(grid, 1, dim_range=(Dim(d), Dim(d))))
     )
@@ -41,7 +45,9 @@ def _products(grid):
 
 
 def test_bilinear_form_apply2_and_norm():
-    grid = make_cube_grid(Dim(2), Simplex(), lower_left=[0, 0], upper_right=[1, 1], num_elements=[4, 4])
+    grid = make_cube_grid(
+        Dim(2), Simplex(), lower_left=[0, 0], upper_right=[1, 1], num_elements=[4, 4]
+    )
     grid.global_refine(1)
     d = grid.dimension
 
@@ -49,7 +55,16 @@ def test_bilinear_form_apply2_and_norm():
 
     space = ContinuousLagrangeSpace(grid, order=1)
     u_h = default_interpolation(
-        GF(grid, ExpressionFunction(dim_domain=Dim(d), variable="x", order=2, expression="x[0]*x[1]", name="u")),
+        GF(
+            grid,
+            ExpressionFunction(
+                dim_domain=Dim(d),
+                variable="x",
+                order=2,
+                expression="x[0]*x[1]",
+                name="u",
+            ),
+        ),
         space,
     )
     # wrap the DiscreteFunction as a GridFunction (the argument type expected by apply2/norm)
