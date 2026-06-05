@@ -163,9 +163,7 @@ private:
           for (size_t ii = 0; ii < r; ++ii)
             result[0][jj] = 1;
         } else {
-          DUNE_THROW(Exceptions::basis_error,
-                     "arbitrary derivatives are not supported!\n\n"
-                         << "alpha = " << alpha);
+          DUNE_THROW(Exceptions::basis_error, "arbitrary derivatives are not supported!\n\n" << "alpha = " << alpha);
         }
     } // ... derivatives(...)
 

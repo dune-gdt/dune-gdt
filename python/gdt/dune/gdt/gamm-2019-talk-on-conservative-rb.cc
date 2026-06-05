@@ -264,8 +264,8 @@ compute_estimate(const GP& grid,
         }
         DUNE_THROW_IF(!(min_EV > 0.),
                       Exceptions::integrand_error,
-                      "The minimum eigenvalue of a positiv definite matrix must not be negative!"
-                          << "\n\nmin_EV = " << min_EV);
+                      "The minimum eigenvalue of a positiv definite matrix must not be negative!" << "\n\nmin_EV = "
+                                                                                                  << min_EV);
         const auto C_P = 1. / (M_PIl * M_PIl); // Poincare constant (known for simplices/cubes)
         const auto h = XT::Grid::diameter(element);
         auto L2_norm_2 = LocalElementIntegralBilinearForm<E>(LocalElementProductIntegrand<E>(), over_integrate)

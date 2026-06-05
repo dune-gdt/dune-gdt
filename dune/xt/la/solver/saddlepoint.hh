@@ -58,12 +58,11 @@ public:
 
   static std::vector<std::string> types()
   {
-    std::vector<std::string> ret
-    {
-      "direct"
+    std::vector<std::string> ret{"direct"
 #if HAVE_DUNE_ISTL
-          ,
-          "cg_cg_schurcomplement", "cg_direct_schurcomplement"
+                                 ,
+                                 "cg_cg_schurcomplement",
+                                 "cg_direct_schurcomplement"
 #endif // HAVE_DUNE_ISTL
     };
     return ret;
@@ -172,7 +171,7 @@ public:
           C_,
           opts.has_sub("inner_solver") ? opts.sub("inner_solver")
                                        : XT::LA::SolverOptions<Matrix, CommunicatorType>::options(
-                                           type == "cg_direct_schurcomplement" ? "" : "cg"));
+                                             type == "cg_direct_schurcomplement" ? "" : "cg"));
       schur_complement_op.A_inv().apply(f, Ainv_f);
       B2_.mtv(Ainv_f, rhs_p);
       rhs_p -= g;

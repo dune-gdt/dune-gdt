@@ -154,7 +154,7 @@ public:
   ElementAndIntersectionFunctor(const std::string& log_prefix = "",
                                 const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Common::WithLogger<ElementAndIntersectionFunctor<GL>>(
-        log_prefix.empty() ? "ElementAndIntersectionFunctor" : log_prefix, logging_state)
+          log_prefix.empty() ? "ElementAndIntersectionFunctor" : log_prefix, logging_state)
   {
   }
 

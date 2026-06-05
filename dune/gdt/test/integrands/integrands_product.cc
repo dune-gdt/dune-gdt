@@ -49,9 +49,7 @@ struct ProductIntegrandTest : public IntegrandTest<G>
     const XT::Functions::GenericGridFunction<E, 2, 2> matrix_grid_function(
         1,
         [](const E&) {},
-        [](const DomainType& x, const XT::Common::Parameter&) {
-          return VectorJacobianType{{x[0], x[1]}, {1., 2.}};
-        });
+        [](const DomainType& x, const XT::Common::Parameter&) { return VectorJacobianType{{x[0], x[1]}, {1., 2.}}; });
     [[maybe_unused]] VectorIntegrandType vector_integrand5(matrix_grid_function);
   }
 
@@ -80,9 +78,7 @@ struct ProductIntegrandTest : public IntegrandTest<G>
     const XT::Functions::GenericGridFunction<E, 2, 2> inducing_function(
         1,
         [](const E&) {},
-        [](const DomainType& x, const XT::Common::Parameter&) {
-          return VectorJacobianType{{x[0], x[1]}, {1., 2.}};
-        });
+        [](const DomainType& x, const XT::Common::Parameter&) { return VectorJacobianType{{x[0], x[1]}, {1., 2.}}; });
     VectorIntegrandType integrand(inducing_function);
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
     integrand.bind(element);
