@@ -182,22 +182,27 @@ public:
     return result;
   }
 
-  /** \brief Matrix-matrix multiplication
+  /** \brief Matrix-matrix multiplication with a Dune::FieldMatrix on the right.
+   *
+   * Intentionally *not* provided (see https://github.com/dune-gdt/dune-gdt/issues/107).
+   *
+   * Since dune-common 2.9, Dune::FieldMatrix provides generic hidden-friend operator* overloads for any
+   * static-size, non-FieldMatrix matrix on either side:
+   *     friend auto operator*(const FieldMatrix&, const OtherMatrix&);
+   *     friend auto operator*(const OtherMatrix&, const FieldMatrix&);
+   * both constrained by (Impl::IsStaticSizeMatrix_v<OtherMatrix> && !Impl::IsFieldMatrix_v<OtherMatrix>).
+   * This XT::Common::FieldMatrix satisfies that constraint: it inherits the static rows/cols members from
+   * Dune::FieldMatrix (so IsStaticSizeMatrix is true), but it is a *derived* type, not Dune::FieldMatrix
+   * itself (and IsFieldMatrix matches the exact type only, so IsFieldMatrix is false).
+   *
+   * As a consequence dune-common already handles `XT::Common::FieldMatrix * Dune::FieldMatrix` (returning a
+   * Dune::FieldMatrix, which converts back to XT::Common::FieldMatrix where needed). Re-adding an own
+   *     friend auto operator*(const ThisType&, const Dune::FieldMatrix<OtherScalar, COLS, otherCols>&)
+   * here is an equally good match as dune-common's `operator*(const OtherMatrix&, const FieldMatrix&)` and
+   * makes that expression an ambiguous call. The `XT::Common::FieldMatrix * XT::Common::FieldMatrix` overload
+   * below is still required (and unambiguous) because there dune-common's two generic friends would otherwise
+   * tie.
    */
-  // template <class OtherScalar, int otherCols>
-  // friend auto operator*(const ThisType& matrixA, const Dune::FieldMatrix<OtherScalar, COLS, otherCols>& matrixB)
-  // {
-  //   FieldMatrix<typename PromotionTraits<K, OtherScalar>::PromotedType, ROWS, otherCols> result;
-  //
-  //   for (size_type i = 0; i < matrixA.mat_rows(); ++i)
-  //     for (size_type j = 0; j < matrixB.mat_cols(); ++j) {
-  //       result[i][j] = 0;
-  //       for (size_type k = 0; k < matrixA.mat_cols(); ++k)
-  //         result[i][j] += matrixA[i][k] * matrixB[k][j];
-  //     }
-  //
-  //   return result;
-  // }
 
   template <class OtherScalar, int otherRows>
   friend auto operator*(const Dune::FieldMatrix<OtherScalar, otherRows, ROWS>& matrixA, const ThisType& matrixB)
@@ -972,7 +977,14 @@ void rightmultiply(Dune::FieldMatrix<K, L_ROWS, R_COLS>& ret,
   }
 }
 
-//! TODO enabling this leads to ambig calls, check that those are actually equivalent
+// Intentionally *not* provided (see https://github.com/dune-gdt/dune-gdt/issues/107).
+//
+// This free operator*(Dune::FieldMatrix, Dune::FieldVector) duplicates the matrix-vector product already
+// offered as a member of XT::Common::FieldMatrix (Dune::XT::Common::FieldVector operator*(const
+// Dune::FieldVector&) const, see above), so for an XT::Common::FieldMatrix both are viable and enabling it
+// leads to ambiguous calls. The member already covers the XT::Common::FieldMatrix case; use mat.mv(vec, ret)
+// for a plain Dune::FieldMatrix.
+//
 // template <class K, int rows, int cols>
 // XT::Common::FieldVector<K, rows> operator*(const Dune::FieldMatrix<K, rows, cols>& mat,
 //                                            const Dune::FieldVector<K, cols>& vec)
