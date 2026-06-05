@@ -230,7 +230,7 @@ jobs:
         ls -l wheels/*
       shell: bash
     - name: Upload wheels to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.12.4
+      uses: pypa/gh-action-pypi-publish@v1.14.0
       id: upload-pypi_on_tag
       with:
         packages-dir: wheels/
@@ -259,7 +259,7 @@ jobs:
         ls -l wheels/*
       shell: bash
     - name: Upload wheels to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.12.4
+      uses: pypa/gh-action-pypi-publish@v1.14.0
       with:
         packages-dir: wheels/
         verbose: true
