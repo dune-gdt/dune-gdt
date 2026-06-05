@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Checkout reposotiry
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6.0.2
     - name: Check links in Markdown files
       # The link check already ran on the PR; in the merge queue this step is
       # skipped so the required "Markdown" check still resolves successfully.
