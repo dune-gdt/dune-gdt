@@ -59,17 +59,20 @@ GTEST_TEST(dune_xt_common_field_vector, creation_and_calculations)
   RowMatrixType row_mat = test_vec;
   for (size_t ii = 0; ii < 4; ++ii)
     EXPECT_EQ(row_mat[0][ii], ii);
-  // TODO: reenable this test
-  //  ColMatrixType col_mat = test_vec;
-  //  for (size_t ii = 0; ii < 4; ++ii)
-  //    EXPECT_EQ(col_mat[ii][0], ii);
+  // The implicit conversion to a column matrix (ColMatrixType col_mat = test_vec;) cannot be used: Dune::FieldMatrix
+  // has a greedy converting constructor FieldMatrix(const T&), which is enabled whenever HasDenseMatrixAssigner<
+  // FieldMatrix, T> holds. For a column matrix the rows are FieldVector<K, 1>, and since a scalar is implicitly
+  // convertible to FieldVector<K, 1>, that constructor is preferred over our conversion operator and then fails to
+  // compile deep inside dune-common (it treats the vector's scalar entries as rows). Direct-initialization and
+  // static_cast pick the same constructor and fail likewise. The row matrix above is unaffected because a scalar is
+  // not convertible to FieldVector<K, 4>, so there the greedy constructor is disabled and our conversion operator is
+  // used. We therefore invoke the conversion operator explicitly here, which exercises exactly the same code path.
+  ColMatrixType col_mat = test_vec.operator ColMatrixType();
+  for (size_t ii = 0; ii < 4; ++ii)
+    EXPECT_EQ(col_mat[ii][0], ii);
   ArrayType array = test_vec;
   for (size_t ii = 0; ii < 4; ++ii)
     EXPECT_EQ(array[ii], ii);
-  // TODO: remove this when the construction above is reenabled
-  ColMatrixType col_mat;
-  for (auto ii = 0; ii < 4; ++ii)
-    col_mat[ii][0] = ii;
   EXPECT_DOUBLE_EQ(test_vec * test_vec, 14.);
   EXPECT_DOUBLE_EQ(test_vec * col_mat, 14.);
   for (size_t ii = 0; ii < 4; ++ii)
