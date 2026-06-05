@@ -16,8 +16,8 @@ find_package(nanobench CONFIG REQUIRED)
 file(GLOB_RECURSE benchmark_sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
      "${CMAKE_CURRENT_SOURCE_DIR}/*.cc")
 
-set(benchmark_targets)
-set(benchmark_report_dir "${CMAKE_BINARY_DIR}/benchmarks/reports")
+set(_benchmark_targets)
+set(_benchmark_report_dir "${CMAKE_BINARY_DIR}/benchmarks/reports")
 
 foreach(source ${benchmark_sources})
   get_filename_component(_name ${source} NAME_WE)
@@ -27,19 +27,19 @@ foreach(source ${benchmark_sources})
   add_executable(${_target} EXCLUDE_FROM_ALL ${source})
   dune_target_enable_all_packages(${_target})
   target_link_libraries(${_target} PRIVATE dunext ${GRID_LIBS} nanobench::nanobench)
-  list(APPEND benchmark_targets ${_target})
+  list(APPEND _benchmark_targets ${_target})
 endforeach()
 
 # `benchmarks`: build every benchmark executable.
 add_custom_target(
   benchmarks
-  DEPENDS ${benchmark_targets}
+  DEPENDS ${_benchmark_targets}
   COMMENT "Build all dune-gdt benchmarks")
 
 # `run_benchmarks`: build, then run every benchmark, writing one <name>.json nanobench report per benchmark into
-# ${benchmark_report_dir}.
-set(_run_commands COMMAND ${CMAKE_COMMAND} -E make_directory ${benchmark_report_dir})
-foreach(_target ${benchmark_targets})
+# ${_benchmark_report_dir}.
+set(_run_commands COMMAND ${CMAKE_COMMAND} -E make_directory ${_benchmark_report_dir})
+foreach(target ${_benchmark_targets})
   list(
     APPEND
     _run_commands
@@ -47,12 +47,12 @@ foreach(_target ${benchmark_targets})
     ${CMAKE_COMMAND}
     -E
     env
-    "DUNE_GDT_BENCHMARK_OUTPUT_DIR=${benchmark_report_dir}"
-    $<TARGET_FILE:${_target}>)
+    "DUNE_GDT_BENCHMARK_OUTPUT_DIR=${_benchmark_report_dir}"
+    $<TARGET_FILE:${target}>)
 endforeach()
 add_custom_target(
   run_benchmarks
   ${_run_commands}
   DEPENDS benchmarks
   USES_TERMINAL
-  COMMENT "Run all dune-gdt benchmarks and write nanobench JSON reports to ${benchmark_report_dir}")
+  COMMENT "Run all dune-gdt benchmarks and write nanobench JSON reports to ${_benchmark_report_dir}")
