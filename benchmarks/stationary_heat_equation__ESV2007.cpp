@@ -82,14 +82,14 @@ int main(int argc, char** argv)
     lhs += {LocalCouplingIntersectionIntegralBilinearForm<I>(
                 LocalIPDGIntegrands::InnerPenalty<I>(inner_penalty, problem.diffusion, intersection_diameter)),
             XT::Grid::ApplyOn::InnerIntersectionsOnce<GV>()};
-    lhs += {LocalIntersectionIntegralBilinearForm<I>(
-                LocalLaplaceIPDGIntegrands::DirichletCoupling<I>(1., problem.diffusion)),
-            XT::Grid::ApplyOn::CustomBoundaryIntersections<GV>(problem.boundary_info,
-                                                              new XT::Grid::DirichletBoundary())};
-    lhs += {LocalIntersectionIntegralBilinearForm<I>(
-                LocalIPDGIntegrands::BoundaryPenalty<I>(dirichlet_penalty, problem.diffusion, intersection_diameter)),
-            XT::Grid::ApplyOn::CustomBoundaryIntersections<GV>(problem.boundary_info,
-                                                              new XT::Grid::DirichletBoundary())};
+    lhs +=
+        {LocalIntersectionIntegralBilinearForm<I>(
+             LocalLaplaceIPDGIntegrands::DirichletCoupling<I>(1., problem.diffusion)),
+         XT::Grid::ApplyOn::CustomBoundaryIntersections<GV>(problem.boundary_info, new XT::Grid::DirichletBoundary())};
+    lhs +=
+        {LocalIntersectionIntegralBilinearForm<I>(
+             LocalIPDGIntegrands::BoundaryPenalty<I>(dirichlet_penalty, problem.diffusion, intersection_diameter)),
+         XT::Grid::ApplyOn::CustomBoundaryIntersections<GV>(problem.boundary_info, new XT::Grid::DirichletBoundary())};
     auto matrix_op = make_matrix_operator<M>(space);
     matrix_op.append(lhs);
     // assemble the right hand side functional
