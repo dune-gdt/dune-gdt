@@ -65,11 +65,14 @@ nb_execution_show_tb = True
 # if any executed notebook wrote an error report (see non_docker_build.yml).
 nb_execution_raise_on_error = False
 # These notebooks (and the helper-free tutorials) still rely on dune-gdt python
-# bindings that are currently commented out in the C++ sources (direct
-# `MatrixOperator += local_form`, `BilinearForm.result`/`apply2`, the
-# oswald/IPDG-flux-reconstruction operators). They are restored and rendered, but
-# not executed, until the bindings are restored / the notebooks are migrated to the
-# current API. Tracked in #127 (blocked on #126).
+# bindings that remain commented out in the C++ sources, namely the
+# oswald/IPDG-flux-reconstruction operators. They are restored and rendered, but
+# not executed, until those bindings are restored / the notebooks are migrated to
+# the current API. Tracked in #127 (blocked on #126).
+#
+# The `BilinearForm` product/norm bindings used for `a(u, u)` have been finalized
+# (`BilinearForm.apply2(u, u)` / `BilinearForm.norm(u)`), so
+# example__prolongations_products_and_norms.md is migrated and executed again.
 nb_execution_excludepatterns = [
     "*dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.md",
     "*dune_gdt_tutorial_on_data_functions_and_interpolation.md",
@@ -77,7 +80,6 @@ nb_execution_excludepatterns = [
     "*example__MNS2002_estimates.md",
     "*example__gmsh_grid.md",
     "*example__ipdg_heat_equation.md",
-    "*example__prolongations_products_and_norms.md",
 ]
 
 bibtex_bibfiles = ["bibliography.bib"]
