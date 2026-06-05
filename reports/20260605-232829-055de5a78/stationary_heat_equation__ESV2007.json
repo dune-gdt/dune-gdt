@@ -1,0 +1,62 @@
+{
+    "results": [
+        {
+            "title": "stationary_heat_equation__ESV2007",
+            "name": "sipdg_p1__assemble_and_solve",
+            "unit": "op",
+            "batch": 1,
+            "complexityN": -1,
+            "epochs": 3,
+            "clockResolution": 1.8e-08,
+            "clockResolutionMultiple": 1000,
+            "maxEpochTime": 0.1,
+            "minEpochTime": 0.001,
+            "minEpochIterations": 1,
+            "epochIterations": 0,
+            "warmup": 0,
+            "relative": 0,
+            "median(elapsed)": 0.016615196,
+            "medianAbsolutePercentError(elapsed)": 0.00524493897058445,
+            "median(instructions)": 0,
+            "medianAbsolutePercentError(instructions)": 0,
+            "median(cpucycles)": 0,
+            "median(contextswitches)": 0,
+            "median(pagefaults)": 0,
+            "median(branchinstructions)": 0,
+            "median(branchmisses)": 0,
+            "totalTime": 0.05088784,
+            "measurements": [
+                {
+                    "iterations": 1,
+                    "elapsed": 0.017744139,
+                    "pagefaults": 0,
+                    "cpucycles": 0,
+                    "contextswitches": 0,
+                    "instructions": 0,
+                    "branchinstructions": 0,
+                    "branchmisses": 0
+                },
+                {
+                    "iterations": 1,
+                    "elapsed": 0.016528505,
+                    "pagefaults": 0,
+                    "cpucycles": 0,
+                    "contextswitches": 0,
+                    "instructions": 0,
+                    "branchinstructions": 0,
+                    "branchmisses": 0
+                },
+                {
+                    "iterations": 1,
+                    "elapsed": 0.016615196,
+                    "pagefaults": 0,
+                    "cpucycles": 0,
+                    "contextswitches": 0,
+                    "instructions": 0,
+                    "branchinstructions": 0,
+                    "branchmisses": 0
+                }
+            ]
+        }
+    ]
+}

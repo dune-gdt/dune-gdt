@@ -1,0 +1,62 @@
+{
+    "results": [
+        {
+            "title": "burgers__1d__explicit__fv",
+            "name": "explicit_euler__upwind",
+            "unit": "op",
+            "batch": 1,
+            "complexityN": -1,
+            "epochs": 3,
+            "clockResolution": 1.7e-08,
+            "clockResolutionMultiple": 1000,
+            "maxEpochTime": 0.1,
+            "minEpochTime": 0.001,
+            "minEpochIterations": 1,
+            "epochIterations": 0,
+            "warmup": 0,
+            "relative": 0,
+            "median(elapsed)": 3.556235355,
+            "medianAbsolutePercentError(elapsed)": 0.000740624276799235,
+            "median(instructions)": 0,
+            "medianAbsolutePercentError(instructions)": 0,
+            "median(cpucycles)": 0,
+            "median(contextswitches)": 0,
+            "median(pagefaults)": 0,
+            "median(branchinstructions)": 0,
+            "median(branchmisses)": 0,
+            "totalTime": 10.694432954,
+            "measurements": [
+                {
+                    "iterations": 1,
+                    "elapsed": 3.584594129,
+                    "pagefaults": 0,
+                    "cpucycles": 0,
+                    "contextswitches": 0,
+                    "instructions": 0,
+                    "branchinstructions": 0,
+                    "branchmisses": 0
+                },
+                {
+                    "iterations": 1,
+                    "elapsed": 3.55360347,
+                    "pagefaults": 0,
+                    "cpucycles": 0,
+                    "contextswitches": 0,
+                    "instructions": 0,
+                    "branchinstructions": 0,
+                    "branchmisses": 0
+                },
+                {
+                    "iterations": 1,
+                    "elapsed": 3.556235355,
+                    "pagefaults": 0,
+                    "cpucycles": 0,
+                    "contextswitches": 0,
+                    "instructions": 0,
+                    "branchinstructions": 0,
+                    "branchmisses": 0
+                }
+            ]
+        }
+    ]
+}
