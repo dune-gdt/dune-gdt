@@ -9,7 +9,8 @@ updates:
   directory: /
   schedule:
     interval: weekly
-  cooldown-days: 7
+  cooldown:
+    default-days: 7
   allow:
   - dependency-type: all
   commit-message:
@@ -24,7 +25,8 @@ updates:
   directory: /
   schedule:
     interval: weekly
-  cooldown-days: 7
+  cooldown:
+    default-days: 7
   allow:
   - dependency-type: all
   commit-message:
@@ -39,7 +41,8 @@ updates:
   directory: ./
   schedule:
     interval: weekly
-  cooldown-days: 7
+  cooldown:
+    default-days: 7
   allow:
   - dependency-type: all
   commit-message:
