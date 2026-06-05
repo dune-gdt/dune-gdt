@@ -71,6 +71,7 @@ from dune.xt.grid import (
 )
 
 from dune.gdt import (
+    BilinearForm,
     DiscontinuousLagrangeSpace,
     DiscreteFunction,
     LocalElementIntegralBilinearForm,
@@ -99,22 +100,27 @@ penalty_parameter = 16
 symmetry_factor = 1
 
 sp = make_element_and_intersection_sparsity_pattern(V_h)
+
+m_form = BilinearForm(grid)
+m_form += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
 m_h = MatrixOperator(grid, source_space=V_h, range_space=V_h, sparsity_pattern=sp)
-m_h += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(GF(grid, 1)))
+m_h.append(m_form)
 
 l_h = VectorFunctional(grid, V_h)
 l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source))
 
+a_form = BilinearForm(grid)
+a_form += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
+a_form += (LocalCouplingIntersectionIntegralBilinearForm(
+               LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
+               + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)),
+           ApplyOnInnerIntersectionsOnce(grid))
+a_form += (LocalIntersectionIntegralBilinearForm(
+               LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
+               + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)),
+           ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()))
 a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h, sparsity_pattern=sp)
-a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
-a_h += (LocalCouplingIntersectionIntegralBilinearForm(
-            LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
-            + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)),
-        {}, ApplyOnInnerIntersectionsOnce(grid))
-a_h += (LocalIntersectionIntegralBilinearForm(
-            LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
-            + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)),
-       {}, ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()))
+a_h.append(a_form)
 
 walker = Walker(grid)
 walker.append(m_h)
