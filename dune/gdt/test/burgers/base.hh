@@ -18,6 +18,7 @@
 #include <dune/xt/functions/generic/function.hh>
 #include <dune/xt/grid/gridprovider/cube.hh>
 
+#include <dune/gdt/data/burgers.hh>
 #include <dune/gdt/interpolations.hh>
 #include <dune/gdt/spaces/interface.hh>
 #include <dune/gdt/test/instationary-eocstudies/hyperbolic-nonconforming.hh>
@@ -26,44 +27,9 @@ namespace Dune {
 namespace GDT {
 
 
-template <class G>
-struct BurgersProblem
-{
-  static constexpr size_t d = G::dimension;
-  static_assert(d == 1, "Not implemented yet!");
-  //  using DomainType = XT::Common::FieldVector<double, d>;
-
-  const XT::Functions::GenericFunction<1, d, 1> flux;
-  const double T_end;
-
-  BurgersProblem()
-    : flux(
-          2,
-          [&](const auto& u, const auto& /*param*/) { return 0.5 * u * u; },
-          "burgers",
-          {},
-          [&](const auto& u, const auto& /*param*/) { return u; })
-    , T_end(1.)
-  {
-  }
-
-  XT::Grid::GridProvider<G> make_initial_grid() const
-  {
-    return XT::Grid::make_cube_grid<G>(0., 1., 16u);
-  }
-
-  template <class Vector, class GV>
-  DiscreteFunction<Vector, GV> make_initial_values(const SpaceInterface<GV, 1>& space) const
-  {
-    // TODO: Use generic interpolate once implemented?
-    return default_interpolation<Vector>(
-        3,
-        [&](const auto& xx, const auto& /*mu*/) {
-          return std::exp(-std::pow(xx[0] - 0.33, 2) / (2 * std::pow(0.075, 2)));
-        },
-        space);
-  }
-}; // struct BurgersProblem
+// The gtest-free problem definition now lives in dune/gdt/data/burgers.hh and is shared
+// with the benchmarks; keep the historical name available in this namespace.
+using Data::BurgersProblem;
 
 
 template <class G>
