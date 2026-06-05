@@ -24,6 +24,6 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
     - name: Detect merge conflicts
       uses: olivernybroe/action-conflict-finder@v4.0
