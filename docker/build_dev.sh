@@ -17,7 +17,7 @@ DATE=$(date -u -Iseconds); export DATE
 VCS_REF=$(git log -1 --pretty=format:"%H"); export VCS_REF
 echo "done"
 
-echo -n "patching docker/ci/Dockerfile ... "
+echo -n "patching docker/dev/Dockerfile ... "
 sed -i "s/LABEL_BUILD_DATE/${DATE}/" dev/Dockerfile
 # shellcheck disable=SC2181
 if [[ $? != 0 ]] ; then
@@ -41,7 +41,7 @@ docker build -t "ghcr.io/dune-gdt/dune-gdt/dev:${HASH}" -f dev/Dockerfile dev/
 if [[ $? != 0 ]] ; then
     >&2 echo "======================================================================================================="
     >&2 echo "building ... failed (see above)!"
-    >&2 echo "Remember to git restore docker/ci/Dockerfile before trying again!"
+    >&2 echo "Remember to git restore docker/dev/Dockerfile before trying again!"
     exit 1
 fi
 
@@ -62,6 +62,4 @@ echo "to push the image and"
 echo "    docker tag ghcr.io/dune-gdt/dune-gdt/dev:${HASH} ghcr.io/dune-gdt/dune-gdt/dev:latest"
 echo "    docker push ghcr.io/dune-gdt/dune-gdt/dev:latest"
 echo "to overwrite the latest tag."
-echo "======================================================================================================="
-echo "Consider to run ./docker/build_ci.sh next!"
 echo "======================================================================================================="
