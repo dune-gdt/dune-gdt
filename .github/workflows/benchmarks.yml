@@ -1,0 +1,133 @@
+---
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Only one benchmark run at a time; do not cancel an in-progress run (we want every push to main
+# to produce a report).
+concurrency:
+  group: benchmarks-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  # required to push the JSON reports onto the `benchmarks` branch
+  contents: write
+
+jobs:
+  benchmarks:
+    name: Build and run benchmarks (Release)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-tags: true
+        fetch-depth: 0
+
+    - name: Restore build cache
+      uses: actions/cache/restore@v3
+      with:
+        # See non_docker_build.yml: the vcpkg toolchain in .vcpkg-root must be cached together with
+        # build/, otherwise the restored CMake config points at a toolchain that no longer exists.
+        path: |
+          build
+          .vcpkg-root
+        key: ${{ runner.os }}-bench-release-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+        restore-keys: |
+          ${{ runner.os }}-bench-release-
+
+    - name: Drop stale build cache if vcpkg toolchain is missing
+      run: |
+        if [ -d build ] && [ ! -f .vcpkg-root/scripts/buildsystems/vcpkg.cmake ]; then
+          echo "Restored build/ but .vcpkg-root toolchain is missing; clearing stale" \
+               "build/ so CMake re-bootstraps vcpkg from scratch."
+          rm -rf build
+        fi
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build
+
+    - name: Configure CMake
+      id: configure_cmake
+      run: cmake --preset=release
+
+    - name: Build benchmarks
+      run: cmake --build --preset=release --target benchmarks --parallel
+
+    - name: Save build cache
+      if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
+      uses: actions/cache/save@v3
+      with:
+        path: |
+          build
+          .vcpkg-root
+        key: ${{ runner.os }}-bench-release-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+
+    - name: Run benchmarks
+      run: cmake --build --preset=release --target run_benchmarks
+
+    - name: Upload benchmark reports artifact
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      with:
+        name: benchmark-reports
+        path: build/release/benchmarks/reports/*.json
+        if-no-files-found: error
+
+    - name: Publish reports to the benchmarks branch
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        set -euo pipefail
+        reports_src="${GITHUB_WORKSPACE}/build/release/benchmarks/reports"
+        if ! ls "${reports_src}"/*.json >/dev/null 2>&1; then
+          echo "::error::no benchmark reports found in ${reports_src}"
+          exit 1
+        fi
+        ts="$(date -u +%Y%m%d-%H%M%S)"
+        sha="$(git rev-parse --short HEAD)"
+        remote="https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        work="$(mktemp -d)"
+        # check out the existing benchmarks branch, or start a fresh orphan branch
+        if git ls-remote --exit-code --heads "${remote}" benchmarks >/dev/null 2>&1; then
+          git clone --depth 1 --branch benchmarks "${remote}" "${work}"
+          cd "${work}"
+        else
+          git clone --depth 1 "${remote}" "${work}"
+          cd "${work}"
+          git checkout --orphan benchmarks
+          git rm -rf . >/dev/null 2>&1 || true
+        fi
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        dest="reports/${ts}-${sha}"
+        mkdir -p "${dest}" "reports/latest"
+        cp "${reports_src}"/*.json "${dest}/"
+        rm -f reports/latest/*.json
+        cp "${reports_src}"/*.json "reports/latest/"
+        git add reports
+        if git diff --cached --quiet; then
+          echo "no changes to commit"
+          exit 0
+        fi
+        git commit -m "benchmark reports for ${sha} (${ts} UTC)"
+        n=0
+        until [ "${n}" -ge 4 ]; do
+          if git push "${remote}" benchmarks; then
+            break
+          fi
+          n=$((n + 1))
+          echo "push failed, retry ${n} ..."
+          sleep "$((2 ** n))"
+        done
+        if [ "${n}" -ge 4 ]; then
+          echo "::error::failed to push benchmark reports after retries"
+          exit 1
+        fi
