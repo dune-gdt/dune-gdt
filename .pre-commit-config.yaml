@@ -55,6 +55,6 @@ repos:
   - id: actionlint
     additional_dependencies: [pyflakes>=3.0.1, shellcheck-py>=0.9.0.5]
 - repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.10.0.1
+  rev: a23f6b85d0fdd5bb9d564e2579e678033debbdff # frozen: v0.10.0.1
   hooks:
   - id: shellcheck
