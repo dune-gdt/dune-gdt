@@ -311,12 +311,27 @@ try_on_binder_slug = os.environ.get(
 )
 
 
+# repository hosting both the tutorial sources and the python bindings
+_linkcode_baseurl = "https://github.com/dune-gdt/dune-gdt"
+_repo_root = (this_dir / ".." / "..").resolve()
+
+
 def linkcode_resolve(domain, info):
-    if domain == "py":
-        if not info["module"]:
-            return None
-        filename = info["module"].replace(".", "/")
-        # the tutorial sources now live in this repository under tutorials/source
-        baseurl = "https://github.com/dune-gdt/dune-gdt"
-        return f"{baseurl}/tree/{branch}/tutorials/source/{filename}.py"
-    return None
+    if domain != "py" or not info["module"]:
+        return None
+    parts = info["module"].split(".")
+    # dune.gdt / dune.xt bindings live under python/<gdt|xt>/dune/<gdt|xt>/...,
+    # while the tutorial helper modules sit next to this conf.py in
+    # tutorials/source/.
+    if parts[:2] == ["dune", "gdt"]:
+        rel = Path("python", "gdt", *parts)
+    elif parts[:2] == ["dune", "xt"]:
+        rel = Path("python", "xt", *parts)
+    else:
+        rel = Path("tutorials", "source", *parts)
+    # a package resolves to its __init__.py, a plain module to <name>.py
+    if (_repo_root / rel / "__init__.py").is_file():
+        rel = rel / "__init__.py"
+    else:
+        rel = rel.with_suffix(".py")
+    return f"{_linkcode_baseurl}/tree/{branch}/{rel.as_posix()}"
