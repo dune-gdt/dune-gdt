@@ -66,18 +66,8 @@ public:
     namespace py = pybind11;
     using namespace pybind11::literals;
 
-    //    c.def_property_readonly("result", [](type& self) { return self.result(); });
-
-    // methods
-    //    c.def(
-    //        "append",
-    //        [](type& self,
-    //           const LocalElementBilinearFormType<E, r_r, 1, F, F, s_r, 1, F>& local_bilinear_form,
-    //           const XT::Common::Parameter& param,
-    //           const XT::Grid::ElementFilter<GV>& filter) { self.append(local_bilinear_form, param, filter); },
-    //        "local_element_bilinear_form"_a,
-    //        "param"_a = XT::Common::Parameter(),
-    //        "element_filter"_a = XT::Grid::ApplyOn::AllElements<GV>());
+    // Append local bilinear forms via "+=" (the finalized idiom). Pass a 2-tuple
+    // (local_form, filter) to restrict a form to a sub-set of elements/intersections.
     c.def("__iadd__", // function ptr signature required for the right return type
           (type & (type::*)(const LocalElementBilinearFormType&)) & type::operator+=,
           "local_element_bilinear_form"_a,
@@ -88,15 +78,6 @@ public:
             & type::operator+=,
         "tuple_of_localelementbilinearform_elementfilter"_a,
         py::is_operator());
-    //    c.def(
-    //        "append",
-    //        [](type& self,
-    //           const LocalCouplingIntersectionBilinearFormType& local_bilinear_form,
-    //           const XT::Common::Parameter& param,
-    //           const XT::Grid::IntersectionFilter<GV>& filter) { self.append(local_bilinear_form, param, filter); },
-    //        "local_coupling_intersection_bilinear_form"_a,
-    //        "param"_a = XT::Common::Parameter(),
-    //        "intersection_filter"_a = XT::Grid::ApplyOn::AllIntersections<GV>());
     c.def("__iadd__", // function ptr signature required for the right return type
           (type & (type::*)(const LocalCouplingIntersectionBilinearFormType&)) & type::operator+=,
           "local_coupling_intersection_bilinear_form"_a,
@@ -108,15 +89,6 @@ public:
               & type::operator+=,
           "tuple_of_localcouplingintersectionbilinearform_intersectionfilter"_a,
           py::is_operator());
-    //    c.def(
-    //        "append",
-    //        [](type& self,
-    //           const LocalIntersectionBilinearFormInterface<I, r_r, 1, F, F, s_r, 1, F>& local_bilinear_form,
-    //           const XT::Common::Parameter& param,
-    //           const XT::Grid::IntersectionFilter<GV>& filter) { self.append(local_bilinear_form, param, filter); },
-    //        "local_intersection_bilinear_form"_a,
-    //        "param"_a = XT::Common::Parameter(),
-    //        "intersection_filter"_a = XT::Grid::ApplyOn::AllIntersections<GV>());
     c.def("__iadd__", // function ptr signature required for the right return type
           (type & (type::*)(const LocalIntersectionBilinearFormType&)) & type::operator+=,
           "local_intersection_bilinear_form"_a,
@@ -128,11 +100,28 @@ public:
               & type::operator+=,
           "tuple_of_localintersectionbilinearform_intersectionfilter"_a,
           py::is_operator());
-    //    c.def(
-    //        "apply2",
-    //        [](type& self, const bool use_tbb) { return self.apply2(use_tbb); },
-    //        "parallel"_a = false,
-    //        py::call_guard<py::gil_scoped_release>());
+
+    // The supported way to evaluate the assembled bilinear form, e.g. a(u, u) for norms:
+    // apply2(range, source) walks the grid and returns the scalar a(range, source);
+    // norm(range) returns sqrt(apply2(range, range)). The argument types are the grid
+    // functions expected by the C++ apply2 (correct for both leaf and coupling views).
+    using RangeFunc = typename type::RangeFunctionType;
+    using SourceFunc = typename type::SourceFunctionType;
+    c.def(
+        "apply2",
+        [](type& self, RangeFunc range, SourceFunc source, const XT::Common::Parameter& param) {
+          return self.apply2(range, source, param);
+        },
+        "range"_a,
+        "source"_a,
+        "param"_a = XT::Common::Parameter(),
+        py::call_guard<py::gil_scoped_release>());
+    c.def(
+        "norm",
+        [](type& self, RangeFunc range, const XT::Common::Parameter& param) { return self.norm(range, param); },
+        "range"_a,
+        "param"_a = XT::Common::Parameter(),
+        py::call_guard<py::gil_scoped_release>());
   }
 
   static bound_type bind_leaf(pybind11::module& m,
