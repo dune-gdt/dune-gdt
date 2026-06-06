@@ -64,15 +64,36 @@ nb_execution_show_tb = True
 # and emit a warning (with traceback) for each failure. The CI job fails the build
 # if any executed notebook wrote an error report (see non_docker_build.yml).
 nb_execution_raise_on_error = False
-# These notebooks (and the helper-free tutorials) still rely on dune-gdt python
-# bindings that are currently commented out in the C++ sources (direct
-# `MatrixOperator += local_form`, `BilinearForm.result`/`apply2`, the
-# oswald/IPDG-flux-reconstruction operators). They are restored and rendered, but
-# not executed, until the bindings are restored / the notebooks are migrated to the
-# current API. Tracked in #127 (blocked on #126).
+# The remaining notebooks still rely on dune-gdt python bindings that are currently
+# commented out in the C++ sources. They are restored and rendered, but not executed,
+# until those bindings are restored (tracked in #126) -- migrating the notebook bodies
+# to the current two-level assembly API is not sufficient here, because the required
+# functionality has no python-exposed replacement:
+#
+# * example__MNS2002_estimates.md: the local-indicator assembly uses the generic
+#   `Operator += LocalElement/IntersectionBilinearFormIndicatorOperator`, whose
+#   `__iadd__`/`append` overloads are commented out in operators/operator.cc (only the
+#   `apply` methods are bound).
+# * example__ESV2007_estimates.md: same generic `Operator +=` blocker, plus
+#   `oswald_interpolation` and `LaplaceIpdgFluxReconstructionOperator` expose no symbols
+#   (their bindings are guarded by `#if 0`).
+# * example__prolongations_products_and_norms.md: evaluates `a(u, u)` for analytical
+#   grid functions via `BilinearForm(grid, u, u)` + `.result`/`.apply2`, all commented
+#   out in operators/bilinear-form.cc. As the operands are grid functions (no DoF
+#   vector), there is no MatrixOperator-based workaround.
+# * example__gmsh_grid.md: needs `meshio` (and a gmsh v2 mesh) for pymor's
+#   `discretize_gmsh`; the runners ship gmsh v4, which dune-grid cannot read.
+# * example__ipdg_heat_equation.md: its assembly was migrated to the `BilinearForm`
+#   + `append` API (and that part executes fine), but the time-stepping cells form
+#   `m_h + dt*a_h`, i.e. a `GDT::LincombOperator`, whose pybind type is not registered
+#   ("Unregistered type ... LincombOperator" / "Could not activate keep_alive!"). The
+#   migration is kept so that only the LincombOperator registration remains to re-enable.
+#
+# The CG-FEM tutorial and the data-functions tutorial were re-enabled: the former by
+# migrating its assembly cells to the `BilinearForm` + `append` API, the latter
+# unchanged (it already relied solely on the migrated discretize_elliptic_cg helper).
+# Tracked in #127 (blocked on #126).
 nb_execution_excludepatterns = [
-    "*dune_gdt_tutorial_on_cg_fem_for_the_stationary_heat_equation.md",
-    "*dune_gdt_tutorial_on_data_functions_and_interpolation.md",
     "*example__ESV2007_estimates.md",
     "*example__MNS2002_estimates.md",
     "*example__gmsh_grid.md",

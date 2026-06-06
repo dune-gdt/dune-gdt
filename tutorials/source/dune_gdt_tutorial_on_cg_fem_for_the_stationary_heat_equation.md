@@ -286,19 +286,24 @@ Given local bilinear forms, the purpose of the `MatrixOperator` in `dune-gdt` is
 
 ```{code-cell}
 from dune.gdt import (
+    BilinearForm,
     MatrixOperator,
     make_element_sparsity_pattern,
     LocalLaplaceIntegrand,
     LocalElementIntegralBilinearForm,
 )
 
+a_form = BilinearForm(grid)
+a_form += LocalElementIntegralBilinearForm(
+        LocalLaplaceIntegrand(GF(grid, kappa, dim_range=(Dim(d), Dim(d)))))
 a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h,
                      sparsity_pattern=make_element_sparsity_pattern(V_h))
-a_h += LocalElementIntegralBilinearForm(
-        LocalLaplaceIntegrand(GF(grid, kappa, dim_range=(Dim(d), Dim(d)))))
+a_h.append(a_form)
 ```
 
 A few notes regarding the above code:
+
+* we first collect all local bilinear forms in a `BilinearForm` (using `+=`) and then hand it to the `MatrixOperator` via `append`, which is the assembly API `dune-gdt` currently exposes: the `BilinearForm` describes *what* to assemble, the `MatrixOperator` *where* (into which matrix and sparsity pattern)
 
 * the `LocalLaplaceIntegrand` expects a matrix-valued function, which we achieve by converting the scalar function `kappa` to a matrix-valued `GridFunction`
 
@@ -495,10 +500,12 @@ l_h = VectorFunctional(grid, source_space=V_h)
 l_h += LocalElementIntegralFunctional(
         LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(GF(grid, f)))
 
+a_form = BilinearForm(grid)
+a_form += LocalElementIntegralBilinearForm(
+        LocalLaplaceIntegrand(GF(grid, kappa, dim_range=(Dim(d), Dim(d)))))
 a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h,
                      sparsity_pattern=make_element_sparsity_pattern(V_h))
-a_h += LocalElementIntegralBilinearForm(
-        LocalLaplaceIntegrand(GF(grid, kappa, dim_range=(Dim(d), Dim(d)))))
+a_h.append(a_form)
 
 walker = Walker(grid)
 walker.append(a_h)
