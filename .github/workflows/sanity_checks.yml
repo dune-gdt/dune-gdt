@@ -12,7 +12,7 @@ jobs:
       # Only meaningful on a PR; in the merge queue this step is skipped so the
       # required "Block Autosquash Commits" check still resolves successfully.
       if: github.event_name == 'pull_request'
-      uses: xt0rted/block-autosquash-commits-action@v2
+      uses: xt0rted/block-autosquash-commits-action@79880c36b4811fe549cfffe20233df88876024e7 # v2.2.0
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -24,6 +24,9 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6.0.2
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      with:
+        # conflict detection only reads local git history; no token needed
+        persist-credentials: false
     - name: Detect merge conflicts
-      uses: olivernybroe/action-conflict-finder@v4.1
+      uses: olivernybroe/action-conflict-finder@1a949ebd954a9eaee58802229ea5f9c69fb93a50 # v4.1
