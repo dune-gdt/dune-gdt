@@ -21,14 +21,16 @@ from setuptools.command.install import install
 
 requires=['ipython','numpy', 'scipy']
 
-# pyMOR is pinned for the examples (2022.2.0 is the minimal version that installs
-# in a 3.10 venv, against which the example scripts were validated), but left
-# unpinned for the docs build, which runs on newer Python (3.13 in CI) where only
-# more recent pyMOR releases install/run.
+# The examples were validated against pyMOR 2022.2.0 (the minimal version that
+# installs in a 3.10 venv), so we keep that exact pin only on older Python via an
+# environment marker; on 3.11+ (e.g. the 3.13 used by the docs build/CI wheels)
+# pyMOR is left unpinned so a compatible newer release is resolved. The marker
+# also keeps the flattened 'all' extra from forcing 2022.2.0 project-wide.
 visualization_packages = [ 'k3d>=2.15.2', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
                             'matplotlib', 'wurlitzer',]
 docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor']
-examples_packages = ['pymor==2022.2.0']
+examples_packages = ['pymor==2022.2.0; python_version < "3.11"',
+                     'pymor; python_version >= "3.11"']
 
 extras_require = {
   'visualisation': visualization_packages,
