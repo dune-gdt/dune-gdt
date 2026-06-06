@@ -21,13 +21,19 @@ from setuptools.command.install import install
 
 requires=['ipython','numpy', 'scipy']
 
+# single source of truth for the pyMOR pin: 2022.2.0 is the minimal version that
+# installs in a 3.10 venv (used by both the docs build and the examples).
+pymor_requirement = 'pymor==2022.2.0'
+
 visualization_packages = [ 'k3d>=2.15.2', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
                             'matplotlib', 'wurlitzer',]
-docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor==2022.1.0']
+docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', pymor_requirement]
+examples_packages = [pymor_requirement]
 
 extras_require = {
   'visualisation': visualization_packages,
   'docs': docs_packages,
+  'examples': examples_packages,
   'infrastructure': ['pylicense3>=0.4.1', 'pytest', 'pytest-cov', 'pytest-regressions',
                      'cmake_format==0.4.1', 'codecov', 'yapf==0.32',
                      'pytest-notebook==0.8.0', 'notebook',

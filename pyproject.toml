@@ -1,6 +1,37 @@
+# Repository-level metadata for dune-gdt.
+#
+# NOTE: this file is metadata only and is NOT the build configuration for the
+# installable Python bindings. Those are the `dune.xt` and `dune.gdt` packages,
+# built from python/xt/setup.py.in and python/gdt/setup.py.in (templated to
+# setup.py at CMake configure time, versioned via ${PROJECT_VERSION}). Runtime
+# dependencies and the optional extras (`visualisation`, `docs`, `examples`,
+# `infrastructure`, `parallel`, `all`) are declared there.
+
 [project]
 name = "dune-gdt"
 version = "0.1.0"
-description = "Add your description here"
-requires-python = ">=3.12"
+description = "A generic, grid-based discretization toolbox for DUNE."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "BSD-2-Clause OR GPL-2.0-or-later" }
+authors = [
+    { name = "Felix Schindler" },
+    { name = "René Fritze" },
+    { name = "Tobias Leibner" },
+    { name = "Martin Drohmann" },
+    { name = "Martin Nolte" },
+]
+maintainers = [{ name = "dune-gdt developers", email = "dune-gdt@dune-community.ovh" }]
+keywords = ["dune", "finite-elements", "discretization", "pde", "numerics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: C++",
+]
 dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/dune-gdt/dune-gdt"
+Repository = "https://github.com/dune-gdt/dune-gdt"
