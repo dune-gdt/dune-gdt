@@ -142,7 +142,9 @@ jobs:
     - name: Set up uv
       uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       with:
-        enable-cache: true
+        # gate the uv cache to trusted runs (pushes/merge queue and same-repo
+        # PRs); disable it for external-fork PRs so a fork cannot poison the cache
+        enable-cache: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     - name: Download freshly built wheels
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
