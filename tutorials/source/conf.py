@@ -22,7 +22,11 @@ this_dir = Path(__file__).resolve().parent
 src_dir = (this_dir / ".." / ".." / "src").resolve()
 sys.path.insert(0, str(src_dir))
 sys.path.insert(0, str(this_dir))
-branch = os.environ.get("CI_COMMIT_REF_NAME", "main")
+# the branch being built; GitHub Actions sets GITHUB_REF_NAME. The legacy
+# GitLab variable is kept as a fallback for local/legacy invocations.
+branch = os.environ.get(
+    "GITHUB_REF_NAME", os.environ.get("CI_COMMIT_REF_NAME", "main")
+)
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -157,8 +161,6 @@ pygments_style = "default"
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-
-on_gitlab_ci = os.environ.get("GITLAB_CI", "nope") != "nope"
 
 html_theme = "furo"
 html_theme_options = {}
@@ -305,7 +307,6 @@ modindex_common_prefix = ["dune."]
 # make intersphinx link to pyside2 docs
 qt_documentation = "PySide2"
 
-# this must match GDT_TUTORIALS_ROOT/.ci/gitlab/deploy_docs
 try_on_binder_branch = branch.replace("github/PUSH_", "from_fork__")
 try_on_binder_slug = os.environ.get(
     "CI_COMMIT_REF_SLUG", slugify.slugify(try_on_binder_branch)
@@ -317,6 +318,7 @@ def linkcode_resolve(domain, info):
         if not info["module"]:
             return None
         filename = info["module"].replace(".", "/")
-        baseurl = "https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt-tutorials/"
-        return f"{baseurl}/-/tree/{branch}/src/{filename}.py"
+        # the tutorial sources now live in this repository under tutorials/source
+        baseurl = "https://github.com/dune-gdt/dune-gdt"
+        return f"{baseurl}/tree/{branch}/tutorials/source/{filename}.py"
     return None

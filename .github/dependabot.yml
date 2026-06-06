@@ -5,7 +5,9 @@ version: 2
 
 updates:
 - package-ecosystem: pip
-  directory: /
+  directories:
+  - /
+  - /tutorials
   schedule:
     interval: weekly
   cooldown:
