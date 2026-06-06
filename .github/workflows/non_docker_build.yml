@@ -140,6 +140,9 @@ jobs:
     - uses: actions/setup-python@v6
       with:
         python-version: ${{ env.PYTHON_VERSION }}
+        # cache the docs/visualisation deps keyed on the pinned requirements file
+        cache: pip
+        cache-dependency-path: tutorials/requirements-docs.txt
 
     - name: Download freshly built wheels
       uses: actions/download-artifact@v8
@@ -163,10 +166,10 @@ jobs:
         # install the built dune-xt/dune-gdt wheels (xt is an exact-version dep of gdt)
         python -m pip install --find-links wheelhouse/ wheelhouse/*.whl
         # docs + visualisation extras (myst-nb executes the notebook cells; k3d
-        # provides visualize_function rendering when the wheels were built with K3D)
-        python -m pip install \
-          "myst-nb>=0.16" furo sphinxcontrib-bibtex python-slugify pymor \
-          "k3d>=2.15.2" vtk ipywidgets lxml xmljson matplotlib wurlitzer
+        # provides visualize_function rendering when the wheels were built with K3D).
+        # Versions are pinned in tutorials/requirements-docs.txt for reproducible
+        # builds and tracked by Dependabot.
+        python -m pip install -r "${GITHUB_WORKSPACE}/tutorials/requirements-docs.txt"
 
     - name: Build tutorials (sphinx + myst-nb notebook execution)
       # Run from a neutral directory so the repo-root `dune/` source tree does not
@@ -205,6 +208,43 @@ jobs:
         name: tutorials_html
         path: build/tutorials_html
         if-no-files-found: warn
+
+  deploy_docs:
+    name: Deploy tutorials docs to GitHub Pages
+    runs-on: ubuntu-24.04
+    needs: build_tutorials
+    # publish only on pushes to main; PRs and the merge queue build (above) but
+    # never deploy. build_tutorials must have succeeded, so broken docs are not
+    # published.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    permissions:
+      # required by actions/deploy-pages for the GitHub Pages deployment
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # do not cancel an in-progress Pages deployment; let it finish before the next
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+
+    steps:
+    - name: Download built tutorials HTML
+      uses: actions/download-artifact@v8
+      with:
+        name: tutorials_html
+        path: tutorials_html
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: tutorials_html
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
 
   test_publish:
     name: Publish to Test PyPI
