@@ -24,9 +24,7 @@ sys.path.insert(0, str(src_dir))
 sys.path.insert(0, str(this_dir))
 # the branch being built; GitHub Actions sets GITHUB_REF_NAME. The legacy
 # GitLab variable is kept as a fallback for local/legacy invocations.
-branch = os.environ.get(
-    "GITHUB_REF_NAME", os.environ.get("CI_COMMIT_REF_NAME", "main")
-)
+branch = os.environ.get("GITHUB_REF_NAME", os.environ.get("CI_COMMIT_REF_NAME", "main"))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
