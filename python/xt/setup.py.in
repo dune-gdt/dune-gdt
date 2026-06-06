@@ -23,7 +23,11 @@ requires=['ipython','numpy', 'scipy']
 
 visualization_packages = [ 'k3d>=2.15.2', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
                             'matplotlib', 'wurlitzer',]
-docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor==2022.1.0']
+# The tutorials/docs build (and the CI docs job) run on Python 3.13, where the
+# old pyMOR pin no longer installs, so pymor is left unpinned here and a
+# compatible release is resolved. These extras are the single source of truth
+# for the tutorial dependencies (installed in CI as dune-gdt[docs,visualisation]).
+docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor']
 
 extras_require = {
   'visualisation': visualization_packages,

@@ -25,6 +25,9 @@ extras_require = {
     "visualisation": [
         "dune-xt[visualisation]==${PROJECT_VERSION}",
     ],
+    "docs": [
+        "dune-xt[docs]==${PROJECT_VERSION}",
+    ],
     "infrastructure": [
         "dune-xt[infrastructure]==${PROJECT_VERSION}",
     ],
