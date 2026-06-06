@@ -19,7 +19,6 @@ authors = [
     { name = "René Fritze" },
     { name = "Tobias Leibner" },
     { name = "Martin Drohmann" },
-    { name = "Martin Nolte" },
 ]
 maintainers = [{ name = "dune-gdt developers", email = "dune-gdt@dune-community.ovh" }]
 keywords = ["dune", "finite-elements", "discretization", "pde", "numerics"]
