@@ -162,11 +162,11 @@ jobs:
         python -m pip install --upgrade pip
         # install the built dune-xt/dune-gdt wheels (xt is an exact-version dep of gdt)
         python -m pip install --find-links wheelhouse/ wheelhouse/*.whl
-        # docs + visualisation extras (myst-nb executes the notebook cells; k3d
-        # provides visualize_function rendering when the wheels were built with K3D)
-        python -m pip install \
-          "myst-nb>=0.16" furo sphinxcontrib-bibtex python-slugify pymor \
-          "k3d>=2.15.2" vtk ipywidgets lxml xmljson matplotlib wurlitzer
+        # docs + visualisation extras of the just-installed dune-gdt (the extra
+        # contents are the single source of truth in python/{xt,gdt}/setup.py.in:
+        # myst-nb executes the notebook cells; k3d provides visualize_function
+        # rendering when the wheels were built with K3D).
+        python -m pip install --find-links wheelhouse/ "dune-gdt[docs,visualisation]"
 
     - name: Build tutorials (sphinx + myst-nb notebook execution)
       # Run from a neutral directory so the repo-root `dune/` source tree does not
