@@ -28,7 +28,10 @@ requires=['ipython','numpy', 'scipy']
 # also keeps the flattened 'all' extra from forcing 2022.2.0 project-wide.
 visualization_packages = [ 'k3d>=2.15.2', 'vtk', 'ipywidgets', 'lxml', 'xmljson',
                             'matplotlib', 'wurlitzer',]
-docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor']
+# clangquill parses the in-tree dune-gdt/dune-xt C++ headers with libclang and
+# renders the MyST C++ API pages consumed by the Sphinx build (see
+# tutorials/source/conf.py); it replaces the previous Doxygen-based API setup.
+docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor', 'clangquill>=0.1.0']
 examples_packages = ['pymor==2022.2.0; python_version < "3.11"',
                      'pymor; python_version >= "3.11"']
 
