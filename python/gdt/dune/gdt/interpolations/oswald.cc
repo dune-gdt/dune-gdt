@@ -54,10 +54,11 @@ public:
       const auto& grid_view = target.space().grid_view();
       const XT::Grid::AllDirichletBoundaryInfo<XT::Grid::extract_intersection_t<std::decay_t<decltype(grid_view)>>>
           boundary_info;
-      auto op = make_oswald_interpolation_operator<XT::LA::IstlRowMajorSparseMatrix<double>>(
-          grid_view, source.space(), target.space(), boundary_info);
+      // make_oswald_interpolation_operator<VectorType>(assembly_grid_view, range_space, boundary_info):
+      // the operator is built from the range (target) space and applied to the source grid function.
+      auto op = make_oswald_interpolation_operator<V>(grid_view, target.space(), boundary_info);
       op.assemble();
-      op.apply(source.dofs().vector(), target.dofs().vector());
+      op.apply(GF(source), target.dofs().vector());
     };
 
     m.def(function_id.c_str(),
