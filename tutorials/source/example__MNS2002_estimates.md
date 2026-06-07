@@ -114,6 +114,7 @@ f = GF(grid,
 from dune.xt.grid import AllDirichletBoundaryInfo, Dim, Walker
 
 from dune.gdt import (
+    BilinearForm,
     ContinuousLagrangeSpace,
     DirichletConstraints,
     DiscreteFunction,
@@ -133,9 +134,11 @@ V_h = ContinuousLagrangeSpace(grid, order=1)
 l_h = VectorFunctional(grid, source_space=V_h)
 l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(f))
 
+a_form = BilinearForm(grid)
+a_form += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(A))
 a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h,
                      sparsity_pattern=make_element_sparsity_pattern(V_h))
-a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(A))
+a_h.append(a_form)
 
 dirichlet_constraints = DirichletConstraints(boundary_info, V_h)
 

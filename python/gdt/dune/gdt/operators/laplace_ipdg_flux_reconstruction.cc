@@ -108,6 +108,36 @@ public:
         "param"_a = XT::Common::Parameter(),
         py::call_guard<py::gil_scoped_release>());
 
+    // factory function with a grid-independent name (the class itself is registered with a
+    // grid-specific name); this is the symbol exported as `LaplaceIpdgFluxReconstructionOperator`.
+    const auto FactoryName = XT::Common::to_camel_case(class_id);
+    m.def(
+        FactoryName.c_str(),
+        [](GP& grid,
+           const RS& range_space,
+           const double& symmetry_prefactor,
+           const double& inner_penalty,
+           const double& dirichlet_penalty,
+           XT::Functions::GridFunction<E, d, d> diffusion,
+           XT::Functions::GridFunction<E, d, d> weight_function) {
+          return new type(grid.leaf_view(),
+                          range_space,
+                          symmetry_prefactor,
+                          inner_penalty,
+                          dirichlet_penalty,
+                          diffusion,
+                          weight_function);
+        },
+        "grid"_a,
+        "range_space"_a,
+        "symmetry_prefactor"_a,
+        "inner_penalty"_a,
+        "dirichlet_penalty"_a,
+        "diffusion"_a,
+        "weight_function"_a,
+        py::keep_alive<0, 1>(),
+        py::keep_alive<0, 2>());
+
     return c;
   } // ... bind(...)
 }; // class LaplaceIpdgFluxReconstructionOperator
