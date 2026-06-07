@@ -64,41 +64,25 @@ nb_execution_show_tb = True
 # and emit a warning (with traceback) for each failure. The CI job fails the build
 # if any executed notebook wrote an error report (see non_docker_build.yml).
 nb_execution_raise_on_error = False
-# The remaining notebooks still rely on dune-gdt python bindings that are currently
-# commented out in the C++ sources. They are restored and rendered, but not executed,
-# until those bindings are restored (tracked in #126) -- migrating the notebook bodies
-# to the current two-level assembly API is not sufficient here, because the required
-# functionality has no python-exposed replacement:
+# All restored tutorial notebooks are executed again (#127). The python bindings that
+# the remaining deferred notebooks relied on have been finalized in the C++ sources
+# (the genuinely missing pieces were added, the notebook bodies migrated to the current
+# two-level assembly API):
 #
-# * example__MNS2002_estimates.md: the local-indicator assembly uses the generic
-#   `Operator += LocalElement/IntersectionBilinearFormIndicatorOperator`, whose
-#   `__iadd__`/`append` overloads are commented out in operators/operator.cc (only the
-#   `apply` methods are bound).
-# * example__ESV2007_estimates.md: same generic `Operator +=` blocker, plus
-#   `oswald_interpolation` and `LaplaceIpdgFluxReconstructionOperator` expose no symbols
-#   (their bindings are guarded by `#if 0`).
-# * example__gmsh_grid.md: needs `meshio` (and a gmsh v2 mesh) for pymor's
-#   `discretize_gmsh`; the runners ship gmsh v4, which dune-grid cannot read.
-# * example__ipdg_heat_equation.md: its assembly was migrated to the `BilinearForm`
-#   + `append` API (and that part executes fine), but the time-stepping cells form
-#   `m_h + dt*a_h`, i.e. a `GDT::LincombOperator`, whose pybind type is not registered
-#   ("Unregistered type ... LincombOperator" / "Could not activate keep_alive!"). The
-#   migration is kept so that only the LincombOperator registration remains to re-enable.
-#
-# The CG-FEM tutorial and the data-functions tutorial were re-enabled: the former by
-# migrating its assembly cells to the `BilinearForm` + `append` API, the latter
-# unchanged (it already relied solely on the migrated discretize_elliptic_cg helper).
-#
-# example__prolongations_products_and_norms.md is also executed again: the
-# `BilinearForm` product/norm bindings used for `a(u, u)` have been finalized
-# (`BilinearForm.apply2(u, u)` / `BilinearForm.norm(u)`) and the notebook migrated.
-# Tracked in #127 (blocked on #126).
-nb_execution_excludepatterns = [
-    "*example__ESV2007_estimates.md",
-    "*example__MNS2002_estimates.md",
-    "*example__gmsh_grid.md",
-    "*example__ipdg_heat_equation.md",
-]
+# * example__MNS2002_estimates.md / example__ESV2007_estimates.md: the local a-posteriori
+#   indicator assembly (`Operator += LocalElement/IntersectionBilinearFormIndicatorOperator`)
+#   has been re-enabled in operators/operator.cc -- it has no BilinearForm-based replacement.
+# * example__ESV2007_estimates.md: additionally, the `oswald_interpolation` (interpolations/
+#   oswald.cc) and `LaplaceIpdgFluxReconstructionOperator` (operators/
+#   laplace_ipdg_flux_reconstruction.cc) bindings have been re-enabled, and the notebook's
+#   stiffness assembly migrated to the `BilinearForm` + `append` API.
+# * example__ipdg_heat_equation.md: the time-stepping cells form `m_h + dt*a_h`, i.e. a
+#   `GDT::(Const)LincombOperator`; those pybind types are now registered in
+#   operators/interfaces_all_grids.hh.
+# * example__gmsh_grid.md: `meshio` is installed in the CI job and used by the notebook to
+#   re-write the mesh produced by pymor's `discretize_gmsh` into a version 2.2 file that
+#   dune-grid can read (independent of the runner's gmsh version).
+nb_execution_excludepatterns = []
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.

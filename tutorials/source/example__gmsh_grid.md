@@ -29,7 +29,7 @@ kernelspec:
 
 ## 1: creating a gmsh file
 
-We use pyMORs `PolygonalDomain`description and `discretize_gmsh` to obtain a grid file that `gmsh` can read. **Note** that `dune-grid` can only handle `gmsh` version 2 files, we have thus installed `gmsh` version `2.16` in this virtualenv. For newer versions of `gmsh`,  you need to follow [these instructions](https://gitlab.dune-project.org/core/dune-grid/issues/85).
+We use pyMORs `PolygonalDomain` description and `discretize_gmsh` to obtain a grid file that `gmsh` can read. **Note** that `dune-grid` can only handle `gmsh` version 2 files. Depending on the installed `gmsh` version, the file written below may use a newer format; we convert it to a `dune-grid`-readable version 2.2 mesh with `meshio` further down (see also [these instructions](https://gitlab.dune-project.org/core/dune-grid/issues/85)).
 
 ```{code-cell}
 # wurlitzer: display dune's output in the notebook
@@ -87,21 +87,26 @@ fom.visualize(fom.solve())
 ## 3: using the gmsh grid in dune
 
 `dune-grid` [only supports](https://gitlab.dune-project.org/core/dune-grid/issues/85) `gmsh` version 2 files, and only a subset of the specification.
-This virtualenv includes the `gmsh` version 2.16 (as visible in the output of the `discretize_gmsh` command above), but we still need to clean up the mesh file for `dune-grid` to [correctly parse](https://gitlab.dune-project.org/core/dune-grid/-/issues/89) it.
-In particular, we need to remove the boundary type definition (which we do not require, we have our own boundary info), which is achieved by the following bash code (**Note** that you have to provide the same filename here as in the call to `discretize_gmsh`):
+Depending on the installed `gmsh` version, `discretize_gmsh` above may have written a newer (version 4) mesh file, and the file also contains a boundary type (`$PhysicalNames`) definition which `dune-grid` cannot [correctly parse](https://gitlab.dune-project.org/core/dune-grid/-/issues/89) (we do not require it, we have our own boundary info).
+We therefore use [`meshio`](https://github.com/nschloe/meshio) to re-write a clean version 2.2 ASCII mesh that contains only the points and the triangle cells (**Note** that you have to provide the same filename here as in the call to `discretize_gmsh`):
 
 ```{code-cell}
-# remove all lines between $PhysicalNames and $EndPhysicalNames ...
-!sed '/^\$PhysicalNames/,/^\$EndPhysicalNames/{//!d;};' -i L_shaped_domain.msh
-# ... and remove those two lines as well:
-!sed '/^\$PhysicalNames/d' -i L_shaped_domain.msh
-!sed '/^\$EndPhysicalNames/d' -i L_shaped_domain.msh
+import meshio
+
+_mesh = meshio.read('L_shaped_domain.msh')
+meshio.write_points_cells(
+    'L_shaped_domain_dune.msh',
+    _mesh.points,
+    [('triangle', _mesh.get_cells_type('triangle'))],
+    file_format='gmsh22',
+    binary=False,
+)
 ```
 
 ```{code-cell}
 from dune.xt.grid import make_gmsh_grid, Dim, Simplex, visualize_grid
 
-grid = make_gmsh_grid('L_shaped_domain.msh', Dim(2), Simplex())
+grid = make_gmsh_grid('L_shaped_domain_dune.msh', Dim(2), Simplex())
 ```
 
 This grid can now be used as any other grid, e.g. for visualization ...

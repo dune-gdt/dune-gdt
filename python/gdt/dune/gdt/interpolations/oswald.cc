@@ -137,18 +137,9 @@ PYBIND11_MODULE(_interpolations_oswald, m)
   py::module::import("dune.gdt._discretefunction_discretefunction");
   py::module::import("dune.gdt._spaces_interface");
 
-#if 0
-  // bindings for all but dune-istl disabled for the moment
-  oswald_interpolation_for_all_grids<LA::CommonDenseVector<double>,
-                                      LA::bindings::Common,
-                                      XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#  if HAVE_EIGEN
-  oswald_interpolation_for_all_grids<LA::EigenDenseVector<double>, LA::bindings::Eigen, XT::Grid::bindings::AvailableGridTypes>::
-      bind(m);
-#  endif
-  // TODO: make_oswald_interpolation still broken
+  // Only the dune-istl backend is bound, consistent with the other GDT operator/interpolation
+  // bindings (see e.g. operators/operator.cc). The Common/Eigen backends remain disabled.
   oswald_interpolation_for_all_grids<LA::IstlDenseVector<double>,
                                      LA::bindings::Istl,
                                      XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#endif // 0
 }

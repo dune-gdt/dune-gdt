@@ -173,6 +173,9 @@ jobs:
         # myst-nb executes the notebook cells; k3d provides visualize_function
         # rendering when the wheels were built with K3D).
         python -m pip install --find-links wheelhouse/ "dune-gdt[docs,visualisation]"
+        # meshio is used by example__gmsh_grid to re-write the gmsh mesh that pymor's
+        # discretize_gmsh produces into a version 2.2 file that dune-grid can read.
+        python -m pip install meshio
 
     - name: Build tutorials (sphinx + myst-nb notebook execution)
       # Run from a neutral directory so the repo-root `dune/` source tree does not

@@ -66,6 +66,7 @@ from dune.xt.grid import (
 )
 
 from dune.gdt import (
+    BilinearForm,
     DiscontinuousLagrangeSpace,
     DiscreteFunction,
     LocalElementIntegralBilinearForm,
@@ -96,16 +97,19 @@ symmetry_factor = 1
 l_h = VectorFunctional(grid, V_h)
 l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source))
 
-a_h = MatrixOperator(grid, V_h, V_h, make_element_and_intersection_sparsity_pattern(V_h))
-a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
-a_h += (LocalCouplingIntersectionIntegralBilinearForm(
-            LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
-            + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)),
-        {}, ApplyOnInnerIntersectionsOnce(grid))
-a_h += (LocalIntersectionIntegralBilinearForm(
-            LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
-            + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)),
-       {}, ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()))
+a_form = BilinearForm(grid)
+a_form += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
+a_form += (LocalCouplingIntersectionIntegralBilinearForm(
+               LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
+               + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)),
+           ApplyOnInnerIntersectionsOnce(grid))
+a_form += (LocalIntersectionIntegralBilinearForm(
+               LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
+               + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)),
+           ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()))
+a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h,
+                     sparsity_pattern=make_element_and_intersection_sparsity_pattern(V_h))
+a_h.append(a_form)
 
 walker = Walker(grid)
 walker.append(a_h)
@@ -137,11 +141,12 @@ from dune.gdt import LaplaceIpdgFluxReconstructionOperator, RaviartThomasSpace
 RT_0 = RaviartThomasSpace(grid, order=0)
 
 flux_reconstruction = LaplaceIpdgFluxReconstructionOperator(
-    grid, V_h, RT_0, symmetry_factor, penalty_parameter, penalty_parameter, diffusion, weight)
+    grid, RT_0, symmetry_factor, penalty_parameter, penalty_parameter, diffusion, weight)
 flux_reconstruction.assemble()
 
 t_h = DiscreteFunction(RT_0, 't_h')
-flux_reconstruction.apply(u_h.dofs.vector, t_h.dofs.vector)
+# the reconstruction maps the (discrete) source function u_h to the RT flux vector t_h
+flux_reconstruction.apply(u_h, t_h.dofs.vector)
 ```
 
 ```{code-cell}

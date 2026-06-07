@@ -97,35 +97,28 @@ public:
         "source"_a,
         "param"_a = XT::Common::Parameter(),
         py::call_guard<py::gil_scoped_release>());
-    // our additional methods
-    //    c.def(
-    //        "append",
-    //        [](type& self, const Eop& local_op, const XT::Grid::ElementFilter<GV>& filter) {
-    //          self.append(local_op, filter);
-    //        },
-    //        "local_element_operator"_a,
-    //        "element_filter"_a = XT::Grid::ApplyOn::AllElements<GV>());
-    //    c.def("__iadd__", // function ptr signature required for the right return type
-    //          (type & (type::*)(const Eop&)) & type::operator+=,
-    //          "local_element_operator"_a,
-    //          py::is_operator());
-    //    c.def("__iadd__", // function ptr signature required for the right return type
-    //          (type & (type::*)(const std::tuple<const Eop&, const XT::Grid::ElementFilter<GV>&>&)) &
-    //          type::operator+=, "tuple_of_localelementop_elementfilter"_a, py::is_operator());
-    //    c.def(
-    //        "append",
-    //        [](type& self, const Iop& local_op, const XT::Grid::IntersectionFilter<GV>& filter) {
-    //          self.append(local_op, filter);
-    //        },
-    //        "local_intersection_operator"_a,
-    //        "intersection_filter"_a = XT::Grid::ApplyOn::AllIntersections<GV>());
-    //    c.def("__iadd__", // function ptr signature required for the right return type
-    //          (type & (type::*)(const Iop&)) & type::operator+=,
-    //          "local_intersection_operator"_a,
-    //          py::is_operator());
-    //    c.def("__iadd__", // function ptr signature required for the right return type
-    //          (type & (type::*)(const std::tuple<const Iop&, const XT::Grid::IntersectionFilter<GV>&>&)) &
-    //          type::operator+=, "tuple_of_localintersectionop_intersectionfilter"_a, py::is_operator());
+    // our additional methods: appending local element/intersection operators (e.g. the
+    // a-posteriori indicator operators) via `+=`, which has no BilinearForm-based replacement.
+    // NOTE: GDT::Operator only exposes `operator+=` (no `append(local_op, filter)`), and the
+    // overloads taking a (operator, filter) tuple bind against `operator+=(const std::pair<...>&)`,
+    // so the function-pointer cast must use std::pair (a Python tuple converts to std::pair via
+    // pybind11/stl.h).
+    c.def("__iadd__", // function ptr signature required for the right return type
+          (type & (type::*)(const Eop&)) & type::operator+=,
+          "local_element_operator"_a,
+          py::is_operator());
+    c.def("__iadd__", // function ptr signature required for the right return type
+          (type & (type::*)(const std::pair<const Eop&, const XT::Grid::ElementFilter<GV>&>&)) & type::operator+=,
+          "tuple_of_localelementop_elementfilter"_a,
+          py::is_operator());
+    c.def("__iadd__", // function ptr signature required for the right return type
+          (type & (type::*)(const Iop&)) & type::operator+=,
+          "local_intersection_operator"_a,
+          py::is_operator());
+    c.def("__iadd__", // function ptr signature required for the right return type
+          (type & (type::*)(const std::pair<const Iop&, const XT::Grid::IntersectionFilter<GV>&>&)) & type::operator+=,
+          "tuple_of_localintersectionop_intersectionfilter"_a,
+          py::is_operator());
 
     // factories
     const auto FactoryName = XT::Common::to_camel_case(class_id);
