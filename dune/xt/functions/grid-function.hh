@@ -714,7 +714,8 @@ private:
 }; // class GridFunction<..., 1, 1, ...>
 
 
-/// \brief Creates a GridFunction wrapping func, deducing the element type from the explicitly given element or grid view
+/// \brief Creates a GridFunction wrapping func, deducing the element type from the explicitly given element or grid
+/// view
 ///        type.
 template <class Element_or_GridView, size_t d, size_t r, size_t rC, class R>
 auto make_grid_function(const FunctionInterface<d, r, rC, R>& func)

@@ -12,7 +12,8 @@
 // This file is part of the dune-pybindxi project:
 
 /// \file
-/// \brief Provides a scoped embedded Python interpreter (ScopedInterpreter) and the global GlobalInterpreter() accessor.
+/// \brief Provides a scoped embedded Python interpreter (ScopedInterpreter) and the global GlobalInterpreter()
+/// accessor.
 
 #ifndef DUNE_PYBINDXI_INTERPRETER_HH
 #define DUNE_PYBINDXI_INTERPRETER_HH

@@ -12,7 +12,8 @@
 //   Tobias Leibner  (2014, 2017 - 2021)
 
 /// \file
-/// \brief Assorted math helpers: type-generic abs/min/max, sign, factorial, NaN/Inf checks and the MinMaxAvg accumulator.
+/// \brief Assorted math helpers: type-generic abs/min/max, sign, factorial, NaN/Inf checks and the MinMaxAvg
+/// accumulator.
 
 #ifndef DUNE_XT_COMMON_MATH_HH
 #define DUNE_XT_COMMON_MATH_HH

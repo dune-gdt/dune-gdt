@@ -25,7 +25,8 @@
 namespace Dune::XT::Common {
 
 
-/// \brief Base class for convergence studies that refine a discretization and report experimental orders of convergence.
+/// \brief Base class for convergence studies that refine a discretization and report experimental orders of
+/// convergence.
 class ConvergenceStudy
 {
 public:
