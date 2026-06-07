@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2019)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief A sparse vector container implementing the LA VectorInterface.
+
 #ifndef DUNE_XT_LA_CONTAINER_COMMON_VECTOR_SPARSE_HH
 #define DUNE_XT_LA_CONTAINER_COMMON_VECTOR_SPARSE_HH
 
@@ -504,6 +507,7 @@ struct VectorAbstraction<LA::CommonSparseVector<T>>
 } // namespace XT
 
 
+/// \brief Adds a CommonSparseVector in-place to a Dune::FieldVector.
 template <class ScalarType, int size>
 FieldVector<ScalarType, size>& operator+=(FieldVector<ScalarType, size>& lhs,
                                           const XT::LA::CommonSparseVector<ScalarType>& rhs)

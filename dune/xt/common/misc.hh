@@ -11,6 +11,9 @@
 //   Sven Kaulmann   (2011 - 2012)
 //   Tobias Leibner  (2014, 2018, 2020)
 
+/// \file
+/// \brief Miscellaneous small helpers (container index search, array length/creation, environment dumping).
+
 #ifndef DUNE_XT_COMMON_MISC_HH
 #define DUNE_XT_COMMON_MISC_HH
 
@@ -73,6 +76,7 @@ std::array<T, N> make_array(const T& v)
   return ret;
 }
 
+//! creates a std::array<T, N> from a std::vector (broadcasting a size-1 vector, else copying the first N entries)
 template <class T, size_t N>
 std::array<T, N> make_array(const std::vector<T>& v)
 {

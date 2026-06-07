@@ -9,6 +9,9 @@
 //   René Fritze     (2019)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief An identity (no-op) preconditioner for use with dune-istl solvers.
+
 #ifndef DUNE_XT_LA_SOLVER_ISTL_PRECONDITIONERS_HH
 #define DUNE_XT_LA_SOLVER_ISTL_PRECONDITIONERS_HH
 
@@ -20,6 +23,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief A preconditioner that does nothing, simply copying the defect to the correction.
 template <class O>
 class IdentityPreconditioner : public Dune::Preconditioner<typename O::domain_type, typename O::range_type>
 {

@@ -11,6 +11,9 @@
 //   Sven Kaulmann   (2013)
 //   Tobias Leibner  (2014, 2017 - 2021)
 
+/// \file
+/// \brief Assorted math helpers: type-generic abs/min/max, sign, factorial, NaN/Inf checks and the MinMaxAvg accumulator.
+
 #ifndef DUNE_XT_COMMON_MATH_HH
 #define DUNE_XT_COMMON_MATH_HH
 
@@ -49,18 +52,21 @@ template <class T, bool is_integral = std::is_integral<T>::value>
 struct Epsilon
 {};
 
+//! integral specialization: the smallest representable increment is 1
 template <class T>
 struct Epsilon<T, true>
 {
   static constexpr T value = T(1);
 };
 
+//! floating-point specialization: forwards to std::numeric_limits<T>::epsilon()
 template <class T>
 struct Epsilon<T, false>
 {
   static constexpr T value = std::numeric_limits<T>::epsilon();
 };
 
+//! std::string specialization, providing a single-character increment
 template <>
 struct Epsilon<std::string, false>
 {
@@ -230,6 +236,7 @@ template <class T, typename = void>
 class numeric_limits : public std::numeric_limits<double>
 {};
 
+//! specialization forwarding to std::numeric_limits<T> whenever such a specialization exists
 template <class T>
 class numeric_limits<T, typename std::enable_if<std::numeric_limits<T>::is_specialized>::type>
   : public std::numeric_limits<T>
@@ -291,12 +298,14 @@ std::complex<T> conj(std::complex<T> val)
 //! calculates binomial coefficient for arbitrary n
 double binomial_coefficient(const double n, const size_t k);
 
+//! returns the larger of two values of the same type
 template <class T>
 T max(const T& left, const T& right)
 {
   return std::max(left, right);
 }
 
+//! returns the larger of two values of differing types, promoted to their common type
 template <class L, class R>
 typename PromotionTraits<L, R>::PromotedType max(const L& left, const R& right)
 {
@@ -305,6 +314,7 @@ typename PromotionTraits<L, R>::PromotedType max(const L& left, const R& right)
 }
 
 
+//! returns the smaller of two values of the same type
 template <class T>
 T min(const T& left, const T& right)
 {
@@ -312,6 +322,7 @@ T min(const T& left, const T& right)
 }
 
 
+//! minmod limiter: returns 0 if the arguments have opposite signs, else the one smaller in magnitude
 template <class T>
 std::enable_if_t<std::is_arithmetic<T>::value, T> minmod(const T left, const T right)
 {
@@ -321,6 +332,7 @@ std::enable_if_t<std::is_arithmetic<T>::value, T> minmod(const T left, const T r
 }
 
 
+//! maxmod limiter: returns 0 if the arguments have opposite signs, else the one larger in magnitude
 template <class T>
 std::enable_if_t<std::is_arithmetic<T>::value, T> maxmod(const T left, const T right)
 {
@@ -330,6 +342,7 @@ std::enable_if_t<std::is_arithmetic<T>::value, T> maxmod(const T left, const T r
 }
 
 
+//! returns the smaller of two values of differing types, promoted to their common type
 template <class L, class R>
 typename PromotionTraits<L, R>::PromotedType min(const L& left, const R& right)
 {
@@ -338,7 +351,7 @@ typename PromotionTraits<L, R>::PromotedType min(const L& left, const R& right)
 }
 
 
-// avoid Wfloat-equal warning
+//! returns true if val equals zero (avoids the -Wfloat-equal warning)
 template <class FieldType>
 inline bool is_zero(const FieldType& val)
 {
@@ -349,6 +362,7 @@ inline bool is_zero(const FieldType& val)
 } // namespace Dune::XT::Common
 
 
+//! writes the min, max and average held by a MinMaxAvg to an output stream
 template <class T>
 inline std::ostream& operator<<(std::ostream& s, const Dune::XT::Common::MinMaxAvg<T>& d)
 {

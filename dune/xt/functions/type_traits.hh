@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Type traits and helpers describing range and derivative types, function categories and combination types.
+
 #ifndef DUNE_XT_FUNCTIONS_TYPE_TRAITS_HH
 #define DUNE_XT_FUNCTIONS_TYPE_TRAITS_HH
 
@@ -246,6 +249,7 @@ struct is_grid_function_helper
 } // namespace internal
 
 
+/// \brief Trait whose value is true if T is derived from a matching ElementFunctionInterface.
 template <class T, bool is_candidate = internal::is_element_function_helper<T>::is_candidate>
 struct is_element_function;
 
@@ -259,6 +263,7 @@ struct is_element_function<T, true>
 {};
 
 
+/// \brief Trait whose value is true if T is derived from a matching FunctionInterface.
 template <class T, bool is_candidate = internal::is_function_helper<T>::is_candidate>
 struct is_function;
 
@@ -271,6 +276,7 @@ struct is_function<T, true> : std::is_base_of<FunctionInterface<T::d, T::r, T::r
 {};
 
 
+/// \brief Trait whose value is true if T is derived from a matching GridFunctionInterface.
 template <class T, bool is_candidate = internal::is_grid_function_helper<T>::is_candidate>
 struct is_grid_function;
 
@@ -283,6 +289,7 @@ struct is_grid_function<T, true> : std::is_base_of<GridFunctionInterface<typenam
 {};
 
 
+/// \brief Provides as ::type the ElementFunctionInterface matching the element function F.
 template <class F>
 struct as_element_function_interface
 {
@@ -294,6 +301,7 @@ template <class F>
 using as_element_function_interface_t = typename as_element_function_interface<F>::type;
 
 
+/// \brief Provides as ::type the FunctionInterface matching the function F.
 template <class F>
 struct as_function_interface
 {
@@ -305,6 +313,7 @@ template <class F>
 using as_function_interface_t = typename as_function_interface<F>::type;
 
 
+/// \brief Provides as ::type the GridFunctionInterface matching the grid function F.
 template <class F>
 struct as_grid_function_interface
 {
@@ -316,6 +325,7 @@ template <class F>
 using as_grid_function_interface_t = typename as_grid_function_interface<F>::type;
 
 
+/// \brief Tag types identifying the binary operations (difference, fraction, product, sum) used to combine functions.
 struct CombinationType
 {
   struct difference
@@ -329,6 +339,7 @@ struct CombinationType
 }; // struct CombinationType
 
 
+/// \brief Provides the human-readable name and symbol of a given combination tag type.
 template <typename CombinationType>
 struct GetCombination
 {
@@ -344,47 +355,56 @@ struct GetCombination
 }; // struct GetCombination
 
 
+/// \brief Returns the human-readable name ("difference", "fraction", "product", "sum") of the given combination tag.
 inline std::string get_combination_name(CombinationType::difference)
 {
   return "difference";
 }
 
+/// \brief Returns the operator symbol ("-", "/", "*", "+") of the given combination tag.
 inline std::string get_combination_symbol(CombinationType::difference)
 {
   return "-";
 }
 
+/// \brief Returns the name "fraction" for the fraction combination tag.
 inline std::string get_combination_name(CombinationType::fraction)
 {
   return "fraction";
 }
 
+/// \brief Returns the operator symbol "/" for the fraction combination tag.
 inline std::string get_combination_symbol(CombinationType::fraction)
 {
   return "/";
 }
 
+/// \brief Returns the name "product" for the product combination tag.
 inline std::string get_combination_name(CombinationType::product)
 {
   return "product";
 }
 
+/// \brief Returns the operator symbol "*" for the product combination tag.
 inline std::string get_combination_symbol(CombinationType::product)
 {
   return "*";
 }
 
+/// \brief Returns the name "sum" for the sum combination tag.
 inline std::string get_combination_name(CombinationType::sum)
 {
   return "sum";
 }
 
+/// \brief Returns the operator symbol "+" for the sum combination tag.
 inline std::string get_combination_symbol(CombinationType::sum)
 {
   return "+";
 }
 
 
+/// \brief Identifies which derivative (divergence or gradient) a derivative function should compute.
 enum class DerivativeType
 {
   divergence,

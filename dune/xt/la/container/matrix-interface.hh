@@ -10,6 +10,9 @@
 //   René Fritze      (2015 - 2016, 2018 - 2020)
 //   Tobias Leibner   (2014, 2017 - 2020)
 
+/// \file
+/// \brief CRTP interface for linear algebra matrix containers.
+
 #ifndef DUNE_XT_LA_CONTAINER_MATRIX_INTERFACE_HH
 #define DUNE_XT_LA_CONTAINER_MATRIX_INTERFACE_HH
 
@@ -63,6 +66,7 @@ public:
 } // namespace internal
 
 
+/// \brief CRTP base interface for matrix containers, providing common matrix operations and norms.
 template <class TraitsImp, class ScalarImp = typename TraitsImp::ScalarType>
 class MatrixInterface : public ContainerInterface<TraitsImp, ScalarImp>
 {
@@ -472,6 +476,7 @@ private:
 }; // class MatrixInterface
 
 
+/// \brief Writes a MatrixInterface to an output stream in human-readable, row-wise form.
 template <class T, class S>
 std::ostream& operator<<(std::ostream& out, const MatrixInterface<T, S>& matrix)
 {
@@ -496,6 +501,7 @@ std::ostream& operator<<(std::ostream& out, const MatrixInterface<T, S>& matrix)
 } // ... operator<<(...)
 
 
+/// \brief Creates an LA matrix from a nested initializer list of entries, optionally restricted to a sparsity pattern.
 template <class MatrixType>
 typename std::enable_if<is_matrix<MatrixType>::value, MatrixType>::type
 create(const std::initializer_list<std::initializer_list<typename Common::MatrixAbstraction<MatrixType>::ScalarType>>&
@@ -519,6 +525,7 @@ create(const std::initializer_list<std::initializer_list<typename Common::Matrix
 }
 
 
+/// \brief Creates a non-LA Common matrix from a nested initializer list of entries.
 template <class MatrixType>
 typename std::enable_if<Common::is_matrix<MatrixType>::value && !is_matrix<MatrixType>::value, MatrixType>::type
 create(const std::initializer_list<std::initializer_list<typename Common::MatrixAbstraction<MatrixType>::ScalarType>>&

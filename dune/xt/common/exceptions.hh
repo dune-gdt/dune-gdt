@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2017 - 2020)
 
+/// \file
+/// \brief The colorful DUNE_THROW macro and the dune-xt exception hierarchy.
+
 #ifndef DUNE_XT_COMMON_EXCEPTIONS_HH
 #define DUNE_XT_COMMON_EXCEPTIONS_HH
 
@@ -85,57 +88,75 @@ namespace Common {
 namespace Exceptions {
 
 
+/// \brief Thrown when a CRTP interface method is not implemented by the derived class.
 class CRTP_check_failed : public Dune::Exception
 {};
 
+/// \brief Thrown when the shapes (sizes/dimensions) of two containers do not match.
 class shapes_do_not_match : public Dune::Exception
 {};
 
+/// \brief Thrown when an index lies outside the valid range.
 class index_out_of_range : public Dune::Exception
 {};
 
+/// \brief Thrown when an interface is used in a way that violates its contract.
 class you_are_using_this_wrong : public Dune::Exception
 {};
 
+/// \brief Thrown when the input provided to a function is invalid.
 class wrong_input_given : public you_are_using_this_wrong
 {};
 
+/// \brief Thrown when the requirements (preconditions) of an operation are not met.
 class requirements_not_met : public you_are_using_this_wrong
 {};
 
+/// \brief Thrown when a Configuration is malformed or contains invalid entries.
 class configuration_error : public Dune::Exception
 {};
 
+/// \brief Thrown when a conversion between types or representations fails.
 class conversion_error : public Dune::Exception
 {};
 
+/// \brief Thrown when a computed result does not match the expected one.
 class results_are_not_as_expected : public Dune::Exception
 {};
 
+/// \brief Thrown on an internal (library-side) error that should not normally occur.
 class internal_error : public Dune::Exception
 {};
 
+/// \brief Thrown when an external dependency or library reports an error.
 class external_error : public Dune::Exception
 {};
 
+/// \brief Thrown when a method that must be implemented by the derived class is missing.
 class you_have_to_implement_this : public Dune::NotImplemented
 {};
 
+/// \brief Thrown when a debug assertion (DXT_ASSERT) fails.
 class debug_assertion : public Dune::Exception
 {};
 
+/// \brief Thrown when a bisection algorithm fails to converge or is given invalid input.
 class bisection_error : public wrong_input_given
 {};
 
+/// \brief Thrown when a Parameter is invalid or does not match the expected ParameterType.
 class parameter_error : public Dune::Exception
 {};
 
+/// \brief Thrown when a required (often optional) dependency is missing.
 class dependency_missing : public Dune::Exception
 {};
 
+/// \brief Thrown when an assumed-to-be-unreachable code path is taken.
 class this_should_not_happen : public Dune::InvalidStateException
 {};
 
+/// \brief Thrown when the logging facilities are misconfigured or misused.
 class logger_error : public Dune::Exception
 {};
 
@@ -143,8 +164,10 @@ class logger_error : public Dune::Exception
 } // namespace Exceptions
 
 
+/// \brief Prints a Dune::Exception and returns a non-zero exit code, for use in main()-level catch blocks.
 int handle_exception(const Dune::Exception& exp);
 
+/// \brief Prints a std::exception and returns a non-zero exit code, for use in main()-level catch blocks.
 int handle_exception(const std::exception& exp);
 
 

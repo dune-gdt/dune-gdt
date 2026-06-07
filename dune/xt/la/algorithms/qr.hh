@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Householder QR factorization with column pivoting and related solve routines.
+
 #ifndef DUNE_XT_LA_ALGORITHMS_QR_HH
 #define DUNE_XT_LA_ALGORITHMS_QR_HH
 
@@ -500,6 +503,7 @@ qr(MatrixType& A, VectorType& tau, IndexVectorType& permutations)
 } // void solve_lower_triangular(...)
 
 // calculate y =  Q * x or y = Q^T * x where Q is from the qr decomposition A = QR
+/// \brief Computes y = Q * x (or y = Q^T * x) from the compressed QR factorization stored in QR and tau.
 template <Common::Transpose transpose,
           class MatrixType,
           class VectorType,
@@ -511,6 +515,7 @@ void apply_q_from_qr(const MatrixType& QR, const VectorType& tau, const SecondVe
 }
 
 // calculate y =  Q * x or y = Q^T * x where Q is from the qr decomposition A = QR
+/// \brief Reconstructs the explicit orthogonal matrix Q from the compressed QR factorization stored in QR and tau.
 template <class MatrixType, class VectorType, class M = Common::MatrixAbstraction<MatrixType>>
 typename M::template MatrixTypeTemplate<M::static_rows, M::static_rows> calculate_q_from_qr(const MatrixType& QR,
                                                                                             const VectorType& tau)
@@ -518,6 +523,7 @@ typename M::template MatrixTypeTemplate<M::static_rows, M::static_rows> calculat
   return internal::QrHelper<MatrixType, VectorType>::calculate_q_from_qr(QR, tau);
 }
 
+/// \brief Builds the permutation matrix P from a permutation index vector produced by the pivoted QR factorization.
 template <class MatrixType, class IndexVectorType>
 void get_permutation_matrix(const IndexVectorType& permutations, MatrixType& P)
 {

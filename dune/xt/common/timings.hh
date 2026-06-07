@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2011)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Lightweight timing facilities: the Timings manager, its global instance and scoped timing helpers.
+
 #ifndef DUNE_XT_COMMON_PROFILER_HH
 #define DUNE_XT_COMMON_PROFILER_HH
 
@@ -143,6 +146,7 @@ DUNE_EXPORT inline Timings& timings()
   return pf;
 }
 
+//! RAII helper that starts a named timing section on construction and stops it on destruction
 class ScopedTiming : public boost::noncopyable
 {
 protected:
@@ -161,6 +165,7 @@ public:
   }
 };
 
+//! a ScopedTiming that additionally writes the section's elapsed time to an output stream on destruction
 struct OutputScopedTiming : public ScopedTiming
 {
   OutputScopedTiming(const std::string& section_name, std::ostream& out);

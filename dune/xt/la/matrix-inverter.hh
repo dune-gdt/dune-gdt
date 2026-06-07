@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2020)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Generic interface and factory functions for computing the inverse of a matrix.
+
 #ifndef DUNE_XT_LA_MATRIX_INVERTER_HH
 #define DUNE_XT_LA_MATRIX_INVERTER_HH
 
@@ -48,6 +51,7 @@ class MatrixInverterOptions
 }; // class MatrixInverterOptions
 
 
+/// \brief Returns the list of available matrix inversion types for the given matrix.
 template <class MatrixType>
 std::vector<std::string> matrix_inverter_types(const MatrixType& /*matrix*/)
 {
@@ -55,6 +59,7 @@ std::vector<std::string> matrix_inverter_types(const MatrixType& /*matrix*/)
 }
 
 
+/// \brief Returns the configuration of options for the given matrix inversion type and matrix.
 template <class MatrixType>
 Common::Configuration matrix_inverter_options(const MatrixType& /*matrix*/, const std::string& type = "")
 {
@@ -94,6 +99,7 @@ public:
 }; // class MatrixInverter
 
 
+/// \brief Creates a MatrixInverter for the given matrix using the named inversion type.
 template <class M>
 MatrixInverter<M> make_matrix_inverter(const M& matrix, const std::string& type = "")
 {
@@ -101,6 +107,7 @@ MatrixInverter<M> make_matrix_inverter(const M& matrix, const std::string& type 
 }
 
 
+/// \brief Creates a MatrixInverter for the given matrix using the provided options.
 template <class M>
 MatrixInverter<M> make_matrix_inverter(const M& matrix, const Common::Configuration& options)
 {
@@ -108,6 +115,7 @@ MatrixInverter<M> make_matrix_inverter(const M& matrix, const Common::Configurat
 }
 
 
+/// \brief Computes and returns the inverse of the given matrix using the named inversion type.
 template <class M>
 auto invert_matrix(const M& matrix, const std::string& inversion_type = "")
 {
@@ -116,6 +124,7 @@ auto invert_matrix(const M& matrix, const std::string& inversion_type = "")
 }
 
 
+/// \brief Computes and returns the inverse of the given matrix using the provided options.
 template <class M>
 auto invert_matrix(const M& matrix, const Common::Configuration& inversion_options)
 {

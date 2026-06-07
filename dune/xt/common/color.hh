@@ -10,6 +10,9 @@
 //   Stefan Girke    (2012)
 //   Tobias Leibner  (2014, 2020)
 
+/// \file
+/// \brief ANSI color and stream modifier codes and helpers for printing colored terminal output.
+
 #ifndef DUNE_XT_COMMON_COLOR_HH
 #define DUNE_XT_COMMON_COLOR_HH
 
@@ -69,6 +72,7 @@ struct Colors
 }; // struct Colors
 
 // modifiers
+/// \brief Collection of ANSI escape codes for text styling (bold, italic, underline, blink, reverse).
 struct StreamModifiers
 {
   static const char* normal;
@@ -92,8 +96,10 @@ struct StreamModifiers
  */
 std::string color(size_t i);
 
+/// \brief Returns the global map associating color names with their ANSI escape codes.
 std::map<std::string, std::string>& color_map();
 
+/// \brief Returns the ANSI escape code for the color registered under the given name in color_map().
 std::string color(const std::string id);
 
 /**
@@ -105,8 +111,10 @@ std::string color(const std::string id);
 std::string backcolor(size_t i);
 
 // maybe you want to choose your own color
+/// \brief Maps a template nesting level to a color number used by highlight_template.
 size_t template_color_chooser(size_t i);
 
+/// \brief Returns true if the current terminal (per the TERM environment) supports colored output.
 bool terminal_supports_color();
 
 /**
@@ -127,8 +135,10 @@ std::string highlight_template(std::string str, size_t maxlevel = 10000);
  */
 std::string highlight_string(std::string str, size_t colornr = 0);
 
+/// \brief Wraps str in the given color code and a reset, returning the colored string.
 std::string color_string(const std::string str, const std::string clr = Colors::brown);
 
+/// \brief Returns str wrapped in the red color code and a reset.
 std::string color_string_red(const std::string str);
 
 /**

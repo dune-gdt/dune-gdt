@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2011)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Filesystem helpers for path manipulation, directory creation and creating in-/output file streams.
+
 #ifndef DUNE_XT_COMMON_FILESYSTEM_HH
 #define DUNE_XT_COMMON_FILESYSTEM_HH
 
@@ -38,9 +41,11 @@ void test_create_directory(const std::string& _path);
 //! pure c++ emulation of system's touch binary
 bool touch(const std::string& _path);
 
+//! creates the directories leading up to path (if needed) and returns an ofstream opened on it
 std::unique_ptr<boost::filesystem::ofstream> make_ofstream(const boost::filesystem::path& path,
                                                            const std::ios_base::openmode mode = std::ios_base::out);
 
+//! returns an ifstream opened on path
 std::unique_ptr<boost::filesystem::ifstream> make_ifstream(const boost::filesystem::path& path,
                                                            const std::ios_base::openmode mode = std::ios_base::in);
 

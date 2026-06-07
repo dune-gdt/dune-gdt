@@ -11,6 +11,9 @@
 //   Sven Kaulmann   (2013)
 //   Tobias Leibner  (2014, 2020)
 
+/// \file
+/// \brief Free functions for inspecting Dune intersections (printing, diameter and point containment).
+
 #ifndef DUNE_XT_GRID_INTERSECTION_HH
 #define DUNE_XT_GRID_INTERSECTION_HH
 
@@ -61,6 +64,7 @@ void print_intersection(const Intersection<G, I>& intersection,
 } // ... print_intersection(...)
 
 
+/// \brief Returns the diameter of an intersection, i.e. the largest distance between any two of its corners.
 template <class G, class I>
 double diameter(const Intersection<G, I>& intersection)
 {
@@ -79,6 +83,7 @@ double diameter(const Intersection<G, I>& intersection)
 
 
 // Since CouplingIntersectionWithCorrectNormal is not derived from Dune::Intersection, we need this copy here
+/// \brief Returns the diameter (largest distance between any two corners) of a coupling intersection.
 template <class C, class I>
 double diameter(const internal::CouplingIntersectionWithCorrectNormal<C, I>& intersection)
 {

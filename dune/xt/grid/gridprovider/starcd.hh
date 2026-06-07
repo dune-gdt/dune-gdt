@@ -10,6 +10,9 @@
 //   René Fritze     (2012 - 2020)
 //   Tobias Leibner  (2014, 2018 - 2020)
 
+/// \file
+/// \brief Provides a grid provider factory that reads grids from STAR-CD ProSTAR vertex and cell files.
+
 #ifndef DUNE_XT_GRID_GRIDPROVIDER_STARCD_HH
 #define DUNE_XT_GRID_GRIDPROVIDER_STARCD_HH
 
@@ -36,12 +39,14 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Returns the static id string identifying the StarCD grid provider.
 static inline std::string starcd_gridprovider_id()
 {
   return "xt.grid.gridprovider.starcd";
 }
 
 
+/// \brief Returns the default configuration for the StarCD grid provider (type and filename prefix).
 static inline Common::Configuration starcd_gridprovider_default_config()
 {
   Common::Configuration config;

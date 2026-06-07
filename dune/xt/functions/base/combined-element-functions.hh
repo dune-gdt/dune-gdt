@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Element functions combining two element functions by a given operation (sum, difference, product, fraction).
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_COMBINED_ELEMENT_FUNCTIONS_HH
 #define DUNE_XT_FUNCTIONS_BASE_COMBINED_ELEMENT_FUNCTIONS_HH
 
@@ -23,6 +26,9 @@
 namespace Dune::XT::Functions {
 
 
+/// \brief Element function combining two given (const) element functions by the operation comb, without taking
+///        ownership of or rebinding the operands (binds itself only when both operands are already bound to the same
+///        element).
 template <class LeftType, class RightType, typename comb>
 class CombinedConstElementFunction
   : public ElementFunctionInterface<typename LeftType::E,
@@ -144,6 +150,8 @@ private:
 }; // class CombinedConstElementFunction
 
 
+/// \brief Element function combining two given element functions by the operation combination, taking ownership of the
+///        operands and binding them along with itself.
 template <class LeftType, class RightType, class combination>
 class CombinedElementFunction
   : internal::CombinedStorageProvider<LeftType, RightType>

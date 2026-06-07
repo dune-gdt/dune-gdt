@@ -11,6 +11,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014 - 2020)
 
+/// \file
+/// \brief Function defined by user-provided mathematical expression strings for its value and (optional) gradient.
+
 #ifndef DUNE_XT_FUNCTIONS_EXPRESSION_DEFAULT_HH
 #define DUNE_XT_FUNCTIONS_EXPRESSION_DEFAULT_HH
 
@@ -254,6 +257,7 @@ private:
 }; // class ExpressionFunction
 
 
+/// \brief Scalar- and vector-valued (rC == 1) specialization of ExpressionFunction.
 template <size_t d, size_t r, class RangeField>
 class ExpressionFunction<d, r, 1, RangeField> : public FunctionInterface<d, r, 1, RangeField>
 {

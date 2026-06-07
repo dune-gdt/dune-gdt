@@ -9,6 +9,9 @@
 //   René Fritze     (2010 - 2019)
 //   Tobias Leibner  (2018 - 2020)
 
+/// \file
+/// \brief Debugging helpers: the SEGFAULT and DXT_ASSERT macros and the charcopy string-duplication helper.
+
 #ifndef DUNE_XT_COMMON_DEBUG_HH
 #define DUNE_XT_COMMON_DEBUG_HH
 
@@ -17,6 +20,7 @@
 #include <dune/xt/common/exceptions.hh>
 
 
+/// \brief Triggers a segmentation fault by dereferencing a null pointer (debugging aid).
 #define SEGFAULT                                                                                                       \
   {                                                                                                                    \
     int* J = 0;                                                                                                        \
@@ -24,6 +28,7 @@
   }
 
 
+/// \brief Returns a newly allocated copy of the null-terminated C string s.
 inline char* charcopy(const char* s)
 {
   size_t l = strlen(s) + 1;
@@ -38,6 +43,7 @@ inline char* charcopy(const char* s)
 //! try to ensure var is not optimized out
 #define DXTC_DEBUG_AUTO(name) [[maybe_unused]] volatile auto name
 
+/// \brief Throws a debug_assertion exception (in debug builds) if condition evaluates to false.
 #ifndef NDEBUG
 #  define DXT_ASSERT(condition)                                                                                        \
     DUNE_THROW_IF(!(condition),                                                                                        \

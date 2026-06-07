@@ -10,6 +10,10 @@
 //   René Fritze      (2013 - 2016, 2018 - 2020)
 //   Tobias Leibner   (2014 - 2015, 2018, 2020)
 
+/// \file
+/// \brief Float comparison helpers providing default comparison epsilons (DefaultEpsilon) for the float comparison
+///        routines generated in float_cmp_generated.hxx.
+
 #ifndef DUNE_XT_COMMON_FLOAT_CMP_HH
 #define DUNE_XT_COMMON_FLOAT_CMP_HH
 
@@ -28,6 +32,7 @@
 namespace Dune::XT::Common::FloatCmp {
 
 
+/// \brief Provides the default comparison epsilon for type T and comparison Style.
 template <class T, Style style = Style::defaultStyle, bool = std::is_integral<T>::value>
 struct DefaultEpsilon
 {
@@ -38,6 +43,7 @@ struct DefaultEpsilon
   }
 };
 
+//! complex-valued specialization, using the same epsilon for the real and imaginary parts
 template <class T, Style style>
 struct DefaultEpsilon<std::complex<T>, style, false>
 {
@@ -49,6 +55,7 @@ struct DefaultEpsilon<std::complex<T>, style, false>
   }
 };
 
+//! numpy-style specialization, using dune-common's relativeStrong default epsilon
 template <class T>
 struct DefaultEpsilon<T, Style::numpy, false>
 {
@@ -83,6 +90,7 @@ struct DefaultEpsilon<T, style, true>
   }
 };
 
+//! numpy-style specialization for integral types, returning std::numeric_limits epsilon
 template <class T>
 struct DefaultEpsilon<T, Style::numpy, true>
 {
@@ -93,6 +101,7 @@ struct DefaultEpsilon<T, Style::numpy, true>
   }
 };
 
+/// \brief Extracts the scalar field type T and corresponding epsilon type Eps of a matrix or vector type V.
 template <class V>
 struct MT
 {

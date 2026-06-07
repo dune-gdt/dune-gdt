@@ -191,6 +191,7 @@ struct HexToString
 };
 
 
+//! converts a vector of strings into a newly allocated argv-style char** array (as passed to main)
 static inline char** vector_to_main_args(const std::vector<std::string>& args)
 {
   char** argv = new char*[args.size()];

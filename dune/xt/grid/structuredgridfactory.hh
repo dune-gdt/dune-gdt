@@ -10,6 +10,10 @@
 //   Sven Kaulmann   (2014)
 //   Tobias Leibner  (2014, 2016, 2018, 2020)
 
+/// \file
+/// \brief Provides a StructuredGridFactory wrapper to create structured cube and simplex grids for various grid
+///        managers.
+
 #ifndef DUNE_XT_GRID_STRUCTUREDGRIDFACTORY_HH
 #define DUNE_XT_GRID_STRUCTUREDGRIDFACTORY_HH
 
@@ -42,6 +46,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Returns the default overlap (one in each direction) for a structured grid of the given grid type.
 template <class GridType>
 static std::array<unsigned int, GridType::dimension> default_overlap()
 {

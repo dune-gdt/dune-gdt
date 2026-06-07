@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017 - 2018, 2020)
 
+/// \file
+/// \brief Generic interface and factory functions for computing eigenvalues and eigenvectors of a matrix.
+
 #ifndef DUNE_XT_LA_EIGEN_SOLVER_HH
 #define DUNE_XT_LA_EIGEN_SOLVER_HH
 
@@ -50,6 +53,7 @@ class EigenSolverOptions
 }; // class EigenSolverOptions
 
 
+/// \brief Returns the list of available eigen solver types for the given matrix.
 template <class MatrixType>
 std::vector<std::string> eigen_solver_types(const MatrixType& /*matrix*/)
 {
@@ -57,6 +61,7 @@ std::vector<std::string> eigen_solver_types(const MatrixType& /*matrix*/)
 }
 
 
+/// \brief Returns the configuration of options for the given eigen solver type and matrix.
 template <class MatrixType>
 Common::Configuration eigen_solver_options(const MatrixType& /*matrix*/, const std::string& type = "")
 {
@@ -64,6 +69,7 @@ Common::Configuration eigen_solver_options(const MatrixType& /*matrix*/, const s
 }
 
 
+/// \brief Computes eigenvalues and eigenvectors of a matrix; specialized for each supported MatrixType.
 template <class MatrixImp,
           bool is_matrix =
               XT::Common::is_matrix<MatrixImp>::value
@@ -116,6 +122,7 @@ public:
 }; // class EigenSolver
 
 
+/// \brief Creates an EigenSolver for the given matrix using the named solver type.
 template <class M>
 EigenSolver<M> make_eigen_solver(const M& matrix, const std::string& type = "")
 {
@@ -123,6 +130,7 @@ EigenSolver<M> make_eigen_solver(const M& matrix, const std::string& type = "")
 }
 
 
+/// \brief Creates an EigenSolver for the given matrix using the provided options.
 template <class M>
 EigenSolver<M> make_eigen_solver(const M& matrix, const XT::Common::Configuration& options)
 {

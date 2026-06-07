@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Grid function extracting a selection of range components of another grid function as a new function.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_SLICED_HH
 #define DUNE_XT_FUNCTIONS_BASE_SLICED_HH
 
@@ -161,6 +164,7 @@ private:
 }; // class SlicedGridFunction
 
 
+/// \brief Creates a SlicedGridFunction extracting the sliced_r range components given by dims from function.
 template <size_t sliced_r, class E, size_t r>
 SlicedGridFunction<GridFunctionInterface<E, r>, sliced_r> make_sliced_function(
     const GridFunctionInterface<E, r>& function, const std::array<size_t, sliced_r>& dims, const std::string& name = "")

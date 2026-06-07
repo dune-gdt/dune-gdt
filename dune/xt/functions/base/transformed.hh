@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Grid function applying a pointwise transformation to the evaluations of another grid function.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_TRANSFORMED_HH
 #define DUNE_XT_FUNCTIONS_BASE_TRANSFORMED_HH
 
@@ -162,6 +165,7 @@ private:
 }; // class TransformedGridFunction
 
 
+/// \brief Creates a TransformedGridFunction applying the given transformation to the evaluations of function.
 template <size_t new_r, size_t new_rC, class new_R, class E, size_t r, size_t rC, class R>
 TransformedGridFunction<GridFunctionInterface<E, r, rC, R>, new_r, new_rC, new_R> make_transformed_function(
     const GridFunctionInterface<E, r, rC, R>& function,

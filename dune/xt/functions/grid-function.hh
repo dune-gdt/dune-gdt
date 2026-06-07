@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Convenience grid function wrapping a value, a function or a grid function for use as a by-value argument.
+
 #ifndef DUNE_XT_FUNCTIONS_GRID_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_GRID_FUNCTION_HH
 
@@ -711,6 +714,8 @@ private:
 }; // class GridFunction<..., 1, 1, ...>
 
 
+/// \brief Creates a GridFunction wrapping func, deducing the element type from the explicitly given element or grid view
+///        type.
 template <class Element_or_GridView, size_t d, size_t r, size_t rC, class R>
 auto make_grid_function(const FunctionInterface<d, r, rC, R>& func)
 {
@@ -726,6 +731,7 @@ auto make_grid_function(const FunctionInterface<d, r, rC, R>& func)
 } /// ... make_grid_function(...)
 
 
+/// \brief Creates a GridFunction wrapping func, deducing the element type from the given grid view.
 template <size_t d, size_t r, size_t rC, class R, class GridView>
 GridFunction<Grid::extract_entity_t<GridView>, r, rC, R> make_grid_function(const FunctionInterface<d, r, rC, R>& func,
                                                                             const GridView& /*grid_view*/)

@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2014)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Stream buffers and std::ostream-compatible log streams used by the dune-xt logging facilities.
+
 #ifndef DUNE_XT_COMMON_LOGSTREAMS_HH
 #define DUNE_XT_COMMON_LOGSTREAMS_HH
 
@@ -28,6 +31,7 @@
 namespace Dune::XT::Common {
 
 
+//! bit flags selecting log severity (error/info/debug) and sinks (console/file) for a log stream
 enum LogFlags
 {
   LOG_NONE = 1,
@@ -43,6 +47,7 @@ static constexpr auto LogDefault = LOG_INFO | LOG_ERROR | LOG_CONSOLE;
 
 class CombinedBuffer;
 
+//! a string buffer whose input can be temporarily suspended (priority-based) and that respects log flags
 class SuspendableStrBuffer : public std::basic_stringbuf<char, std::char_traits<char>>
 {
   using BaseType = std::basic_stringbuf<char, std::char_traits<char>>;
@@ -87,6 +92,7 @@ private:
 }; // class SuspendableStrBuffer
 
 
+//! a SuspendableStrBuffer that flushes its contents to a single std::ostream
 class OstreamBuffer : public SuspendableStrBuffer
 {
 public:
@@ -104,6 +110,7 @@ protected:
   int sync() override;
 }; // class FileBuffer
 
+//! a SuspendableStrBuffer that forwards its input to several wrapped SuspendableStrBuffers at once
 class CombinedBuffer : public SuspendableStrBuffer
 {
 public:
@@ -128,6 +135,7 @@ private:
 
 using FileBuffer = OstreamBuffer;
 
+//! a SuspendableStrBuffer that discards all input (a /dev/null sink)
 class EmptyBuffer : public SuspendableStrBuffer
 {
 public:
@@ -165,6 +173,7 @@ private:
   std::mutex mutex_;
 }; // class TimedPrefixedStreamBuffer
 
+//! std::ostream-compatible log stream owning a SuspendableStrBuffer, with suspend/resume and flush support
 class LogStream
   : StorageProvider<SuspendableStrBuffer>
   , public std::basic_ostream<char, std::char_traits<char>>

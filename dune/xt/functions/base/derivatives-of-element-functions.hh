@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Element functions representing a derivative (gradient or divergence) of a given element function.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_DERIVATIVES_OF_ELEMENT_FUNCTIONS_HH
 #define DUNE_XT_FUNCTIONS_BASE_DERIVATIVES_OF_ELEMENT_FUNCTIONS_HH
 
@@ -158,6 +161,8 @@ public:
 } // namespace internal
 
 
+/// \brief Element function representing the given derivative (gradient or divergence) of a given element function,
+///        computed from its jacobian.
 template <class ElementFunctionType, DerivativeType derivative>
 class DerivativeElementFunction
   : public ElementFunctionInterface<

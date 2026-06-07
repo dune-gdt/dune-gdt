@@ -9,6 +9,10 @@
 //   René Fritze     (2016, 2018 - 2020)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Provides grid providers that manage a hierarchy of refined grids for experimental order of convergence
+///        (EOC) studies.
+
 #ifndef DUNE_XT_GRID_PROVIDER_EOC_HH
 #define DUNE_XT_GRID_PROVIDER_EOC_HH
 
@@ -97,6 +101,8 @@ private:
 }; // class LevelBasedEOCGridProvider
 
 
+/// \brief Behaves like a XT::Grid::GridProvider while holding a separate, independently refined leaf grid per
+///        refinement level (plus a finer reference grid) for EOC studies.
 template <class GridImp>
 class LeafBasedEOCGridProvider
 {
@@ -167,6 +173,8 @@ private:
 }; // class LeafBasedEOCGridProvider
 
 
+/// \brief EOC grid provider for a given grid type, defaulting to the level-based variant (specialized per grid where a
+///        leaf-based hierarchy is required).
 template <class G>
 class EOCGridProvider : public LevelBasedEOCGridProvider<G>
 {

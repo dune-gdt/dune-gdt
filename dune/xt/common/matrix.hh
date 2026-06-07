@@ -11,6 +11,9 @@
 //   Sven Kaulmann   (2010 - 2011)
 //   Tobias Leibner  (2014, 2017 - 2018, 2020)
 
+/// \file
+/// \brief MatrixAbstraction traits and generic free functions to uniformly create, access and manipulate matrices.
+
 #ifndef DUNE_XT_COMMON_MATRIX_HH
 #define DUNE_XT_COMMON_MATRIX_HH
 
@@ -28,7 +31,7 @@ namespace Dune {
 namespace XT::Common {
 
 
-// Sparsity pattern placeholder representing a dense matrix pattern.
+//! sparsity pattern placeholder representing a dense (fully populated) matrix pattern
 struct FullPattern
 {};
 
@@ -290,6 +293,7 @@ struct MatrixAbstraction<Dune::FieldMatrix<K, N, M>>
 };
 
 
+//! returns the number of rows of a matrix (via MatrixAbstraction)
 template <class MatrixType>
 auto get_matrix_rows(const MatrixType& matrix)
 {
@@ -298,6 +302,7 @@ auto get_matrix_rows(const MatrixType& matrix)
 }
 
 
+//! returns the number of columns of a matrix (via MatrixAbstraction)
 template <class MatrixType>
 auto get_matrix_cols(const MatrixType& matrix)
 {
@@ -306,6 +311,7 @@ auto get_matrix_cols(const MatrixType& matrix)
 }
 
 
+//! returns the (ii, jj) entry of a matrix (via MatrixAbstraction)
 template <class MatrixType>
 auto get_matrix_entry(const MatrixType& matrix, const size_t ii, const size_t jj)
 {
@@ -314,6 +320,7 @@ auto get_matrix_entry(const MatrixType& matrix, const size_t ii, const size_t jj
 }
 
 
+//! sets the (ii, jj) entry of a matrix to value (via MatrixAbstraction)
 template <class MatrixType, class S>
 auto set_matrix_entry(MatrixType& matrix, const size_t ii, const size_t jj, const S& value)
 {
@@ -322,6 +329,7 @@ auto set_matrix_entry(MatrixType& matrix, const size_t ii, const size_t jj, cons
 }
 
 
+//! creates a matrix of the given size, filled with val and respecting the given sparsity pattern
 // The enable_if has to stay, there is an alternative in vector.hh!
 template <class MatrixType,
           size_t ROWS = MatrixAbstraction<MatrixType>::static_rows,
@@ -344,6 +352,7 @@ create(const size_t rows,
 }
 
 
+//! creates a TargetMatrixType of the same shape as source, filled with zeros
 // The enable_if has to stay, there is an alternative in vector.hh!
 template <class TargetMatrixType, class SourceMatrixType>
 typename std::enable_if<is_matrix<TargetMatrixType>::value && is_matrix<SourceMatrixType>::value,
@@ -355,6 +364,7 @@ zeros_like(const SourceMatrixType& source)
 }
 
 
+//! creates a matrix of the same type and shape as source, filled with zeros
 // The enable_if has to stay, there is an alternative in vector.hh!
 template <class MatrixType>
 typename std::enable_if<is_matrix<MatrixType>::value, MatrixType>::type zeros_like(const MatrixType& source)
@@ -363,6 +373,7 @@ typename std::enable_if<is_matrix<MatrixType>::value, MatrixType>::type zeros_li
 }
 
 
+//! computes the matrix-vector product b = A*x for generic matrix and vector types
 template <class MatrixType, class SourceVectorType, class TargetVectorType>
 std::enable_if_t<is_matrix<MatrixType>::value && is_vector<SourceVectorType>::value
                      && is_vector<TargetVectorType>::value,
@@ -383,12 +394,14 @@ mv(const MatrixType& A, const SourceVectorType& x, TargetVectorType& b)
       b[ii] += M::get_entry(A, ii, jj) * x[jj];
 } // ... mv(...)
 
+//! computes the matrix-vector product b = A*x for a DynamicMatrix and DynamicVectors
 template <class F>
 void mv(const DynamicMatrix<F>& A, const DynamicVector<F>& x, DynamicVector<F>& b)
 {
   A.mv(x, b);
 }
 
+//! computes the matrix-vector product b = A*x for a FieldMatrix and FieldVectors
 template <class F, int ROWS, int COLS>
 void mv(const FieldMatrix<F, ROWS, COLS>& A, const FieldVector<F, COLS>& x, FieldVector<F, ROWS>& b)
 {
@@ -396,6 +409,7 @@ void mv(const FieldMatrix<F, ROWS, COLS>& A, const FieldVector<F, COLS>& x, Fiel
 }
 
 
+//! returns a pointer to the underlying (dense) data of a matrix
 template <class MatrixType>
 typename std::enable_if_t<is_matrix<MatrixType>::value, typename MatrixAbstraction<MatrixType>::ScalarType*>
 data(MatrixType& source)
@@ -404,6 +418,7 @@ data(MatrixType& source)
 }
 
 
+//! returns a pointer to the underlying (dense) data of a const matrix
 template <class MatrixType>
 typename std::enable_if_t<is_matrix<MatrixType>::value, typename MatrixAbstraction<MatrixType>::ScalarType*>
 data(const MatrixType& source)
@@ -412,6 +427,7 @@ data(const MatrixType& source)
 }
 
 
+//! serializes the entries of a matrix into a std::vector<T> in row-major order
 template <class T, class M>
 typename std::enable_if_t<is_matrix<M>::value && is_arithmetic<T>::value, std::vector<T>>
 serialize_rowwise(const M& mat)
@@ -432,6 +448,7 @@ serialize_rowwise(const M& mat)
 } // ... serialize_rowwise(...)
 
 
+//! serializes a matrix row-major into a std::vector of its own scalar type
 template <class M>
 typename std::enable_if_t<is_matrix<M>::value, std::vector<typename MatrixAbstraction<M>::S>>
 serialize_rowwise(const M& mat)
@@ -440,6 +457,7 @@ serialize_rowwise(const M& mat)
 }
 
 
+//! serializes the entries of a matrix into a std::vector<T> in column-major order
 template <class T, class M>
 typename std::enable_if_t<is_matrix<M>::value && is_arithmetic<T>::value, std::vector<T>>
 serialize_colwise(const M& mat)
@@ -460,6 +478,7 @@ serialize_colwise(const M& mat)
 } // ... serialize_colwise(...)
 
 
+//! serializes a matrix column-major into a std::vector of its own scalar type
 template <class M>
 typename std::enable_if_t<is_matrix<M>::value, std::vector<typename MatrixAbstraction<M>::S>>
 serialize_colwise(const M& mat)
@@ -468,6 +487,7 @@ serialize_colwise(const M& mat)
 }
 
 
+//! converts a matrix from SourceType to a (possibly different) RangeType, copying all entries
 template <class RangeType, class SourceType>
 typename std::enable_if_t<is_matrix<SourceType>::value && is_matrix<RangeType>::value, RangeType>
 convert_to(const SourceType& source)
@@ -492,6 +512,7 @@ convert_to(const SourceType& source)
 } // ... convert_to(...)
 
 
+//! returns the transpose of a matrix
 template <class MatrixType, class M = MatrixAbstraction<MatrixType>>
 typename std::enable_if_t<is_matrix<MatrixType>::value,
                           typename M::template MatrixTypeTemplate<M::static_cols, M::static_rows>>
@@ -505,6 +526,7 @@ transposed(const MatrixType& mat)
 }
 
 
+//! writes a matrix to an output stream in MATLAB-like "[a b; c d]" notation
 template <class M, class CharType, class CharTraits>
 std::basic_ostream<CharType, CharTraits>& output_matrix(std::basic_ostream<CharType, CharTraits>& out, const M& mat)
 {
@@ -527,6 +549,7 @@ std::basic_ostream<CharType, CharTraits>& output_matrix(std::basic_ostream<CharT
 } // namespace XT::Common
 
 
+//! returns the matrix product of two DynamicMatrices
 template <class K>
 Dune::DynamicMatrix<K> operator*(const Dune::DynamicMatrix<K>& lhs, const Dune::DynamicMatrix<K>& rhs)
 {
@@ -541,6 +564,7 @@ Dune::DynamicMatrix<K> operator*(const Dune::DynamicMatrix<K>& lhs, const Dune::
   return ret;
 }
 
+//! returns the entry-wise sum of two DynamicMatrices
 template <class K>
 Dune::DynamicMatrix<K> operator+(const Dune::DynamicMatrix<K>& lhs, const Dune::DynamicMatrix<K>& rhs)
 {
@@ -549,6 +573,7 @@ Dune::DynamicMatrix<K> operator+(const Dune::DynamicMatrix<K>& lhs, const Dune::
   return ret;
 }
 
+//! returns the entry-wise difference of two DynamicMatrices
 template <class K>
 Dune::DynamicMatrix<K> operator-(const Dune::DynamicMatrix<K>& lhs, const Dune::DynamicMatrix<K>& rhs)
 {

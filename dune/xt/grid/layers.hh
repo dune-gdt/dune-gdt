@@ -10,6 +10,9 @@
 //   René Fritze     (2014 - 2020)
 //   Tobias Leibner  (2017 - 2018, 2020)
 
+/// \file
+/// \brief Defines the grid layer and backend enums and the Layer trait for statically creating grid views.
+
 #ifndef DUNE_XT_GRID_LAYERS_HH
 #define DUNE_XT_GRID_LAYERS_HH
 
@@ -26,12 +29,14 @@ template <class RealGridLayerImp, bool codim_iters_provided>
 class PeriodicGridView;
 
 
+/// \brief Enumerates the available grid backends used to access a layer.
 enum class Backends
 {
   view
 };
 
 
+/// \brief Enumerates the available grid layers (adaptive leaf, leaf and level).
 enum class Layers
 {
   adaptive_leaf,
@@ -119,6 +124,7 @@ struct Layer<GridType, Layers::level, Backends::view, false>
 
 
 // create periodic grid_layer
+/// \brief Specialization of Layer that wraps the corresponding non-periodic layer in a PeriodicGridView.
 template <class GridType, Layers layer, Backends backend>
 struct Layer<GridType, layer, backend, true>
 {
@@ -137,6 +143,7 @@ struct Layer<GridType, layer, backend, true>
 }; // struct Layer<..., periodic>
 
 
+/// \brief Trait providing the Backends value associated with a given grid layer type.
 template <class GridLayerType>
 struct extract_layer_backend
 {

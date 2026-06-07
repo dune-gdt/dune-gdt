@@ -11,6 +11,9 @@
 //   René Fritze      (2014 - 2016, 2018 - 2020)
 //   Tobias Leibner   (2014, 2016 - 2020)
 
+/// \file
+/// \brief Dense vector and row-major sparse matrix containers backed by dune-istl.
+
 #ifndef DUNE_XT_LA_CONTAINER_ISTL_HH
 #define DUNE_XT_LA_CONTAINER_ISTL_HH
 
@@ -816,6 +819,7 @@ private:
 }; // class IstlRowMajorSparseMatrix
 
 
+/// \brief Writes an IstlRowMajorSparseMatrix to an output stream in human-readable form.
 template <class S>
 std::ostream& operator<<(std::ostream& out, const IstlRowMajorSparseMatrix<S>& matrix)
 {

@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2020)
 //   Tobias Leibner  (2014 - 2015, 2017 - 2020)
 
+/// \file
+/// \brief CRTP interfaces for linear algebra containers and their backend, container and data access capabilities.
+
 #ifndef DUNE_XT_LA_CONTAINER_CONTAINER_INTERFACE_HH
 #define DUNE_XT_LA_CONTAINER_CONTAINER_INTERFACE_HH
 
@@ -72,6 +75,7 @@ struct LockGuard
 } // namespace internal
 
 
+/// \brief Interface for containers that expose an underlying (third-party) backend object.
 template <class Traits>
 class ProvidesBackend : public Common::CRTPInterface<ProvidesBackend<Traits>, Traits>
 {
@@ -92,6 +96,7 @@ public:
   }
 }; // class ProvidesBackend
 
+/// \brief CRTP base interface for linear algebra containers, providing copy, scal, axpy and scalar arithmetic.
 template <class TraitsImp, class ScalarImp = typename TraitsImp::ScalarType>
 class ContainerInterface : public Common::CRTPInterface<ContainerInterface<TraitsImp, ScalarImp>, TraitsImp>
 {
@@ -214,6 +219,7 @@ public:
 }; // class ContainerInterface
 
 
+/// \brief Interface for containers that provide const shared-pointer access to their underlying container.
 template <class Traits>
 class ProvidesConstContainer : public Common::CRTPInterface<ProvidesConstContainer<Traits>, Traits>
 {
@@ -228,6 +234,7 @@ public:
 }; // class ProvidesConstContainer
 
 
+/// \brief Interface for containers that provide mutable shared-pointer access to their underlying container.
 template <class Traits>
 class ProvidesContainer : public ProvidesConstContainer<Traits>
 {
@@ -246,6 +253,7 @@ public:
 }; // class ProvidesContainer
 
 
+/// \brief Interface for containers that provide raw pointer access to their contiguous underlying data.
 template <class Traits>
 class ProvidesDataAccess : public Common::CRTPInterface<ProvidesDataAccess<Traits>, Traits>
 {

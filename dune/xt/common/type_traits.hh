@@ -9,6 +9,9 @@
 //   René Fritze     (2012 - 2020)
 //   Tobias Leibner  (2016, 2018 - 2020)
 
+/// \file
+/// \brief Type traits and type-introspection helpers (type names, smart-pointer/matrix/vector detection, field traits).
+
 #ifndef DUNE_XT_COMMON_TYPE_TRAITS_HH
 #define DUNE_XT_COMMON_TYPE_TRAITS_HH
 
@@ -190,6 +193,7 @@ template <class MatType>
 struct MatrixAbstraction;
 
 
+//! turns a compiler-mangled type name into a human-readable one (where supported by the compiler)
 inline std::string demangle_typename(const std::string& mangled_name)
 {
 #ifdef __GNUC__
@@ -233,12 +237,14 @@ struct Typename
   }
 };
 
+//! returns the cleartext name (via Typename) of the type of the given object
 template <class T>
 std::string get_typename(const T&)
 {
   return Typename<T>::value();
 }
 
+//! returns the cleartext type name of the given object with any template arguments stripped off
 template <class T>
 std::string get_template_basename(const T&)
 {
@@ -247,6 +253,7 @@ std::string get_template_basename(const T&)
   return str.substr(0, r);
 }
 
+//! trait whose value is true iff T is a std::unique_ptr, std::shared_ptr or std::weak_ptr
 template <class T>
 struct is_smart_ptr
 {
@@ -257,6 +264,7 @@ struct is_smart_ptr
 };
 
 
+//! dereferences smart pointers and raw pointers to their pointee, and returns other types unchanged
 template <class T, class = void>
 struct PtrCaller
 {
@@ -294,6 +302,7 @@ struct is_hashable<T, typename std::enable_if<!!sizeof(std::declval<std::hash<T>
 #endif
 
 
+//! trait whose value is true iff objects of type _Tp can be streamed into a std::ostream
 // from https://github.com/mnafees/cpp_utils/blob/master/is_printable/is_printable.hpp
 template <typename _Tp, typename dummy = void>
 struct is_printable : std::false_type
@@ -308,6 +317,7 @@ struct is_printable<
 {};
 
 
+//! trait whose value is true iff T is a std::complex<...>
 template <class T>
 struct is_complex : public std::false_type
 {};
@@ -317,6 +327,7 @@ struct is_complex<std::complex<T>> : public std::true_type
 {};
 
 
+//! like std::is_arithmetic, but additionally treats Dune::bigunsignedint as arithmetic
 template <class T>
 struct is_arithmetic : public std::is_arithmetic<T>
 {};
@@ -326,6 +337,7 @@ struct is_arithmetic<Dune::bigunsignedint<k>> : public std::true_type
 {};
 
 
+//! trait whose value is true iff T is a Dune or dune-xt FieldVector
 template <class T>
 struct is_field_vector : std::false_type
 {};
@@ -339,6 +351,7 @@ struct is_field_vector<Dune::XT::Common::FieldVector<K, SIZE>> : std::true_type
 {};
 
 
+//! trait whose value is true iff T is a Dune or dune-xt FieldMatrix
 template <class T>
 struct is_field_matrix : std::false_type
 {};
@@ -374,6 +387,7 @@ struct is_vector_helper
 } // namespace internal
 
 
+//! trait whose value is true iff T is a matrix type known to MatrixAbstraction
 template <class T, bool candidate = internal::is_matrix_helper<T>::is_candidate>
 struct is_matrix
 {
@@ -385,6 +399,7 @@ struct is_matrix<T, false> : public std::false_type
 {};
 
 
+//! trait whose value is true iff T is a vector type known to VectorAbstraction
 template <class T, bool candidate = internal::is_vector_helper<T>::is_candidate>
 struct is_vector
 {
@@ -396,6 +411,7 @@ struct is_vector<T, false> : public std::false_type
 {};
 
 
+//! provides the field, real and complex type associated with a (possibly complex) arithmetic type T
 template <class T>
 struct field_traits
 {
@@ -435,6 +451,7 @@ using real_t = typename field_traits<T>::real_type;
 template <class T>
 using complex_t = typename field_traits<T>::complex_type;
 
+//! creates a real number from real and imaginary parts, throwing if the imaginary part is non-zero
 template <class T>
 T create_real_or_complex_number(const std::enable_if_t<std::is_arithmetic<T>::value, real_t<T>> real_part,
                                 const real_t<T> imag_part)
@@ -446,6 +463,7 @@ T create_real_or_complex_number(const std::enable_if_t<std::is_arithmetic<T>::va
   return real_part;
 }
 
+//! creates a complex number from the given real and imaginary parts
 template <class T>
 T create_real_or_complex_number(const std::enable_if_t<is_complex<T>::value, real_t<T>> real_part,
                                 const real_t<T> imag_part)
@@ -453,12 +471,14 @@ T create_real_or_complex_number(const std::enable_if_t<is_complex<T>::value, rea
   return T(real_part, imag_part);
 }
 
+//! provides the result type of adding values of types L and R
 template <class L, class R>
 struct plus_promotion
 {
   using type = decltype(std::declval<L>() + std::declval<R>());
 };
 
+//! provides the result type of multiplying values of types L and R
 template <class L, class R>
 struct multiplication_promotion
 {
@@ -503,6 +523,7 @@ struct dependent
 };
 
 
+//! provides a sensible default value for K (0 for numbers, a default-constructed K otherwise)
 template <class K, bool is_number = (is_arithmetic<K>::value || is_complex<K>::value)>
 struct suitable_default
 {
@@ -532,6 +553,7 @@ enum class StorageLayout
   other
 };
 
+//! sparsity pattern of a matrix, used to select specialized matrix algorithms
 enum class MatrixPattern
 {
   dense,
@@ -541,6 +563,7 @@ enum class MatrixPattern
   diagonal
 };
 
+//! whether a matrix algorithm should operate on the matrix or its transpose
 enum class Transpose
 {
   no,

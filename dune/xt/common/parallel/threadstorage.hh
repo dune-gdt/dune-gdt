@@ -9,6 +9,9 @@
 //   René Fritze     (2013 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2018 - 2020)
 
+/// \file
+/// \brief Thread-local storage helpers (PerThreadValue, UnsafePerThreadValue) and per-thread result reduction.
+
 #ifndef DUNE_XT_COMMON_PARALLEL_THREADSTORAGE_HH
 #define DUNE_XT_COMMON_PARALLEL_THREADSTORAGE_HH
 
@@ -408,6 +411,7 @@ protected:
 };
 
 
+//! binary reduction that concatenates two associative containers by inserting the entries of b into a copy of a
 template <typename T>
 struct concatenate_container
 {
