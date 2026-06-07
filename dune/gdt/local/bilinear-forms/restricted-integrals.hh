@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  restricted-integrals.hh
+ * \brief Local bilinear forms defined by integrals restricted to a part of the domain.
+ **/
 #ifndef DUNE_GDT_LOCAL_BILINEAR_FORMS_RESTRICTED_INTEGRALS_HH
 #define DUNE_GDT_LOCAL_BILINEAR_FORMS_RESTRICTED_INTEGRALS_HH
 

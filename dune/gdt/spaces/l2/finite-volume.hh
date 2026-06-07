@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014, 2016, 2018)
 
+/**
+ * \file  finite-volume.hh
+ * \brief Finite volume (piecewise constant) discrete function space and its factory functions.
+ **/
 #ifndef DUNE_GDT_SPACES_L2_FINITE_VOLUME_HH
 #define DUNE_GDT_SPACES_L2_FINITE_VOLUME_HH
 
@@ -35,6 +39,9 @@ class FiniteVolumeSpace
 };
 
 
+/**
+ * \brief Finite volume space of piecewise constant, vector-valued (rC == 1) discrete functions.
+ */
 template <class GV, size_t r, class R>
 class FiniteVolumeSpace<GV, r, 1, R> : public SpaceInterface<GV, r, 1, R>
 {
@@ -205,24 +212,36 @@ private:
 }; // class FiniteVolumeSpace< ..., r, 1 >
 
 
+/**
+ * \brief Creates a FiniteVolumeSpace with given range dimensions and range field type over a grid view.
+ */
 template <size_t r, size_t rC, class R, class GV>
 FiniteVolumeSpace<GV, r, rC, R> make_finite_volume_space(const GV& grid_view)
 {
   return FiniteVolumeSpace<GV, r, rC, R>(grid_view);
 }
 
+/**
+ * \brief Creates a FiniteVolumeSpace with given range dimensions and double range field over a grid view.
+ */
 template <size_t r, size_t rC, class GV>
 FiniteVolumeSpace<GV, r, rC, double> make_finite_volume_space(const GV& grid_view)
 {
   return FiniteVolumeSpace<GV, r, rC, double>(grid_view);
 }
 
+/**
+ * \brief Creates a scalar-columns FiniteVolumeSpace with given range dimension and double range field over a grid view.
+ */
 template <size_t r, class GV>
 FiniteVolumeSpace<GV, r, 1, double> make_finite_volume_space(const GV& grid_view)
 {
   return FiniteVolumeSpace<GV, r, 1, double>(grid_view);
 }
 
+/**
+ * \brief Creates a scalar FiniteVolumeSpace with double range field over a grid view.
+ */
 template <class GV>
 FiniteVolumeSpace<GV, 1, 1, double> make_finite_volume_space(const GV& grid_view)
 {

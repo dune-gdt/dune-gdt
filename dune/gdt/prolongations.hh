@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014, 2016)
 
+/**
+ * \file  prolongations.hh
+ * \brief Free functions to prolong discrete functions onto refined or coarser discrete function spaces.
+ **/
 #ifndef DUNE_GDT_PROLONGATIONS_HH
 #define DUNE_GDT_PROLONGATIONS_HH
 

@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  integrals.hh
+ * \brief Local bilinear forms defined by the integral of a local binary integrand.
+ **/
 #ifndef DUNE_GDT_LOCAL_BILINEAR_FORMS_INTEGRALS_HH
 #define DUNE_GDT_LOCAL_BILINEAR_FORMS_INTEGRALS_HH
 

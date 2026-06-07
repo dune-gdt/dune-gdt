@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  advection-fv.hh
+ * \brief Finite volume operator for the discretization of advection (hyperbolic) problems.
+ **/
 #ifndef DUNE_GDT_OPERATORS_ADVECTION_FV_HH
 #define DUNE_GDT_OPERATORS_ADVECTION_FV_HH
 
@@ -137,6 +141,9 @@ private:
 }; // class AdvectionFvOperator
 
 
+/**
+ * \brief Creates an AdvectionFvOperator (separate source and range spaces) with the matrix type specified manually.
+ */
 template <class MatrixType, // <- has to be specified manually
           class AGV,
           size_t m,
@@ -161,6 +168,9 @@ auto make_advection_fv_operator(
                                                               logging_state);
 }
 
+/**
+ * \brief Creates an AdvectionFvOperator (separate source and range spaces) using the default ISTL sparse matrix type.
+ */
 template <class AGV, size_t m, class F, class RGV, class SGV>
 auto make_advection_fv_operator(
     const AGV& assembly_grid_view,
@@ -181,6 +191,10 @@ auto make_advection_fv_operator(
 }
 
 
+/**
+ * \brief Creates an AdvectionFvOperator on a single space (used as both source and range), with the matrix type
+ *        specified manually.
+ */
 template <class MatrixType, // <- has to be specified manually
           class GV,
           size_t m,
@@ -196,6 +210,10 @@ auto make_advection_fv_operator(
       space.grid_view(), numerical_flux, space, space, periodicity_exception, logging_prefix, logging_state);
 }
 
+/**
+ * \brief Creates an AdvectionFvOperator on a single space (used as both source and range), using the default ISTL
+ *        sparse matrix type.
+ */
 template <class GV, size_t m, class F>
 auto make_advection_fv_operator(
     const SpaceInterface<GV, m, 1, F>& space,

@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  discontinuous.hh
+ * \brief Mapper for discontinuous spaces, assigning each element its own block of DoFs.
+ **/
 #ifndef DUNE_GDT_SPACES_MAPPER_DISCONTINUOUS_HH
 #define DUNE_GDT_SPACES_MAPPER_DISCONTINUOUS_HH
 
@@ -27,6 +31,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Mapper for discontinuous finite element spaces, assigning each element a private, non-shared block of DoFs
+ *        (optionally numbered per range dimension).
+ */
 template <class GV, class LocalFiniteElementFamily>
 class DiscontinuousMapper : public MapperInterface<GV>
 {

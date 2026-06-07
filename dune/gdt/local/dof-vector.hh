@@ -9,6 +9,10 @@
 //   René Fritze     (2016, 2018)
 //   René Milk       (2017)
 
+/**
+ * \file  dof-vector.hh
+ * \brief Local (element-bound) views onto a global DoF vector, mapping local to global degrees of freedom.
+ **/
 #ifndef DUNE_GDT_LOCAL_DOF_VECTOR_HH
 #define DUNE_GDT_LOCAL_DOF_VECTOR_HH
 
@@ -79,6 +83,8 @@ public:
 
 
 /**
+ * \brief Read-only view onto the local degrees of freedom of a global vector on the element it is bound to.
+ *
  * \note Since all implementations of XT::LA::VectorInterface are assumed to be thread safe, no special care needs to be
  *       taken here.
  */
@@ -198,6 +204,9 @@ private:
 }; // class ConstLocalDofVector
 
 
+/**
+ * \brief Mutable view onto the local degrees of freedom of a global vector on the element it is bound to.
+ */
 template <class Vector, class GridView>
 class LocalDofVector : public ConstLocalDofVector<Vector, GridView, internal::LocalDofVectorTraits<Vector, GridView>>
 {

@@ -10,6 +10,10 @@
 //   René Fritze     (2014, 2016, 2018)
 //   Tobias Leibner  (2014)
 
+/**
+ * \file  interface.hh
+ * \brief Interfaces for global finite element bases and their element-localized counterparts.
+ **/
 #ifndef DUNE_GDT_SPACES_BASIS_INTERFACE_HH
 #define DUNE_GDT_SPACES_BASIS_INTERFACE_HH
 
@@ -23,6 +27,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Interface for a global finite element basis localized (bound) to a single grid element.
+ */
 template <class E, size_t r = 1, size_t rC = 1, class R = double>
 class LocalizedGlobalFiniteElementInterface
   : public XT::Functions::ElementFunctionSetInterface<E, r, rC, R>
@@ -124,6 +131,9 @@ private:
 }; // class LocalizedGlobalFiniteElementInterface
 
 
+/**
+ * \brief Interface for a global finite element basis defined over an entire grid view.
+ */
 template <class GV, size_t range_dim = 1, size_t range_dim_columns = 1, class RangeField = double>
 class GlobalBasisInterface
   : public XT::Common::WithLogger<GlobalBasisInterface<GV, range_dim, range_dim_columns, RangeField>>

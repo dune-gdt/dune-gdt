@@ -7,6 +7,10 @@
 // Authors:
 //   Tobias Leibner  (2019)
 
+/**
+ * \file  div.hh
+ * \brief Local integrands involving the divergence of a basis paired with another basis.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_DIV_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_DIV_HH
 

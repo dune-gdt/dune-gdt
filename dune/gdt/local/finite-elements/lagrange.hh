@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  lagrange.hh
+ * \brief Local Lagrange finite elements and the corresponding factory and family.
+ **/
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_LAGRANGE_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_LAGRANGE_HH
 
@@ -188,6 +192,9 @@ public:
 }; // class LocalLagrangeFiniteElementFactory
 
 
+/**
+ * \brief Creates a local Lagrange finite element for the given geometry type and order.
+ */
 template <class D, size_t d, class R, size_t r = 1>
 std::unique_ptr<LocalFiniteElementInterface<D, d, R, r>>
 make_local_lagrange_finite_element(const GeometryType& geometry_type, const int order)
@@ -196,6 +203,9 @@ make_local_lagrange_finite_element(const GeometryType& geometry_type, const int 
 }
 
 
+/**
+ * \brief A family of local Lagrange finite elements, created on demand for varying geometry types and orders.
+ */
 template <class D, size_t d, class R, size_t r = 1>
 class LocalLagrangeFiniteElementFamily : public ThreadSafeDefaultLocalFiniteElementFamily<D, d, R, r>
 {

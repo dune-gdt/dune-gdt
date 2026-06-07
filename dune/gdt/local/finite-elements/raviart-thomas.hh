@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  raviart-thomas.hh
+ * \brief Local Raviart-Thomas finite elements and the corresponding interpolation, factory and family.
+ **/
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_RAVIART_THOMAS_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_RAVIART_THOMAS_HH
 
@@ -346,6 +350,9 @@ public:
 }; // class LocalRaviartThomasFiniteElementFactory
 
 
+/**
+ * \brief Creates a local Raviart-Thomas finite element for the given geometry type and order.
+ */
 template <class D, size_t d, class R = double>
 std::unique_ptr<LocalFiniteElementInterface<D, d, R, d, 1>>
 make_local_raviart_thomas_finite_element(const GeometryType& geometry_type, const int order)
@@ -354,6 +361,9 @@ make_local_raviart_thomas_finite_element(const GeometryType& geometry_type, cons
 }
 
 
+/**
+ * \brief A family of local Raviart-Thomas finite elements, created on demand for varying geometry types and orders.
+ */
 template <class D, size_t d, class R>
 class LocalRaviartThomasFiniteElementFamily : public ThreadSafeDefaultLocalFiniteElementFamily<D, d, R, d, 1>
 {

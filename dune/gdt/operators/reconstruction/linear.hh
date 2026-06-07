@@ -8,6 +8,10 @@
 //   Rene Milk      (2017 - 2018)
 //   Tobias Leibner (2017)
 
+/**
+ * \file  linear.hh
+ * \brief Operators reconstructing a piecewise linear (slope limited) function from finite volume cell averages.
+ **/
 #ifndef DUNE_GDT_OPERATORS_RECONSTRUCTION_LINEAR_HH
 #define DUNE_GDT_OPERATORS_RECONSTRUCTION_LINEAR_HH
 
@@ -29,6 +33,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Element functor computing the (limited) linear slopes per coordinate direction on each element.
+ */
 template <class AnalyticalFluxType, class BoundaryValueType, class GV, class EigenvectorWrapperType>
 class LinearSlopeElementFunctor : public XT::Grid::ElementFunctor<GV>
 {
@@ -153,6 +160,10 @@ private:
 };
 
 
+/**
+ * \brief Local (per element) reconstruction storing the reconstructed values at the intersection centers in a
+ *        DiscreteValuedGridFunction.
+ */
 template <class AnalyticalFluxType,
           class BoundaryValueType,
           class GV,
@@ -220,6 +231,10 @@ private:
 }; // class LocalPointwiseLinearReconstructionOperator
 
 
+/**
+ * \brief Local (per element) reconstruction interpolating the reconstructed slopes into a first-order DG target
+ *        function.
+ */
 template <class AnalyticalFluxType,
           class BoundaryValueType,
           class GV,
@@ -304,6 +319,9 @@ private:
 }; // class LocalLinearReconstructionOperator
 
 
+/**
+ * \brief Operator reconstructing a piecewise linear (slope limited) first-order DG function from cell averages.
+ */
 template <class AnalyticalFluxImp,
           class BoundaryValueImp,
           class GV,
@@ -443,6 +461,10 @@ private:
 }; // class LinearReconstructionOperator<...>
 
 
+/**
+ * \brief Reconstruction operator storing only the reconstructed values at the intersection centers (cheaper than a full
+ *        first-order DG reconstruction for large dimRange).
+ */
 // Does not reconstruct a full first-order DG function, but only stores the reconstructed values at the intersection
 // centers. This avoids the interpolation in this operator and the evaluation of the reconstructed function in the
 // finite volume operator which are both quite expensive for large dimRange.

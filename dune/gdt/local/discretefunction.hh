@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014, 2016 - 2017)
 
+/**
+ * \file  discretefunction.hh
+ * \brief Local (element-bound) view onto a discrete function, evaluating it from its DoF vector and local basis.
+ **/
 #ifndef DUNE_GDT_LOCAL_DISCRETEFUNCTION_HH
 #define DUNE_GDT_LOCAL_DISCRETEFUNCTION_HH
 
@@ -25,6 +29,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Const local function representing a discrete function restricted to the element it is bound to.
+ */
 template <class Vector, class GridView, size_t range_dim = 1, size_t range_dim_cols = 1, class RangeField = double>
 class ConstLocalDiscreteFunction
   : public XT::Functions::
@@ -295,6 +302,10 @@ private:
 }; // class ConstLocalDiscreteFunction
 
 
+/**
+ * \brief Mutable local function representing a discrete function restricted to the element it is bound to, allowing
+ *        write access to the associated local DoFs.
+ */
 template <class V, class GV, size_t r = 1, size_t rC = 1, class R = double>
 class LocalDiscreteFunction : public ConstLocalDiscreteFunction<V, GV, r, rC, R>
 {

@@ -8,6 +8,10 @@
 //   Rene Milk      (2018)
 //   Tobias Leibner (2017)
 
+/**
+ * \file  slopes.hh
+ * \brief Slope limiters used by the linear reconstruction operators for finite volume schemes.
+ **/
 #ifndef DUNE_GDT_OPERATORS_FV_SLOPES_HH
 #define DUNE_GDT_OPERATORS_FV_SLOPES_HH
 
@@ -22,6 +26,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Interface for (limited) slopes used to reconstruct a piecewise linear function from cell averages.
+ */
 template <class E, class EigenVectorWrapperType, size_t stencil_size = 3>
 class SlopeBase
 {
@@ -60,6 +67,9 @@ public:
 };
 
 
+/**
+ * \brief Central slope (centered difference of the neighbouring cell averages) without any limiting.
+ */
 // Central slope without any limiting
 template <class E, class EigenVectorWrapperType, size_t stencil_size>
 class CentralSlope : public SlopeBase<E, EigenVectorWrapperType, stencil_size>
@@ -88,6 +98,9 @@ public:
 };
 
 
+/**
+ * \brief Left (backward difference) slope without any limiting.
+ */
 // Left slope without any limiting
 template <class E, class EigenVectorWrapperType, size_t stencil_size>
 class LeftSlope : public SlopeBase<E, EigenVectorWrapperType, stencil_size>
@@ -116,6 +129,9 @@ public:
 };
 
 
+/**
+ * \brief Right (forward difference) slope without any limiting.
+ */
 // Right slope without any limiting
 template <class E, class EigenVectorWrapperType, size_t stencil_size>
 class RightSlope : public SlopeBase<E, EigenVectorWrapperType, stencil_size>
@@ -144,6 +160,9 @@ public:
 };
 
 
+/**
+ * \brief Zero slope, yielding a piecewise constant (first-order) reconstruction.
+ */
 // Zero slope
 template <class E, class EigenVectorWrapperType, size_t stencil_size>
 class NoSlope : public SlopeBase<E, EigenVectorWrapperType, stencil_size>
@@ -170,6 +189,9 @@ public:
 };
 
 
+/**
+ * \brief Slope limited by the minmod limiter applied in characteristic coordinates.
+ */
 template <class E, class EigenVectorWrapperType>
 class MinmodSlope : public SlopeBase<E, EigenVectorWrapperType, 3>
 {
@@ -208,6 +230,9 @@ public:
 };
 
 
+/**
+ * \brief Slope limited by the monotonized central (MC) limiter applied in characteristic coordinates.
+ */
 template <class E, class EigenVectorWrapperType>
 class McSlope : public SlopeBase<E, EigenVectorWrapperType, 3>
 {
@@ -245,6 +270,9 @@ public:
 };
 
 
+/**
+ * \brief Slope limited by the superbee limiter applied in characteristic coordinates.
+ */
 template <class E, class EigenVectorWrapperType>
 class SuperbeeSlope : public SlopeBase<E, EigenVectorWrapperType, 3>
 {

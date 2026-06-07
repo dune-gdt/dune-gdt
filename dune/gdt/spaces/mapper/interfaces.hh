@@ -9,6 +9,10 @@
 //   René Fritze     (2014, 2016 - 2018)
 //   Tobias Leibner  (2016)
 
+/**
+ * \file  interfaces.hh
+ * \brief Interface for mappers translating local DoF indices on an element to global DoF indices.
+ **/
 #ifndef DUNE_GDT_SPACES_MAPPER_INTERFACES_HH
 #define DUNE_GDT_SPACES_MAPPER_INTERFACES_HH
 
@@ -22,6 +26,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Interface for mappers that translate local (per-element) DoF indices into global DoF indices.
+ */
 template <class GV>
 class MapperInterface
 {

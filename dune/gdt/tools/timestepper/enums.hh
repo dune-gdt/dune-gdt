@@ -8,6 +8,10 @@
 //   Rene Milk      (2018)
 //   Tobias Leibner (2017)
 
+/**
+ * \file  enums.hh
+ * \brief Enumerations of the available time stepping and operator splitting methods.
+ **/
 #ifndef DUNE_GDT_TIMESTEPPER_ENUMS_HH
 #define DUNE_GDT_TIMESTEPPER_ENUMS_HH
 
@@ -15,6 +19,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Identifiers for the available time stepping methods.
+ */
 enum class TimeStepperMethods
 {
   bogacki_shampine,
@@ -31,6 +38,9 @@ enum class TimeStepperMethods
   diagonally_implicit_other
 };
 
+/**
+ * \brief Identifiers for the available operator splitting methods.
+ */
 enum class TimeStepperSplittingMethods
 {
   fractional_step,

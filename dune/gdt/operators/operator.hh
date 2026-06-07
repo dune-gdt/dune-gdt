@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  operator.hh
+ * \brief Operator assembled from local element and intersection operators (providing apply, jacobian and inversion).
+ **/
 #ifndef DUNE_GDT_OPERATORS_OPERATOR_HH
 #define DUNE_GDT_OPERATORS_OPERATOR_HH
 
@@ -19,6 +23,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Operator built up from local element and intersection operators, applied by walking the assembly grid view.
+ */
 template <class AGV,
           size_t s_r = 1,
           size_t s_rC = 1,
@@ -280,6 +287,9 @@ protected:
 }; // class Operator
 
 
+/**
+ * \brief Creates an empty Operator (separate source and range spaces) with the matrix type specified manually.
+ */
 template <class MatrixType, // <- needs to be manually specified
           class AssemblyGridViewType,
           class SGV,
@@ -301,6 +311,9 @@ auto make_operator(const AssemblyGridViewType& assembly_grid_view,
       assembly_grid_view, source_space, range_space, logging_prefix, logging_state);
 }
 
+/**
+ * \brief Creates an empty Operator (separate source and range spaces) using the default ISTL sparse matrix type.
+ */
 template <class AssemblyGridViewType, class SGV, size_t s_r, size_t s_rC, class F, class RGV, size_t r_r, size_t r_rC>
 auto make_operator(const AssemblyGridViewType& assembly_grid_view,
                    const SpaceInterface<SGV, s_r, s_rC, F>& source_space,
@@ -313,6 +326,10 @@ auto make_operator(const AssemblyGridViewType& assembly_grid_view,
 }
 
 
+/**
+ * \brief Creates an empty Operator on a single space (used as both source and range), with the matrix type specified
+ *        manually.
+ */
 template <class MatrixType, // <- needs to be manually specified
           class GV,
           size_t r,
@@ -327,6 +344,10 @@ auto make_operator(const SpaceInterface<GV, r, rC, F>& space,
       space.grid_view(), space, space, logging_prefix, logging_state);
 }
 
+/**
+ * \brief Creates an empty Operator on a single space (used as both source and range), using the default ISTL sparse
+ *        matrix type.
+ */
 template <class GV, size_t r, size_t rC, class F>
 auto make_operator(const SpaceInterface<GV, r, rC, F>& space,
                    const std::string& logging_prefix = "",

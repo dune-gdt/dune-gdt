@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  constant.hh
+ * \brief Operators whose application yields a fixed, constant range vector independent of the source.
+ **/
 #ifndef DUNE_GDT_OPERATORS_CONSTANT_HH
 #define DUNE_GDT_OPERATORS_CONSTANT_HH
 
@@ -24,6 +28,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Forward operator that always assigns a fixed, constant value to the range vector.
+ */
 /// \todo add zero_threshhold?
 template <class SGV,
           size_t s_r = 1,
@@ -112,6 +119,9 @@ private:
 }; // class ConstantForwardOperator
 
 
+/**
+ * \brief Creates a ConstantForwardOperator from a space and a constant value vector.
+ */
 template <class GV, size_t r, size_t rC, class F, class V>
 auto make_constant_forward_operator(const SpaceInterface<GV, r, rC, F>& space,
                                     const XT::LA::VectorInterface<V>& value,
@@ -122,6 +132,9 @@ auto make_constant_forward_operator(const SpaceInterface<GV, r, rC, F>& space,
   return ConstantForwardOperator<GV, r, rC, r, rC, F, V_, GV>(space, value.as_imp(), logging_prefix, logging_state);
 }
 
+/**
+ * \brief Creates a ConstantForwardOperator from a space, taking ownership of the given value vector.
+ */
 template <class GV, size_t r, size_t rC, class F, class VectorType>
 auto make_constant_forward_operator(const SpaceInterface<GV, r, rC, F>& space,
                                     VectorType*&& value_ptr,
@@ -134,6 +147,9 @@ auto make_constant_forward_operator(const SpaceInterface<GV, r, rC, F>& space,
 }
 
 
+/**
+ * \brief Operator that always assigns a fixed, constant value to the range vector.
+ */
 /// \todo add zero_threshhold?
 /// \todo only set those dofs to zero which are associated with assembly_grid_view?
 template <class AGV,
@@ -272,6 +288,9 @@ private:
 }; // class ConstantOperator
 
 
+/**
+ * \brief Creates a ConstantOperator from an assembly grid view, source and range spaces and a constant value vector.
+ */
 template <class AssemblyGridViewType,
           class SGV,
           size_t s_r,
@@ -294,6 +313,10 @@ auto make_constant_operator(const AssemblyGridViewType& assembly_grid_view,
       assembly_grid_view, source_space, range_space, value.as_imp(), logging_prefix, logging_state);
 }
 
+/**
+ * \brief Creates a ConstantOperator from an assembly grid view and source and range spaces, taking ownership of the
+ *        given value vector.
+ */
 template <class AssemblyGridViewType,
           class SGV,
           size_t s_r,
@@ -317,6 +340,9 @@ auto make_constant_operator(const AssemblyGridViewType& assembly_grid_view,
       assembly_grid_view, source_space, range_space, std::move(value_ptr), logging_prefix, logging_state);
 }
 
+/**
+ * \brief Creates a ConstantOperator on a single space (used as both source and range) from a constant value vector.
+ */
 template <class GV, size_t r, size_t rC, class F, class V>
 auto make_constant_operator(const SpaceInterface<GV, r, rC, F>& space,
                             const XT::LA::VectorInterface<V>& value,
@@ -328,6 +354,10 @@ auto make_constant_operator(const SpaceInterface<GV, r, rC, F>& space,
       space.grid_view(), space, space, value.as_imp(), logging_prefix, logging_state);
 }
 
+/**
+ * \brief Creates a ConstantOperator on a single space (used as both source and range), taking ownership of the given
+ *        value vector.
+ */
 template <class GV, size_t r, size_t rC, class F, class VectorType>
 auto make_constant_operator(const SpaceInterface<GV, r, rC, F>& space,
                             VectorType*&& value_ptr,

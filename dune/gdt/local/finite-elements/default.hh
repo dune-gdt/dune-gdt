@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  default.hh
+ * \brief Default implementations of the local finite element interfaces (FE, FE family and L2 interpolation).
+ **/
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_DEFAULT_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_DEFAULT_HH
 
@@ -155,6 +159,10 @@ private:
 }; // class LocalFiniteElementDefault
 
 
+/**
+ * \brief Implements LocalFiniteElementFamilyInterface by lazily creating and caching local finite elements in a
+ *        thread-safe manner from a user-provided factory.
+ */
 template <class D, size_t d, class R = double, size_t r = 1, size_t rC = 1>
 class ThreadSafeDefaultLocalFiniteElementFamily : public LocalFiniteElementFamilyInterface<D, d, R, r, rC>
 {
@@ -205,6 +213,9 @@ private:
 }; // class ThreadSafeDefaultLocalFiniteElementFamily
 
 
+/**
+ * \brief Implements LocalFiniteElementInterpolationInterface by L2 projection onto a given local basis.
+ */
 template <class D, size_t d, class R, size_t r = 1>
 class LocalL2FiniteElementInterpolation : public LocalFiniteElementInterpolationInterface<D, d, R, r, 1>
 {

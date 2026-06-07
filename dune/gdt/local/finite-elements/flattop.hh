@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  flattop.hh
+ * \brief Local FlatTop finite elements and the corresponding factory and family.
+ **/
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_FLATTOP_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_FLATTOP_HH
 
@@ -159,6 +163,9 @@ private:
 }; // class LocalFlatTop2dCubeFiniteElementBasis
 
 
+/**
+ * \brief A first order local FlatTop finite element on the 2d cube reference element.
+ */
 template <class D = double, class R = double>
 class LocalFlatTop2dCubeFiniteElement : public LocalFiniteElementDefault<D, 2, R, 1>
 {
@@ -178,6 +185,9 @@ public:
 }; // class LocalFlatTop2dCubeFiniteElement
 
 
+/**
+ * \brief Creates local FlatTop finite elements for a given geometry type and order (wrapping into a power FE if r > 1).
+ */
 template <class D, size_t d, class R, size_t r = 1>
 class LocalFlatTopFiniteElementFactory
 {
@@ -276,6 +286,9 @@ public:
 }; // class LocalFlatTopFiniteElementFactory
 
 
+/**
+ * \brief Creates a local FlatTop finite element for the given geometry type and order.
+ */
 template <class D, size_t d, class R, size_t r = 1>
 std::unique_ptr<LocalFiniteElementInterface<D, d, R, r>>
 make_local_flattop_finite_element(const GeometryType& geometry_type, const int order, const D& overlap = 0.5)
@@ -284,6 +297,9 @@ make_local_flattop_finite_element(const GeometryType& geometry_type, const int o
 }
 
 
+/**
+ * \brief A family of local FlatTop finite elements, created on demand for varying geometry types and orders.
+ */
 template <class D, size_t d, class R, size_t r = 1>
 class LocalFlatTopFiniteElementFamily : public ThreadSafeDefaultLocalFiniteElementFamily<D, d, R, r>
 {

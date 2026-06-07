@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  vijayasundaram.hh
+ * \brief Vijayasundaram numerical flux for advection problems.
+ **/
 #ifndef DUNE_GDT_LOCAL_NUMERICAL_FLUXES_VIJAYASUNDARAM_HH
 #define DUNE_GDT_LOCAL_NUMERICAL_FLUXES_VIJAYASUNDARAM_HH
 
@@ -24,6 +28,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Implementation of NumericalFluxInterface using the Vijayasundaram numerical flux based on a flux Jacobian
+ *        eigendecomposition.
+ */
 template <class I, size_t d, size_t m = 1, class R = double>
 class NumericalVijayasundaramFlux : public NumericalFluxInterface<I, d, m, R>
 {
@@ -136,6 +144,9 @@ private:
 }; // class NumericalVijayasundaramFlux
 
 
+/**
+ * \brief Creates a NumericalVijayasundaramFlux from an x- and state-dependent flux function.
+ */
 template <class I, size_t d, size_t m, class R, class... Args>
 NumericalVijayasundaramFlux<I, d, m, R>
 make_numerical_vijayasundaram_flux(const XT::Functions::FluxFunctionInterface<I, m, d, m, R>& flux, Args&&... args)
@@ -143,6 +154,9 @@ make_numerical_vijayasundaram_flux(const XT::Functions::FluxFunctionInterface<I,
   return NumericalVijayasundaramFlux<I, d, m, R>(flux, std::forward<Args>(args)...);
 }
 
+/**
+ * \brief Creates a NumericalVijayasundaramFlux from a state-dependent (x-independent) flux function.
+ */
 template <class I, size_t d, size_t m, class R, class... Args>
 NumericalVijayasundaramFlux<I, d, m, R>
 make_numerical_vijayasundaram_flux(const XT::Functions::FunctionInterface<m, d, m, R>& flux, Args&&... args)

@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  default.hh
+ * \brief Default global basis built from a grid-function-based local finite element family.
+ **/
 #ifndef DUNE_GDT_SPACES_BASIS_DEFAULT_HH
 #define DUNE_GDT_SPACES_BASIS_DEFAULT_HH
 

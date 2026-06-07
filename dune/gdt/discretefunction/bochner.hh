@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  bochner.hh
+ * \brief Discrete function in a Bochner space and helpers to create and visualize it.
+ **/
 #ifndef DUNE_GDT_DISCRETEFUNCTION_BOCHNER_HH
 #define DUNE_GDT_DISCRETEFUNCTION_BOCHNER_HH
 
@@ -25,6 +29,8 @@ namespace GDT {
 
 
 /**
+ * \brief Discrete function living in a Bochner space, holding a temporal sequence of spatial DoF vectors.
+ *
  * \todo Turn this into a parametric LocalizableFunction.
  * \todo add ConstDiscreteBochnerFunction
  */
@@ -129,6 +135,9 @@ private:
 }; // class DiscreteBochnerFunction
 
 
+/**
+ * \brief Creates a DiscreteBochnerFunction wrapping existing DoF vectors.
+ */
 template <class GV, size_t r, size_t rC, class R, class V>
 DiscreteBochnerFunction<V, GV, r, rC, R> make_discrete_bochner_function(const BochnerSpace<GV, r, rC, R>& bochner_space,
                                                                         XT::LA::ListVectorArray<V>& dof_vectors,
@@ -138,6 +147,9 @@ DiscreteBochnerFunction<V, GV, r, rC, R> make_discrete_bochner_function(const Bo
 }
 
 
+/**
+ * \brief Creates a DiscreteBochnerFunction with freshly allocated DoF vectors for the given Bochner space.
+ */
 template <class VectorType, class GV, size_t r, size_t rC, class R>
 typename std::enable_if<XT::LA::is_vector<VectorType>::value, DiscreteBochnerFunction<VectorType, GV, r, rC, R>>::type
 make_discrete_bochner_function(const BochnerSpace<GV, r, rC, R>& bochner_space, const std::string name = "")
@@ -146,6 +158,9 @@ make_discrete_bochner_function(const BochnerSpace<GV, r, rC, R>& bochner_space, 
 }
 
 
+/**
+ * \brief Visualizes each temporal snapshot of a DiscreteBochnerFunction as a separate VTK file.
+ */
 template <class V, class GV, size_t r, size_t rC, class R>
 void visualize(
     const DiscreteBochnerFunction<V, GV, r, rC, R>& discrete_bochner_function,

@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  adaptation-helper.hh
+ * \brief Helper for adapting discrete functions and their spaces during grid refinement and coarsening.
+ **/
 #ifndef DUNE_GDT_DISCRETEFUNCTION_ADAPTATION_HH
 #define DUNE_GDT_DISCRETEFUNCTION_ADAPTATION_HH
 
@@ -30,6 +34,9 @@ namespace GDT {
 
 
 /**
+ * \brief Manages the persistence and prolongation/restriction of discrete functions and their spaces across grid
+ *        adaptation (pre_adapt, adapt, post_adapt).
+ *
  * \todo Only depend on the grid type, use type erasure to allow to add arbitrary discrete functions, possibly implement
  *       this by element functors which are used in a grid walker.
  */
@@ -202,6 +209,9 @@ protected:
 }; // class AdaptationHelper
 
 
+/**
+ * \brief Creates an AdaptationHelper for the given grid and appends the given space and discrete function to it.
+ */
 template <class V, class GV, size_t r, size_t rC, class RF>
 AdaptationHelper<V, GV, r, rC, RF> make_adaptation_helper(typename GV::Grid& grid,
                                                           SpaceInterface<GV, r, rC, RF>& space,

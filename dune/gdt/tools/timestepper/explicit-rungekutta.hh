@@ -9,6 +9,10 @@
 //   Rene Milk       (2016 - 2018)
 //   Tobias Leibner  (2016 - 2017)
 
+/**
+ * \file  explicit-rungekutta.hh
+ * \brief Explicit Runge-Kutta time stepping schemes.
+ **/
 #ifndef DUNE_GDT_TIMESTEPPER_EXPLICIT_RUNGEKUTTA_HH
 #define DUNE_GDT_TIMESTEPPER_EXPLICIT_RUNGEKUTTA_HH
 

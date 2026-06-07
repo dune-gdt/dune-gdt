@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  advection-fv.hh
+ * \brief Local finite volume operators for advection problems.
+ **/
 #ifndef DUNE_GDT_LOCAL_OPERATORS_ADVECTION_FV_HH
 #define DUNE_GDT_LOCAL_OPERATORS_ADVECTION_FV_HH
 
@@ -189,6 +193,10 @@ const typename LocalAdvectionFvCouplingOperator<I, SV, SGV, m, SR, RR, IRGV, IRV
     DomainType LocalAdvectionFvCouplingOperator<I, SV, SGV, m, SR, RR, IRGV, IRV, ORR, ORGV, ORV>::static_x;
 
 
+/**
+ * \brief Local finite volume intersection operator treating a boundary intersection via a custom numerical boundary
+ *        flux lambda.
+ */
 template <class I, class SV, class SGV, size_t m = 1, class SF = double, class RF = SF, class RGV = SGV, class RV = SV>
 class LocalAdvectionFvBoundaryTreatmentByCustomNumericalFluxOperator
   : public LocalIntersectionOperatorInterface<I, SV, SGV, m, 1, SF, m, 1, RF, RGV, RV>
@@ -315,6 +323,10 @@ private:
 }; // class LocalAdvectionFvBoundaryTreatmentByCustomNumericalFluxOperator
 
 
+/**
+ * \brief Local finite volume intersection operator treating a boundary intersection by extrapolating the outside state
+ *        via a custom lambda and applying a numerical flux.
+ */
 template <class I, class SV, class SGV, size_t m = 1, class SF = double, class RF = SF, class RGV = SGV, class RV = SV>
 class LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator
   : public LocalIntersectionOperatorInterface<I, SV, SGV, m, 1, SF, m, 1, RF, RGV, RV>

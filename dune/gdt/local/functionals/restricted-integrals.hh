@@ -9,6 +9,10 @@
 //   René Fritze     (2016, 2018)
 //   René Milk       (2017)
 
+/**
+ * \file  restricted-integrals.hh
+ * \brief Local intersection functional integrating an integrand only over a filtered part of an intersection.
+ **/
 #ifndef DUNE_GDT_LOCAL_FUNCTIONALS_RESTRICTED_INTEGRALS_HH
 #define DUNE_GDT_LOCAL_FUNCTIONALS_RESTRICTED_INTEGRALS_HH
 
@@ -22,6 +26,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Local intersection functional given by the quadrature of a local unary intersection integrand, restricted to
+ *        the quadrature points accepted by a user-provided filter.
+ */
 template <class I, size_t r = 1, size_t rC = 1, class R = double, class F = R>
 class LocalIntersectionRestrictedIntegralFunctional : public LocalIntersectionFunctionalInterface<I, r, rC, R, F>
 {

@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  local-mass-matrix.hh
+ * \brief Element functor that assembles and stores the local mass matrices and their inverses per grid element.
+ **/
 #ifndef DUNE_GDT_TOOLS_local_mass_matrices_HH
 #define DUNE_GDT_TOOLS_local_mass_matrices_HH
 
@@ -30,6 +34,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Element functor that computes the local L2 mass matrix and its inverse for each element of the grid and
+ *        provides access to them per element.
+ */
 template <class GV, size_t r = 1, size_t rC = 1, class F = double, class AGV = GV>
 class LocalMassMatrixProvider
   : public XT::Grid::ElementFunctor<GV>

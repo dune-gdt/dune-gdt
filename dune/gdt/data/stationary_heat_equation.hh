@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  stationary_heat_equation.hh
+ * \brief Problem data for the stationary heat equation test case.
+ **/
 #ifndef DUNE_GDT_DATA_STATIONARY_HEAT_EQUATION_HH
 #define DUNE_GDT_DATA_STATIONARY_HEAT_EQUATION_HH
 

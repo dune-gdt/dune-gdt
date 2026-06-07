@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  indicator.hh
+ * \brief Local operators evaluating a bilinear form to compute indicator quantities.
+ **/
 #ifndef DUNE_GDT_LOCAL_OPERATORS_INDICATOR_HH
 #define DUNE_GDT_LOCAL_OPERATORS_INDICATOR_HH
 
@@ -19,6 +23,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Local element operator that applies a bilinear form to the source on each element and writes the resulting
+ *        scalar indicator value into the local range.
+ */
 template <class SV,
           class SGV,
           size_t s_r = 1,
@@ -85,6 +93,10 @@ private:
 }; // class LocalElementBilinearFormIndicatorOperator
 
 
+/**
+ * \brief Local intersection operator that applies a coupling bilinear form across an intersection and writes the
+ *        resulting scalar indicator value into the local range.
+ */
 template <class I,
           class SV,
           class SGV,
@@ -178,6 +190,10 @@ private:
 }; // class LocalCouplingIntersectionBilinearFormIndicatorOperator
 
 
+/**
+ * \brief Local intersection operator that applies an intersection bilinear form and writes the resulting scalar
+ *        indicator value into the local range.
+ */
 template <class I,
           class SV,
           class SGV,

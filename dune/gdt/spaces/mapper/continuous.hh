@@ -8,6 +8,10 @@
 //   Felix Schindler (2017 - 2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  continuous.hh
+ * \brief Mapper for continuous spaces, sharing DoFs across elements via subentity-attached numbering.
+ **/
 #ifndef DUNE_GDT_SPACES_MAPPER_CONTINUOUS_HH
 #define DUNE_GDT_SPACES_MAPPER_CONTINUOUS_HH
 
@@ -29,6 +33,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Mapper for continuous finite element spaces, attaching DoFs to grid (sub)entities so they are shared between
+ *        neighbouring elements.
+ */
 template <class GV, class LocalFiniteElementFamily>
 class ContinuousMapper : public MapperInterface<GV>
 {

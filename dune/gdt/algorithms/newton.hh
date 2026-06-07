@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  newton.hh
+ * \brief Dampened Newton method for solving nonlinear operator equations.
+ **/
 #ifndef DUNE_GDT_ALGORITHMS_NEWTON_HH
 #define DUNE_GDT_ALGORITHMS_NEWTON_HH
 
@@ -27,6 +31,9 @@ template <class AGV, size_t s_r, size_t s_rC, size_t r_r, size_t r_rC, class F, 
 class OperatorInterface;
 
 
+/**
+ * \brief Returns the default options (precision, maximum iterations, maximum dampening iterations) for newton_solve.
+ */
 static inline XT::Common::Configuration default_newton_solve_options()
 {
   return {{{"precision", "1e-7"}, {"max_iter", "100"}, {"max_dampening_iter", "1000"}}};

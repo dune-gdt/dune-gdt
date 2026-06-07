@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  identity.hh
+ * \brief Local unary element integrand returning the test basis values unchanged.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_IDENTITY_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_IDENTITY_HH
 
@@ -19,6 +23,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Local unary element integrand evaluating to the (scalar) test basis functions themselves.
+ */
 template <class E, size_t r = 1, size_t rC = 1, class R = double, class F = double>
 class LocalElementIdentityIntegrand : public LocalUnaryElementIntegrandInterface<E, r, rC, R, F>
 {

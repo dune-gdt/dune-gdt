@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  advection-dg.hh
+ * \brief Local discontinuous Galerkin operators for advection problems.
+ **/
 #ifndef DUNE_GDT_LOCAL_OPERATORS_ADVECTION_DG_HH
 #define DUNE_GDT_LOCAL_OPERATORS_ADVECTION_DG_HH
 
@@ -656,6 +660,9 @@ private:
 }; // class LocalAdvectionDgBoundaryTreatmentByCustomExtrapolationOperator
 
 
+/**
+ * \brief Local DG element operator adding artificial viscosity for shock capturing based on a smoothed jump indicator.
+ */
 template <class SV, class SGV, size_t m = 1, class SF = double, class RF = SF, class RGV = SGV, class RV = SV>
 class LocalAdvectionDgArtificialViscosityShockCapturingOperator
   : public LocalElementOperatorInterface<SV, SGV, m, 1, SF, m, 1, RF, RGV, RV>

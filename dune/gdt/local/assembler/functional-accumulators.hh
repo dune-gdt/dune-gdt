@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  functional-accumulators.hh
+ * \brief Grid functor accumulating the application of a local element functional into a scalar result.
+ **/
 #ifndef DUNE_GDT_LOCAL_ASSEMBLER_FUNCTIONAL_ACCUMULATORS_HH
 #define DUNE_GDT_LOCAL_ASSEMBLER_FUNCTIONAL_ACCUMULATORS_HH
 

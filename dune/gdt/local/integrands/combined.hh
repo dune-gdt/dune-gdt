@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  combined.hh
+ * \brief Local integrands that represent the sum of two local integrands of the same kind.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_COMBINED_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_COMBINED_HH
 
@@ -18,6 +22,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Local unary element integrand representing the sum of two unary element integrands.
+ */
 template <class E, size_t r, size_t rC, class R, class F>
 class LocalUnaryElementIntegrandSum : public LocalUnaryElementIntegrandInterface<E, r, rC, R, F>
 {
@@ -87,6 +94,9 @@ private:
 }; // class LocalUnaryElementIntegrandSum
 
 
+/**
+ * \brief Local unary intersection integrand representing the sum of two unary intersection integrands.
+ */
 template <class I, size_t r, size_t rC, class R, class F>
 class LocalUnaryIntersectionIntegrandSum : public LocalUnaryIntersectionIntegrandInterface<I, r, rC, R, F>
 {
@@ -167,6 +177,9 @@ private:
 }; // class LocalUnaryIntersectionIntegrandSum
 
 
+/**
+ * \brief Local binary element integrand representing the sum of two binary element integrands.
+ */
 template <class E, size_t t_r, size_t t_rC, class TF, class F, size_t a_r, size_t a_rC, class AF>
 class LocalBinaryElementIntegrandSum : public LocalBinaryElementIntegrandInterface<E, t_r, t_rC, TF, F, a_r, a_rC, AF>
 {
@@ -243,6 +256,9 @@ private:
 }; // class LocalBinaryElementIntegrandSum
 
 
+/**
+ * \brief Local binary intersection integrand representing the sum of two binary intersection integrands.
+ */
 template <class I, size_t t_r, size_t t_rC, class TF, class F, size_t a_r, size_t a_rC, class AF>
 class LocalBinaryIntersectionIntegrandSum
   : public LocalBinaryIntersectionIntegrandInterface<I, t_r, t_rC, TF, F, a_r, a_rC, AF>
@@ -331,6 +347,9 @@ private:
 }; // class LocalBinaryIntersectionIntegrandSum
 
 
+/**
+ * \brief Local quaternary intersection integrand representing the sum of two quaternary intersection integrands.
+ */
 template <class I, size_t t_r, size_t t_rC, class TF, class F, size_t a_r, size_t a_rC, class AF>
 class LocalQuaternaryIntersectionIntegrandSum
   : public LocalQuaternaryIntersectionIntegrandInterface<I, t_r, t_rC, TF, F, a_r, a_rC, AF>
