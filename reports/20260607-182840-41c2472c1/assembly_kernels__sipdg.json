@@ -1,8 +1,8 @@
 {
     "results": [
         {
-            "title": "stationary_heat_equation__ESV2007",
-            "name": "sipdg_p1__assemble_and_solve",
+            "title": "assembly_kernels__sipdg",
+            "name": "sipdg_p1__assemble_only",
             "unit": "op",
             "batch": 1,
             "complexityN": -1,
@@ -15,8 +15,8 @@
             "epochIterations": 0,
             "warmup": 0,
             "relative": 0,
-            "median(elapsed)": 0.017103024,
-            "medianAbsolutePercentError(elapsed)": 0.0114926648994501,
+            "median(elapsed)": 0.020298982,
+            "medianAbsolutePercentError(elapsed)": 0.0223557092893027,
             "median(instructions)": 0,
             "medianAbsolutePercentError(instructions)": 0,
             "median(cpucycles)": 0,
@@ -24,11 +24,11 @@
             "median(pagefaults)": 0,
             "median(branchinstructions)": 0,
             "median(branchmisses)": 0,
-            "totalTime": 0.052027432,
+            "totalTime": 0.061045945,
             "measurements": [
                 {
                     "iterations": 1,
-                    "elapsed": 0.01801571,
+                    "elapsed": 0.020891856,
                     "pagefaults": 0,
                     "cpucycles": 0,
                     "contextswitches": 0,
@@ -38,7 +38,7 @@
                 },
                 {
                     "iterations": 1,
-                    "elapsed": 0.017103024,
+                    "elapsed": 0.020298982,
                     "pagefaults": 0,
                     "cpucycles": 0,
                     "contextswitches": 0,
@@ -48,7 +48,7 @@
                 },
                 {
                     "iterations": 1,
-                    "elapsed": 0.016908698,
+                    "elapsed": 0.019855107,
                     "pagefaults": 0,
                     "cpucycles": 0,
                     "contextswitches": 0,
