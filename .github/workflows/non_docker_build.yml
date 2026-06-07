@@ -159,8 +159,10 @@ jobs:
         # Ubuntu repos that provide xvfb/gmsh update fine.
         sudo apt-get update || true
         # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
-        # discretizer used in example__gmsh_grid
-        sudo apt-get install -y xvfb gmsh
+        # discretizer used in example__gmsh_grid; clang provides the builtin-header
+        # resource dir (stddef.h & co.) that clangquill's bundled libclang needs to
+        # parse the C++ API headers (see tutorials/source/conf.py:_clang_resource_dir)
+        sudo apt-get install -y xvfb gmsh clang
 
     - name: Create the uv-managed virtualenv
       # uv downloads the requested CPython itself (no actions/setup-python needed).
