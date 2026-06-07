@@ -22,6 +22,7 @@ this_dir = Path(__file__).resolve().parent
 src_dir = (this_dir / ".." / ".." / "src").resolve()
 sys.path.insert(0, str(src_dir))
 sys.path.insert(0, str(this_dir))
+sys.path.insert(0, str(this_dir / "_ext"))
 branch = os.environ.get("CI_COMMIT_REF_NAME", "main")
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
@@ -36,6 +37,7 @@ extensions = [
     "myst_nb",
     "sphinx.ext.mathjax",
     "sphinxcontrib.bibtex",
+    "benchmark_plots",
 ]
 # this enables:
 # substitutions-with-jinja2, direct-latex-math and definition-lists

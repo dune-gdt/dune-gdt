@@ -71,6 +71,10 @@ jobs:
         key: ${{ runner.os }}-bench-release-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
 
     - name: Run benchmarks
+      # the commit being benchmarked is embedded into each JSON report's "meta" block so the
+      # documentation plots can label every data point (see benchmarks/benchmark_common.hh)
+      env:
+        DUNE_GDT_BENCHMARK_GIT_REVISION: ${{ github.sha }}
       run: cmake --build --preset=release --target run_benchmarks
 
     - name: Upload benchmark reports artifact
