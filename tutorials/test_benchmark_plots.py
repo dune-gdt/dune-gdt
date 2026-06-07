@@ -96,6 +96,12 @@ def test_parse_date_prefers_meta_then_dirname():
     assert meta_date.tzinfo is not None
     assert meta_date.astimezone(timezone.utc).hour == 10
 
+    # a timezone-less meta date must still come back UTC-aware so it can be sorted alongside the
+    # directory-name fallback (which is always UTC-aware)
+    naive = bp._parse_date({"meta": {"date": "2026-06-05T10:00:00"}}, "ignored")
+    assert naive.tzinfo is not None
+    assert naive.astimezone(timezone.utc).hour == 10
+
     fallback = bp._parse_date({}, "20260605-100000-bbbb222")
     assert fallback.year == 2026 and fallback.month == 6 and fallback.day == 5
 

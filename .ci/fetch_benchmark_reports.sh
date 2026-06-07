@@ -24,7 +24,12 @@ fi
 
 tmp="$(mktemp -d)"
 trap 'rm -rf "${tmp}"' EXIT
-git clone --depth 1 --branch "${branch}" "${remote}" "${tmp}"
+# This data source is optional: a transient clone/network failure must not fail the docs job, so
+# treat it like the missing-branch path and let the docs render a placeholder.
+if ! git clone --depth 1 --branch "${branch}" "${remote}" "${tmp}"; then
+  echo "failed to clone '${branch}' from ${remote}; skipping benchmark data fetch"
+  exit 0
+fi
 
 mkdir -p "${dest}"
 if [ -d "${tmp}/reports" ]; then

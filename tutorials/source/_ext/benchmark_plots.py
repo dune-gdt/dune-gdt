@@ -70,7 +70,12 @@ def _parse_date(report: dict, run_name: str) -> datetime | None:
     meta_date = (report.get("meta") or {}).get("date")
     if meta_date:
         try:
-            return datetime.fromisoformat(str(meta_date).replace("Z", "+00:00"))
+            parsed = datetime.fromisoformat(str(meta_date).replace("Z", "+00:00"))
+            # normalize to UTC-aware so that mixing reports with and without an explicit offset
+            # does not raise when sorting the series chronologically
+            if parsed.tzinfo is None:
+                return parsed.replace(tzinfo=timezone.utc)
+            return parsed.astimezone(timezone.utc)
         except ValueError:
             logger.info("benchmark-plots: could not parse meta date %r", meta_date)
     # fall back to the "<YYYYmmdd>-<HHMMSS>-<sha>" run directory name
@@ -252,7 +257,12 @@ class BenchmarkPlotsDirective(Directive):
             logger.info(
                 "benchmark-plots: plotly is not installed; rendering the table only"
             )
-            return [_summary_table(series)]
+            return [
+                _summary_table(series),
+                *_note(
+                    "Plotly is not installed; rendering the benchmark summary table only."
+                ),
+            ]
 
         result: list[nodes.Node] = [_summary_table(series)]
         for index, ((title, name), points) in enumerate(sorted(series.items())):
