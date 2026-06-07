@@ -11,6 +11,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014 - 2015, 2017, 2019 - 2020)
 
+/// \file
+/// \brief Constant function, grid function and flux function implementations.
+
 #ifndef DUNE_XT_FUNCTIONS_CONSTANT_HH
 #define DUNE_XT_FUNCTIONS_CONSTANT_HH
 
@@ -26,6 +29,7 @@
 namespace Dune::XT::Functions {
 
 
+/// \brief Function that returns a constant value everywhere (with zero jacobian).
 template <size_t d, size_t r = 1, size_t rC = 1, class R = double>
 class ConstantFunction : public FunctionInterface<d, r, rC, R>
 {
@@ -105,6 +109,7 @@ public:
 }; // class ConstantFunction
 
 
+/// \brief Grid function that returns a constant value everywhere.
 template <class E, size_t r = 1, size_t rC = 1, class R = double>
 class ConstantGridFunction : public FunctionAsGridFunctionWrapper<E, r, rC, R>
 {
@@ -136,6 +141,7 @@ private:
 }; // class ConstantGridFunction
 
 
+/// \brief Flux function that returns a constant value, independent of position and state.
 template <class E, size_t stateDim, size_t r = 1, size_t rC = 1, class R = double>
 class ConstantFluxFunction : public FluxFunctionInterface<E, stateDim, r, rC, R>
 {

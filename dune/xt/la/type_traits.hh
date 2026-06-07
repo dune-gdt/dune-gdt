@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Linear algebra backend enum and type traits to detect and relate container types.
+
 #ifndef DUNE_XT_LA_TYPE_TRAITS_HH
 #define DUNE_XT_LA_TYPE_TRAITS_HH
 
@@ -17,6 +20,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Enumeration of the available linear algebra backends (common, ISTL, Eigen; dense and sparse).
 enum class Backends
 {
   common_dense,
@@ -134,6 +138,7 @@ struct is_istl_dense_vector_helper
 } // namespace internal
 
 
+/// \brief Trait that is true if C is a dune-xt-la container (derives from ContainerInterface).
 template <class C, bool candidate = internal::is_container_helper<C>::is_candidate>
 struct is_container : public std::is_base_of<ContainerInterface<typename C::Traits, typename C::ScalarType>, C>
 {};
@@ -143,6 +148,7 @@ struct is_container<C, false> : public std::false_type
 {};
 
 
+/// \brief Trait that is true if M is a dune-xt-la matrix (derives from MatrixInterface).
 template <class M, bool candidate = internal::is_matrix_helper<M>::is_candidate>
 struct is_matrix : public std::is_base_of<MatrixInterface<typename M::Traits, typename M::ScalarType>, M>
 {};
@@ -152,6 +158,7 @@ struct is_matrix<M, false> : public std::false_type
 {};
 
 
+/// \brief Trait that is true if V is a dune-xt-la vector (derives from VectorInterface).
 template <class V, bool candidate = internal::is_vector_helper<V>::is_candidate>
 struct is_vector : public std::is_base_of<VectorInterface<typename V::Traits, typename V::ScalarType>, V>
 {};
@@ -161,6 +168,7 @@ struct is_vector<V, false> : public std::false_type
 {};
 
 
+/// \brief Trait that is true if V is an Eigen-based vector (derives from EigenBaseVector).
 template <class V, bool candidate = internal::is_eigen_vector_helper<V>::is_candidate>
 struct is_eigen_vector : public std::is_base_of<EigenBaseVector<typename V::Traits, typename V::ScalarType>, V>
 {};
@@ -170,6 +178,7 @@ struct is_eigen_vector<V, false> : public std::false_type
 {};
 
 
+/// \brief Trait that is true if V is an ISTL dense vector (derives from IstlDenseVector).
 template <class V, bool candidate = internal::is_istl_dense_vector_helper<V>::is_candidate>
 struct is_istl_dense_vector : public std::is_base_of<IstlDenseVector<typename V::ScalarType>, V>
 {};
@@ -179,6 +188,7 @@ struct is_istl_dense_vector<V, false> : public std::false_type
 {};
 
 
+/// \brief Trait that is true if C exposes a native backend (derives from ProvidesBackend).
 template <class C, bool candidate = internal::provides_backend_helper<C>::is_candidate>
 struct provides_backend : public std::is_base_of<ProvidesBackend<typename C::Traits>, C>
 {};
@@ -188,6 +198,7 @@ struct provides_backend<C, false> : public std::false_type
 {};
 
 
+/// \brief Trait that is true if C provides raw data access (derives from ProvidesDataAccess).
 template <class C, bool candidate = internal::provides_data_access_helper<C>::is_candidate>
 struct provides_data_access : public std::is_base_of<ProvidesDataAccess<typename C::Traits>, C>
 {};
@@ -197,6 +208,7 @@ struct provides_data_access<C, false> : public std::false_type
 {};
 
 
+/// \brief Determines the matching sparse matrix container type for a given vector type V (member typedef 'type').
 template <class V, bool = is_vector<V>::value>
 struct extract_matrix;
 
@@ -216,6 +228,7 @@ template <class V>
 using matrix_t = typename extract_matrix<V>::type;
 
 
+/// \brief Determines the matching vector container type for a given matrix type M (member typedef 'type').
 template <class M, bool = is_matrix<M>::value>
 struct extract_vector;
 

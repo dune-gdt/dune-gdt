@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2020)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Matrix-inverter specializations for Dune::FieldMatrix and Dune::XT::Common::FieldMatrix.
+
 #ifndef DUNE_XT_LA_MATRIX_INVERTER_FMATRIX_HH
 #define DUNE_XT_LA_MATRIX_INVERTER_FMATRIX_HH
 
@@ -27,6 +30,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Matrix-inverter options for a Dune::FieldMatrix.
 template <class K, int ROWS, int COLS>
 class MatrixInverterOptions<FieldMatrix<K, ROWS, COLS>, true>
 {
@@ -51,11 +55,13 @@ public:
   }
 }; // class MatrixInverterOptions<FieldMatrix<K, ROWS, COLS>>
 
+/// \brief Matrix-inverter options for a Dune::XT::Common::FieldMatrix.
 template <class K, int ROWS, int COLS>
 class MatrixInverterOptions<Common::FieldMatrix<K, ROWS, COLS>, true>
   : public MatrixInverterOptions<FieldMatrix<K, ROWS, COLS>>
 {};
 
+/// \brief Matrix-inverter for a Dune::FieldMatrix.
 template <class K, int ROWS, int COLS>
 class MatrixInverter<FieldMatrix<K, ROWS, COLS>, true> : public internal::MatrixInverterBase<FieldMatrix<K, ROWS, COLS>>
 {
@@ -115,6 +121,7 @@ protected:
 }; // class MatrixInverter<FieldMatrix<...>>
 
 
+/// \brief Matrix-inverter for a Dune::XT::Common::FieldMatrix.
 template <class K, int ROWS, int COLS>
 class MatrixInverter<Common::FieldMatrix<K, ROWS, COLS>, true> : public MatrixInverter<FieldMatrix<K, ROWS, COLS>>
 {

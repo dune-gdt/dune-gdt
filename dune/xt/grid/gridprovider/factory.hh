@@ -10,6 +10,9 @@
 //   René Fritze     (2013 - 2020)
 //   Tobias Leibner  (2014, 2017 - 2020)
 
+/// \file
+/// \brief Provides a unified factory dispatching grid creation to the cube, DGF and gmsh providers by type.
+
 #ifndef DUNE_XT_GRID_PROVIDER_HH
 #define DUNE_XT_GRID_PROVIDER_HH
 
@@ -29,6 +32,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Factory creating grid providers by dispatching to the cube, DGF or gmsh provider based on a type string.
 template <class GridType>
 class GridProviderFactory
 {

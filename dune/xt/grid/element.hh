@@ -9,6 +9,9 @@
 //   René Fritze     (2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Helpers operating on grid elements (codim-0 entities).
+
 #ifndef DUNE_XT_GRID_ELEMENT_HH
 #define DUNE_XT_GRID_ELEMENT_HH
 
@@ -20,6 +23,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Returns the center of the i-th sub-entity of the given codimension of an element.
 template <int dim, class GridImp, template <int, int, class> class EntityImp, int cd = GridImp::dimension>
 FieldVector<typename GridImp::ctype, GridImp::dimension>
 sub_entity_center(const Dune::Entity<0, dim, GridImp, EntityImp> element, const int codim, const size_t i)

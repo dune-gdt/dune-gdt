@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2018 - 2020)
 
+/// \file
+/// \brief Grid capability traits, such as whether a grid supports boundary ids.
+
 #ifndef DUNE_XT_GRID_CAPABILITIES_HH
 #define DUNE_XT_GRID_CAPABILITIES_HH
 
@@ -19,6 +22,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Trait indicating whether a grid type supports boundary ids.
 template <class G>
 struct has_boundary_id
 {

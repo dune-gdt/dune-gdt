@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2020)
 //   Tobias Leibner  (2017 - 2018, 2020)
 
+/// \file
+/// \brief Eigensolver specialization for EigenDenseMatrix using Eigen, LAPACK or a shifted QR algorithm.
+
 #ifndef DUNE_XT_LA_EIGEN_SOLVER_EIGEN_HH
 #define DUNE_XT_LA_EIGEN_SOLVER_EIGEN_HH
 
@@ -30,6 +33,7 @@ namespace Dune::XT::LA {
 #if HAVE_EIGEN
 
 
+/// \brief Available types and default options for the EigenDenseMatrix eigensolver (eigen, lapack, shifted_qr).
 template <class S>
 class EigenSolverOptions<EigenDenseMatrix<S>, true>
 {
@@ -54,6 +58,7 @@ public:
 }; // class EigenSolverOptions<EigenDenseMatrix<S>>
 
 
+/// \brief Eigensolver for EigenDenseMatrix using Eigen's own solver, LAPACK or a shifted QR algorithm.
 template <class S>
 class EigenSolver<EigenDenseMatrix<S>, true>
   : public internal::EigenSolverBase<EigenDenseMatrix<S>,

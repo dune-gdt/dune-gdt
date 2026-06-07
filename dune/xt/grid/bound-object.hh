@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Base classes for objects that can be bound to a grid element or intersection.
+
 #ifndef DUNE_XT_GRID_BOUND_OBJECTS_HH
 #define DUNE_XT_GRID_BOUND_OBJECTS_HH
 
@@ -21,6 +24,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Holds a copy of a grid element and allows rebinding to other elements.
 template <class Element>
 class ElementBoundObject /*: Common::EnableDebugLoggingForCtors<ElementBoundObject<Element>>*/
 {
@@ -114,6 +118,7 @@ protected:
 }; // class ElementBoundObject
 
 
+/// \brief Holds a copy of a grid intersection and allows rebinding to other intersections.
 template <class Intersection>
 class IntersectionBoundObject
 {

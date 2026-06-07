@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Internal eigen-solver implementation backed by NumPy.
+
 #ifndef DUNE_XT_LA_EIGEN_SOLVER_INTERNAL_NUMPY_HH
 #define DUNE_XT_LA_EIGEN_SOLVER_INTERNAL_NUMPY_HH
 

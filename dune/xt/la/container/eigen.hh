@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2014)
 //   Tobias Leibner  (2014, 2017, 2020)
 
+/// \file
+/// \brief Aggregator header for the Eigen-based dense and sparse containers.
+
 #ifndef DUNE_XT_LA_CONTAINER_EIGEN_HH
 #define DUNE_XT_LA_CONTAINER_EIGEN_HH
 

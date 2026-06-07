@@ -10,6 +10,9 @@
 //   René Fritze      (2014 - 2020)
 //   Tobias Leibner   (2014 - 2015, 2018 - 2020)
 
+/// \file
+/// \brief Linear solver specializations for IstlRowMajorSparseMatrix (dune-istl backends).
+
 #ifndef DUNE_XT_LA_SOLVER_ISTL_HH
 #define DUNE_XT_LA_SOLVER_ISTL_HH
 
@@ -102,6 +105,7 @@ struct IstlSolverTraits<S, SequentialCommunication>
 } // namespace internal
 
 
+/// \brief Linear solver options for an IstlRowMajorSparseMatrix.
 template <class S, class CommunicatorType>
 class SolverOptions<IstlRowMajorSparseMatrix<S>, CommunicatorType> : protected internal::SolverUtils
 {
@@ -164,6 +168,7 @@ public:
 }; // class SolverOptions
 
 
+/// \brief Linear solver for an IstlRowMajorSparseMatrix using dune-istl backends.
 template <class S, class CommunicatorType>
 class Solver<IstlRowMajorSparseMatrix<S>, CommunicatorType> : protected internal::SolverUtils
 {

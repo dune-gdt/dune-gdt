@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2020)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Default matrix-inverter specializations for arbitrary matrix types.
+
 #ifndef DUNE_XT_LA_MATRIX_INVERTER_DEFAULT_HH
 #define DUNE_XT_LA_MATRIX_INVERTER_DEFAULT_HH
 
@@ -21,6 +24,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Default matrix-inverter options for a generic matrix type.
 template <class MatrixType>
 class MatrixInverterOptions<MatrixType, true>
 {
@@ -41,6 +45,7 @@ public:
 }; // class MatrixInverterOptions<MatrixType, true>
 
 
+/// \brief Default matrix-inverter for a generic matrix type.
 template <class MatrixImp>
 class MatrixInverter<MatrixImp, true> : public internal::MatrixInverterBase<MatrixImp>
 {

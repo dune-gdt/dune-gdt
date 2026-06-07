@@ -9,6 +9,9 @@
 //   René Fritze     (2016, 2018 - 2020)
 //   Tobias Leibner  (2016 - 2020)
 
+/// \file
+/// \brief Concrete boundary type classes and a factory to create them by id.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_TYPES_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_TYPES_HH
 
@@ -25,6 +28,7 @@ namespace Dune::XT::Grid {
 #endif
 
 
+/// \brief Boundary type denoting an intersection that is not a boundary.
 class NoBoundary : public BoundaryType
 {
 public:
@@ -40,6 +44,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting an unknown boundary.
 class UnknownBoundary : public BoundaryType
 {
 public:
@@ -55,6 +60,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting a Dirichlet boundary.
 class DirichletBoundary : public BoundaryType
 {
 public:
@@ -70,6 +76,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting a Neumann boundary.
 class NeumannBoundary : public BoundaryType
 {
 public:
@@ -85,6 +92,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting a Robin boundary.
 class RobinBoundary : public BoundaryType
 {
 public:
@@ -100,6 +108,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting a reflecting boundary.
 class ReflectingBoundary : public BoundaryType
 {
 public:
@@ -115,6 +124,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting an absorbing boundary.
 class AbsorbingBoundary : public BoundaryType
 {
 public:
@@ -130,6 +140,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting an inflow boundary.
 class InflowBoundary : public BoundaryType
 {
 public:
@@ -145,6 +156,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting an outflow boundary.
 class OutflowBoundary : public BoundaryType
 {
 public:
@@ -160,6 +172,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting a combined inflow/outflow boundary.
 class InflowOutflowBoundary : public BoundaryType
 {
 public:
@@ -175,6 +188,7 @@ public:
 };
 
 
+/// \brief Boundary type denoting an impermeable boundary.
 class ImpermeableBoundary : public BoundaryType
 {
 public:
@@ -195,6 +209,7 @@ public:
 #endif
 
 
+/// \brief Creates a new BoundaryType instance matching the given id string.
 // NOLINTNEXTLINE(clang-diagnostic-unused-function)
 static inline BoundaryType* make_boundary_type(const std::string& id)
 {

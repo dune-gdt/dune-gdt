@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2013 - 2014)
 //   Tobias Leibner  (2014, 2017, 2020)
 
+/// \file
+/// \brief Convenience header aggregating all boundary info implementations and the factory.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_HH
 

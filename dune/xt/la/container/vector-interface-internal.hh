@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2014, 2017, 2019 - 2020)
 
+/// \file
+/// \brief Internal iterator helpers for the vector interface.
+
 #ifndef DUNE_XT_LA_CONTAINER_VECTOR_INTERFACE_INTERNAL_HH
 #define DUNE_XT_LA_CONTAINER_VECTOR_INTERFACE_INTERNAL_HH
 

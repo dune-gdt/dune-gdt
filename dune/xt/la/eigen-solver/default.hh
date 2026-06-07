@@ -8,6 +8,9 @@
 //   René Fritze    (2018 - 2020)
 //   Tobias Leibner (2018, 2020)
 
+/// \file
+/// \brief Default eigensolver specialization using LAPACK or a shifted QR algorithm.
+
 #ifndef DUNE_XT_LA_EIGEN_SOLVER_DEFAULT_HH
 #define DUNE_XT_LA_EIGEN_SOLVER_DEFAULT_HH
 
@@ -26,6 +29,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Available types and default options for the default eigensolver (lapack and shifted_qr).
 template <class MatrixType>
 class EigenSolverOptions<MatrixType, true>
 {
@@ -50,6 +54,7 @@ public:
 }; // class EigenSolverOptions<>
 
 
+/// \brief Default eigensolver computing eigenvalues and eigenvectors via LAPACK or a shifted QR algorithm.
 template <class MatrixImp>
 class EigenSolver<MatrixImp, true>
   : public internal::EigenSolverBase<MatrixImp,

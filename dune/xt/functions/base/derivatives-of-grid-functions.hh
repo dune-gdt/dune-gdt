@@ -8,6 +8,9 @@
 //   Felix Schindler (2020)
 //   René Fritze     (2020)
 
+/// \file
+/// \brief Grid functions representing derivatives (gradient, divergence) of other grid functions.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_DERIVATIVES_OF_GRID_FUNCTIONS_HH
 #define DUNE_XT_FUNCTIONS_BASE_DERIVATIVES_OF_GRID_FUNCTIONS_HH
 
@@ -23,6 +26,7 @@
 namespace Dune::XT::Functions {
 
 
+/// \brief Grid function representing a derivative (selected by DerivativeType) of a given grid function.
 template <class GridFunctionType, DerivativeType derivative>
 class DerivativeGridFunction
   : public GridFunctionInterface<typename internal::DerivativeElementFunctionHelper<GridFunctionType, derivative>::E,
@@ -95,6 +99,7 @@ private:
 }; // class DerivativeGridFunction
 
 
+/// \brief Grid function representing the divergence of a given grid function.
 template <class GridFunctionType>
 class DivergenceGridFunction : public DerivativeGridFunction<GridFunctionType, DerivativeType::divergence>
 {
@@ -109,6 +114,7 @@ public:
 }; // class DivergenceGridFunction
 
 
+/// \brief Grid function representing the gradient of a given grid function.
 template <class GridFunctionType>
 class GradientGridFunction : public DerivativeGridFunction<GridFunctionType, DerivativeType::gradient>
 {

@@ -9,6 +9,9 @@
 //   René Fritze     (2016, 2018 - 2020)
 //   Tobias Leibner  (2016 - 2020)
 
+/// \file
+/// \brief Interfaces for boundary types and boundary info classes.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_INTERFACE_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_INTERFACE_HH
 
@@ -28,6 +31,7 @@ namespace Dune::XT::Grid {
 #endif
 
 
+/// \brief Interface for a boundary type, identified by a string id.
 class BoundaryType
 {
 public:
@@ -52,6 +56,7 @@ public:
 #endif
 
 
+/// \brief Streams the id of a BoundaryType.
 std::ostream& operator<<(std::ostream& out, const BoundaryType& type);
 
 
@@ -59,6 +64,7 @@ template <class I>
 class BoundaryInfo;
 
 
+/// \brief Interface for classes mapping grid intersections to their boundary type.
 template <class IntersectionImp>
 class BoundaryInfo : public Common::WithLogger<BoundaryInfo<IntersectionImp>>
 {
@@ -107,6 +113,7 @@ public:
 }; // class BoundaryInfo
 
 
+/// \brief Streams the string representation of a BoundaryInfo.
 template <class I>
 std::ostream& operator<<(std::ostream& out, const BoundaryInfo<I>& bi)
 {

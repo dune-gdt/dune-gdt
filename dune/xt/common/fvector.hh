@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2016 - 2020)
 
+/// \file
+/// \brief Includes the dune-common version-specific dune-xt FieldVector extensions.
+
 #ifndef DUNE_XT_COMMON_FVECTOR_HH
 #define DUNE_XT_COMMON_FVECTOR_HH
 

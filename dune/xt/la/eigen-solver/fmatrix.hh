@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2020)
 //   Tobias Leibner  (2017 - 2018, 2020)
 
+/// \file
+/// \brief Eigen-solver specializations for Dune::FieldMatrix and Dune::XT::Common::FieldMatrix.
+
 #ifndef DUNE_XT_LA_EIGEN_SOLVER_FMATRIX_HH
 #define DUNE_XT_LA_EIGEN_SOLVER_FMATRIX_HH
 
@@ -37,6 +40,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Eigen-solver options for a square Dune::FieldMatrix.
 template <class K, int SIZE>
 class EigenSolverOptions<Dune::FieldMatrix<K, SIZE, SIZE>, true>
 {
@@ -66,23 +70,27 @@ public:
 }; // class EigenSolverOptions<Dune::FieldMatrix<K, SIZE, SIZE>>
 
 
+/// \brief Eigen-solver options for a square Dune::XT::Common::FieldMatrix.
 template <class K, int SIZE>
 class EigenSolverOptions<Dune::XT::Common::FieldMatrix<K, SIZE, SIZE>, true>
   : public EigenSolverOptions<Dune::FieldMatrix<K, SIZE, SIZE>, true>
 {};
 
 
+/// \brief Eigen-solver options for a scalar Dune::FieldVector of size one.
 template <class K>
 class EigenSolverOptions<Dune::FieldVector<K, 1>, true> : public EigenSolverOptions<Dune::FieldMatrix<K, 1, 1>, true>
 {};
 
 
+/// \brief Eigen-solver options for a scalar Dune::XT::Common::FieldVector of size one.
 template <class K>
 class EigenSolverOptions<Dune::XT::Common::FieldVector<K, 1>, true>
   : public EigenSolverOptions<Dune::FieldMatrix<K, 1, 1>, true>
 {};
 
 
+/// \brief Eigen-solver for a square Dune::FieldMatrix.
 template <class K, int SIZE>
 class EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>, true>
   : public internal::EigenSolverBase<Dune::FieldMatrix<K, SIZE, SIZE>,
@@ -186,6 +194,7 @@ protected:
 }; // class EigenSolver<FieldMatrix<...>>
 
 
+/// \brief Eigen-solver for a square Dune::XT::Common::FieldMatrix.
 template <class K, int SIZE>
 class EigenSolver<Dune::XT::Common::FieldMatrix<K, SIZE, SIZE>, true>
   : public EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>>
@@ -199,6 +208,7 @@ public:
 };
 
 
+/// \brief Eigen-solver for a scalar Dune::XT::Common::FieldVector of size one.
 template <class K>
 class EigenSolver<Dune::XT::Common::FieldVector<K, 1>, true>
   : Common::ConstStorageProvider<Dune::FieldMatrix<K, 1, 1>>
@@ -217,6 +227,7 @@ public:
 };
 
 
+/// \brief Eigen-solver for a scalar Dune::FieldVector of size one.
 template <class K>
 class EigenSolver<Dune::FieldVector<K, 1>, true>
   : Common::ConstStorageProvider<Dune::FieldMatrix<K, 1, 1>>

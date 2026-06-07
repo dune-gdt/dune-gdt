@@ -11,6 +11,9 @@
 //   Sven Kaulmann   (2011 - 2012)
 //   Tobias Leibner  (2014 - 2015, 2017 - 2020)
 
+/// \file
+/// \brief Internal helpers backing the string conversion and tokenization routines.
+
 #ifndef DUNE_XT_COMMON_STRING_INTERNAL_HH
 #define DUNE_XT_COMMON_STRING_INTERNAL_HH
 

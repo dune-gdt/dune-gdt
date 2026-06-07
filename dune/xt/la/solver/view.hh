@@ -8,6 +8,9 @@
 //   René Fritze    (2019 - 2020)
 //   Tobias Leibner (2019 - 2020)
 
+/// \file
+/// \brief Linear solver specializations for MatrixView.
+
 #ifndef DUNE_XT_LA_SOLVER_VIEW_HH
 #define DUNE_XT_LA_SOLVER_VIEW_HH
 
@@ -28,6 +31,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Linear solver options for a MatrixView (forwarded to the underlying matrix type).
 template <class MatrixImp, class CommunicatorType>
 class SolverOptions<MatrixView<MatrixImp>, CommunicatorType> : protected internal::SolverUtils
 {
@@ -46,6 +50,7 @@ public:
 }; // class SolverOptions<MatrixView<...>>
 
 
+/// \brief Linear solver for a MatrixView, copying the view into a full matrix before solving.
 template <class MatrixImp, class CommunicatorType>
 class Solver<MatrixView<MatrixImp>, CommunicatorType> : protected internal::SolverUtils
 {

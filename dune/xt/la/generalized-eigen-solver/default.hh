@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Default generalized eigen-solver specializations for arbitrary matrix types.
+
 #ifndef DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_DEFAULT_HH
 #define DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_DEFAULT_HH
 
@@ -25,6 +28,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Default generalized eigen-solver options for a generic matrix type.
 template <class MatrixType>
 class GeneralizedEigenSolverOptions<MatrixType, true>
 {
@@ -51,6 +55,7 @@ public:
 }; // class GeneralizedEigenSolverOptions<>
 
 
+/// \brief Default generalized eigen-solver for a generic matrix type.
 template <class MatrixImp>
 class GeneralizedEigenSolver<MatrixImp, true>
   : public internal::GeneralizedEigenSolverBase<

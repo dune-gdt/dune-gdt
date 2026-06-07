@@ -8,6 +8,9 @@
 //   René Fritze    (2019 - 2020)
 //   Tobias Leibner (2019 - 2020)
 
+/// \file
+/// \brief Wraps a state-dependent function f(u) as a flux function f(x, u).
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_FUNCTION_AS_FLUX_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_BASE_FUNCTION_AS_FLUX_FUNCTION_HH
 
@@ -21,7 +24,7 @@
 namespace Dune::XT::Functions {
 
 
-// wraps a function f(u) as flux function f(x, u)
+/// \brief Wraps a state function f(u) as a flux function f(x, u), ignoring the spatial argument.
 template <class E, size_t s, size_t r, size_t rC, class R>
 class StateFunctionAsFluxFunctionWrapper : public FluxFunctionInterface<E, s, r, rC, R>
 {

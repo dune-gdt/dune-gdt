@@ -11,6 +11,9 @@
 //   Tim Keil         (2018)
 //   Tobias Leibner   (2017 - 2020)
 
+/// \file
+/// \brief Internal helper traits and dispatchers backing the float comparison routines.
+
 #ifndef DUNE_XT_COMMON_FLOAT_CMP_INTERNAL_HH
 #define DUNE_XT_COMMON_FLOAT_CMP_INTERNAL_HH
 

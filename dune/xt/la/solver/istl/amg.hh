@@ -10,6 +10,9 @@
 //   René Fritze      (2014 - 2016, 2018 - 2019)
 //   Tobias Leibner   (2014, 2017 - 2020)
 
+/// \file
+/// \brief Algebraic multigrid preconditioned BiCGStab applicator for IstlRowMajorSparseMatrix.
+
 #ifndef DUNE_XT_LA_SOLVER_ISTL_AMG_HH
 #define DUNE_XT_LA_SOLVER_ISTL_AMG_HH
 
@@ -32,6 +35,7 @@ namespace Dune::XT::LA {
 
 
 //! the general, parallel case
+/// \brief Applies an AMG-preconditioned BiCGStab solver to an IstlRowMajorSparseMatrix (general, parallel case).
 template <class S, class CommunicatorType>
 class AmgApplicator
 {
@@ -145,6 +149,7 @@ protected:
 };
 
 //! specialization for our faux type \ref SequentialCommunication
+/// \brief Applies an AMG-preconditioned BiCGStab solver to an IstlRowMajorSparseMatrix (sequential case).
 template <class S>
 class AmgApplicator<S, SequentialCommunication>
 {

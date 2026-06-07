@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2016, 2020)
 
+/// \file
+/// \brief Includes the available Dune grid managers and defines convenient grid type aliases.
+
 #ifndef DUNE_XT_GRID_GRIDS_HH
 #define DUNE_XT_GRID_GRIDS_HH
 

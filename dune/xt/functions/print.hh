@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2017, 2020)
 
+/// \file
+/// \brief Pulls the Common print and repr utilities into the Functions namespace.
+
 #ifndef DUNE_XT_FUNCTIONS_PRINT_HH
 #define DUNE_XT_FUNCTIONS_PRINT_HH
 

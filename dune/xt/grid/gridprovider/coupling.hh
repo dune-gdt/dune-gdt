@@ -6,6 +6,9 @@
 //          with "runtime exception" (http://www.dune-project.org/license.html)
 // Authors:
 
+/// \file
+/// \brief Provides a grid provider wrapping a coupling grid view.
+
 #ifndef DUNE_XT_GRID_PROVIDER_COUPLING_HH
 #define DUNE_XT_GRID_PROVIDER_COUPLING_HH
 
@@ -19,6 +22,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Grid provider holding a coupling grid view between a macro and local grid.
 template <class CouplingGridViewImp>
 class CouplingGridProvider
 {

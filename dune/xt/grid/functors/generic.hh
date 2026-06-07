@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Generic functors that delegate prepare/apply/finalize to user-provided std::function callbacks.
+
 #ifndef DUNE_XT_GRID_FUNCTORS_GENERIC_HH
 #define DUNE_XT_GRID_FUNCTORS_GENERIC_HH
 
@@ -20,6 +23,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Element functor whose behaviour is defined by user-provided prepare/apply/finalize callbacks.
 template <class GL>
 class GenericElementFunctor : public ElementFunctor<GL>
 {
@@ -69,6 +73,7 @@ private:
 }; // class GenericElementFunctor
 
 
+/// \brief Intersection functor whose behaviour is defined by user-provided prepare/apply/finalize callbacks.
 template <class GL>
 class GenericIntersectionFunctor : public IntersectionFunctor<GL>
 {
@@ -122,6 +127,7 @@ private:
 }; // class GenericIntersectionFunctor
 
 
+/// \brief Combined element-and-intersection functor whose behaviour is defined by user-provided callbacks.
 template <class GL>
 class GenericElementAndIntersectionFunctor : public ElementAndIntersectionFunctor<GL>
 {

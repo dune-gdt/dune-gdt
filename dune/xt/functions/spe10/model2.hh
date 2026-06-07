@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Grid function providing the permeability field of the SPE10 model 2 benchmark.
+
 #ifndef DUNE_XT_FUNCTIONS_SPE10_MODEL2_HH
 #define DUNE_XT_FUNCTIONS_SPE10_MODEL2_HH
 
@@ -32,6 +35,7 @@ static constexpr double model_2_length_z = 1.417;
 } // namespace internal
 
 
+/// \brief Grid function for the SPE10 model 2 permeability field (primary template, only the 3x3 case is available).
 // default, to allow for specialization
 template <class E, size_t r, size_t rC = 1, class R = double>
 class Model2Function : public GridFunctionInterface<E, r, rC, R>
@@ -43,6 +47,7 @@ class Model2Function : public GridFunctionInterface<E, r, rC, R>
 };
 
 
+/// \brief Checkerboard grid function reading the matrix-valued SPE10 model 2 permeability data from file.
 template <class E, class R>
 class Model2Function<E, 3, 3, R> : public CheckerboardFunction<E, 3, 3, R>
 {

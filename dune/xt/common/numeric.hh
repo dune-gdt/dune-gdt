@@ -8,6 +8,9 @@
 //   René Fritze    (2020)
 //   Tobias Leibner (2019 - 2020)
 
+/// \file
+/// \brief Provides reduce and transform_reduce with fallbacks for compilers lacking C++17 parallel algorithms.
+
 #ifndef DUNE_XT_COMMON_NUMERIC_HH
 #define DUNE_XT_COMMON_NUMERIC_HH
 
@@ -22,8 +25,8 @@
 namespace Dune::XT::Common {
 
 
-// Uses std::reduce if available, and falls back to std::accumulate on older compilers.
-// The std::reduce versions with an execution policy as first argument are not supported.
+/// \brief Uses std::reduce if available, and falls back to std::accumulate on older compilers.
+/// The std::reduce versions with an execution policy as first argument are not supported.
 template <class... Args>
 decltype(auto) reduce(Args&&... args)
 {
@@ -34,8 +37,8 @@ decltype(auto) reduce(Args&&... args)
 #endif
 }
 
-// Uses std::transform_reduce if available, and falls back to std::inner_product on older compilers.
-// The std::transform_reduce versions with an execution policy as first argument are not supported.
+/// \brief Uses std::transform_reduce if available, and falls back to std::inner_product on older compilers.
+/// The std::transform_reduce versions with an execution policy as first argument are not supported.
 template <class... Args>
 decltype(auto) transform_reduce(Args&&... args)
 {
