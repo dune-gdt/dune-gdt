@@ -72,7 +72,8 @@ double estimate_inverse_inequality_constant(const SpaceInterface<GV, r>& space)
 
 
 /**
- * \brief Numerically estimates the combined inverse trace inequality constant C_M (1 + C_I) over the given space's grid.
+ * \brief Numerically estimates the combined inverse trace inequality constant C_M (1 + C_I) over the given space's
+ * grid.
  */
 template <class GV, size_t r>
 double estimate_combined_inverse_trace_inequality_constant(const SpaceInterface<GV, r>& space)

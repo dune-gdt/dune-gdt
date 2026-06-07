@@ -105,8 +105,8 @@ auto H1Product(const GridViewType& grid_view,
 }
 
 /**
- * \brief Creates the (optionally weighted) H1 bilinear form for vector-valued functions whose range dimension equals the
- *        grid dimension.
+ * \brief Creates the (optionally weighted) H1 bilinear form for vector-valued functions whose range dimension equals
+ * the grid dimension.
  */
 template <size_t r, // <- needs to be specified manually
           class GridViewType>

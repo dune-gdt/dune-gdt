@@ -11,7 +11,8 @@
 
 /**
  * \file  interfaces.hh
- * \brief Interfaces for bilinear forms and operators (BilinearFormInterface, ForwardOperatorInterface, OperatorInterface).
+ * \brief Interfaces for bilinear forms and operators (BilinearFormInterface, ForwardOperatorInterface,
+ * OperatorInterface).
  **/
 #ifndef DUNE_GDT_OPERATORS_INTERFACES_HH
 #define DUNE_GDT_OPERATORS_INTERFACES_HH
