@@ -97,11 +97,9 @@ public:
     bound_type c(m,
                  ClassName.c_str(),
                  (XT::Common::to_camel_case(class_id) + " (" + grid_id + ", " + matrix_id + " variant)").c_str());
-    c.def(py::init<const SS&, const RS&>(),
-          "source_space"_a,
-          "range_space"_a,
-          py::keep_alive<0, 2>(),
-          py::keep_alive<0, 3>());
+    // NOTE: no Python constructor is exposed -- (Const)LincombOperators are not created directly
+    // from Python, they are returned by the numeric operators (e.g. m_h + dt*a_h). The C++ ctor
+    // takes (assembly_grid_view, source_space, range_space), not (source_space, range_space).
     c.def_property_readonly("num_ops", &type::num_ops);
 
     addbind_methods(c);
@@ -140,11 +138,8 @@ public:
     bound_type c(m,
                  ClassName.c_str(),
                  (XT::Common::to_camel_case(class_id) + " (" + grid_id + ", " + matrix_id + " variant)").c_str());
-    c.def(py::init<const SS&, const RS&>(),
-          "source_space"_a,
-          "range_space"_a,
-          py::keep_alive<0, 2>(),
-          py::keep_alive<0, 3>());
+    // NOTE: no Python constructor is exposed -- LincombOperators are returned by the numeric
+    // operators (e.g. m_h + dt*a_h), not constructed directly from Python.
 
     // methods from base, to allow for overloads
     bindings::ConstLincombOperator<M, GV, s, r>::addbind_methods(c);
