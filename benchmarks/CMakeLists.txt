@@ -42,10 +42,11 @@ add_custom_target(
 # Each benchmark is wrapped in a per-benchmark wall-clock timeout (coreutils `timeout`, if available) so a single
 # runaway benchmark fails fast with a clear error instead of consuming the whole CI job timeout. `timeout` exits 124 on
 # expiry, which fails the custom command (and thus the `run_benchmarks` target). If `timeout` is not found (e.g. on some
-# macOS dev setups), the benchmark is run directly without the safety net.
-# Overridable on the CMake command line, e.g. -DDUNE_GDT_BENCHMARK_TIMEOUT_SECONDS=120 for local runs.
-set(DUNE_GDT_BENCHMARK_TIMEOUT_SECONDS 600 CACHE STRING
-    "Per-benchmark wall-clock timeout in seconds for the run_benchmarks target")
+# macOS dev setups), the benchmark is run directly without the safety net. Overridable on the CMake command line, e.g.
+# -DDUNE_GDT_BENCHMARK_TIMEOUT_SECONDS=120 for local runs.
+set(DUNE_GDT_BENCHMARK_TIMEOUT_SECONDS
+    600
+    CACHE STRING "Per-benchmark wall-clock timeout in seconds for the run_benchmarks target")
 find_program(DUNE_GDT_TIMEOUT_EXECUTABLE NAMES timeout)
 
 # The prefix is the same for every benchmark, so build it once.
