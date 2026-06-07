@@ -160,8 +160,9 @@ private:
 
 
 /**
- * \brief Implements LocalFiniteElementFamilyInterface by lazily creating and caching local finite elements in a
- *        thread-safe manner from a user-provided factory.
+ * \brief Implements LocalFiniteElementFamilyInterface by lazily creating and caching local finite elements from a
+ *        user-provided factory, with creation guarded by a mutex.
+ * \note  See the implementation of get() for a caveat regarding the double-checked locking pattern used here.
  */
 template <class D, size_t d, class R = double, size_t r = 1, size_t rC = 1>
 class ThreadSafeDefaultLocalFiniteElementFamily : public LocalFiniteElementFamilyInterface<D, d, R, r, rC>
