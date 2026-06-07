@@ -174,6 +174,13 @@ jobs:
         # rendering when the wheels were built with K3D).
         python -m pip install --find-links wheelhouse/ "dune-gdt[docs,visualisation]"
 
+    - name: Fetch published benchmark reports
+      # The benchmark-plots Sphinx directive reads the per-run nanobench JSON reports from this
+      # directory. They live on the orphan `benchmarks` branch; if that branch does not exist yet
+      # the script is a no-op and the docs render a placeholder note.
+      run: |
+        ./.ci/fetch_benchmark_reports.sh "${GITHUB_WORKSPACE}/build/benchmark_data"
+
     - name: Build tutorials (sphinx + myst-nb notebook execution)
       # Run from a neutral directory so the repo-root `dune/` source tree does not
       # shadow the installed bindings. Notebook execution is the actual test: myst-nb
@@ -181,6 +188,8 @@ jobs:
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
       # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
       # inventory fetches emit network-dependent warnings unrelated to the tutorials.
+      env:
+        DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
       run: |
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/tutorials_html"
