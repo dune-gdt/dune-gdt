@@ -93,8 +93,7 @@ public:
           py::keep_alive<1, 2>(),
           py::keep_alive<1, 3>());
 
-    c.def(
-        "assemble", [](type& self, const bool parallel) { self.assemble(parallel); }, "parallel"_a = false);
+    c.def("assemble", [](type& self, const bool parallel) { self.assemble(parallel); }, "parallel"_a = false);
     c.def(
         "apply",
         [](type& self, SF source, V& range, const XT::Common::Parameter& param) { self.apply(source, range, param); },
