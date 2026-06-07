@@ -141,7 +141,9 @@ def _clang_resource_dir():
     override = os.environ.get("CLANGQUILL_CLANG_RESOURCE_DIR")
     if override:
         return override
-    clang = shutil.which("clang") or shutil.which("clang-18") or shutil.which("clang-19")
+    clang = (
+        shutil.which("clang") or shutil.which("clang-18") or shutil.which("clang-19")
+    )
     if not clang:
         return None
     try:
