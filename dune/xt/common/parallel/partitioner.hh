@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides IndexSetPartitioner, which assigns each codim-0 entity a unique partition number from its index set.
+
 #ifndef DUNE_XT_COMMON_PARALLEL_PARTITIONER_HH
 #define DUNE_XT_COMMON_PARALLEL_PARTITIONER_HH
 

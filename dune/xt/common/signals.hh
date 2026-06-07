@@ -9,6 +9,9 @@
 //   René Fritze     (2010, 2012 - 2013, 2015 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides POSIX signal management utilities for installing, resetting, and handling signal handlers.
+
 #ifndef DUNE_XT_COMMON_SIGNALS
 #define DUNE_XT_COMMON_SIGNALS
 

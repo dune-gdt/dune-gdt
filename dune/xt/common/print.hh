@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2011 - 2012)
 //   Tobias Leibner  (2014, 2018, 2020)
 
+/// \file
+/// \brief Provides the Printer framework and print helpers for configurable textual representations of values.
+
 #ifndef DUNE_XT_COMMON_PRINT_HH
 #define DUNE_XT_COMMON_PRINT_HH
 

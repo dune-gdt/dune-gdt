@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017, 2019 - 2021)
 
+/// \file
+/// \brief Defines the interfaces for element-local functions and sets thereof, together with their arithmetic combinations.
+
 #ifndef DUNE_XT_FUNCTIONS_INTERFACES_ELEMENT_FUNCTIONS_HH
 #define DUNE_XT_FUNCTIONS_INTERFACES_ELEMENT_FUNCTIONS_HH
 

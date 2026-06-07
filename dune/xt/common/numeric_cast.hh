@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017, 2020)
 
+/// \file
+/// \brief Provides a numeric_cast wrapper around boost::numeric_cast that throws an informative exception on failure.
+
 #ifndef DUNE_XT_COMMON_NUMERIC_CAST_HH
 #define DUNE_XT_COMMON_NUMERIC_CAST_HH
 

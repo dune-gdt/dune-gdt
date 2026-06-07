@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides the MinMaxCoordinateFunctor that computes the bounding box (coordinate minima and maxima) of a grid.
+
 #ifndef DUNE_XT_GRID_FUNCTORS_BOUNDING_BOX_HH
 #define DUNE_XT_GRID_FUNCTORS_BOUNDING_BOX_HH
 

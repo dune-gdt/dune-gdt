@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Defines the GridFunctionInterface for functions which can be localized to an element of a grid.
+
 #ifndef DUNE_XT_FUNCTIONS_INTERFACES_GRID_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_INTERFACES_GRID_FUNCTION_HH
 

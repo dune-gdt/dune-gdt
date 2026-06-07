@@ -8,6 +8,9 @@
 //   René Fritze    (2018 - 2020)
 //   Tobias Leibner (2018 - 2020)
 
+/// \file
+/// \brief Provides MPI_Comm_Wrapper and its pybind11 type caster to exchange MPI communicators with mpi4py.
+
 #ifndef DUNE_XT_COMMON_MPI_COMM_WRAPPER_HH
 #define DUNE_XT_COMMON_MPI_COMM_WRAPPER_HH
 

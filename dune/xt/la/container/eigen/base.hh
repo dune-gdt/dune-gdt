@@ -10,6 +10,9 @@
 //   René Fritze      (2015 - 2016, 2018 - 2020)
 //   Tobias Leibner   (2014, 2017 - 2020)
 
+/// \file
+/// \brief Provides the EigenBaseVector base class for all Eigen-backed implementations of the VectorInterface.
+
 #ifndef DUNE_XT_LA_CONTAINER_EIGEN_BASE_HH
 #define DUNE_XT_LA_CONTAINER_EIGEN_BASE_HH
 

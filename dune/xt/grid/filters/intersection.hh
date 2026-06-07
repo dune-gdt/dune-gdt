@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2020)
 //   Tobias Leibner  (2015 - 2020)
 
+/// \file
+/// \brief Provides concrete IntersectionFilter implementations (within the ApplyOn namespace) for selecting subsets of grid intersections.
+
 #ifndef DUNE_XT_GRID_FILTERS_INTERSECTION_HH
 #define DUNE_XT_GRID_FILTERS_INTERSECTION_HH
 

@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2012 - 2013)
 //   Tobias Leibner  (2014, 2018, 2020)
 
+/// \file
+/// \brief Provides value_range helpers that generate vectors of evenly spaced values for arithmetic and enum types.
+
 #ifndef DUNE_XT_COMMON_RANGES_HH
 #define DUNE_XT_COMMON_RANGES_HH
 

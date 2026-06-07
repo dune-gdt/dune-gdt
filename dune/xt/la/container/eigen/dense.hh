@@ -10,6 +10,9 @@
 //   René Fritze      (2014 - 2016, 2018 - 2019)
 //   Tobias Leibner   (2014, 2016 - 2020)
 
+/// \file
+/// \brief Provides the Eigen-backed dense container types EigenDenseVector, EigenMappedDenseVector and EigenDenseMatrix.
+
 #ifndef DUNE_XT_LA_CONTAINER_EIGEN_DENSE_HH
 #define DUNE_XT_LA_CONTAINER_EIGEN_DENSE_HH
 

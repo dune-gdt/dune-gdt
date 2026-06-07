@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2018 - 2020)
 
+/// \file
+/// \brief Provides the SPE10 Model1 permeability function, reading its values from the SPE10 benchmark data file.
+
 #ifndef DUNE_XT_FUNCTIONS_SPE10_MODEL1_HH
 #define DUNE_XT_FUNCTIONS_SPE10_MODEL1_HH
 

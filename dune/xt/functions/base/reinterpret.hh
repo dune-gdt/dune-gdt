@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2016 - 2021)
 
+/// \file
+/// \brief Provides ReinterpretLocalizableFunction to reinterpret a grid function from its grid layer on a different grid layer.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_REINTERPRET_HH
 #define DUNE_XT_FUNCTIONS_BASE_REINTERPRET_HH
 
