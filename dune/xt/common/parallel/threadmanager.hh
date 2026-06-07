@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2020)
 
 /// \file
-/// \brief Provides the ThreadManager singleton that abstracts threading functionality, controlling TBB with a single-threaded fallback.
+/// \brief Provides the ThreadManager singleton that abstracts threading functionality, controlling TBB with a
+/// single-threaded fallback.
 
 #ifndef DUNE_XT_COMMON_THREADMANAGER_HH
 #define DUNE_XT_COMMON_THREADMANAGER_HH

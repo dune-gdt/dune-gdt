@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2017 - 2018, 2020)
 
 /// \file
-/// \brief Selects the RangedPartitioning implementation from EXADUNE or the bundled internal fallback depending on the dune-grid version.
+/// \brief Selects the RangedPartitioning implementation from EXADUNE or the bundled internal fallback depending on the
+/// dune-grid version.
 
 #ifndef DUNE_XT_GRID_PARALLEL_PARTITIONING_RANGED_HH
 #define DUNE_XT_GRID_PARALLEL_PARTITIONING_RANGED_HH

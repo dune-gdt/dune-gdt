@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2019 - 2020)
 
 /// \file
-/// \brief Provides concrete ElementFilter implementations (within the ApplyOn namespace) for selecting subsets of grid elements.
+/// \brief Provides concrete ElementFilter implementations (within the ApplyOn namespace) for selecting subsets of grid
+/// elements.
 
 #ifndef DUNE_XT_GRID_FILTERS_ELEMENT_HH
 #define DUNE_XT_GRID_FILTERS_ELEMENT_HH

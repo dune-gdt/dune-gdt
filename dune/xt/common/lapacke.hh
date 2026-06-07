@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2017 - 2018, 2020)
 
 /// \file
-/// \brief Provides thin wrappers around LAPACKE constants and routines with a graceful fallback when LAPACKE is unavailable.
+/// \brief Provides thin wrappers around LAPACKE constants and routines with a graceful fallback when LAPACKE is
+/// unavailable.
 
 #ifndef DUNE_XT_COMMON_LAPACKE_HH
 #define DUNE_XT_COMMON_LAPACKE_HH

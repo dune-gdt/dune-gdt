@@ -11,7 +11,8 @@
 //   Tobias Leibner  (2018 - 2020)
 
 /// \file
-/// \brief Provides the CombinedGridFunction base class and Difference, Sum, Product and Fraction grid functions combining two grid functions.
+/// \brief Provides the CombinedGridFunction base class and Difference, Sum, Product and Fraction grid functions
+/// combining two grid functions.
 
 #ifndef DUNE_XT_FUNCTIONS_BASE_COMBINED_GRID_FUNCTIONS_HH
 #define DUNE_XT_FUNCTIONS_BASE_COMBINED_GRID_FUNCTIONS_HH

@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2017 - 2020)
 
 /// \file
-/// \brief Provides forward and backward solvers for triangular linear systems, including sparse and LAPACK-backed variants.
+/// \brief Provides forward and backward solvers for triangular linear systems, including sparse and LAPACK-backed
+/// variants.
 
 #ifndef DUNE_XT_LA_ALGORITHMS_SOLVE_LOWER_TRIANGULAR_HH
 #define DUNE_XT_LA_ALGORITHMS_SOLVE_LOWER_TRIANGULAR_HH

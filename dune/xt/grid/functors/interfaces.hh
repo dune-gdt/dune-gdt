@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2020)
 
 /// \file
-/// \brief Defines the ElementFunctor, IntersectionFunctor and ElementAndIntersectionFunctor interfaces applied by the Walker.
+/// \brief Defines the ElementFunctor, IntersectionFunctor and ElementAndIntersectionFunctor interfaces applied by the
+/// Walker.
 
 #ifndef DUNE_XT_GRID_FUNCTORS_INTERFACES_HH
 #define DUNE_XT_GRID_FUNCTORS_INTERFACES_HH

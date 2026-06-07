@@ -11,7 +11,8 @@
 //   Tobias Leibner  (2015, 2017, 2019 - 2020)
 
 /// \file
-/// \brief Provides FlatTopFunction, a function which is constant on a box and decays smoothly to zero in a boundary layer.
+/// \brief Provides FlatTopFunction, a function which is constant on a box and decays smoothly to zero in a boundary
+/// layer.
 
 #ifndef DUNE_XT_FUNCTIONS_FLATTOP_HH
 #define DUNE_XT_FUNCTIONS_FLATTOP_HH

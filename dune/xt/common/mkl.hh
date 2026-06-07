@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2018 - 2020)
 
 /// \file
-/// \brief Provides thin wrappers around Intel MKL vector math routines with a graceful fallback when MKL is unavailable.
+/// \brief Provides thin wrappers around Intel MKL vector math routines with a graceful fallback when MKL is
+/// unavailable.
 
 #ifndef DUNE_XT_COMMON_MKL_HH
 #define DUNE_XT_COMMON_MKL_HH

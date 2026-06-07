@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2014, 2020)
 
 /// \file
-/// \brief Provides the ValidatorInterface and a collection of validator classes for checking values against constraints.
+/// \brief Provides the ValidatorInterface and a collection of validator classes for checking values against
+/// constraints.
 
 #ifndef DUNE_XT_COMMON_VALIDATION_HH
 #define DUNE_XT_COMMON_VALIDATION_HH

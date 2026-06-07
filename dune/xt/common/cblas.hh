@@ -10,7 +10,8 @@
 //   Tobias Leibner  (2020)
 
 /// \file
-/// \brief Provides thin wrappers around CBLAS constants and routines with a graceful fallback when CBLAS is unavailable.
+/// \brief Provides thin wrappers around CBLAS constants and routines with a graceful fallback when CBLAS is
+/// unavailable.
 
 #ifndef DUNE_XT_COMMON_BLAS_HH
 #define DUNE_XT_COMMON_BLAS_HH
