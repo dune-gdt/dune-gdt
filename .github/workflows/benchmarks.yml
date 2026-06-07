@@ -23,14 +23,17 @@ jobs:
     timeout-minutes: 120
 
     steps:
-    - uses: actions/checkout@v6.0.2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
+        # the publish step pushes from a separate temp clone whose origin URL
+        # already embeds ${GITHUB_TOKEN}, so this checkout's token is not used
+        persist-credentials: false
         submodules: recursive
         fetch-tags: true
         fetch-depth: 0
 
     - name: Restore build cache
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         # See non_docker_build.yml: the vcpkg toolchain in .vcpkg-root must be cached together with
         # build/, otherwise the restored CMake config points at a toolchain that no longer exists.
@@ -63,7 +66,7 @@ jobs:
 
     - name: Save build cache
       if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: |
           build

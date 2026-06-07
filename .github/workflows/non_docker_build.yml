@@ -21,14 +21,16 @@ jobs:
     timeout-minutes: 120
 
     steps:
-    - uses: actions/checkout@v6.0.2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
+        # this checkout's token is not used for any later git push/API call
+        persist-credentials: false
         submodules: recursive
         fetch-tags: true
         fetch-depth: 0
 
     - name: Restore build cache
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         # .vcpkg-root holds the vcpkg toolchain that VcpkgBootStrap.cmake bakes
         # into build/.../CMakeSystem.cmake. It must be cached together with build/,
@@ -74,7 +76,7 @@ jobs:
 
     - name: Save build cache
       if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: |
           build
@@ -99,8 +101,10 @@ jobs:
         python-version: ["3.13"] #, "3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v6.0.2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
+        # this checkout's token is not used for any later git push/API call
+        persist-credentials: false
         submodules: recursive
         fetch-tags: true
         fetch-depth: 0
@@ -132,8 +136,10 @@ jobs:
       PYTHON_VERSION: "3.13"
 
     steps:
-    - uses: actions/checkout@v6.0.2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
+        # this checkout's token is not used for any later git push/API call
+        persist-credentials: false
         fetch-tags: true
         fetch-depth: 0
 
@@ -282,7 +288,7 @@ jobs:
         ls -l wheels/*
       shell: bash
     - name: Upload wheels to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.14.0
+      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
       id: upload-pypi_on_tag
       with:
         packages-dir: wheels/
@@ -311,7 +317,7 @@ jobs:
         ls -l wheels/*
       shell: bash
     - name: Upload wheels to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.14.0
+      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
       with:
         packages-dir: wheels/
         verbose: true
