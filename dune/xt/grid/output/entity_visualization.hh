@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2013)
 //   Tobias Leibner  (2014, 2016, 2019 - 2020)
 
+/// \file
+/// \brief Provides functors and helpers to visualize per-element data of a grid as VTK output.
+
 #ifndef DUNE_XT_GRID_OUTPUT_ENTITY_VISUALIZATION_HH
 #define DUNE_XT_GRID_OUTPUT_ENTITY_VISUALIZATION_HH
 
@@ -32,6 +35,7 @@
 
 namespace Dune::XT::Grid {
 
+/// \brief Collection of functors and helpers to attach and write per-element data as VTK output.
 struct ElementVisualization
 {
   // demonstrate attaching data to elements
@@ -342,6 +346,7 @@ struct ElementVisualization
   }
 };
 
+/// \brief Writes the entity index of each element to VTK files, one per grid level.
 template <class GridType>
 void visualize_index_per_level(const GridType& grid_, const std::string& filename)
 {

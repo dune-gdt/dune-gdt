@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2019 - 2020)
 
+/// \file
+/// \brief Visualizers and VTK adapters for visualizing grid functions.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_VISUALIZATION_HH
 #define DUNE_XT_FUNCTIONS_BASE_VISUALIZATION_HH
 
@@ -35,6 +38,7 @@ template <class Element, size_t rangeDim, size_t rangeDimCols, class RangeField>
 class GridFunctionInterface;
 
 
+/// \brief Interface for visualizers that map a function range value to one or more scalar components for output.
 template <size_t r, size_t rC, class R = double>
 class VisualizerInterface
 {
@@ -50,7 +54,7 @@ public:
 }; // class VisualizerInterface
 
 
-// visualizes all components of the function
+/// \brief Default visualizer: visualizes all components of the function (or its Frobenius norm for matrix-valued).
 template <size_t r, size_t rC, class R = double>
 class DefaultVisualizer : public VisualizerInterface<r, rC, R>
 {
@@ -101,6 +105,7 @@ private:
   }; // struct helper<..., 1>
 }; // class DefaultVisualizer
 
+/// \brief Returns a reference to a static DefaultVisualizer instance for the given dimensions.
 template <size_t r, size_t rC, class R = double>
 const DefaultVisualizer<r, rC, R>& default_visualizer()
 {
@@ -108,6 +113,7 @@ const DefaultVisualizer<r, rC, R>& default_visualizer()
   return default_visualizer_instance_;
 }
 
+/// \brief Visualizer that outputs the sum of all components of the function range value.
 template <size_t r, size_t rC = 1, class R = double>
 class SumVisualizer : public VisualizerInterface<r, rC, R>
 {
@@ -130,6 +136,7 @@ public:
 }; // class SumVisualizer
 
 
+/// \brief Visualizer that outputs a single, fixed component of the function range value.
 template <size_t r, size_t rC = 1, class R = double>
 class ComponentVisualizer : public VisualizerInterface<r, rC, R>
 {
@@ -160,6 +167,7 @@ private:
 }; // class ComponentVisualizer
 
 
+/// \brief Visualizer driven by a user-provided evaluation lambda and component count.
 template <size_t r, size_t rC = 1, class R = double>
 class GenericVisualizer : public VisualizerInterface<r, rC, R>
 {
@@ -191,6 +199,7 @@ private:
 }; // class GenericVisualizer
 
 
+/// \brief VTKFunction adapter that visualizes a grid function using a given visualizer.
 template <class GridViewType, size_t range_dim, size_t range_dim_cols, class RangeField>
 class VisualizationAdapter : public VTKFunction<GridViewType>
 {
@@ -254,6 +263,7 @@ private:
 }; // class VisualizationAdapter
 
 
+/// \brief VTKFunction adapter that visualizes the gradient of a scalar grid function.
 template <class GridViewType, size_t range_dim, size_t range_dim_cols, class RangeField>
 class GradientVisualizationAdapter : public VTKFunction<GridViewType>
 {

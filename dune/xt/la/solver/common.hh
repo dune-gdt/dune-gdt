@@ -10,6 +10,9 @@
 //   René Fritze      (2015 - 2020)
 //   Tobias Leibner   (2014, 2018, 2020)
 
+/// \file
+/// \brief Linear solver specializations for CommonDenseMatrix.
+
 #ifndef DUNE_XT_LA_SOLVER_COMMON_HH
 #define DUNE_XT_LA_SOLVER_COMMON_HH
 
@@ -30,6 +33,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Linear solver options for a CommonDenseMatrix.
 template <class S, class CommunicatorType>
 class SolverOptions<CommonDenseMatrix<S>, CommunicatorType> : protected internal::SolverUtils
 {
@@ -50,6 +54,7 @@ public:
 }; // class SolverOptions<CommonDenseMatrix<...>>
 
 
+/// \brief Linear solver for a CommonDenseMatrix using QR decomposition.
 template <class S, class CommunicatorType>
 class Solver<CommonDenseMatrix<S>, CommunicatorType> : protected internal::SolverUtils
 {

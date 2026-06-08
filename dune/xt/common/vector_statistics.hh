@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides standard_deviation for dune-xt vector types.
+
 #ifndef DUNE_XT_COMMON_VECTOR_STATISTICS_HH
 #define DUNE_XT_COMMON_VECTOR_STATISTICS_HH
 
@@ -21,6 +24,7 @@
 
 namespace Dune::XT::Common {
 
+/// \brief Returns the standard deviation of the entries of the given vector.
 template <class VectorType>
 typename std::enable_if<is_vector<VectorType>::value, typename VectorAbstraction<VectorType>::S>::type
 standard_deviation(const VectorType& vector)

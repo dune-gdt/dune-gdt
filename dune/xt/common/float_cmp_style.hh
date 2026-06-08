@@ -9,6 +9,9 @@
 //   René Fritze     (2015 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Defines the float comparison Style enum and its conversion to Dune::FloatCmp::CmpStyle.
+
 #ifndef DUNE_XT_COMMON_FLOAT_CMP_STYLE_HH
 #define DUNE_XT_COMMON_FLOAT_CMP_STYLE_HH
 
@@ -22,6 +25,7 @@
 
 namespace Dune::XT::Common::FloatCmp {
 
+/// \brief Selects the comparison method used by the float comparison routines.
 enum class Style
 {
   numpy,

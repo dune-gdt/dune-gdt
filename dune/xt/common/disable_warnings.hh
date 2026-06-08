@@ -10,6 +10,9 @@
 //   René Fritze     (2011 - 2012, 2014 - 2019)
 //   Tobias Leibner  (2014, 2016 - 2020)
 
+/// \file
+/// \brief Pushes the diagnostic state and disables a list of compiler warnings.
+
 #include <boost/config.hpp>
 
 // Please sort these alphabetically!

@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2014)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Default sparsity pattern container and factory functions for common patterns.
+
 #ifndef DUNE_XT_LA_CONTAINER_PATTERN_HH
 #define DUNE_XT_LA_CONTAINER_PATTERN_HH
 
@@ -21,6 +24,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Default sparsity pattern, storing for each row the sorted indices of its non-zero columns.
 class SparsityPatternDefault
 {
 private:
@@ -69,17 +73,23 @@ private:
   BaseType vector_of_vectors_;
 }; // class SparsityPatternDefault
 
+/// \brief Creates a fully populated (dense) sparsity pattern for a rows x cols matrix.
 SparsityPatternDefault dense_pattern(const size_t rows, const size_t cols);
 
+/// \brief Creates a tridiagonal sparsity pattern for a rows x cols matrix.
 SparsityPatternDefault tridiagonal_pattern(const size_t rows, const size_t cols);
 
+/// \brief Creates a triangular (lower or upper) sparsity pattern for a rows x cols matrix.
 SparsityPatternDefault triangular_pattern(const size_t rows,
                                           const size_t cols,
                                           const Common::MatrixPattern& uplo = Common::MatrixPattern::lower_triangular);
 
+/// \brief Creates a diagonal sparsity pattern for a square rows x rows matrix.
 SparsityPatternDefault diagonal_pattern(const size_t rows);
+/// \brief Creates a diagonal sparsity pattern for a rows x cols matrix with the given diagonal offset.
 SparsityPatternDefault diagonal_pattern(const size_t rows, const size_t cols, int offset = 0);
 
+/// \brief Computes the sparsity pattern of the product of two matrices with the given patterns.
 SparsityPatternDefault multiplication_pattern(const SparsityPatternDefault& lhs_pattern,
                                               const SparsityPatternDefault& rhs_pattern,
                                               const size_t rhs_cols);

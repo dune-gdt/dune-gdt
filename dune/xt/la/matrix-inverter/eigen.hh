@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Matrix-inverter specializations for EigenDenseMatrix.
+
 #ifndef DUNE_XT_LA_MATRIX_INVERTER_EIGEN_HH
 #define DUNE_XT_LA_MATRIX_INVERTER_EIGEN_HH
 
@@ -26,6 +29,7 @@ namespace Dune::XT::LA {
 #if HAVE_EIGEN
 
 
+/// \brief Matrix-inverter options for an EigenDenseMatrix.
 template <class S>
 class MatrixInverterOptions<EigenDenseMatrix<S>, true>
 {
@@ -48,6 +52,7 @@ public:
 }; // class MatrixInverterOptions<EigenDenseMatrix<S>>
 
 
+/// \brief Matrix-inverter for an EigenDenseMatrix.
 template <class S>
 class MatrixInverter<EigenDenseMatrix<S>, true> : public internal::MatrixInverterBase<EigenDenseMatrix<S>>
 {
@@ -98,6 +103,7 @@ protected:
 #else // HAVE_EIGEN
 
 
+/// \brief Matrix-inverter options for an EigenDenseMatrix (unavailable without Eigen).
 template <class S>
 class MatrixInverterOptions<EigenDenseMatrix<S>, true>
 {
@@ -105,6 +111,7 @@ class MatrixInverterOptions<EigenDenseMatrix<S>, true>
 };
 
 
+/// \brief Matrix-inverter for an EigenDenseMatrix (unavailable without Eigen).
 template <class S>
 class MatrixInverter<EigenDenseMatrix<S>, true>
 {

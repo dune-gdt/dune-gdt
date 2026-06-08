@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Provides a domain decomposition grid glueing macro elements to refined local subdomain grids.
+
 #ifndef DUNE_XT_GRID_DD_GLUED_HH
 #define DUNE_XT_GRID_DD_GLUED_HH
 
@@ -48,6 +51,7 @@ namespace Dune::XT::Grid::DD {
 namespace Exceptions {
 
 
+/// \brief Exception thrown when a coupling intersection has a wrongly oriented normal.
 class intersection_orientation_is_broken : public Dune::InvalidStateException
 {};
 
@@ -58,6 +62,7 @@ class intersection_orientation_is_broken : public Dune::InvalidStateException
 #if HAVE_DUNE_GRID_GLUE
 
 
+/// \brief Counts the coupling intersections of a grid glue whose normal is not aligned with the local intersection.
 template <typename P0, typename P1>
 size_t check_for_broken_coupling_intersections(
     const GridGlue::GridGlue<P0, P1>& glue,
@@ -109,6 +114,7 @@ template <class MacroGridType, class LocalGridType, Layers layer = Layers::level
 class GluedVTKWriter;
 
 
+/// \brief Domain decomposition grid equipping each macro element with its own local grid, plus their couplings.
 template <class MacroGridImp, class LocalGridImp, Layers layer = Layers::level>
 class Glued
 {
@@ -1036,6 +1042,7 @@ private:
 }; // class Glued
 
 
+/// \brief Writes per-subdomain VTK output for the local grids of a Glued domain decomposition grid.
 template <class MacroGridType, class LocalGridType, Layers layer>
 class GluedVTKWriter
 {

@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Convenience header aggregating all grid provider implementations.
+
 #ifndef DUNE_XT_GRID_GRIDPROVIDER_HH
 #define DUNE_XT_GRID_GRIDPROVIDER_HH
 

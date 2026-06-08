@@ -8,6 +8,9 @@
 //   René Fritze    (2020)
 //   Tobias Leibner (2019 - 2020)
 
+/// \file
+/// \brief Reading and writing of matrices in Matrix Market file format.
+
 #ifndef DUNE_XT_LA_CONTAINER_MATRIX_MARKET_HH
 #define DUNE_XT_LA_CONTAINER_MATRIX_MARKET_HH
 
@@ -189,6 +192,7 @@ MatrixType read_matrix_market_coordinate_format(std::ifstream& matrix_file,
 } // namespace internal
 
 
+/// \brief Reads a matrix from a Matrix Market file (array or coordinate format, real or complex).
 template <class MatrixType>
 MatrixType read_matrix_market(const std::string& filename)
 {
@@ -249,6 +253,7 @@ MatrixType read_matrix_market(const std::string& filename)
 }
 
 
+/// \brief Writes a matrix to a Matrix Market file (array format for dense, coordinate format for sparse).
 template <class MatrixType>
 void write_matrix_market(const MatrixType& mat, const std::string& filename, const int precision = 20)
 {

@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Function defined by string expressions that may depend on parameters.
+
 #ifndef DUNE_XT_FUNCTIONS_EXPRESSION_PARAMETRIC_HH
 #define DUNE_XT_FUNCTIONS_EXPRESSION_PARAMETRIC_HH
 
@@ -24,6 +27,7 @@
 namespace Dune::XT::Functions {
 
 
+/// \brief Function evaluated from string expressions of the spatial variable and parameters.
 template <size_t d, size_t r = 1, size_t rC = 1, class R = double>
 class ParametricExpressionFunction : public FunctionInterface<d, r, rC, R>
 {
@@ -35,6 +39,7 @@ public:
 };
 
 
+/// \brief Vector-valued parametric expression function (specialization for rC == 1).
 template <size_t d, size_t r, class R>
 class ParametricExpressionFunction<d, r, 1, R> : public FunctionInterface<d, r, 1, R>
 {

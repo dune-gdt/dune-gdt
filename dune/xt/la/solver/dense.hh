@@ -10,6 +10,9 @@
 //   René Fritze      (2015 - 2020)
 //   Tobias Leibner   (2014, 2018, 2020)
 
+/// \file
+/// \brief Linear solver specializations for generic dense (non-LA-container) matrix types.
+
 #ifndef DUNE_XT_LA_SOLVER_DENSE_HH
 #define DUNE_XT_LA_SOLVER_DENSE_HH
 
@@ -25,6 +28,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Linear solver options for a generic dense matrix type.
 template <class Matrix>
 class SolverOptions<
     Matrix,
@@ -49,6 +53,7 @@ public:
 }; // class SolverOptions<...>
 
 
+/// \brief Linear solver for a generic dense matrix type using QR decomposition.
 template <class Matrix>
 class Solver<
     Matrix,

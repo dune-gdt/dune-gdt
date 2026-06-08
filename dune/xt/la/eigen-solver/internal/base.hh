@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Internal base class and helpers shared by the eigen-solver implementations.
+
 #ifndef DUNE_XT_LA_EIGEN_SOLVER_INTERNAL_BASE_HH
 #define DUNE_XT_LA_EIGEN_SOLVER_INTERNAL_BASE_HH
 

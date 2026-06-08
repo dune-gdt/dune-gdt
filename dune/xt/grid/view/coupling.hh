@@ -7,6 +7,9 @@
 // Authors:
 //   Tim Keil (2020 - 2021)
 
+/// \file
+/// \brief Provides a grid view over the coupling intersections between two glued subdomain grids.
+
 #ifndef DUNE_XT_GRID_VIEW_COUPLING_HH
 #define DUNE_XT_GRID_VIEW_COUPLING_HH
 
@@ -399,6 +402,7 @@ private:
 } // namespace internal
 
 
+/// \brief Grid view iterating over the coupling intersections of a grid glue between two local subdomain grids.
 template <class GridGlueImp>
 class CouplingGridView
   : XT::Common::StorageProvider<internal::CouplingGridViewWrapper<GridGlueImp>>
@@ -439,6 +443,7 @@ public:
 }; // class CouplingGridView
 
 
+/// \brief Creates a CouplingGridView for the coupling between two macro elements across a macro intersection.
 template <class GT, class E, class IT>
 static CouplingGridView<GT> make_coupling_grid_view(const E& ss, const E& nn, GT& dd_grid, const IT& macro_intersection)
 {

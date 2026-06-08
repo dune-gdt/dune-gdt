@@ -8,6 +8,9 @@
 //   René Fritze    (2019 - 2020)
 //   Tobias Leibner (2019 - 2020)
 
+/// \file
+/// \brief Read-only and read-write views onto a rectangular sub-block of a matrix.
+
 #ifndef DUNE_XT_LA_CONTAINER_MATRIX_VIEW_HH
 #define DUNE_XT_LA_CONTAINER_MATRIX_VIEW_HH
 
@@ -63,6 +66,7 @@ MatrixImp& empty_matrix_ref()
 } // namespace internal
 
 
+/// \brief Read-only view onto a rectangular sub-block of an existing matrix.
 template <class MatrixImp>
 class ConstMatrixView
   : public MatrixInterface<internal::ConstMatrixViewTraits<MatrixImp>, typename MatrixImp::ScalarType>
@@ -288,6 +292,7 @@ private:
   mutable std::shared_ptr<SparsityPatternDefault> pattern_;
 }; // class ConstMatrixView
 
+/// \brief Read-write view onto a rectangular sub-block of an existing matrix.
 template <class MatrixImp>
 class MatrixView : public MatrixInterface<internal::MatrixViewTraits<MatrixImp>, typename MatrixImp::ScalarType>
 {

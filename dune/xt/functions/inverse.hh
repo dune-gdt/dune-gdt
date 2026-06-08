@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Functions and grid functions representing the (scalar or matrix) inverse of another function.
+
 #ifndef DUNE_XT_FUNCTIONS_INVERSE_HH
 #define DUNE_XT_FUNCTIONS_INVERSE_HH
 
@@ -71,6 +74,7 @@ public:
 } // namespace internal
 
 
+/// \brief Element function that returns the (scalar or matrix) inverse of another element function's value.
 template <class ElementFunctionType>
 class InverseElementFunction
   : public ElementFunctionInterface<typename ElementFunctionType::E,
@@ -134,6 +138,7 @@ private:
 }; // class InverseElementFunction
 
 
+/// \brief Function that returns the (scalar or matrix) inverse of another function's value.
 template <class FunctionType>
 class InverseFunction
   : public FunctionInterface<FunctionType::d,
@@ -205,6 +210,7 @@ private:
 }; // class InverseFunction
 
 
+/// \brief Grid function that returns the (scalar or matrix) inverse of another grid function's value.
 /**
  * \todo Write custom local function to hold a copy af this!
  */
@@ -284,6 +290,7 @@ private:
 }; // class InverseGridFunction
 
 
+/// \brief Creates an InverseElementFunction wrapping the given element function.
 template <class E, size_t r, size_t rC, class R>
 auto inverse(ElementFunctionInterface<E, r, rC, R>& func, const int order)
 {
@@ -295,6 +302,7 @@ auto inverse(ElementFunctionInterface<E, r, rC, R>& func, const int order)
 }
 
 
+/// \brief Creates an InverseFunction wrapping the given function.
 template <size_t d, size_t r, size_t rC, class R>
 auto inverse(const FunctionInterface<d, r, rC, R>& func, const int order)
 {
@@ -306,6 +314,7 @@ auto inverse(const FunctionInterface<d, r, rC, R>& func, const int order)
 }
 
 
+/// \brief Creates an InverseGridFunction wrapping the given grid function.
 template <class E, size_t r, size_t rC, class R>
 auto inverse(const GridFunctionInterface<E, r, rC, R>& func, const int order)
 {

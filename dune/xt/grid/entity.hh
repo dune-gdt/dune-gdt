@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2014)
 //   Tobias Leibner  (2014, 2016, 2020)
 
+/// \file
+/// \brief Free functions to print, measure and obtain reference elements of grid entities.
+
 #ifndef DUNE_XT_GRID_ENTITY_HH
 #define DUNE_XT_GRID_ENTITY_HH
 
@@ -28,6 +31,7 @@
 namespace Dune {
 
 
+/// \brief Streams a textual representation of an entity (including its corners) to an output stream.
 template <int cd, int dim, class GridImp, template <int, int, class> class EntityImp>
 std::ostream& operator<<(std::ostream& out, const Entity<cd, dim, GridImp, EntityImp>& entity)
 {
@@ -43,6 +47,7 @@ std::ostream& operator<<(std::ostream& out, const Entity<cd, dim, GridImp, Entit
 namespace XT::Grid {
 
 
+/// \brief Prints an entity and the coordinates of its corners to an output stream.
 template <class EntityType>
 void print_entity(const EntityType& entity,
                   const std::string& name = Common::Typename<EntityType>::value(),
@@ -57,6 +62,7 @@ void print_entity(const EntityType& entity,
 } // ... print_entity(...)
 
 
+/// \brief Computes the diameter of an entity as the maximum distance between any two of its corners.
 template <int codim, int worlddim, class GridImp, template <int, int, class> class EntityImp>
 double diameter(const Dune::Entity<codim, worlddim, GridImp, EntityImp>& entity)
 {
@@ -74,6 +80,7 @@ double diameter(const Dune::Entity<codim, worlddim, GridImp, EntityImp>& entity)
 } // diameter
 
 
+/// \brief Computes the diameter of an entity (alias for diameter()).
 template <int codim, int worlddim, class GridImp, template <int, int, class> class EntityImp>
 double entity_diameter(const Dune::Entity<codim, worlddim, GridImp, EntityImp>& entity)
 {
@@ -81,6 +88,7 @@ double entity_diameter(const Dune::Entity<codim, worlddim, GridImp, EntityImp>& 
 }
 
 
+/// \brief Returns the reference element associated with the given entity.
 template <int codim, int worlddim, class GridImp, template <int, int, class> class EntityImp>
 auto reference_element(const Dune::Entity<codim, worlddim, GridImp, EntityImp>& entity)
     -> decltype(ReferenceElements<typename GridImp::ctype, worlddim>::general(entity.type()))
@@ -88,6 +96,7 @@ auto reference_element(const Dune::Entity<codim, worlddim, GridImp, EntityImp>& 
   return ReferenceElements<typename GridImp::ctype, worlddim>::general(entity.type());
 }
 
+/// \brief Returns the reference element associated with the given geometry.
 template <int mydim, int cdim, class GridImp, template <int, int, class> class GeometryImp>
 auto reference_element(const Dune::Geometry<mydim, cdim, GridImp, GeometryImp>& geometry)
     -> decltype(ReferenceElements<typename GridImp::ctype, mydim>::general(geometry.type()))

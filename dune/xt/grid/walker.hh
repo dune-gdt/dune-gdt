@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2020)
 //   Tobias Leibner  (2014 - 2015, 2017 - 2020)
 
+/// \file
+/// \brief Provides the Walker, which applies appended functors to the elements and intersections of a grid view.
+
 #ifndef DUNE_XT_GRID_WALKER_HH
 #define DUNE_XT_GRID_WALKER_HH
 
@@ -196,6 +199,7 @@ private:
 } // namespace internal
 
 
+/// \brief Walks a grid view and applies appended (filtered) element and intersection functors, optionally in parallel.
 template <class GV>
 class Walker : public ElementAndIntersectionFunctor<GV>
 {
@@ -755,6 +759,7 @@ protected:
       element_and_intersection_functor_wrappers_;
 }; // class Walker
 
+/// \brief Creates a Walker for the given grid view.
 template <class GV>
 Walker<GV> make_walker(GV grid_view)
 {

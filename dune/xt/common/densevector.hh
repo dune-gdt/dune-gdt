@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides scalar multiplication and division operators for Dune::DenseVector.
+
 #ifndef DUNE_XT_COMMON_DENSEVECTOR_HH
 #define DUNE_XT_COMMON_DENSEVECTOR_HH
 
@@ -19,6 +22,7 @@
 namespace Dune {
 
 
+/// \brief Returns the product of a scalar and a dense vector.
 template <class S, class V>
 typename std::enable_if<Dune::XT::Common::is_arithmetic<S>::value || Dune::XT::Common::is_complex<S>::value,
                         typename DenseVector<V>::derived_type>::type
@@ -30,6 +34,7 @@ operator*(const S& alpha, const DenseVector<V>& vec)
 }
 
 
+/// \brief Returns the product of a dense vector and a scalar.
 template <class V, class S>
 typename std::enable_if<Dune::XT::Common::is_arithmetic<S>::value || Dune::XT::Common::is_complex<S>::value,
                         typename DenseVector<V>::derived_type>::type
@@ -41,6 +46,7 @@ operator*(const DenseVector<V>& vec, const S& alpha)
 }
 
 
+/// \brief Returns the quotient of a dense vector divided by a scalar.
 template <class V, class S>
 typename std::enable_if<Dune::XT::Common::is_arithmetic<S>::value || Dune::XT::Common::is_complex<S>::value,
                         typename DenseVector<V>::derived_type>::type

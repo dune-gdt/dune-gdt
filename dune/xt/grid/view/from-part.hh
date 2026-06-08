@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides adapters yielding a temporary grid view from a grid layer that may be a view or a part.
+
 #ifndef DUNE_XT_GRID_VIEW_FROM_PART_HH
 #define DUNE_XT_GRID_VIEW_FROM_PART_HH
 
@@ -22,6 +25,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Provides const access to a grid view obtained from a grid layer, which may be a grid view or a grid part.
 template <class GridLayerType>
 class TemporaryConstView
 {
@@ -80,6 +84,7 @@ private:
 }; // class TemporaryConstView
 
 
+/// \brief Provides mutable access to a grid view obtained from a grid layer, which may be a grid view or a grid part.
 template <class GridLayerType>
 class TemporaryView : public TemporaryConstView<GridLayerType>
 {
@@ -139,12 +144,14 @@ private:
 }; // class TemporaryView
 
 
+/// \brief Creates a TemporaryConstView from a const grid layer.
 template <class GridLayerType>
 TemporaryConstView<GridLayerType> make_tmp_view(const GridLayerType& grid_layer)
 {
   return TemporaryConstView<GridLayerType>(grid_layer);
 }
 
+/// \brief Creates a TemporaryView from a mutable grid layer.
 template <class GridLayerType>
 TemporaryView<GridLayerType> make_tmp_view(GridLayerType& grid_layer)
 {

@@ -9,6 +9,9 @@
 //   René Fritze     (2015 - 2016, 2018 - 2019)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Defines the DXTC_GNUC_VERSION macro encoding the GCC compiler version.
+
 #ifndef DUNE_XT_COMMON_COMPILER_HH
 #define DUNE_XT_COMMON_COMPILER_HH
 

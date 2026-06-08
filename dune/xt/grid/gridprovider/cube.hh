@@ -12,6 +12,9 @@
 //   René Fritze      (2012 - 2020)
 //   Tobias Leibner   (2014, 2016, 2018, 2020)
 
+/// \file
+/// \brief Provides a grid provider factory and convenience functions for structured cube/simplex grids.
+
 #ifndef DUNE_XT_GRID_GRIDPROVIDER_CUBE_HH
 #define DUNE_XT_GRID_GRIDPROVIDER_CUBE_HH
 
@@ -36,12 +39,14 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Returns the identifier string of the cube grid provider.
 static inline std::string cube_gridprovider_id()
 {
   return "xt.grid.gridprovider.cube";
 }
 
 
+/// \brief Returns the default configuration for the cube grid provider.
 static inline Common::Configuration cube_gridprovider_default_config()
 {
   Common::Configuration config;
@@ -55,6 +60,7 @@ static inline Common::Configuration cube_gridprovider_default_config()
 }
 
 
+/// \brief Factory creating grid providers for structured cube or simplex grids.
 template <class GridType>
 class CubeGridProviderFactory
 {
@@ -213,6 +219,7 @@ public:
 }; // struct CubeGridProviderFactory
 
 
+/// \brief Creates a cube/simplex grid from corner vectors, element counts, refinements and overlap.
 template <class GridType>
 auto make_cube_grid(
     const FieldVector<typename GridType::ctype, GridType::dimension>& lower_left,
@@ -231,6 +238,7 @@ auto make_cube_grid(
 }
 
 
+/// \brief Creates a cube/simplex grid from scalar bounds applied uniformly in every dimension.
 template <class GridType>
 auto make_cube_grid(
     const typename GridType::ctype& lower_left,
@@ -249,6 +257,7 @@ auto make_cube_grid(
 }
 
 
+/// \brief Creates a cube/simplex grid from a configuration object.
 template <class GridType>
 auto make_cube_grid(const Common::Configuration& cfg = cube_gridprovider_default_config(),
                     MPIHelper::MPICommunicator mpi_comm = MPIHelper::getCommunicator())

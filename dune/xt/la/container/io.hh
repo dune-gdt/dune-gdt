@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2017, 2020)
 
+/// \file
+/// \brief Reading and writing of matrices and vectors from/to ASCII files.
+
 #ifndef DUNE_XT_LA_CONTAINER_IO_HH
 #define DUNE_XT_LA_CONTAINER_IO_HH
 
@@ -24,6 +27,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief Writes a matrix to the given file (currently only 'ascii' mode is supported).
 template <class M>
 void to_file(const MatrixInterface<M>& matrix, const std::string& filename, const std::string& mode = "ascii")
 {
@@ -42,6 +46,7 @@ void to_file(const MatrixInterface<M>& matrix, const std::string& filename, cons
 } // ... to_file(...)
 
 
+/// \brief Writes a vector to the given file (currently only 'ascii' mode is supported).
 template <class V>
 void to_file(const VectorInterface<V>& vector, const std::string& filename, const std::string& mode = "ascii")
 {
@@ -57,6 +62,7 @@ void to_file(const VectorInterface<V>& vector, const std::string& filename, cons
 } // ... to_file(...)
 
 
+/// \brief Reads a matrix of type M from the given file (optionally enforcing minimum dimensions).
 template <class M>
 typename std::enable_if<is_matrix<M>::value, M>::type from_file(const std::string& filename,
                                                                 const ssize_t min_rows = -1,
@@ -108,6 +114,7 @@ typename std::enable_if<is_matrix<M>::value, M>::type from_file(const std::strin
 } // ... from_file(...)
 
 
+/// \brief Reads a vector of type V from the given file (optionally enforcing a minimum size).
 template <class V>
 typename std::enable_if<is_vector<V>::value, V>::type
 from_file(const std::string& filename, const ssize_t min_size = -1, const std::string& mode = "ascii")

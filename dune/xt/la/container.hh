@@ -9,6 +9,9 @@
 //   René Fritze     (2015 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2017 - 2018, 2020)
 
+/// \file
+/// \brief Maps linear algebra backends to their vector/matrix container types and lists available types.
+
 #ifndef DUNE_XT_LA_CONTAINER_HH
 #define DUNE_XT_LA_CONTAINER_HH
 
@@ -25,6 +28,7 @@ namespace Dune::XT::LA {
 template <class ScalarType, Backends backend = default_backend>
 struct Container;
 
+/// \brief Vector and matrix container types for the common dense backend.
 template <class ScalarType>
 struct Container<ScalarType, Backends::common_dense>
 {
@@ -32,6 +36,7 @@ struct Container<ScalarType, Backends::common_dense>
   using MatrixType = CommonDenseMatrix<ScalarType>;
 }; // struct Container<..., common_dense>
 
+/// \brief Vector and matrix container types for the common sparse backend.
 template <class ScalarType>
 struct Container<ScalarType, Backends::common_sparse>
 {
@@ -39,6 +44,7 @@ struct Container<ScalarType, Backends::common_sparse>
   using MatrixType = CommonSparseMatrix<ScalarType>;
 }; // struct Container<..., common_sparse>
 
+/// \brief Vector and matrix container types for the Eigen dense backend.
 template <class ScalarType>
 struct Container<ScalarType, Backends::eigen_dense>
 {
@@ -46,6 +52,7 @@ struct Container<ScalarType, Backends::eigen_dense>
   using MatrixType = EigenDenseMatrix<ScalarType>;
 }; // struct Container<..., eigen_dense>
 
+/// \brief Vector and matrix container types for the Eigen sparse backend.
 template <class ScalarType>
 struct Container<ScalarType, Backends::eigen_sparse>
 {
@@ -53,6 +60,7 @@ struct Container<ScalarType, Backends::eigen_sparse>
   using MatrixType = EigenRowMajorSparseMatrix<ScalarType>;
 }; // struct Container<..., eigen_sparse>
 
+/// \brief Vector and matrix container types for the ISTL dense backend.
 template <class ScalarType>
 struct Container<ScalarType, Backends::istl_dense>
 {
@@ -60,6 +68,7 @@ struct Container<ScalarType, Backends::istl_dense>
   using MatrixType = IstlRowMajorSparseMatrix<ScalarType>;
 }; // struct Container<..., istl_dense>
 
+/// \brief Vector and matrix container types for the ISTL sparse backend.
 template <class ScalarType>
 struct Container<ScalarType, Backends::istl_sparse>
 {
@@ -68,6 +77,7 @@ struct Container<ScalarType, Backends::istl_sparse>
 }; // struct Container<..., istl_sparse>
 
 
+/// \brief Tuple of all available vector container types (depending on enabled backends).
 template <class S>
 using AvailableVectorTypes = std::tuple<CommonDenseVector<S>,
                                         IstlDenseVector<S>
@@ -78,6 +88,7 @@ using AvailableVectorTypes = std::tuple<CommonDenseVector<S>,
                                         >;
 
 
+/// \brief Tuple of all available dense matrix container types (depending on enabled backends).
 template <class S>
 using AvailableDenseMatrixTypes = std::tuple<CommonDenseMatrix<S>
 #if HAVE_EIGEN
@@ -87,6 +98,7 @@ using AvailableDenseMatrixTypes = std::tuple<CommonDenseMatrix<S>
                                              >;
 
 
+/// \brief Tuple of all available sparse matrix container types (depending on enabled backends).
 template <class S>
 using AvailableSparseMatrixTypes = std::tuple<CommonSparseMatrix<S>,
                                               IstlRowMajorSparseMatrix<S>

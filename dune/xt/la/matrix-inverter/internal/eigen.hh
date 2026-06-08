@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Internal matrix-inverter helpers backed by the Eigen library.
+
 #ifndef DUNE_XT_LA_MATRIX_INVERTER_INTERNAL_EIGEN_HH
 #define DUNE_XT_LA_MATRIX_INVERTER_INTERNAL_EIGEN_HH
 

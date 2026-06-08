@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2017 - 2018, 2020)
 
+/// \file
+/// \brief Aggregator header including all dune-xt-la linear algebra algorithms.
+
 #ifndef DUNE_XT_LA_ALGORITHMS_HH
 #define DUNE_XT_LA_ALGORITHMS_HH
 

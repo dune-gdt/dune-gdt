@@ -9,6 +9,9 @@
 //   René Fritze     (2013, 2015 - 2016, 2018 - 2019)
 //   Tobias Leibner  (2017, 2020)
 
+/// \file
+/// \brief Algebraic multigrid solver specialization backed by the FASP library.
+
 #ifndef DUNE_XT_LA_SOLVER_FASP_HH
 #define DUNE_XT_LA_SOLVER_FASP_HH
 
@@ -28,6 +31,7 @@ namespace Dune {
 namespace XT {
 namespace LA {
 
+/// \brief Algebraic multigrid solver for an EigenRowMajorSparseMatrix using the FASP library.
 template <class ElementImp>
 class AmgSolver<Dune::XT::LA::EigenRowMajorSparseMatrix<ElementImp>, Dune::XT::LA::EigenDenseVector<ElementImp>>
   : public SolverInterface<Dune::XT::LA::EigenRowMajorSparseMatrix<ElementImp>,

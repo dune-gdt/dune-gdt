@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Boundary info assigning boundary types based on boundary segment index ranges.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_BOUNDARYSEGMENT_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_BOUNDARYSEGMENT_HH
 
@@ -21,6 +24,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Default configuration for BoundarySegmentIndexBasedBoundaryInfo.
 static inline Common::Configuration boundarysegment_boundaryinfo_default_config()
 {
   Common::Configuration config;
@@ -39,6 +43,7 @@ static inline Common::Configuration boundarysegment_boundaryinfo_default_config(
 #  pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #  pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
 #endif
+/// \brief Boundary info assigning boundary types according to boundary segment index ranges.
 template <class IntersectionImp>
 class BoundarySegmentIndexBasedBoundaryInfo : public BoundaryInfo<IntersectionImp>
 {
@@ -113,6 +118,7 @@ private:
 #  pragma GCC diagnostic pop
 #endif
 
+/// \brief Creates a BoundarySegmentIndexBasedBoundaryInfo from the given configuration.
 template <class I>
 std::unique_ptr<BoundarySegmentIndexBasedBoundaryInfo<I>>
 make_boundarysegment_boundaryinfo(const Common::Configuration& cfg = boundarysegment_boundaryinfo_default_config())
