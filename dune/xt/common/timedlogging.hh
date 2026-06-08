@@ -41,6 +41,7 @@
 namespace Dune::XT::Common {
 
 
+//! returns a Timer started at program startup, measuring the seconds elapsed since then
 DUNE_EXPORT inline const Timer& SecondsSinceStartup()
 {
   static Timer timer_;
@@ -48,6 +49,7 @@ DUNE_EXPORT inline const Timer& SecondsSinceStartup()
 }
 
 
+//! returns the process-wide default {info, debug, warn} enabled-state used to initialize new DefaultLoggers
 DUNE_EXPORT inline std::array<bool, 3>& default_logger_state()
 {
   static std::array<bool, 3> state_{{false, false, true}};
@@ -163,6 +165,7 @@ public:
 #endif
 
 
+/// \brief CRTP-style mixin that adds a DefaultLogger member and logs ctor/dtor/assignment calls (mostly for debugging).
 template <typename T = void>
 class WithLogger
 {
@@ -453,6 +456,7 @@ public:
 
 }; // class NoOpEnableDebugLoggingForCtors
 
+/// \brief Active variant of EnableDebugLoggingForCtors that actually emits ctor/dtor debug output via the TimedLogger.
 template <typename T = void>
 class ActiveEnableDebugLoggingForCtors
 {

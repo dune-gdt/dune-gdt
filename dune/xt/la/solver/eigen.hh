@@ -10,6 +10,9 @@
 //   René Fritze      (2012 - 2013, 2015 - 2020)
 //   Tobias Leibner   (2014, 2017 - 2020)
 
+/// \file
+/// \brief Solver and SolverOptions specializations for Eigen dense and row-major sparse matrices.
+
 #ifndef DUNE_XT_LA_SOLVER_EIGEN_HH
 #define DUNE_XT_LA_SOLVER_EIGEN_HH
 
@@ -49,6 +52,7 @@ namespace Dune::XT::LA {
 
 #if HAVE_EIGEN
 
+/// \brief Available solver options for EigenDenseMatrix (direct LU, QR and Cholesky factorizations).
 template <class S, class CommunicatorType>
 class SolverOptions<EigenDenseMatrix<S>, CommunicatorType> : protected internal::SolverUtils
 {
@@ -80,6 +84,7 @@ public:
   }
 };
 
+/// \brief Solves linear systems for an EigenDenseMatrix using Eigen's dense direct solvers.
 template <class S, class CommunicatorType>
 class Solver<EigenDenseMatrix<S>, CommunicatorType> : protected internal::SolverUtils
 {
@@ -249,6 +254,7 @@ private:
 }; // class Solver
 
 
+/// \brief Available solver options for EigenRowMajorSparseMatrix (direct and iterative sparse solvers).
 template <class S, class CommunicatorType>
 class SolverOptions<EigenRowMajorSparseMatrix<S>, CommunicatorType> : protected internal::SolverUtils
 {

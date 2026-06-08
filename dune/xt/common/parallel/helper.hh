@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2014, 2019 - 2020)
 
+/// \file
+/// \brief Parallel/MPI helpers: a sequential-communication marker and MPI abort/parallel-detection utilities.
+
 #ifndef DUNE_XT_COMMON_PARALLEL_HELPER_HH
 #define DUNE_XT_COMMON_PARALLEL_HELPER_HH
 
@@ -33,6 +36,7 @@ namespace Dune::XT {
 struct SequentialCommunication : public Dune::Amg::SequentialInformation
 {};
 
+//! trait whose value is true iff GridCommImp is an MPI collective communication (i.e. parallel communication is used)
 template <class GridCommImp>
 struct UseParallelCommunication
 {

@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Conversion routines between Common and LA vector and matrix container types.
+
 #ifndef DUNE_XT_LA_EIGEN_CONTAINER_CONVERSION_HH
 #define DUNE_XT_LA_EIGEN_CONTAINER_CONVERSION_HH
 
@@ -24,6 +27,7 @@ namespace Dune::XT::LA {
 
 
 // "pull in" the vector variant from Common, cannot be done with using (would pull the matrix one, too)
+/// \brief Converts a vector container of SourceType into one of RangeType.
 template <class RangeType, class SourceType>
 typename std::enable_if<Common::is_vector<SourceType>::value && Common::is_vector<RangeType>::value, RangeType>::type
 convert_to(const SourceType& source)

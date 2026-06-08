@@ -11,6 +11,9 @@
 //   Sven Kaulmann    (2013)
 //   Tobias Leibner   (2014 - 2020)
 
+/// \file
+/// \brief VectorAbstraction traits and generic free functions to uniformly create, access and manipulate vectors.
+
 #ifndef DUNE_XT_COMMON_VECTOR_HH
 #define DUNE_XT_COMMON_VECTOR_HH
 
@@ -160,6 +163,7 @@ struct VectorAbstraction
 };
 
 
+//! VectorAbstraction specialization for std::vector
 template <class T, class Allocator>
 struct VectorAbstraction<std::vector<T, Allocator>>
   : public internal::VectorAbstractionBase<std::vector<T, Allocator>, T>
@@ -184,6 +188,7 @@ struct VectorAbstraction<std::vector<T, Allocator>>
   }
 };
 
+//! VectorAbstraction specialization for std::array (statically sized)
 template <class K, size_t SIZE>
 struct VectorAbstraction<std::array<K, SIZE>>
   : public internal::VectorAbstractionBase<std::array<K, SIZE>, K>
@@ -219,6 +224,7 @@ struct VectorAbstraction<std::array<K, SIZE>>
   }
 };
 
+//! VectorAbstraction specialization for Dune::DynamicVector
 template <class K>
 struct VectorAbstraction<Dune::DynamicVector<K>>
   : public internal::VectorAbstractionBase<Dune::DynamicVector<K>, K>
@@ -235,6 +241,7 @@ struct VectorAbstraction<Dune::DynamicVector<K>>
   }
 };
 
+//! VectorAbstraction specialization for Dune::FieldVector (statically sized)
 template <class K, int SIZE>
 struct VectorAbstraction<Dune::FieldVector<K, SIZE>>
   : public internal::VectorAbstractionBase<Dune::FieldVector<K, SIZE>, K>
@@ -257,11 +264,13 @@ struct VectorAbstraction<Dune::FieldVector<K, SIZE>>
   }
 };
 
+//! VectorAbstraction specialization for Dune::DenseVector, forwarding to its derived type
 template <class V>
 struct VectorAbstraction<Dune::DenseVector<V>> : public VectorAbstraction<typename Dune::DenseVector<V>::derived_type>
 {};
 
 
+//! creates a vector of the given size, filled with val (via VectorAbstraction)
 template <class VectorType, size_t SIZE = VectorAbstraction<VectorType>::static_size>
 typename std::enable_if_t<is_vector<VectorType>::value,
                           typename VectorAbstraction<VectorType>::template VectorTypeTemplate<SIZE>>
@@ -271,6 +280,7 @@ create(const size_t sz, const typename VectorAbstraction<VectorType>::ScalarType
 }
 
 
+//! creates a TargetVectorType of the same size as source, filled with zeros
 template <class TargetVectorType, class SourceVectorType>
 typename std::enable_if<is_vector<TargetVectorType>::value && is_vector<SourceVectorType>::value,
                         TargetVectorType>::type
@@ -280,6 +290,7 @@ zeros_like(const SourceVectorType& source)
 }
 
 
+//! creates a vector of the same type and size as source, filled with zeros
 template <class VectorType>
 typename std::enable_if<is_vector<VectorType>::value, VectorType>::type zeros_like(const VectorType& source)
 {
@@ -287,6 +298,7 @@ typename std::enable_if<is_vector<VectorType>::value, VectorType>::type zeros_li
 }
 
 
+//! returns the supremum (infinity) norm of a vector
 template <class VectorType>
 std::enable_if_t<is_vector<VectorType>::value, typename VectorAbstraction<VectorType>::R>
 sup_norm(const VectorType& vector)
@@ -297,12 +309,14 @@ sup_norm(const VectorType& vector)
   return result;
 }
 
+//! returns the infinity norm of a DynamicVector
 template <class F>
 typename FieldTraits<F>::real_type sup_norm(const DynamicVector<F>& vector)
 {
   return vector.infinity_norm();
 }
 
+//! returns the infinity norm of a FieldVector
 template <class F, int SIZE>
 typename FieldTraits<F>::real_type sup_norm(const FieldVector<F, SIZE>& vector)
 {
@@ -310,6 +324,7 @@ typename FieldTraits<F>::real_type sup_norm(const FieldVector<F, SIZE>& vector)
 }
 
 
+//! returns a pointer to the underlying (contiguous) data of a vector
 template <class VectorType>
 typename std::enable_if<is_vector<VectorType>::value, typename VectorAbstraction<VectorType>::ScalarType*>::type
 data(VectorType& source)
@@ -318,6 +333,7 @@ data(VectorType& source)
 }
 
 
+//! returns a pointer to the underlying (contiguous) data of a const vector
 template <class VectorType>
 typename std::enable_if<is_vector<VectorType>::value, const typename VectorAbstraction<VectorType>::ScalarType*>::type
 data(const VectorType& source)
@@ -326,6 +342,7 @@ data(const VectorType& source)
 }
 
 
+//! serializes the entries of a vector into a std::vector of scalar type T
 template <class T, class V>
 typename std::enable_if<is_vector<V>::value && is_arithmetic<T>::value,
                         std::vector<typename VectorAbstraction<V>::S>>::type
@@ -344,6 +361,7 @@ serialize(const V& vec)
   return data;
 }
 
+//! serializes a vector into a std::vector of its own scalar type
 template <class V>
 typename std::enable_if_t<is_vector<V>::value, std::vector<typename VectorAbstraction<V>::S>> serialize(const V& vec)
 {
@@ -351,6 +369,7 @@ typename std::enable_if_t<is_vector<V>::value, std::vector<typename VectorAbstra
 }
 
 
+//! converts a vector from SourceType to a (possibly different) RangeType, copying all entries
 template <class RangeType, class SourceType>
 typename std::enable_if<is_vector<SourceType>::value && is_vector<RangeType>::value, RangeType>::type
 convert_to(const SourceType& source)
@@ -370,6 +389,7 @@ convert_to(const SourceType& source)
 } // ... convert_to(...)
 
 
+//! writes a vector (whose own type provides no ostream operator) to a stream as "[a b c]"
 template <class V, class CharType, class CharTraits>
 std::enable_if_t<Dune::XT::Common::is_vector<V>::value && !Dune::XT::Common::VectorAbstraction<V>::has_ostream,
                  std::basic_ostream<CharType, CharTraits>&>
@@ -396,6 +416,7 @@ operator<<(std::basic_ostream<CharType, CharTraits>& out, const V& vec)
 namespace std {
 
 
+//! writes a std::vector to a stream (forwarding to the dune-xt overload)
 /// clang 3.6 does not consider the overload in the ns for some reason during resultion of a call in gtest
 template <class V, class Alloc, class CharType, class CharTraits>
 std::basic_ostream<CharType, CharTraits>& operator<<(std::basic_ostream<CharType, CharTraits>& out,
@@ -406,6 +427,7 @@ std::basic_ostream<CharType, CharTraits>& operator<<(std::basic_ostream<CharType
 } // ... operator<<(...)
 
 
+//! writes a std::array to a stream (forwarding to the dune-common overload)
 /// clang 3.6 does not consider the overload in the ns for some reason during resultion of a call in gtest
 template <class CharType, class CharTraits, typename _Tp, std::size_t _Nm>
 std::basic_ostream<CharType, CharTraits>& operator<<(std::basic_ostream<CharType, CharTraits>& out,

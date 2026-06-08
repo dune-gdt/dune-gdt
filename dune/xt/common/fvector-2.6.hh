@@ -10,6 +10,10 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2016 - 2020)
 
+/// \file
+/// \brief Static-size field vectors (dune-common 2.6 variant): an XT::Common::FieldVector wrapper, a blocked
+///        variant, comparison and abstraction helpers, hashing and related free functions and operators.
+
 #ifndef DUNE_XT_COMMON_FVECTOR_26_HH
 #define DUNE_XT_COMMON_FVECTOR_26_HH
 
@@ -177,6 +181,7 @@ public:
 }; // class FieldVector
 
 
+/// \brief A vector partitioned into num_blocks contiguous FieldVector blocks of equal size.
 template <class K, size_t block_num, size_t size_block>
 class BlockedFieldVector
 {
@@ -415,6 +420,7 @@ struct FieldVectorLess
   }
 };
 
+//! like FieldVectorLess, but compares entries with floating-point tolerance via XT::Common::FloatCmp
 struct FieldVectorFloatLess
 {
   template <class FieldType, int dimDomain>
@@ -484,6 +490,7 @@ struct VectorAbstraction<Dune::XT::Common::BlockedFieldVector<K, num_blocks, blo
 };
 
 
+/// \brief Copies a static-size vector into a newly allocated XT::Common::FieldVector and returns it as a unique_ptr.
 template <class V>
 typename std::enable_if<
     is_vector<V>::value && VectorAbstraction<V>::has_static_size,
@@ -497,6 +504,7 @@ make_field_container_ptr(const V& vec)
 }
 
 
+/// \brief Copies a static-size vector into an XT::Common::FieldVector and returns it by value.
 template <class V>
 typename std::enable_if<is_vector<V>::value && VectorAbstraction<V>::has_static_size,
                         FieldVector<typename VectorAbstraction<V>::S, VectorAbstraction<V>::static_size>>::type
@@ -509,6 +517,7 @@ make_field_container(const V& vec)
 }
 
 
+/// \brief Wraps an rvalue Dune::FieldVector into an XT::Common::FieldVector.
 template <class K, int SIZE>
 FieldVector<K, SIZE> make_field_container(Dune::FieldVector<K, SIZE>&& vec)
 {
@@ -516,12 +525,14 @@ FieldVector<K, SIZE> make_field_container(Dune::FieldVector<K, SIZE>&& vec)
 }
 
 
+/// \brief Passes an rvalue XT::Common::FieldVector through unchanged.
 template <class K, int SIZE>
 FieldVector<K, SIZE> make_field_container(FieldVector<K, SIZE>&& vec)
 {
   return std::move(vec);
 }
 
+/// \brief Returns the cross product u x v of two three-dimensional vectors.
 template <class K>
 FieldVector<K, 3> cross_product(const FieldVector<K, 3>& u, const FieldVector<K, 3>& v)
 {
@@ -795,6 +806,7 @@ hstack(const L& left, const R& right, Vectors&&... vectors)
 } // namespace XT::Common
 
 
+/// \brief Inner product of a vector with a single-column matrix, yielding a scalar.
 template <class K, int SIZE>
 typename std::enable_if<SIZE != 1, K>::type operator*(const Dune::FieldVector<K, SIZE>& vec,
                                                       const Dune::FieldMatrix<K, SIZE, 1>& mat)
@@ -805,6 +817,7 @@ typename std::enable_if<SIZE != 1, K>::type operator*(const Dune::FieldVector<K,
   return ret;
 }
 
+/// \brief Specialization of FieldTraits for XT::Common::FieldVector, forwarding to the traits of its field type.
 template <class K, int SIZE>
 struct FieldTraits<XT::Common::FieldVector<K, SIZE>>
 {

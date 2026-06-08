@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017 - 2018, 2020)
 
+/// \file
+/// \brief Generic interface and factory functions for solving the generalized eigenvalue problem.
+
 #ifndef DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_HH
 #define DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_HH
 
@@ -40,6 +43,7 @@ class GeneralizedEigenSolverOptions
 }; // class GeneralizedEigenSolverOptions
 
 
+/// \brief Returns the list of available generalized eigen solver types for the given matrix.
 template <class MatrixType>
 std::vector<std::string> generalized_eigen_solver_types(const MatrixType& /*matrix*/)
 {
@@ -47,6 +51,7 @@ std::vector<std::string> generalized_eigen_solver_types(const MatrixType& /*matr
 }
 
 
+/// \brief Returns the configuration of options for the given generalized eigen solver type and matrix.
 template <class MatrixType>
 Common::Configuration generalized_eigen_solver_options(const MatrixType& /*matrix*/, const std::string& type = "")
 {
@@ -54,6 +59,7 @@ Common::Configuration generalized_eigen_solver_options(const MatrixType& /*matri
 }
 
 
+/// \brief Solves the generalized eigenvalue problem for a pair of matrices; specialized for each supported MatrixType.
 template <class MatrixImp, bool is_matrix = XT::Common::is_matrix<MatrixImp>::value>
 class GeneralizedEigenSolver
 {
@@ -100,6 +106,7 @@ public:
 }; // class GeneralizedEigenSolver
 
 
+/// \brief Creates a GeneralizedEigenSolver for the given matrix pair using the named solver type.
 template <class M>
 GeneralizedEigenSolver<M>
 make_generalized_eigen_solver(const M& lhs_matrix, const M& rhs_matrix, const std::string& type = "")
@@ -108,6 +115,7 @@ make_generalized_eigen_solver(const M& lhs_matrix, const M& rhs_matrix, const st
 }
 
 
+/// \brief Creates a GeneralizedEigenSolver for the given matrix pair using the provided options.
 template <class M>
 GeneralizedEigenSolver<M>
 make_generalized_eigen_solver(const M& lhs_matrix, const M& rhs_matrix, const XT::Common::Configuration& options)

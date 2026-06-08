@@ -10,6 +10,10 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2018 - 2020)
 
+/// \file
+/// \brief Static-size field matrices (dune-common 2.6 variant): an XT::Common::FieldMatrix wrapper, a blocked
+///        variant, matrix abstraction specializations and related free functions and operators.
+
 #ifndef DUNE_XT_COMMON_FMATRIX_26_HH
 #define DUNE_XT_COMMON_FMATRIX_26_HH
 
@@ -523,6 +527,7 @@ public:
 }; // class FieldMatrix
 
 
+/// \brief A block-diagonal matrix storing num_blocks dense FieldMatrix blocks, with off-block entries fixed to zero.
 template <class K, size_t num_blocks, size_t block_rows, size_t block_cols = block_rows>
 class BlockedFieldMatrix
 {
@@ -777,6 +782,7 @@ private:
 };
 
 
+/// \brief Specialization of MatrixAbstraction for Dune::XT::Common::FieldMatrix.
 template <class K, int N, int M>
 struct MatrixAbstraction<Dune::XT::Common::FieldMatrix<K, N, M>>
 {
@@ -855,6 +861,7 @@ struct MatrixAbstraction<Dune::XT::Common::FieldMatrix<K, N, M>>
   }
 };
 
+/// \brief Specialization of MatrixAbstraction for Dune::XT::Common::BlockedFieldMatrix.
 template <class K, size_t num_blocks, size_t block_rows, size_t block_cols>
 struct MatrixAbstraction<Dune::XT::Common::BlockedFieldMatrix<K, num_blocks, block_rows, block_cols>>
 {
@@ -936,6 +943,7 @@ struct MatrixAbstraction<Dune::XT::Common::BlockedFieldMatrix<K, num_blocks, blo
 };
 
 
+/// \brief Copies a static-size matrix into a newly allocated XT::Common::FieldMatrix and returns it as a unique_ptr.
 template <class M>
 typename std::enable_if<is_matrix<M>::value && MatrixAbstraction<M>::has_static_size,
                         std::unique_ptr<FieldMatrix<typename MatrixAbstraction<M>::S,
@@ -953,6 +961,7 @@ make_field_container_ptr(const M& mat)
 }
 
 
+/// \brief Copies a static-size matrix into an XT::Common::FieldMatrix and returns it by value.
 template <class M>
 typename std::enable_if<is_matrix<M>::value && MatrixAbstraction<M>::has_static_size,
                         FieldMatrix<typename MatrixAbstraction<M>::S,
@@ -970,6 +979,7 @@ make_field_container(const M& mat)
 }
 
 
+/// \brief Wraps an rvalue Dune::FieldMatrix into an XT::Common::FieldMatrix.
 template <class K, int ROWS, int COLS>
 FieldMatrix<K, ROWS, COLS> make_field_container(Dune::FieldMatrix<K, ROWS, COLS>&& vec)
 {
@@ -977,6 +987,7 @@ FieldMatrix<K, ROWS, COLS> make_field_container(Dune::FieldMatrix<K, ROWS, COLS>
 }
 
 
+/// \brief Passes an rvalue XT::Common::FieldMatrix through unchanged.
 template <class K, int ROWS, int COLS>
 FieldMatrix<K, ROWS, COLS> make_field_container(FieldMatrix<K, ROWS, COLS>&& vec)
 {
@@ -984,6 +995,7 @@ FieldMatrix<K, ROWS, COLS> make_field_container(FieldMatrix<K, ROWS, COLS>&& vec
 }
 
 
+/// \brief Returns the real part of a real-valued matrix, i.e. the matrix itself.
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_arithmetic<K>::value && !is_complex<K>::value, FieldMatrix<K, ROWS, COLS>>::type
 real(const Dune::FieldMatrix<K, ROWS, COLS>& real_mat)
@@ -991,6 +1003,7 @@ real(const Dune::FieldMatrix<K, ROWS, COLS>& real_mat)
   return real_mat;
 }
 
+/// \brief Returns the real part of a real-valued matrix, i.e. the matrix itself.
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_arithmetic<K>::value && !is_complex<K>::value, FieldMatrix<K, ROWS, COLS>>::type
 real(const FieldMatrix<K, ROWS, COLS>& real_mat)
@@ -998,6 +1011,7 @@ real(const FieldMatrix<K, ROWS, COLS>& real_mat)
   return real_mat;
 }
 
+/// \brief Returns the real part of a real-valued matrix, i.e. the matrix itself (rvalue overload).
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_arithmetic<K>::value && !is_complex<K>::value, FieldMatrix<K, ROWS, COLS>>::type
 real(Dune::FieldMatrix<K, ROWS, COLS>&& real_mat)
@@ -1005,6 +1019,7 @@ real(Dune::FieldMatrix<K, ROWS, COLS>&& real_mat)
   return std::move(real_mat);
 }
 
+/// \brief Returns the real part of a real-valued matrix, i.e. the matrix itself (rvalue overload).
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_arithmetic<K>::value && !is_complex<K>::value, FieldMatrix<K, ROWS, COLS>>::type
 real(FieldMatrix<K, ROWS, COLS>&& real_mat)
@@ -1012,6 +1027,7 @@ real(FieldMatrix<K, ROWS, COLS>&& real_mat)
   return std::move(real_mat);
 }
 
+/// \brief Returns the entrywise real part of a complex-valued matrix.
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_complex<K>::value, FieldMatrix<real_t<K>, ROWS, COLS>>::type
 real(const Dune::FieldMatrix<K, ROWS, COLS>& complex_mat)
@@ -1023,6 +1039,7 @@ real(const Dune::FieldMatrix<K, ROWS, COLS>& complex_mat)
   return real_mat;
 }
 
+/// \brief Returns the entrywise real part of a complex-valued matrix.
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_complex<K>::value, FieldMatrix<real_t<K>, ROWS, COLS>>::type
 real(const FieldMatrix<K, ROWS, COLS>& complex_mat)
@@ -1035,6 +1052,7 @@ real(const FieldMatrix<K, ROWS, COLS>& complex_mat)
 }
 
 
+/// \brief Returns the imaginary part of a real-valued matrix, i.e. an all-zero matrix.
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_arithmetic<K>::value && !is_complex<K>::value, FieldMatrix<K, ROWS, COLS>>::type
 imag(const Dune::FieldMatrix<K, ROWS, COLS>& /*real_mat*/)
@@ -1042,6 +1060,7 @@ imag(const Dune::FieldMatrix<K, ROWS, COLS>& /*real_mat*/)
   return FieldMatrix<K, ROWS, COLS>(0);
 }
 
+/// \brief Returns the imaginary part of a real-valued matrix, i.e. an all-zero matrix.
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_arithmetic<K>::value && !is_complex<K>::value, FieldMatrix<K, ROWS, COLS>>::type
 imag(const FieldMatrix<K, ROWS, COLS>& /*real_mat*/)
@@ -1049,6 +1068,7 @@ imag(const FieldMatrix<K, ROWS, COLS>& /*real_mat*/)
   return FieldMatrix<K, ROWS, COLS>(0);
 }
 
+/// \brief Returns the entrywise imaginary part of a complex-valued matrix.
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_complex<K>::value, FieldMatrix<real_t<K>, ROWS, COLS>>::type
 imag(const Dune::FieldMatrix<K, ROWS, COLS>& complex_mat)
@@ -1060,6 +1080,7 @@ imag(const Dune::FieldMatrix<K, ROWS, COLS>& complex_mat)
   return real_mat;
 }
 
+/// \brief Returns the entrywise imaginary part of a complex-valued matrix.
 template <class K, int ROWS, int COLS>
 typename std::enable_if<is_complex<K>::value, FieldMatrix<real_t<K>, ROWS, COLS>>::type
 imag(const FieldMatrix<K, ROWS, COLS>& complex_mat)
@@ -1075,6 +1096,7 @@ imag(const FieldMatrix<K, ROWS, COLS>& complex_mat)
 } // namespace XT::Common
 
 
+/// \brief Entrywise difference of two equally-shaped matrices, returned with the promoted field type.
 template <class L, int ROWS, int COLS, class R>
 Dune::XT::Common::FieldMatrix<typename PromotionTraits<L, R>::PromotedType, ROWS, COLS>
 operator-(const Dune::FieldMatrix<L, ROWS, COLS>& left, const Dune::FieldMatrix<R, ROWS, COLS>& right)
@@ -1085,6 +1107,7 @@ operator-(const Dune::FieldMatrix<L, ROWS, COLS>& left, const Dune::FieldMatrix<
 }
 
 
+/// \brief Entrywise sum of two equally-shaped matrices, returned with the promoted field type.
 template <class L, int ROWS, int COLS, class R>
 Dune::XT::Common::FieldMatrix<typename PromotionTraits<L, R>::PromotedType, ROWS, COLS>
 operator+(const Dune::FieldMatrix<L, ROWS, COLS>& left, const Dune::FieldMatrix<R, ROWS, COLS>& right)
@@ -1095,6 +1118,7 @@ operator+(const Dune::FieldMatrix<L, ROWS, COLS>& left, const Dune::FieldMatrix<
 }
 
 
+/// \brief Matrix-matrix product of two matrices with matching field type.
 template <class K, int L_ROWS, int L_COLS, int R_COLS>
 Dune::XT::Common::FieldMatrix<K, L_ROWS, R_COLS> operator*(const Dune::FieldMatrix<K, L_ROWS, L_COLS>& left,
                                                            const Dune::FieldMatrix<K, L_COLS, R_COLS>& right)
@@ -1102,6 +1126,7 @@ Dune::XT::Common::FieldMatrix<K, L_ROWS, R_COLS> operator*(const Dune::FieldMatr
   return left.rightmultiplyany(right);
 }
 
+/// \brief Matrix-matrix product of a column-matrix with a 1x1 matrix.
 // we need this explicit overload to fix an ambiguous operator* error due to the automatic conversion from
 // FieldMatrix<K, 1, 1> to K
 template <class K, int L_ROWS>
@@ -1112,6 +1137,7 @@ Dune::XT::Common::FieldMatrix<K, L_ROWS, 1> operator*(const Dune::XT::Common::Fi
 }
 
 
+/// \brief Computes the matrix-matrix product left * right and stores it in ret (no temporaries allocated).
 template <class K, int L_ROWS, int L_COLS, int R_COLS>
 void rightmultiply(Dune::FieldMatrix<K, L_ROWS, R_COLS>& ret,
                    const Dune::FieldMatrix<K, L_ROWS, L_COLS>& left,
@@ -1126,6 +1152,7 @@ void rightmultiply(Dune::FieldMatrix<K, L_ROWS, R_COLS>& ret,
   }
 }
 
+/// \brief Matrix-matrix product of two matrices with differing field types, returned with the promoted field type.
 template <class L, int L_ROWS, int L_COLS, class R, int R_COLS>
 typename std::enable_if<
     !std::is_same<L, R>::value,
@@ -1137,6 +1164,7 @@ operator*(const Dune::FieldMatrix<L, L_ROWS, L_COLS>& left, const Dune::FieldMat
   return convert_to<Promoted>(left).rightmultiplyany(convert_to<Promoted>(right));
 }
 
+/// \brief Matrix-matrix product where the left factor is held by unique_ptr, returning the result by unique_ptr.
 // versions that do not allocate matrices on the stack (for large matrices)
 template <class K, int L_ROWS, int L_COLS, int R_COLS>
 std::unique_ptr<Dune::XT::Common::FieldMatrix<K, L_ROWS, R_COLS>>
@@ -1148,6 +1176,7 @@ operator*(const std::unique_ptr<Dune::FieldMatrix<K, L_ROWS, L_COLS>>& left,
   return ret;
 }
 
+/// \brief Matrix-matrix product where the right factor is held by unique_ptr, returning the result by unique_ptr.
 template <class K, int L_ROWS, int L_COLS, int R_COLS>
 std::unique_ptr<Dune::XT::Common::FieldMatrix<K, L_ROWS, R_COLS>>
 operator*(const Dune::FieldMatrix<K, L_ROWS, L_COLS>& left,
@@ -1158,6 +1187,7 @@ operator*(const Dune::FieldMatrix<K, L_ROWS, L_COLS>& left,
   return ret;
 }
 
+/// \brief Matrix-matrix product where both factors are held by unique_ptr, returning the result by unique_ptr.
 template <class K, int L_ROWS, int L_COLS, int R_COLS>
 std::unique_ptr<Dune::XT::Common::FieldMatrix<K, L_ROWS, R_COLS>>
 operator*(const std::unique_ptr<Dune::FieldMatrix<K, L_ROWS, L_COLS>>& left,

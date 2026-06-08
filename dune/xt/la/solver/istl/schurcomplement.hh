@@ -9,6 +9,9 @@
 //   René Fritze     (2019)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief A linear operator modelling the Schur complement of a saddle point matrix.
+
 #ifndef DUNE_XT_LA_SOLVER_ISTL_SCHURCOMPLEMENT_HH
 #define DUNE_XT_LA_SOLVER_ISTL_SCHURCOMPLEMENT_HH
 
@@ -26,6 +29,7 @@ namespace Dune::XT::LA {
 
 
 // For a saddle point matrix (A B1; B2^T C) this models the Schur complement (B2^T A^{-1} B1 - C)
+/// \brief Linear operator representing the Schur complement (B2^T A^{-1} B1 - C) of a saddle point matrix.
 template <class VectorType = IstlDenseVector<double>,
           class MatrixType = IstlRowMajorSparseMatrix<double>,
           class CommunicatorType = SequentialCommunication>

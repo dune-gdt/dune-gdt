@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2014)
 //   Tobias Leibner  (2014, 2016 - 2018, 2020)
 
+/// \file
+/// \brief Provides utilities to collect statistics and dimensions (bounding box, sizes) of a grid layer.
+
 #ifndef DUNE_XT_GRID_INFORMATION_HH
 #define DUNE_XT_GRID_INFORMATION_HH
 
@@ -31,6 +34,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Counts entities and (inner/boundary) intersections of a grid layer and determines its maximal grid width.
 struct Statistics
 {
   size_t numberOfEntities;
@@ -176,18 +180,21 @@ struct Dimensions
   }
 };
 
+/// \brief Returns the Dimensions of the leaf grid view of the given grid.
 template <class GridType>
 Dimensions<typename GridType::LeafGridViewType> dimensions(const GridType& grid)
 {
   return Dimensions<typename GridType::LeafGridViewType>(grid.leafGridView());
 }
 
+/// \brief Returns the Dimensions of the given grid layer.
 template <class GridLayerType>
 Dimensions<GridLayerType> dimensions(const GridLayerType& grid_layer)
 {
   return Dimensions<GridLayerType>(grid_layer);
 }
 
+/// \brief Returns the Dimensions of a single entity of the given grid layer type.
 template <class GridLayerType>
 Dimensions<GridLayerType> dimensions(const extract_entity_t<GridLayerType>& entity)
 {
@@ -211,6 +218,7 @@ int parallel_size(const GridType& grid, int codim)
 } // namespace Dune::XT::Grid
 
 
+/// \brief Streams the per-axis coordinate limits and entity volume statistics of a Dimensions object.
 template <class T>
 inline std::ostream& operator<<(std::ostream& s, const Dune::XT::Grid::Dimensions<T>& d)
 {

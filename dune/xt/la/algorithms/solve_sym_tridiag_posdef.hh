@@ -8,6 +8,9 @@
 //   René Fritze    (2018 - 2019)
 //   Tobias Leibner (2017 - 2018, 2020)
 
+/// \file
+/// \brief Solver for linear systems with a symmetric positive definite tridiagonal matrix.
+
 #ifndef DUNE_XT_LA_ALGORITHMS_SOLVE_SYM_TRIDIAG_POSDEF_HH
 #define DUNE_XT_LA_ALGORITHMS_SOLVE_SYM_TRIDIAG_POSDEF_HH
 
@@ -39,6 +42,7 @@ solve_sym_tridiag_posdef(VectorType& diag, SecondVectorType& subdiag, RhsVectorT
   solve_tridiagonal_ldlt_factorized(diag, subdiag, b);
 }
 
+/// \brief Solves A*x = y, where A is a symmetric positive definite tridiagonal matrix given as a full matrix.
 template <class MatrixType, class VectorType, class RhsVectorType>
 std::enable_if_t<Common::is_matrix<MatrixType>::value && Common::is_vector<VectorType>::value
                      && Common::is_vector<RhsVectorType>::value,

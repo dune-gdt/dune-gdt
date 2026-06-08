@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Provides the ConvergenceStudy base class for running refinement studies and tabulating EOCs.
+
 #ifndef DUNE_XT_COMMON_CONVERGENCE_STUDY_HH
 #define DUNE_XT_COMMON_CONVERGENCE_STUDY_HH
 
@@ -22,6 +25,8 @@
 namespace Dune::XT::Common {
 
 
+/// \brief Base class for convergence studies that refine a discretization and report experimental orders of
+/// convergence.
 class ConvergenceStudy
 {
 public:
