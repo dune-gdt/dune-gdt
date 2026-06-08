@@ -8,6 +8,7 @@ A subset of the API is exposed as Python-bindings using [pybind11](https://githu
 ```{toctree}
 tutorials
 examples
+benchmarks
 bibliography
 ```
 

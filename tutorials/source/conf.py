@@ -25,6 +25,7 @@ sys.path.insert(0, str(this_dir))
 # the branch being built; GitHub Actions sets GITHUB_REF_NAME. The legacy
 # GitLab variable is kept as a fallback for local/legacy invocations.
 branch = os.environ.get("GITHUB_REF_NAME", os.environ.get("CI_COMMIT_REF_NAME", "main"))
+sys.path.insert(0, str(this_dir / "_ext" ))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -41,6 +42,7 @@ extensions = [
     # extracts the C++ API from the in-tree headers (configured below); replaces
     # the former Doxygen setup
     "clangquill.sphinx_ext",
+    "benchmark_plots",
 ]
 # this enables:
 # substitutions-with-jinja2, direct-latex-math and definition-lists
