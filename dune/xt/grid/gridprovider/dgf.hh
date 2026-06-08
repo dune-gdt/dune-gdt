@@ -82,7 +82,7 @@ template <class GridType>
 auto make_dgf_grid(const std::string& filename, MPIHelper::MPICommunicator mpi_comm = MPIHelper::getCommunicator())
 {
   static_assert(is_grid<GridType>::value);
-  return DgfGridProviderFactory<GridType>(filename, mpi_comm);
+  return DgfGridProviderFactory<GridType>::create(filename, mpi_comm);
 }
 
 
