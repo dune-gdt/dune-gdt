@@ -88,7 +88,7 @@ fom.visualize(fom.solve())
 
 `dune-grid` [only supports](https://gitlab.dune-project.org/core/dune-grid/issues/85) `gmsh` version 2 files, and only a subset of the specification.
 Depending on the installed `gmsh` version, `discretize_gmsh` above may have written a newer (version 4) mesh file, and the file also contains a boundary type (`$PhysicalNames`) definition which `dune-grid` cannot [correctly parse](https://gitlab.dune-project.org/core/dune-grid/-/issues/89) (we do not require it, we have our own boundary info).
-We therefore use [`meshio`](https://github.com/nschloe/meshio) to re-write a clean version 2.2 ASCII mesh that contains only the points and the triangle cells (**Note** that you have to provide the same filename here as in the call to `discretize_gmsh`):
+We therefore use `meshio` to re-write a clean version 2.2 ASCII mesh that contains only the points and the triangle cells (**Note** that you have to provide the same filename here as in the call to `discretize_gmsh`):
 
 ```{code-cell}
 import meshio
