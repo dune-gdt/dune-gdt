@@ -22,8 +22,10 @@ this_dir = Path(__file__).resolve().parent
 src_dir = (this_dir / ".." / ".." / "src").resolve()
 sys.path.insert(0, str(src_dir))
 sys.path.insert(0, str(this_dir))
+# the branch being built; GitHub Actions sets GITHUB_REF_NAME. The legacy
+# GitLab variable is kept as a fallback for local/legacy invocations.
+branch = os.environ.get("GITHUB_REF_NAME", os.environ.get("CI_COMMIT_REF_NAME", "main"))
 sys.path.insert(0, str(this_dir / "_ext"))
-branch = os.environ.get("CI_COMMIT_REF_NAME", "main")
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
@@ -37,6 +39,9 @@ extensions = [
     "myst_nb",
     "sphinx.ext.mathjax",
     "sphinxcontrib.bibtex",
+    # extracts the C++ API from the in-tree headers (configured below); replaces
+    # the former Doxygen setup
+    "clangquill.sphinx_ext",
     "benchmark_plots",
 ]
 # this enables:
@@ -102,6 +107,71 @@ nb_execution_excludepatterns = [
     "*example__ipdg_heat_equation.md",
 ]
 
+# -----------------------------------------------------------------------------
+# clangquill C++ API documentation
+# -----------------------------------------------------------------------------
+# Parse the in-tree dune-gdt / dune-xt C++ headers with libclang and render MyST
+# pages that Sphinx indexes through its C++ domain. This replaces the former
+# Doxygen-based C++ API setup (the removed doc/doxygen target). The generated
+# pages are written under this srcdir into clangquill_output_dir and pulled into
+# the manual through the cpp_api/index toctree entry in index.md.
+#
+# All clangquill paths are resolved relative to this srcdir (tutorials/source),
+# so "../.." is the repository root: the input glob covers dune/{gdt,xt}/**/*.hh
+# and the include dir lets the intra-tree `#include <dune/...>` headers resolve.
+# The external DUNE dependency headers (dune-common, dune-grid, ...) are not
+# present in the docs environment; libclang reports those as non-fatal
+# diagnostics and still extracts every symbol it can parse. Should the wheel be
+# built without libclang, the extension degrades to a placeholder page rather
+# than failing the build.
+
+
+def _clang_resource_dir():
+    """Locate the clang builtin-header directory (``stddef.h`` & co.).
+
+    clangquill's bundled libclang ships no builtin headers, so any system
+    ``#include`` (``<cstddef>``, ``<vector>``, ...) fails with ``'stddef.h' file
+    not found`` unless we point clang at a resource directory. Prefer an explicit
+    ``CLANGQUILL_CLANG_RESOURCE_DIR`` override, otherwise ask any ``clang`` on
+    ``PATH`` where its builtins live. Returns ``None`` when none is found, which
+    leaves clang to its own (here unset) default — generation still runs, just
+    with more diagnostics.
+    """
+    import shutil  # noqa: PLC0415
+    import subprocess  # noqa: PLC0415
+
+    override = os.environ.get("CLANGQUILL_CLANG_RESOURCE_DIR")
+    if override:
+        return override
+    clang = (
+        shutil.which("clang") or shutil.which("clang-18") or shutil.which("clang-19")
+    )
+    if not clang:
+        return None
+    try:
+        out = subprocess.run(
+            [clang, "-print-resource-dir"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return out.stdout.strip() or None
+
+
+clangquill_input = ["../../dune/**/*.hh"]
+clangquill_include_dirs = ["../.."]
+clangquill_std = "c++17"
+clangquill_clang_resource_dir = _clang_resource_dir()
+clangquill_output_dir = "cpp_api"
+clangquill_group_by = "file"
+# Emit only symbols that carry a documentation comment; flip to True to also
+# list the (largely templated) undocumented internals.
+clangquill_include_undocumented = False
+# Persist the SQLite IR + page hashes so local rebuilds are incremental.
+clangquill_cache_dir = "_clangquill_cache"
+
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -159,8 +229,6 @@ pygments_style = "default"
 # The style sheet to use for HTML and HTML Help pages. A file of that name
 # must exist either in Sphinx' static/ path, or in one of the custom paths
 # given in html_static_path.
-
-on_gitlab_ci = os.environ.get("GITLAB_CI", "nope") != "nope"
 
 html_theme = "furo"
 html_theme_options = {}
@@ -307,18 +375,33 @@ modindex_common_prefix = ["dune."]
 # make intersphinx link to pyside2 docs
 qt_documentation = "PySide2"
 
-# this must match GDT_TUTORIALS_ROOT/.ci/gitlab/deploy_docs
 try_on_binder_branch = branch.replace("github/PUSH_", "from_fork__")
 try_on_binder_slug = os.environ.get(
     "CI_COMMIT_REF_SLUG", slugify.slugify(try_on_binder_branch)
 )
 
 
+# repository hosting both the tutorial sources and the python bindings
+_linkcode_baseurl = "https://github.com/dune-gdt/dune-gdt"
+_repo_root = (this_dir / ".." / "..").resolve()
+
+
 def linkcode_resolve(domain, info):
-    if domain == "py":
-        if not info["module"]:
-            return None
-        filename = info["module"].replace(".", "/")
-        baseurl = "https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt-tutorials/"
-        return f"{baseurl}/-/tree/{branch}/src/{filename}.py"
-    return None
+    if domain != "py" or not info["module"]:
+        return None
+    parts = info["module"].split(".")
+    # dune.gdt / dune.xt bindings live under python/<gdt|xt>/dune/<gdt|xt>/...,
+    # while the tutorial helper modules sit next to this conf.py in
+    # tutorials/source/.
+    if parts[:2] == ["dune", "gdt"]:
+        rel = Path("python", "gdt", *parts)
+    elif parts[:2] == ["dune", "xt"]:
+        rel = Path("python", "xt", *parts)
+    else:
+        rel = Path("tutorials", "source", *parts)
+    # a package resolves to its __init__.py, a plain module to <name>.py
+    if (_repo_root / rel / "__init__.py").is_file():
+        rel = rel / "__init__.py"
+    else:
+        rel = rel.with_suffix(".py")
+    return f"{_linkcode_baseurl}/tree/{branch}/{rel.as_posix()}"

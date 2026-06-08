@@ -143,9 +143,14 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
 
-    - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+    # uv provides and manages the Python interpreter itself, so there is no
+    # separate actions/setup-python step; all execution below goes through uv.
+    - name: Set up uv
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       with:
-        python-version: ${{ env.PYTHON_VERSION }}
+        # gate the uv cache to trusted runs (pushes/merge queue and same-repo
+        # PRs); disable it for external-fork PRs so a fork cannot poison the cache
+        enable-cache: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     - name: Download freshly built wheels
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -160,19 +165,26 @@ jobs:
         # Ubuntu repos that provide xvfb/gmsh update fine.
         sudo apt-get update || true
         # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
-        # discretizer used in example__gmsh_grid
-        sudo apt-get install -y xvfb gmsh
+        # discretizer used in example__gmsh_grid; clang provides the builtin-header
+        # resource dir (stddef.h & co.) that clangquill's bundled libclang needs to
+        # parse the C++ API headers (see tutorials/source/conf.py:_clang_resource_dir)
+        sudo apt-get install -y xvfb gmsh clang
 
-    - name: Install bindings and docs/visualisation dependencies
+    - name: Create the uv-managed virtualenv
+      # uv downloads the requested CPython itself (no actions/setup-python needed).
+      run: uv venv --python "${PYTHON_VERSION}" "${GITHUB_WORKSPACE}/.venv"
+
+    - name: Install bindings and docs/visualisation extras
       run: |
-        python -m pip install --upgrade pip
         # install the built dune-xt/dune-gdt wheels (xt is an exact-version dep of gdt)
-        python -m pip install --find-links wheelhouse/ wheelhouse/*.whl
-        # docs + visualisation extras of the just-installed dune-gdt (the extra
-        # contents are the single source of truth in python/{xt,gdt}/setup.py.in:
-        # myst-nb executes the notebook cells; k3d provides visualize_function
+        uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
+          --find-links wheelhouse/ wheelhouse/*.whl
+        # docs + visualisation extras of the just-installed dune-gdt; the extra
+        # contents are the single source of truth in python/{xt,gdt}/setup.py.in
+        # (myst-nb executes the notebook cells; k3d provides visualize_function
         # rendering when the wheels were built with K3D).
-        python -m pip install --find-links wheelhouse/ "dune-gdt[docs,visualisation]"
+        uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
+          --find-links wheelhouse/ "dune-gdt[docs,visualisation]"
 
     - name: Fetch published benchmark reports
       # The benchmark-plots Sphinx directive reads the per-run nanobench JSON reports from this
@@ -193,7 +205,10 @@ jobs:
       run: |
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/tutorials_html"
-        xvfb-run -a python -m sphinx --keep-going -j 1 -b html \
+        # --no-project: ignore the repo-root pyproject stub; run in the venv built above
+        xvfb-run -a uv run --no-project \
+          --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
+          python -m sphinx --keep-going -j 1 -b html \
           "${GITHUB_WORKSPACE}/tutorials/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
           echo "::error::one or more executed tutorial notebooks failed (see dumped reports below)"
@@ -220,6 +235,43 @@ jobs:
         name: tutorials_html
         path: build/tutorials_html
         if-no-files-found: warn
+
+  deploy_docs:
+    name: Deploy tutorials docs to GitHub Pages
+    runs-on: ubuntu-24.04
+    needs: build_tutorials
+    # publish only on pushes to main; PRs and the merge queue build (above) but
+    # never deploy. build_tutorials must have succeeded, so broken docs are not
+    # published.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    permissions:
+      # required by actions/deploy-pages for the GitHub Pages deployment
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    # do not cancel an in-progress Pages deployment; let it finish before the next
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+
+    steps:
+    - name: Download built tutorials HTML
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: tutorials_html
+        path: tutorials_html
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
+      with:
+        path: tutorials_html
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
 
   test_publish:
     name: Publish to Test PyPI

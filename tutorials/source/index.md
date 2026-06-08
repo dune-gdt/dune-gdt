@@ -11,3 +11,10 @@ examples
 benchmarks
 bibliography
 ```
+
+```{toctree}
+:caption: C++ API Reference
+:maxdepth: 1
+
+cpp_api/index
+```
