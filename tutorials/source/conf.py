@@ -171,6 +171,54 @@ clangquill_group_by = "file"
 clangquill_include_undocumented = False
 # Persist the SQLite IR + page hashes so local rebuilds are incremental.
 clangquill_cache_dir = "_clangquill_cache"
+# Render the C++ API file headings with repository-root-relative paths (see the
+# _clangquill_templates/file.md.jinja override and _patch_clangquill_relpath
+# below). Resolved relative to this srcdir, like every other clangquill path.
+clangquill_template_dirs = ["_clangquill_templates"]
+
+
+def _patch_clangquill_relpath():
+    """Make the C++ API "File" headings show repo-root-relative paths.
+
+    clangquill resolves every parsed input to an absolute path and stores that
+    in its IR, so the bundled ``file.md.jinja`` prints build-machine paths like
+    ``/home/runner/work/dune-gdt/dune-gdt/dune/gdt/foo.hh``. There is no config
+    knob to re-root them, and clangquill builds its Jinja environment internally
+    without exposing a hook for custom filters, so we register a ``repo_relpath``
+    filter by wrapping ``Generator._install_context`` (run for every Generator).
+    Our ``_clangquill_templates/file.md.jinja`` override then renders
+    ``{{ file.path | repo_relpath }}`` to emit stable ``dune/...`` paths
+    independent of where the docs happen to be built.
+
+    Degrades to a no-op if clangquill cannot be imported (e.g. a wheel built
+    without it); the extension itself would already have failed in that case.
+    """
+    try:
+        from clangquill.generator import Generator  # noqa: PLC0415
+    except ImportError:
+        return
+
+    repo_root = str((this_dir / ".." / "..").resolve())
+
+    def repo_relpath(path):
+        try:
+            rel = os.path.relpath(path, repo_root)
+        except ValueError:
+            return path
+        # Leave paths outside the repository untouched (should not happen for the
+        # dune/**/*.hh inputs, but never print a surprising ``../..`` escape).
+        return path if rel.startswith("..") else rel
+
+    original_install_context = Generator._install_context
+
+    def install_context(self):
+        original_install_context(self)
+        self.env.filters["repo_relpath"] = repo_relpath
+
+    Generator._install_context = install_context
+
+
+_patch_clangquill_relpath()
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
