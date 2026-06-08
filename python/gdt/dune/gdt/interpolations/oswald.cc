@@ -54,10 +54,11 @@ public:
       const auto& grid_view = target.space().grid_view();
       const XT::Grid::AllDirichletBoundaryInfo<XT::Grid::extract_intersection_t<std::decay_t<decltype(grid_view)>>>
           boundary_info;
-      auto op = make_oswald_interpolation_operator<XT::LA::IstlRowMajorSparseMatrix<double>>(
-          grid_view, source.space(), target.space(), boundary_info);
+      // make_oswald_interpolation_operator<VectorType>(assembly_grid_view, range_space, boundary_info):
+      // the operator is built from the range (target) space and applied to the source grid function.
+      auto op = make_oswald_interpolation_operator<V>(grid_view, target.space(), boundary_info);
       op.assemble();
-      op.apply(source.dofs().vector(), target.dofs().vector());
+      op.apply(GF(source), target.dofs().vector());
     };
 
     m.def(function_id.c_str(),
@@ -137,18 +138,9 @@ PYBIND11_MODULE(_interpolations_oswald, m)
   py::module::import("dune.gdt._discretefunction_discretefunction");
   py::module::import("dune.gdt._spaces_interface");
 
-#if 0
-  // bindings for all but dune-istl disabled for the moment
-  oswald_interpolation_for_all_grids<LA::CommonDenseVector<double>,
-                                      LA::bindings::Common,
-                                      XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#  if HAVE_EIGEN
-  oswald_interpolation_for_all_grids<LA::EigenDenseVector<double>, LA::bindings::Eigen, XT::Grid::bindings::AvailableGridTypes>::
-      bind(m);
-#  endif
-  // TODO: make_oswald_interpolation still broken
+  // Only the dune-istl backend is bound, consistent with the other GDT operator/interpolation
+  // bindings (see e.g. operators/operator.cc). The Common/Eigen backends remain disabled.
   oswald_interpolation_for_all_grids<LA::IstlDenseVector<double>,
                                      LA::bindings::Istl,
                                      XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#endif // 0
 }

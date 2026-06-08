@@ -66,6 +66,7 @@ from dune.xt.grid import (
 )
 
 from dune.gdt import (
+    BilinearForm,
     DiscontinuousLagrangeSpace,
     DiscreteFunction,
     LocalElementIntegralBilinearForm,
@@ -96,16 +97,19 @@ symmetry_factor = 1
 l_h = VectorFunctional(grid, V_h)
 l_h += LocalElementIntegralFunctional(LocalElementProductIntegrand(GF(grid, 1)).with_ansatz(source))
 
-a_h = MatrixOperator(grid, V_h, V_h, make_element_and_intersection_sparsity_pattern(V_h))
-a_h += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
-a_h += (LocalCouplingIntersectionIntegralBilinearForm(
-            LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
-            + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)),
-        {}, ApplyOnInnerIntersectionsOnce(grid))
-a_h += (LocalIntersectionIntegralBilinearForm(
-            LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
-            + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)),
-       {}, ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()))
+a_form = BilinearForm(grid)
+a_form += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
+a_form += (LocalCouplingIntersectionIntegralBilinearForm(
+               LocalLaplaceIPDGInnerCouplingIntegrand(symmetry_factor, diffusion, weight)
+               + LocalIPDGInnerPenaltyIntegrand(penalty_parameter, weight)),
+           ApplyOnInnerIntersectionsOnce(grid))
+a_form += (LocalIntersectionIntegralBilinearForm(
+               LocalIPDGBoundaryPenaltyIntegrand(penalty_parameter, weight)
+               + LocalLaplaceIPDGDirichletCouplingIntegrand(symmetry_factor, diffusion)),
+           ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()))
+a_h = MatrixOperator(grid, source_space=V_h, range_space=V_h,
+                     sparsity_pattern=make_element_and_intersection_sparsity_pattern(V_h))
+a_h.append(a_form)
 
 walker = Walker(grid)
 walker.append(a_h)
@@ -137,11 +141,12 @@ from dune.gdt import LaplaceIpdgFluxReconstructionOperator, RaviartThomasSpace
 RT_0 = RaviartThomasSpace(grid, order=0)
 
 flux_reconstruction = LaplaceIpdgFluxReconstructionOperator(
-    grid, V_h, RT_0, symmetry_factor, penalty_parameter, penalty_parameter, diffusion, weight)
+    grid, RT_0, symmetry_factor, penalty_parameter, penalty_parameter, diffusion, weight)
 flux_reconstruction.assemble()
 
 t_h = DiscreteFunction(RT_0, 't_h')
-flux_reconstruction.apply(u_h.dofs.vector, t_h.dofs.vector)
+# the reconstruction maps the (discrete) source function u_h to the RT flux vector t_h
+flux_reconstruction.apply(GF(grid, u_h), t_h.dofs.vector)
 ```
 
 ```{code-cell}
@@ -152,7 +157,7 @@ fv_space = FiniteVolumeSpace(grid)
 eta_nc_op = Operator(grid, V_h, fv_space)
 eta_nc_op += LocalElementBilinearFormIndicatorOperator(
     LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(weight)))
-eta_nc_2 = eta_nc_op.apply(u_h - s_h)
+eta_nc_2 = eta_nc_op.apply(GF(grid, u_h - s_h))
 _ = visualize_function(eta_nc_2)
 print(np.sqrt(eta_nc_2.dofs.vector.l1_norm()))
 ```
@@ -167,7 +172,7 @@ C_P = GF(grid, 1/np.pi**2) # known for simplices
 eta_r_op = Operator(grid, V_h, fv_space)
 eta_r_op += LocalElementBilinearFormIndicatorOperator(
     LocalElementIntegralBilinearForm(LocalElementProductIntegrand((C_P*h*h)/min_EV)))
-eta_r_2 = eta_r_op.apply(source - divergence(t_h))
+eta_r_2 = eta_r_op.apply(GF(grid, source - divergence(t_h)))
 print(np.sqrt(eta_r_2.dofs.vector.l1_norm()))
 _ = visualize_function(eta_r_2)
 ```
@@ -178,7 +183,7 @@ from dune.xt.functions import gradient
 eta_df_op = Operator(grid, RT_0, fv_space)
 eta_df_op += LocalElementBilinearFormIndicatorOperator(
     LocalElementIntegralBilinearForm(LocalElementProductIntegrand(inverse(diffusion, order=0))))
-eta_df_2 = eta_df_op.apply(diffusion*gradient(u_h) + t_h)
+eta_df_2 = eta_df_op.apply(GF(grid, diffusion*gradient(u_h) + t_h))
 print(eta_df_2.dofs.vector.l1_norm())
 _ = visualize_function(eta_df_2)
 ```

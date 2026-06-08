@@ -66,7 +66,10 @@ public:
         bindings::OperatorInterface<M, GV, s_r, r_r>::class_name(matrix_id, grid_id, layer_id, class_id));
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
     c.def(py::init([](const GP& grid, const SS& source_space, const RS& range_space, const bool parallel) {
-            return new type(grid.leaf_view(), source_space, range_space, parallel);
+            // NOTE: GDT::Operator stores the assembly grid view BY REFERENCE, so it must outlive
+            // the operator. grid.leaf_view() returns a temporary (-> dangling ref -> segfault on
+            // apply); use the source space's grid view instead (the space is kept alive below).
+            return new type(source_space.grid_view(), source_space, range_space, parallel);
           }),
           "grid"_a,
           "source_space"_a,
@@ -97,35 +100,28 @@ public:
         "source"_a,
         "param"_a = XT::Common::Parameter(),
         py::call_guard<py::gil_scoped_release>());
-    // our additional methods
-    //    c.def(
-    //        "append",
-    //        [](type& self, const Eop& local_op, const XT::Grid::ElementFilter<GV>& filter) {
-    //          self.append(local_op, filter);
-    //        },
-    //        "local_element_operator"_a,
-    //        "element_filter"_a = XT::Grid::ApplyOn::AllElements<GV>());
-    //    c.def("__iadd__", // function ptr signature required for the right return type
-    //          (type & (type::*)(const Eop&)) & type::operator+=,
-    //          "local_element_operator"_a,
-    //          py::is_operator());
-    //    c.def("__iadd__", // function ptr signature required for the right return type
-    //          (type & (type::*)(const std::tuple<const Eop&, const XT::Grid::ElementFilter<GV>&>&)) &
-    //          type::operator+=, "tuple_of_localelementop_elementfilter"_a, py::is_operator());
-    //    c.def(
-    //        "append",
-    //        [](type& self, const Iop& local_op, const XT::Grid::IntersectionFilter<GV>& filter) {
-    //          self.append(local_op, filter);
-    //        },
-    //        "local_intersection_operator"_a,
-    //        "intersection_filter"_a = XT::Grid::ApplyOn::AllIntersections<GV>());
-    //    c.def("__iadd__", // function ptr signature required for the right return type
-    //          (type & (type::*)(const Iop&)) & type::operator+=,
-    //          "local_intersection_operator"_a,
-    //          py::is_operator());
-    //    c.def("__iadd__", // function ptr signature required for the right return type
-    //          (type & (type::*)(const std::tuple<const Iop&, const XT::Grid::IntersectionFilter<GV>&>&)) &
-    //          type::operator+=, "tuple_of_localintersectionop_intersectionfilter"_a, py::is_operator());
+    // our additional methods: appending local element/intersection operators (e.g. the
+    // a-posteriori indicator operators) via `+=`, which has no BilinearForm-based replacement.
+    // NOTE: GDT::Operator only exposes `operator+=` (no `append(local_op, filter)`), and the
+    // overloads taking a (operator, filter) tuple bind against `operator+=(const std::pair<...>&)`,
+    // so the function-pointer cast must use std::pair (a Python tuple converts to std::pair via
+    // pybind11/stl.h).
+    c.def("__iadd__", // function ptr signature required for the right return type
+          (type & (type::*)(const Eop&)) & type::operator+=,
+          "local_element_operator"_a,
+          py::is_operator());
+    c.def("__iadd__", // function ptr signature required for the right return type
+          (type & (type::*)(const std::pair<const Eop&, const XT::Grid::ElementFilter<GV>&>&)) & type::operator+=,
+          "tuple_of_localelementop_elementfilter"_a,
+          py::is_operator());
+    c.def("__iadd__", // function ptr signature required for the right return type
+          (type & (type::*)(const Iop&)) & type::operator+=,
+          "local_intersection_operator"_a,
+          py::is_operator());
+    c.def("__iadd__", // function ptr signature required for the right return type
+          (type & (type::*)(const std::pair<const Iop&, const XT::Grid::IntersectionFilter<GV>&>&)) & type::operator+=,
+          "tuple_of_localintersectionop_intersectionfilter"_a,
+          py::is_operator());
 
     // factories
     const auto FactoryName = XT::Common::to_camel_case(class_id);
@@ -133,7 +129,10 @@ public:
       m.def(
           FactoryName.c_str(),
           [](const GP& grid, const SS& source_space, const RS& range_space, const bool parallel, const MT&) {
-            return new type(grid.leaf_view(), source_space, range_space, parallel);
+            // NOTE: GDT::Operator stores the assembly grid view BY REFERENCE, so it must outlive
+            // the operator. grid.leaf_view() returns a temporary (-> dangling ref -> segfault on
+            // apply); use the source space's grid view instead (the space is kept alive below).
+            return new type(source_space.grid_view(), source_space, range_space, parallel);
           },
           "grid"_a,
           "source_space"_a,
@@ -147,7 +146,10 @@ public:
       m.def(
           FactoryName.c_str(),
           [](const GP& grid, const SS& source_space, const RS& range_space, const bool parallel, const MT&) {
-            return new type(grid.leaf_view(), source_space, range_space, parallel);
+            // NOTE: GDT::Operator stores the assembly grid view BY REFERENCE, so it must outlive
+            // the operator. grid.leaf_view() returns a temporary (-> dangling ref -> segfault on
+            // apply); use the source space's grid view instead (the space is kept alive below).
+            return new type(source_space.grid_view(), source_space, range_space, parallel);
           },
           "grid"_a,
           "source_space"_a,

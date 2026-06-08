@@ -44,32 +44,32 @@ struct OperatorInterface_for_all_grids
     OperatorInterface<M, LGV>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
     //    BilinearFormInterface<LGV>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
     //    ForwardOperatorInterface<GV>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
-    //    ConstLincombOperator<M, GV>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
-    //    LincombOperator<M, GV>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
+    ConstLincombOperator<M, LGV>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
+    LincombOperator<M, LGV>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
     ConstMatrixOperator<M, MT, ST, LGV>::bind_type(m, matrix_id, grid_name<G>::value(), "leaf");
     MatrixOperator<M, MT, ST, LGV>::bind_leaf_type(m, matrix_id, grid_name<G>::value(), "leaf");
     if (d > 1) {
       OperatorInterface<M, LGV, d, 1>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       //      BilinearFormInterface<LGV, d, 1>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       //      ForwardOperatorInterface<GV, d, 1>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
-      //      ConstLincombOperator<M, GV, d, 1>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
-      //      LincombOperator<M, GV, d, 1>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
+      ConstLincombOperator<M, LGV, d, 1>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
+      LincombOperator<M, LGV, d, 1>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       ConstMatrixOperator<M, MT, ST, LGV, d, 1>::bind_type(m, matrix_id, grid_name<G>::value(), "leaf");
       MatrixOperator<M, MT, ST, LGV, d, 1>::bind_leaf_type(m, matrix_id, grid_name<G>::value(), "leaf");
 
       OperatorInterface<M, LGV, 1, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       //      BilinearFormInterface<LGV, 1, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       //      ForwardOperatorInterface<GV, 1, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
-      //      ConstLincombOperator<M, GV, 1, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
-      //      LincombOperator<M, GV, 1, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
+      ConstLincombOperator<M, LGV, 1, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
+      LincombOperator<M, LGV, 1, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       ConstMatrixOperator<M, MT, ST, LGV, 1, d>::bind_type(m, matrix_id, grid_name<G>::value(), "leaf");
       MatrixOperator<M, MT, ST, LGV, 1, d>::bind_leaf_type(m, matrix_id, grid_name<G>::value(), "leaf");
 
       OperatorInterface<M, LGV, d, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       //      BilinearFormInterface<LGV, d, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       //      ForwardOperatorInterface<GV, d, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
-      //      ConstLincombOperator<M, GV, d, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
-      //      LincombOperator<M, GV, d, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
+      ConstLincombOperator<M, LGV, d, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
+      LincombOperator<M, LGV, d, d>::bind(m, matrix_id, grid_name<G>::value(), "leaf");
       ConstMatrixOperator<M, MT, ST, LGV, d, d>::bind_type(m, matrix_id, grid_name<G>::value(), "leaf");
       MatrixOperator<M, MT, ST, LGV, d, d>::bind_leaf_type(m, matrix_id, grid_name<G>::value(), "leaf");
     }
