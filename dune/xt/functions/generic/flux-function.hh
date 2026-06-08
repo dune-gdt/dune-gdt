@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Provides GenericFluxFunction, a flux function f(x, u) defined by lambda expressions or std::functions.
+
 #ifndef DUNE_XT_FUNCTIONS_GENERIC_FLUX_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_GENERIC_FLUX_FUNCTION_HH
 

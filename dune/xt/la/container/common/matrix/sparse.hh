@@ -11,6 +11,9 @@
 //   Tim Keil         (2018)
 //   Tobias Leibner   (2014, 2016 - 2020)
 
+/// \file
+/// \brief Provides the CommonSparseMatrix and CommonSparseOrDenseMatrix implementations of the MatrixInterface.
+
 #ifndef DUNE_XT_LA_CONTAINER_COMMON_MATRIX_SPARSE_HH
 #define DUNE_XT_LA_CONTAINER_COMMON_MATRIX_SPARSE_HH
 

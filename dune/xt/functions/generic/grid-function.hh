@@ -10,6 +10,10 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Provides GenericGridFunction, a grid function defined by lambda expressions or std::functions evaluated
+/// locally on each element.
+
 #ifndef DUNE_XT_FUNCTIONS_GENERIC_GRID_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_GENERIC_GRID_FUNCTION_HH
 

@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Defines the FunctionInterface for grid-independent functions which can be evaluated in global coordinates.
+
 #ifndef DUNE_XT_FUNCTIONS_INTERFACES_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_INTERFACES_FUNCTION_HH
 

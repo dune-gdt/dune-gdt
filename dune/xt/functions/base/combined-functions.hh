@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2018 - 2020)
 
+/// \file
+/// \brief Provides the CombinedFunction base class and Difference, Sum and Product functions combining two functions.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_COMBINED_FUNCTIONS_HH
 #define DUNE_XT_FUNCTIONS_BASE_COMBINED_FUNCTIONS_HH
 
