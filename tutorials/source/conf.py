@@ -171,10 +171,6 @@ clangquill_group_by = "file"
 clangquill_include_undocumented = False
 # Persist the SQLite IR + page hashes so local rebuilds are incremental.
 clangquill_cache_dir = "_clangquill_cache"
-# Render the C++ API file headings with repository-root-relative paths (see the
-# _clangquill_templates/file.md.jinja override and _patch_clangquill_relpath
-# below). Resolved relative to this srcdir, like every other clangquill path.
-clangquill_template_dirs = ["_clangquill_templates"]
 
 
 def _patch_clangquill_relpath():
@@ -190,35 +186,56 @@ def _patch_clangquill_relpath():
     ``{{ file.path | repo_relpath }}`` to emit stable ``dune/...`` paths
     independent of where the docs happen to be built.
 
-    Degrades to a no-op if clangquill cannot be imported (e.g. a wheel built
-    without it); the extension itself would already have failed in that case.
+    Returns ``True`` when the filter was wired onto clangquill's Generator and
+    ``False`` otherwise — clangquill is missing (e.g. a wheel built without it)
+    or a future version dropped the internal ``_install_context`` hook. The
+    caller must only activate the template override when this returns ``True``,
+    since the override relies on the ``repo_relpath`` filter being present.
     """
     try:
         from clangquill.generator import Generator  # noqa: PLC0415
     except ImportError:
-        return
+        return False
+
+    # Guard the private hook we wrap: if a future clangquill renames or drops it,
+    # bail out cleanly instead of raising at import time (and let the caller skip
+    # the template override) so the docs build degrades to absolute paths rather
+    # than failing outright.
+    original_install_context = getattr(Generator, "_install_context", None)
+    if original_install_context is None:
+        return False
 
     repo_root = str((this_dir / ".." / "..").resolve())
 
     def repo_relpath(path):
+        """Render an absolute parsed-file path relative to the repository root.
+
+        Paths outside the repository are returned unchanged (should not happen
+        for the ``dune/**/*.hh`` inputs, but never emit a surprising ``../..``
+        escape).
+        """
         try:
             rel = os.path.relpath(path, repo_root)
         except ValueError:
             return path
-        # Leave paths outside the repository untouched (should not happen for the
-        # dune/**/*.hh inputs, but never print a surprising ``../..`` escape).
         return path if rel.startswith("..") else rel
 
-    original_install_context = Generator._install_context
-
     def install_context(self):
+        """Register the ``repo_relpath`` filter on each Generator's Jinja env."""
         original_install_context(self)
         self.env.filters["repo_relpath"] = repo_relpath
 
     Generator._install_context = install_context
+    return True
 
 
-_patch_clangquill_relpath()
+# Only activate the file.md.jinja override (which renders
+# {{ file.path | repo_relpath }}) when the filter was actually registered;
+# otherwise clangquill falls back to its bundled template with absolute paths
+# rather than crashing on an unknown Jinja filter. Resolved relative to this
+# srcdir, like every other clangquill path.
+if _patch_clangquill_relpath():
+    clangquill_template_dirs = ["_clangquill_templates"]
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
