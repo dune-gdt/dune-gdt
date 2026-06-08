@@ -100,10 +100,13 @@ int main(int argc, char** argv)
   // higher epoch counts than the heavy e2e benchmarks: a single element-assembly sweep is cheap
   bench.warmup(1).epochs(5).minEpochIterations(1);
 
-  // 2D: 128x128 cells; 3D: 24x24x24 cells -- comparable element counts, kept modest so a sweep
-  // over orders finishes quickly while still amortizing per-walk overhead.
-  run_for_grid<YASP_2D_EQUIDISTANT_OFFSET>(bench, "2d", 128u, {1, 2, 3});
-  run_for_grid<YASP_3D_EQUIDISTANT_OFFSET>(bench, "3d", 24u, {1, 2, 3});
+  // Workloads are deliberately small so the full sweep finishes in a few seconds in CI while still
+  // amortizing per-walk overhead. The 3D sweep is kept coarse and capped at order 2: a 3D
+  // high-order continuous-Lagrange assembly builds a very large sparse matrix (e.g. order 3 on a
+  // 24^3 grid is ~390k DOFs with >100M nonzeros, rebuilt every iteration) and dominates the runtime
+  // by orders of magnitude -- enough to blow past the workflow's job timeout.
+  run_for_grid<YASP_2D_EQUIDISTANT_OFFSET>(bench, "2d", 64u, {1, 2, 3});
+  run_for_grid<YASP_3D_EQUIDISTANT_OFFSET>(bench, "3d", 12u, {1, 2});
 
   Benchmark::write_report(bench, "assembly_kernels__continuous_lagrange");
   return 0;
