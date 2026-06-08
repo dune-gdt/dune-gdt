@@ -19,6 +19,12 @@ jobs:
     name: Build on Linux
     runs-on: ubuntu-24.04
     timeout-minutes: 120
+    env:
+      # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
+      # hash), the ccache survives manifest changes and partial rebuilds, so the
+      # 400+ test-binary translation units stay warm across runs.
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_MAXSIZE: "2G"
 
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -57,18 +63,42 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build
+        sudo apt-get install -y ninja-build ccache
+
+    - name: Restore ccache
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: ${{ github.workspace }}/.ccache
+        # run_id makes every save a unique (always-miss) key so each run writes a
+        # fresh cache; the prefix restore-key then pulls the most recent ccache
+        # from any previous run.
+        key: ${{ runner.os }}-ccache-${{ github.run_id }}
+        restore-keys: |
+          ${{ runner.os }}-ccache-
 
     - name: Configure CMake
       id: configure_cmake
-      run: cmake --preset=debug
+      # Route every compile through ccache. Passing the launcher as a cache
+      # variable (not just an env var) forces CMake to regenerate the Ninja
+      # rules even when a stale build/ tree is restored from cache.
+      run: >
+        cmake --preset=debug
+        -DCMAKE_C_COMPILER_LAUNCHER=ccache
+        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
     - name: Build
       run: cmake --build --preset=debug --parallel
 
     - name: Build test binaries
       run: |
-        cmake --build --preset=debug --target test_binaries --parallel -- -l 2
+        # test_binaries is ~400 separate executables, several of which are
+        # template-heavy TUs that peak around ~2 GB RAM each. The old "-l 2"
+        # load cap effectively serialised the build (~6 s/file, ~40 min). Cap
+        # concurrency by memory instead: -j 3 keeps peak RAM well under the
+        # 16 GB runner while using 3 of the 4 vCPUs. With a warm ccache most of
+        # these are cache hits and cost almost nothing.
+        cmake --build --preset=debug --target test_binaries --parallel -- -j 3
+        ccache --show-stats
 
     - name: Test with CTest
       run: |
@@ -82,6 +112,16 @@ jobs:
           build
           .vcpkg-root
         key: ${{ runner.os }}-build-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+
+    - name: Save ccache
+      # Always persist the compiler cache (even when the build or tests fail) so
+      # the next run starts warm. Only requires that configure succeeded, since
+      # that is what populates the cache directory.
+      if: always() && steps.configure_cmake.outcome == 'success'
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: ${{ github.workspace }}/.ccache
+        key: ${{ runner.os }}-ccache-${{ github.run_id }}
 
     - name: Upload error logs (in case of failure)
       if: always() && (steps.configure_cmake.conclusion == 'failure')
