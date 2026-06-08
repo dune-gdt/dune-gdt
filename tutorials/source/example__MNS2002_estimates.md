@@ -239,7 +239,7 @@ eta_flux_op += (
         LocalIntersectionIntegralBilinearForm(
             LocalBoundaryJumpIntegrand(grid, dim_range=Dim(d), weighted_by_intersection_diameter=True))),
     ApplyOnCustomBoundaryIntersections(grid, boundary_info, DirichletBoundary()))
-eta_flux_2 = np.array(eta_flux_op.apply(flux).dofs.vector, copy=False)
+eta_flux_2 = np.array(eta_flux_op.apply(GF(grid, flux)).dofs.vector, copy=False)
 print(f'flux jump indicators = {eta_flux_2}')
 ```
 
@@ -269,7 +269,7 @@ h = ElementwiseDiameterFunction(grid)
 eta_f_op = Operator(grid, V_h, element_indices)
 eta_f_op += LocalElementBilinearFormIndicatorOperator(
     LocalElementIntegralBilinearForm(LocalElementProductIntegrand(weight=GF(grid, 1))))
-eta_f_2_per_element = np.array(eta_f_op.apply(h*f).dofs.vector, copy=False)
+eta_f_2_per_element = np.array(eta_f_op.apply(GF(grid, h*f)).dofs.vector, copy=False)
 print(eta_f_2_per_element)
 ```
 
@@ -313,7 +313,7 @@ oscillation_op = Operator(grid, V_h, p0_space)
 oscillation_op += LocalElementBilinearFormIndicatorOperator(
     LocalElementIntegralBilinearForm(
         LocalElementProductIntegrand(weight=GF(grid, 1))))
-osc_2 = oscillation_op.apply(h*(f - f_h))
+osc_2 = oscillation_op.apply(GF(grid, h*(f - f_h)))
 
 # osc_2 is a discrete function, where the entries of its DoF vector
 # correspond to the squared data oscillation on each grid element.
