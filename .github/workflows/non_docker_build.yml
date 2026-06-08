@@ -82,9 +82,7 @@ jobs:
       # variable (not just an env var) forces CMake to regenerate the Ninja
       # rules even when a stale build/ tree is restored from cache.
       run: >
-        cmake --preset=debug
-        -DCMAKE_C_COMPILER_LAUNCHER=ccache
-        -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        cmake --preset=debug -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
     - name: Build
       run: cmake --build --preset=debug --parallel
