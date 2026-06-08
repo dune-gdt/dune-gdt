@@ -66,7 +66,10 @@ public:
         bindings::OperatorInterface<M, GV, s_r, r_r>::class_name(matrix_id, grid_id, layer_id, class_id));
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
     c.def(py::init([](const GP& grid, const SS& source_space, const RS& range_space, const bool parallel) {
-            return new type(grid.leaf_view(), source_space, range_space, parallel);
+            // NOTE: GDT::Operator stores the assembly grid view BY REFERENCE, so it must outlive
+            // the operator. grid.leaf_view() returns a temporary (-> dangling ref -> segfault on
+            // apply); use the source space's grid view instead (the space is kept alive below).
+            return new type(source_space.grid_view(), source_space, range_space, parallel);
           }),
           "grid"_a,
           "source_space"_a,
@@ -126,7 +129,10 @@ public:
       m.def(
           FactoryName.c_str(),
           [](const GP& grid, const SS& source_space, const RS& range_space, const bool parallel, const MT&) {
-            return new type(grid.leaf_view(), source_space, range_space, parallel);
+            // NOTE: GDT::Operator stores the assembly grid view BY REFERENCE, so it must outlive
+            // the operator. grid.leaf_view() returns a temporary (-> dangling ref -> segfault on
+            // apply); use the source space's grid view instead (the space is kept alive below).
+            return new type(source_space.grid_view(), source_space, range_space, parallel);
           },
           "grid"_a,
           "source_space"_a,
@@ -140,7 +146,10 @@ public:
       m.def(
           FactoryName.c_str(),
           [](const GP& grid, const SS& source_space, const RS& range_space, const bool parallel, const MT&) {
-            return new type(grid.leaf_view(), source_space, range_space, parallel);
+            // NOTE: GDT::Operator stores the assembly grid view BY REFERENCE, so it must outlive
+            // the operator. grid.leaf_view() returns a temporary (-> dangling ref -> segfault on
+            // apply); use the source space's grid view instead (the space is kept alive below).
+            return new type(source_space.grid_view(), source_space, range_space, parallel);
           },
           "grid"_a,
           "source_space"_a,

@@ -120,7 +120,10 @@ public:
            const double& dirichlet_penalty,
            XT::Functions::GridFunction<E, d, d> diffusion,
            XT::Functions::GridFunction<E, d, d> weight_function) {
-          return new type(grid.leaf_view(),
+          // NOTE: the operator stores the assembly grid view BY REFERENCE, so it must outlive the
+          // operator. grid.leaf_view() returns a temporary (-> dangling ref -> segfault on apply);
+          // use the range space's grid view instead (the space is kept alive below).
+          return new type(range_space.grid_view(),
                           range_space,
                           symmetry_prefactor,
                           inner_penalty,
