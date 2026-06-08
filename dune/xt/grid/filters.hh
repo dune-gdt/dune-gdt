@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Convenience header aggregating the base, element and intersection grid filter definitions.
+
 #ifndef DUNE_XT_GRID_FILTERS_HH
 #define DUNE_XT_GRID_FILTERS_HH
 

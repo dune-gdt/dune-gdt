@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017, 2020)
 
+/// \file
+/// \brief Provides the RangedPartitioning class that partitions a grid view into TBB-splittable iterator ranges.
+
 #ifndef DUNE_XT_GRID_PARALLEL_PARTITIONING_RANGED_INTERNAL_HH
 #define DUNE_XT_GRID_PARALLEL_PARTITIONING_RANGED_INTERNAL_HH
 

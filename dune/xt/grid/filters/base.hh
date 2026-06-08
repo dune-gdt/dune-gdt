@@ -9,6 +9,10 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Defines the ElementFilter and IntersectionFilter interfaces and their logical combination operators used to
+/// restrict the Walker.
+
 #ifndef DUNE_XT_GRID_FILTERS_BASE_HH
 #define DUNE_XT_GRID_FILTERS_BASE_HH
 

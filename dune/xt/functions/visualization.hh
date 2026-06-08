@@ -9,6 +9,10 @@
 //   René Fritze     (2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides helpers to visualize functions and grid functions by writing them (and their gradients) to VTK
+/// files.
+
 #ifndef DUNE_XT_FUNCTIONS_VISUALIZATION_HH
 #define DUNE_XT_FUNCTIONS_VISUALIZATION_HH
 

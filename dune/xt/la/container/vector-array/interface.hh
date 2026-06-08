@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Defines the VectorArrayInterface modelling a collection of equally sized vectors.
+
 #ifndef DUNE_XT_LA_CONTAINER_VECTOR_ARRAY_INTERFACE_HH
 #define DUNE_XT_LA_CONTAINER_VECTOR_ARRAY_INTERFACE_HH
 

@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Defines the interfaces for element-local flux functions f(x, u) and sets thereof.
+
 #ifndef DUNE_XT_FUNCTIONS_INTERFACES_ELEMENT_FLUX_FUNCTIONS_HH
 #define DUNE_XT_FUNCTIONS_INTERFACES_ELEMENT_FLUX_FUNCTIONS_HH
 

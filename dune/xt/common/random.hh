@@ -9,6 +9,9 @@
 //   René Fritze     (2012 - 2020)
 //   Tobias Leibner  (2014, 2020)
 
+/// \file
+/// \brief Provides random number generator adapters and distribution selectors for scalar, complex, and vector values.
+
 #ifndef DUNE_XT_COMMON_RANDOM_HH
 #define DUNE_XT_COMMON_RANDOM_HH
 

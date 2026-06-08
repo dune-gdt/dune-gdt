@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Provides find_largest_by_bisection to locate the largest argument satisfying a condition via bisection.
+
 #ifndef DUNE_XT_COMMON_BISECT_HH
 #define DUNE_XT_COMMON_BISECT_HH
 

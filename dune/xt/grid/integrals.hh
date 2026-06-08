@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Provides quadrature-based functions to compute integrals of functions over grid elements and intersections.
+
 #ifndef DUNE_XT_GRID_INTEGRALS_HH
 #define DUNE_XT_GRID_INTEGRALS_HH
 
