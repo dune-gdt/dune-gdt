@@ -11,6 +11,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2016, 2018 - 2020)
 
+/// \file
+/// \brief Provides the Configuration class (an extended Dune::ParameterTree) and the global Config() instance.
+
 #ifndef DUNE_XT_COMMON_CONFIGURATION_HH
 #define DUNE_XT_COMMON_CONFIGURATION_HH
 
@@ -29,6 +32,7 @@ namespace Dune {
 namespace XT::Common {
 
 
+/// \brief Bundles the default behaviour flags of a Configuration (default-access warnings, logging on exit, logfile).
 struct ConfigurationDefaults
 {
   ConfigurationDefaults(bool warn_on_default_access_in = false,
@@ -48,6 +52,7 @@ struct Typer
 
 } // namespace internal
 
+/// \brief A Dune::ParameterTree extended with typed/validated get and set, tree merging and default-access tracking.
 class Configuration : public Dune::ParameterTree
 {
   using BaseType = Dune::ParameterTree;
@@ -349,10 +354,13 @@ private:
   std::string logfile_;
 }; // class Configuration
 
+//! writes a Configuration to an output stream (via report)
 std::ostream& operator<<(std::ostream& out, const Configuration& config);
 
+//! returns true if both Configurations contain the same key/value pairs
 bool operator==(const Configuration& left, const Configuration& right);
 
+//! returns true if the Configurations differ in any key/value pair
 bool operator!=(const Configuration& left, const Configuration& right);
 
 //! global Configuration instance
@@ -364,13 +372,16 @@ DUNE_EXPORT inline Configuration& Config()
 
 } // namespace XT::Common
 
+//! returns true if both ParameterTrees contain the same key/value pairs
 bool operator==(const ParameterTree& left, const ParameterTree& right);
 
+//! returns true if the ParameterTrees differ in any key/value pair
 bool operator!=(const ParameterTree& left, const ParameterTree& right);
 
 } // namespace Dune
 namespace std {
 
+//! lexicographic ordering of Dune::ParameterTree, to allow their use as keys in associative containers
 template <>
 struct less<Dune::ParameterTree>
 {
@@ -381,6 +392,7 @@ struct less<Dune::ParameterTree>
   bool operator()(const Dune::ParameterTree& lhs, const Dune::ParameterTree& rhs) const;
 }; // struct less< ParameterTree >
 
+//! lexicographic ordering of Dune::XT::Common::Configuration, to allow their use as keys in associative containers
 template <>
 struct less<Dune::XT::Common::Configuration>
 {
@@ -393,14 +405,17 @@ struct less<Dune::XT::Common::Configuration>
 
 } // namespace std
 
+/// \brief Shorthand for the global Configuration instance Dune::XT::Common::Config().
 #define DXTC_CONFIG Dune::XT::Common::Config()
 
+/// \brief Reads key from the global Configuration, using def as default value and type.
 template <typename T>
 static auto DXTC_CONFIG_GET(std::string key, T def) -> decltype(DXTC_CONFIG.get(key, def))
 {
   return DXTC_CONFIG.get(key, def);
 }
 
+/// \brief Reads key from the global Configuration with default value def, validating the result with v.
 template <typename T, class V>
 static auto
 DXTC_CONFIG_GETV(std::string key,

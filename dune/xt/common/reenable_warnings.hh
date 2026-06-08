@@ -9,6 +9,9 @@
 //   René Fritze     (2011 - 2012, 2015 - 2016, 2018 - 2019)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Restores the diagnostic state previously saved by disable_warnings.hh.
+
 #include <boost/config.hpp>
 
 #if defined(BOOST_INTEL) && BOOST_INTEL

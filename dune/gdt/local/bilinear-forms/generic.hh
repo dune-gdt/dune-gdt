@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  generic.hh
+ * \brief Generic local bilinear form defined by a user-provided function.
+ **/
 #ifndef DUNE_GDT_LOCAL_BILINEAR_FORMS_GENERIC_HH
 #define DUNE_GDT_LOCAL_BILINEAR_FORMS_GENERIC_HH
 

@@ -11,6 +11,9 @@
 //
 // Created by r_milk01 on 4/25/18.
 
+/// \file
+/// \brief Provides guarded_bind to register pybind11 bindings while tolerating duplicate registration.
+
 #ifndef DUNE_XT_COMMON_PYTHON_HH
 #define DUNE_XT_COMMON_PYTHON_HH
 
@@ -21,6 +24,7 @@
 namespace Dune::XT::Common::bindings {
 
 
+/// \brief Runs the given binding registrar, guarding against errors from already registered types.
 void guarded_bind(const std::function<void()>& registrar);
 
 

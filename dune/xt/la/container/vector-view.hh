@@ -8,6 +8,9 @@
 //   René Fritze    (2019 - 2020)
 //   Tobias Leibner (2019 - 2020)
 
+/// \file
+/// \brief Read-only and read-write views onto a contiguous range of a vector.
+
 #ifndef DUNE_XT_LA_CONTAINER_VECTOR_VIEW_HH
 #define DUNE_XT_LA_CONTAINER_VECTOR_VIEW_HH
 
@@ -80,6 +83,7 @@ VectorImp& empty_vector_ref()
 } // namespace internal
 
 
+/// \brief Read-only view onto a contiguous range of entries of an existing vector.
 template <class VectorImp>
 class ConstVectorView
   : public VectorInterface<internal::ConstVectorViewTraits<VectorImp>,
@@ -258,6 +262,7 @@ private:
 }; // class ConstVectorView
 
 
+/// \brief Read-write view onto a contiguous range of entries of an existing vector.
 template <class VectorImp>
 class VectorView
   : public VectorInterface<internal::VectorViewTraits<VectorImp>,

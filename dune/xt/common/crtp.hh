@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Provides the CRTPInterface base class and the CHECK_CRTP macros for thread-safe CRTP interface checks.
+
 #ifndef DUNE_XT_COMMON_CRTP_HH
 #define DUNE_XT_COMMON_CRTP_HH
 
@@ -64,6 +67,7 @@
 namespace Dune::XT::Common {
 
 
+/// \brief CRTP base class providing static down-casts (as_imp()) to the derived implementation type.
 template <class InterfaceType, class TraitsImp>
 class CRTPInterface
 {

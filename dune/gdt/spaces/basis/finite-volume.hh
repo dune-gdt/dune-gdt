@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014, 2016 - 2018)
 
+/**
+ * \file  finite-volume.hh
+ * \brief Global basis for finite volume spaces (a single constant basis function per element).
+ **/
 #ifndef DUNE_GDT_SPACES_BASIS_FINITE_VOLUME_HH
 #define DUNE_GDT_SPACES_BASIS_FINITE_VOLUME_HH
 
@@ -24,6 +28,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Global basis for finite volume spaces, providing a single constant basis function per element.
+ */
 template <class GV, size_t r = 1, class R = double>
 class FiniteVolumeGlobalBasis : public GlobalBasisInterface<GV, r, 1, R>
 {

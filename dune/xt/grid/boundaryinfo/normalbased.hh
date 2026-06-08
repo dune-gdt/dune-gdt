@@ -9,6 +9,9 @@
 //   René Fritze     (2016, 2018 - 2020)
 //   Tobias Leibner  (2016 - 2020)
 
+/// \file
+/// \brief Provides a BoundaryInfo that assigns boundary types based on intersection outer normals.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_NORMALBASED_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_NORMALBASED_HH
 
@@ -28,6 +31,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Default configuration for a NormalBasedBoundaryInfo, assigning Dirichlet boundaries to the axis normals.
 template <size_t d>
 static inline Common::Configuration normalbased_boundaryinfo_default_config()
 {
@@ -62,6 +66,9 @@ static inline Common::Configuration normalbased_boundaryinfo_default_config()
 #endif
 
 /**
+ * \brief BoundaryInfo that returns a boundary type by matching an intersection's center unit outer normal against a
+ *        set of registered normals.
+ *
  * Use as in
 \code
 XT::Grid::NormalBasedBoundaryInfo<...> boundary_info;
@@ -239,6 +246,7 @@ private:
 #endif
 
 
+/// \brief Creates a NormalBasedBoundaryInfo for intersection type I from the given configuration.
 template <class I>
 std::unique_ptr<NormalBasedBoundaryInfo<I>> make_normalbased_boundaryinfo(const Common::Configuration& cfg)
 {

@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  abs.hh
+ * \brief Local unary element integrand computing the Euclidean norm of the test basis.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_ABS_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_ABS_HH
 
@@ -19,6 +23,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Local unary element integrand evaluating the Euclidean (two-)norm of each test basis function.
+ */
 template <class E, size_t r = 1, size_t rC = 1, class R = double, class F = double>
 class LocalElementAbsIntegrand : public LocalUnaryElementIntegrandInterface<E, r, rC, R, F>
 {

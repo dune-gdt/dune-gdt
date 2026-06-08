@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  dof-vector.hh
+ * \brief Wrappers associating a DoF vector with a space mapper for (const) localized access.
+ **/
 #ifndef DUNE_GDT_DISCRETEFUNCTION_DOF_VECTOR_HH
 #define DUNE_GDT_DISCRETEFUNCTION_DOF_VECTOR_HH
 
@@ -21,6 +25,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Read-only view of a DoF vector together with the space mapper, providing localized DoF access.
+ */
 template <class Vector, class GridView>
 class ConstDofVector
 {
@@ -66,6 +73,9 @@ private:
 }; // class ConstDofVector
 
 
+/**
+ * \brief Mutable view of a DoF vector together with the space mapper, providing localized DoF access and adaptation.
+ */
 template <class Vector, class GridView>
 class DofVector : public ConstDofVector<Vector, GridView>
 {

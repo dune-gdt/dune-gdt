@@ -12,6 +12,9 @@
 //   Sven Kaulmann   (2014)
 //   Tobias Leibner  (2014, 2016 - 2017, 2020 - 2021)
 
+/// \file
+/// \brief Provides the basic grid provider holding a grid and offering layer/view access and visualization.
+
 #ifndef DUNE_XT_GRID_PROVIDER_PROVIDER_HH
 #define DUNE_XT_GRID_PROVIDER_PROVIDER_HH
 
@@ -40,6 +43,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Holds a grid and provides access to its levels, views and refinement as well as visualization.
 template <class GridImp>
 class GridProvider
 {

@@ -9,6 +9,9 @@
 //   René Fritze     (2014 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Variants of standard algorithms (move_if, make_string_sequence) operating on ranges.
+
 #ifndef DUNE_XT_COMMON_ALGORITHM_HH
 #define DUNE_XT_COMMON_ALGORITHM_HH
 
@@ -33,6 +36,7 @@ OutputIt move_if(InputIt first, InputIt last, OutputIt d_first, UnaryPredicate p
   return d_first;
 }
 
+/// \brief Builds a sequence of strings by converting each element of the range [first, last) via to_string.
 template <class InputIt, class SequenceType = std::vector<std::string>>
 SequenceType make_string_sequence(InputIt first, InputIt last)
 {

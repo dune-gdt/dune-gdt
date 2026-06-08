@@ -9,6 +9,9 @@
 //   René Fritze     (2016 - 2020)
 //   Tobias Leibner  (2016 - 2017, 2019 - 2020)
 
+/// \file
+/// \brief Boundary info treating every boundary intersection as Dirichlet boundary.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_ALLDIRICHLET_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_ALLDIRICHLET_HH
 
@@ -21,6 +24,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Default configuration for AllDirichletBoundaryInfo.
 static inline Common::Configuration alldirichlet_boundaryinfo_default_config()
 {
   return Common::Configuration({"type"}, {"xt.grid.boundaryinfo.alldirichlet"});
@@ -33,6 +37,7 @@ static inline Common::Configuration alldirichlet_boundaryinfo_default_config()
 #  pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #  pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
 #endif
+/// \brief Boundary info that marks every boundary intersection as Dirichlet boundary.
 template <class IntersectionImp>
 class AllDirichletBoundaryInfo : public BoundaryInfo<IntersectionImp>
 {
@@ -57,6 +62,7 @@ public:
 #  pragma GCC diagnostic pop
 #endif
 
+/// \brief Creates an AllDirichletBoundaryInfo for the given intersection type.
 template <class I>
 std::unique_ptr<AllDirichletBoundaryInfo<I>>
 make_alldirichlet_boundaryinfo(const Common::Configuration& /*cfg*/ = Common::Configuration())
@@ -64,6 +70,7 @@ make_alldirichlet_boundaryinfo(const Common::Configuration& /*cfg*/ = Common::Co
   return std::make_unique<AllDirichletBoundaryInfo<I>>();
 }
 
+/// \brief Creates an AllDirichletBoundaryInfo for the intersection type of the given grid view.
 template <class GV>
 std::unique_ptr<AllDirichletBoundaryInfo<extract_intersection_t<GV>>>
 make_alldirichlet_boundaryinfo(GV, const Common::Configuration& /*cfg*/ = Common::Configuration())
@@ -71,6 +78,7 @@ make_alldirichlet_boundaryinfo(GV, const Common::Configuration& /*cfg*/ = Common
   return std::make_unique<AllDirichletBoundaryInfo<extract_intersection_t<GV>>>();
 }
 
+/// \brief Boundary info that marks process (inter-rank) boundaries as Dirichlet boundary.
 template <class IntersectionImp>
 class ProcessBoundaryInfo : public BoundaryInfo<IntersectionImp>
 {

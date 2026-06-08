@@ -9,6 +9,9 @@
 //   René Fritze     (2013, 2015 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2014, 2018 - 2020)
 
+/// \file
+/// \brief Generic interface and factory functions for solving linear systems.
+
 #ifndef DUNE_XT_LA_SOLVER_HH
 #define DUNE_XT_LA_SOLVER_HH
 
@@ -50,6 +53,7 @@ public:
 } // namespace internal
 
 
+/// \brief A means to obtain available solver options at compile time; specialized for each supported MatrixType.
 template <class MatrixType, class CommunicatorType = SequentialCommunication>
 class SolverOptions
 {
@@ -63,6 +67,7 @@ public:
 }; // class SolverOptions
 
 
+/// \brief Solves linear systems for a given matrix; specialized for each supported MatrixType.
 template <class MatrixImp, class CommunicatorType = SequentialCommunication>
 class Solver
 {
@@ -138,6 +143,7 @@ public:
 }; // class Solver
 
 
+/// \brief Creates a Solver for the given matrix.
 template <class M>
 auto make_solver(const M& matrix)
 {
@@ -146,6 +152,7 @@ auto make_solver(const M& matrix)
 }
 
 
+/// \brief Solves A*x = b in-place for x using the default (or given) solver options.
 template <class M, class V, class... Args>
 void solve(const M& A, const V& b, V& x, Args&&... args)
 {
@@ -170,6 +177,7 @@ void solve(const M& A, const V& b, V& x, Args&&... args)
 //}
 
 
+/// \brief Solves A*x = b and returns the solution vector x, using the given solver options.
 template <class M, class V, class S>
 typename VectorInterface<V, S>::derived_type
 solve(const MatrixInterface<M, S>& A,

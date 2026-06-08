@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  linear-advection.hh
+ * \brief Local binary element integrand for a linear advection operator.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_LINEAR_ADVECTION_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_LINEAR_ADVECTION_HH
 

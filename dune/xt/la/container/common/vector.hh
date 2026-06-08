@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2017, 2020)
 
+/// \file
+/// \brief Aggregator header for the common dense and sparse vector containers.
+
 #ifndef DUNE_XT_LA_CONTAINER_COMMON_VECTOR_HH
 #define DUNE_XT_LA_CONTAINER_COMMON_VECTOR_HH
 

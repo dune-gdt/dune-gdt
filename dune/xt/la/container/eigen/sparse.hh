@@ -10,6 +10,9 @@
 //   René Fritze      (2014 - 2016, 2018 - 2020)
 //   Tobias Leibner   (2014 - 2015, 2017 - 2020)
 
+/// \file
+/// \brief Row-major sparse matrix container backed by Eigen.
+
 #ifndef DUNE_XT_LA_CONTAINER_EIGEN_SPARSE_HH
 #define DUNE_XT_LA_CONTAINER_EIGEN_SPARSE_HH
 
@@ -50,6 +53,7 @@ namespace LA {
 template <class ScalarType>
 class EigenRowMajorSparseMatrix;
 
+/// \brief Empty tag type used to identify dynamic Eigen matrix interface implementations.
 class EigenMatrixInterfaceDynamic
 {};
 

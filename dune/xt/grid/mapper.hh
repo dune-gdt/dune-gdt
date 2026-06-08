@@ -9,6 +9,9 @@
 //   René Fritze     (2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides a helper to map the index of a sub-entity of given codimension of an element.
+
 #ifndef DUNE_XT_GRID_MAPPER_HH
 #define DUNE_XT_GRID_MAPPER_HH
 
@@ -20,6 +23,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Returns the mapper index of the i-th sub-entity of given codimension of an element.
 template <typename G,
           typename MapperImp,
           typename IndexType,

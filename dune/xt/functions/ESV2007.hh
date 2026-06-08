@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014 - 2020)
 
+/// \file
+/// \brief Functions associated with the ESV2007 benchmark test case (force, exact solution and diffusion cutoff).
+
 #ifndef DUNEXT_FUNCTIONS_ESV2007_HH
 #define DUNEXT_FUNCTIONS_ESV2007_HH
 
@@ -35,6 +38,7 @@
 namespace Dune::XT::Functions::ESV2007 {
 
 
+/// \brief Right hand side force of the ESV2007 test case 1 (only available in 2d with scalar range).
 template <size_t d, size_t r, size_t rC = 1, class R = double>
 class Testcase1Force : public FunctionInterface<d, r, rC, R>
 {
@@ -134,6 +138,7 @@ private:
 }; // class Testcase1Force
 
 
+/// \brief Exact solution of the ESV2007 test case 1 (only available in 2d with scalar range).
 template <size_t d, size_t r, size_t rC = 1, class R = double>
 class Testcase1ExactSolution : public FunctionInterface<d, r, rC, R>
 {
@@ -233,6 +238,9 @@ private:
 }; // class Testcase1ExactSolution
 
 
+/// \brief Elementwise constant cutoff function derived from a diffusion tensor, used in ESV2007 a posteriori error
+///        estimation (value is the Poincare constant times the squared element diameter divided by the minimal
+///        eigenvalue of the diffusion on the element).
 template <class E, class R = double>
 class CutoffFunction : public GridFunctionInterface<E, 1, 1, R>
 {

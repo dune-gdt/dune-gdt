@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  interpolations.hh
+ * \brief Free functions to interpolate grid functions into discrete function spaces.
+ **/
 #ifndef DUNE_GDT_INTERPOLATIONS_HH
 #define DUNE_GDT_INTERPOLATIONS_HH
 
@@ -18,6 +22,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Interpolates a grid function into an existing target DiscreteFunction using the given interpolation grid view.
+ */
 template <class GV, size_t r, size_t rC, class R, class V, class IGVT>
 std::enable_if_t<std::is_same<XT::Grid::extract_entity_t<GV>, typename IGVT::Grid::template Codim<0>::Entity>::value,
                  void>
@@ -39,6 +46,9 @@ interpolate(const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_
 } // interpolate(...)
 
 
+/**
+ * \brief Interpolates a grid function into an existing target DiscreteFunction using the target space's grid view.
+ */
 template <class GV, size_t r, size_t rC, class R, class V>
 void interpolate(const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_t<GV>, r, rC, R>& source,
                  DiscreteFunction<V, GV, r, rC, R>& target,
@@ -57,6 +67,10 @@ void interpolate(const XT::Functions::GridFunctionInterface<XT::Grid::extract_en
 } // interpolate(...)
 
 
+/**
+ * \brief Interpolates a grid function into a new DiscreteFunction of the given target space using the given
+ *        interpolation grid view (the vector type has to be provided explicitly).
+ */
 template <class VectorType, class GV, size_t r, size_t rC, class R, class IGVT>
 std::enable_if_t<
     XT::LA::is_vector<VectorType>::value
@@ -82,6 +96,10 @@ interpolate(const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_
 } // interpolate(...)
 
 
+/**
+ * \brief Interpolates a grid function into a new DiscreteFunction of the given target space using the target space's
+ *        grid view (the vector type has to be provided explicitly).
+ */
 template <class VectorType, class GV, size_t r, size_t rC, class R>
 std::enable_if_t<XT::LA::is_vector<VectorType>::value, DiscreteFunction<VectorType, GV, r, rC, R>>
 interpolate(const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_t<GV>, r, rC, R>& source,
@@ -103,6 +121,10 @@ interpolate(const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_
 } // interpolate(...)
 
 
+/**
+ * \brief Interpolates a grid function into a new DiscreteFunction of the given target space using the target space's
+ *        grid view (defaults to an ISTL dense vector).
+ */
 template <class GV, size_t r, size_t rC, class R>
 DiscreteFunction<XT::LA::IstlDenseVector<R>, GV, r, rC, R>
 interpolate(const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_t<GV>, r, rC, R>& source,

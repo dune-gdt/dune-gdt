@@ -9,6 +9,10 @@
 //   René Fritze     (2016, 2018)
 //   Tobias Leibner  (2016, 2018)
 
+/**
+ * \file  type_traits.hh
+ * \brief Enumerations and type traits used throughout dune-gdt.
+ **/
 #ifndef DUNE_GDT_TYPE_TRAITS_HH
 #define DUNE_GDT_TYPE_TRAITS_HH
 
@@ -21,6 +25,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Enumerates the discrete function space types supported by dune-gdt.
+ */
 enum class SpaceType
 {
   continuous_flattop,
@@ -32,6 +39,9 @@ enum class SpaceType
 };
 
 
+/**
+ * \brief Writes a human-readable representation of a SpaceType to an output stream.
+ */
 inline std::ostream& operator<<(std::ostream& out, const SpaceType& space_type)
 {
   if (space_type == SpaceType::continuous_lagrange)
@@ -52,6 +62,9 @@ inline std::ostream& operator<<(std::ostream& out, const SpaceType& space_type)
 }
 
 
+/**
+ * \brief Enumerates the sparsity stencil types used to build matrix patterns.
+ */
 enum class Stencil
 {
   element,
@@ -61,6 +74,9 @@ enum class Stencil
 };
 
 
+/**
+ * \brief Writes a human-readable representation of a Stencil to an output stream.
+ */
 inline std::ostream& operator<<(std::ostream& out, const Stencil& stencil)
 {
   if (stencil == Stencil::element)
@@ -113,6 +129,9 @@ struct is_space_helper
 
 // actual structs
 // from #include <dune/gdt/local/finite-elements/interfaces.hh>
+/**
+ * \brief Type trait that detects whether a type is a LocalFiniteElementInterface.
+ */
 template <class T>
 struct is_local_finite_element : public std::false_type
 {};
@@ -122,6 +141,9 @@ struct is_local_finite_element<LocalFiniteElementInterface<D, d, R, r, rC>> : pu
 {};
 
 
+/**
+ * \brief Type trait that detects whether a type is a LocalFiniteElementFamilyInterface.
+ */
 template <class T>
 struct is_local_finite_element_family : public std::false_type
 {};
@@ -132,6 +154,9 @@ struct is_local_finite_element_family<LocalFiniteElementFamilyInterface<D, d, R,
 
 
 // from #include <dune/gdt/spaces/interface.hh>
+/**
+ * \brief Type trait that detects whether a type is derived from SpaceInterface.
+ */
 template <class S, bool is_candidate = internal::is_space_helper<S>::is_candidate>
 struct is_space : public std::false_type
 {};

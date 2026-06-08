@@ -8,6 +8,9 @@
 //   Felix Schindler (2020)
 //   René Fritze     (2020)
 
+/// \file
+/// \brief Provides Common::Printer specializations for printing Dune grid intersections and entities.
+
 #ifndef DUNE_XT_GRID_PRINT_HH
 #define DUNE_XT_GRID_PRINT_HH
 

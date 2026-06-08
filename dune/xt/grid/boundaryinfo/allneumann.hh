@@ -9,6 +9,9 @@
 //   René Fritze     (2016 - 2020)
 //   Tobias Leibner  (2016 - 2017, 2019 - 2020)
 
+/// \file
+/// \brief Boundary info treating every boundary intersection as Neumann boundary.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_ALLNEUMANN_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_ALLNEUMANN_HH
 
@@ -21,6 +24,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Default configuration for AllNeumannBoundaryInfo.
 static inline Common::Configuration allneumann_boundaryinfo_default_config()
 {
   return Common::Configuration({"type"}, {"xt.grid.boundaryinfo.allneumann"});
@@ -33,6 +37,7 @@ static inline Common::Configuration allneumann_boundaryinfo_default_config()
 #  pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
 #  pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
 #endif
+/// \brief Boundary info that marks every boundary intersection as Neumann boundary.
 template <class IntersectionImp>
 class AllNeumannBoundaryInfo : public BoundaryInfo<IntersectionImp>
 {
@@ -57,6 +62,7 @@ public:
 #  pragma GCC diagnostic pop
 #endif
 
+/// \brief Creates an AllNeumannBoundaryInfo for the given intersection type.
 template <class I>
 std::unique_ptr<AllNeumannBoundaryInfo<I>>
 make_allneumann_boundaryinfo(const Common::Configuration& /*cfg*/ = Common::Configuration())

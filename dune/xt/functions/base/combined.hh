@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2017)
 
+/// \file
+/// \brief Internal helpers for combining grid functions via binary/unary operations.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_COMBINED_HH
 #define DUNE_XT_FUNCTIONS_BASE_COMBINED_HH
 

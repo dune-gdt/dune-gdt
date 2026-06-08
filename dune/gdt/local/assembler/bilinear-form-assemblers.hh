@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  bilinear-form-assemblers.hh
+ * \brief Grid functors assembling local bilinear forms into a global matrix.
+ **/
 #ifndef DUNE_GDT_LOCAL_ASSEMBLER_TWO_FORM_ASSEMBLERS_HH
 #define DUNE_GDT_LOCAL_ASSEMBLER_TWO_FORM_ASSEMBLERS_HH
 
@@ -32,6 +36,9 @@ template <class Matrix,
           size_t a_r = t_r,
           size_t a_rC = t_rC,
           class AR = TR>
+/**
+ * \brief Assembles a local element bilinear form into a global matrix while iterating over the grid elements.
+ */
 class LocalElementBilinearFormAssembler : public XT::Grid::ElementFunctor<GridView>
 {
   static_assert(XT::LA::is_matrix<Matrix>::value, "");
@@ -153,6 +160,10 @@ template <class Matrix,
           size_t a_r = t_r,
           size_t a_rC = t_rC,
           class AR = TR>
+/**
+ * \brief Assembles a local coupling intersection bilinear form (coupling the inside and outside elements) into a global
+ *        matrix while iterating over the grid intersections.
+ */
 class LocalCouplingIntersectionBilinearFormAssembler : public XT::Grid::IntersectionFunctor<GridView>
 {
   static_assert(XT::LA::is_matrix<Matrix>::value, "");
@@ -311,6 +322,10 @@ template <class Matrix,
           size_t a_r = t_r,
           size_t a_rC = t_rC,
           class AR = TR>
+/**
+ * \brief Assembles a local intersection bilinear form (on a single element adjacent to the intersection) into a global
+ *        matrix while iterating over the grid intersections.
+ */
 class LocalIntersectionBilinearFormAssembler : public XT::Grid::IntersectionFunctor<GridView>
 {
   static_assert(XT::LA::is_matrix<Matrix>::value, "");

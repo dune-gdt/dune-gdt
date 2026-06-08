@@ -9,6 +9,9 @@
 //   René Fritze     (2013 - 2016, 2018 - 2019)
 //   Tobias Leibner  (2014, 2017, 2020)
 
+/// \file
+/// \brief Aggregator header for the container, vector and matrix interfaces.
+
 #ifndef DUNE_XT_LA_CONTAINER_INTERFACES_HH
 #define DUNE_XT_LA_CONTAINER_INTERFACES_HH
 

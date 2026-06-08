@@ -11,6 +11,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014 - 2017, 2019 - 2020)
 
+/// \file
+/// \brief Provides CheckerboardFunction, a grid function with constant values on the cells of a checkerboard partition.
+
 #ifndef DUNE_XT_FUNCTIONS_CHECKERBOARD_HH
 #define DUNE_XT_FUNCTIONS_CHECKERBOARD_HH
 

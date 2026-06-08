@@ -9,6 +9,9 @@
 //   René Fritze     (2009 - 2020)
 //   Tobias Leibner  (2014, 2018, 2020)
 
+/// \file
+/// \brief Provides the Logging manager, the global Logger() instance and the DXTC_LOG* convenience macros.
+
 #ifndef DUNE_XT_COMMON_LOGGING_HH
 #define DUNE_XT_COMMON_LOGGING_HH
 
@@ -99,6 +102,7 @@ public:
   //! (temporarily) disable all logging below given priority level
   void suspend(LogStream::PriorityType prio = LogStream::default_suspend_priority);
 
+  //! RAII guard that suspends logging below prio on construction and resumes it on destruction
   struct SuspendLocal
   {
     LogStream::PriorityType prio_;
@@ -114,6 +118,7 @@ public:
     }
   };
 
+  //! RAII guard that resumes logging below prio on construction and suspends it again on destruction
   struct ResumeLocal
   {
     LogStream::PriorityType prio_;
@@ -154,14 +159,22 @@ DUNE_EXPORT inline Logging& Logger()
 
 } // namespace Dune::XT::Common
 
+/// \brief Shorthand for the global Logging instance Dune::XT::Common::Logger().
 #define DXTC_LOG Dune::XT::Common::Logger()
+/// \brief The global info log stream.
 #define DXTC_LOG_INFO DXTC_LOG.info()
+/// \brief The global debug log stream.
 #define DXTC_LOG_DEBUG DXTC_LOG.debug()
+/// \brief The global error log stream.
 #define DXTC_LOG_ERROR DXTC_LOG.error()
+/// \brief The global /dev/null log stream that discards all input.
 #define DXTC_LOG_DEVNULL DXTC_LOG.devnull()
 
+/// \brief The info log stream on MPI rank 0, /dev/null on all other ranks.
 #define DXTC_LOG_INFO_0 (Dune::MPIHelper::getCommunication().rank() == 0 ? DXTC_LOG.info() : DXTC_LOG.devnull())
+/// \brief The debug log stream on MPI rank 0, /dev/null on all other ranks.
 #define DXTC_LOG_DEBUG_0 (Dune::MPIHelper::getCommunication().rank() == 0 ? DXTC_LOG.debug() : DXTC_LOG.devnull())
+/// \brief The error log stream on MPI rank 0, /dev/null on all other ranks.
 #define DXTC_LOG_ERROR_0 (Dune::MPIHelper::getCommunication().rank() == 0 ? DXTC_LOG.error() : DXTC_LOG.devnull())
 
 #endif // DUNE_XT_COMMON_LOGGING_HH

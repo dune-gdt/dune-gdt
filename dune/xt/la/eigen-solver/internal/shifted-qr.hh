@@ -8,6 +8,9 @@
 //   René Fritze    (2018 - 2020)
 //   Tobias Leibner (2017 - 2018, 2020)
 
+/// \file
+/// \brief Internal eigen-solver implementation using a shifted QR algorithm.
+
 #ifndef DUNE_XT_LA_EIGEN_SOLVER_INTERNAL_SHIFTEDQR_HH
 #define DUNE_XT_LA_EIGEN_SOLVER_INTERNAL_SHIFTEDQR_HH
 

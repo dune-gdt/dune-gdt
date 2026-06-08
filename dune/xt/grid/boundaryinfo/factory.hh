@@ -9,6 +9,9 @@
 //   René Fritze     (2016, 2018 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Factory creating boundary info instances from a configuration or type string.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_FACTORY_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_FACTORY_HH
 
@@ -21,6 +24,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Factory listing and creating the available BoundaryInfo implementations.
 template <class I>
 class BoundaryInfoFactory
 {

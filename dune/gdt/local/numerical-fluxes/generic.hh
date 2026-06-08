@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  generic.hh
+ * \brief Numerical flux implementation wrapping a user-provided lambda expression.
+ **/
 #ifndef DUNE_GDT_LOCAL_NUMERICAL_FLUXES_GENERIC_HH
 #define DUNE_GDT_LOCAL_NUMERICAL_FLUXES_GENERIC_HH
 
@@ -77,6 +81,9 @@ private:
 }; // class GenericNumericalFlux
 
 
+/**
+ * \brief Creates a GenericNumericalFlux from an x- and state-dependent flux function and a lambda expression.
+ */
 template <class I, size_t d, size_t m, class R>
 GenericNumericalFlux<I, d, m, R>
 make_generic_numerical_flux(const XT::Functions::FluxFunctionInterface<I, m, d, m, R>& flux,
@@ -86,6 +93,9 @@ make_generic_numerical_flux(const XT::Functions::FluxFunctionInterface<I, m, d, 
   return GenericNumericalFlux<I, d, m, R>(flux, func, param_type);
 }
 
+/**
+ * \brief Creates a GenericNumericalFlux from a state-dependent (x-independent) flux function and a lambda expression.
+ */
 template <class I, size_t d, size_t m, class R>
 GenericNumericalFlux<I, d, m, R>
 make_generic_numerical_flux(const XT::Functions::FunctionInterface<m, d, m, R>& flux,

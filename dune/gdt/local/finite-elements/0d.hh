@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  0d.hh
+ * \brief Local finite element on point-like (0d) reference elements and its basis, interpolation and coefficients.
+ **/
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_0D_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_0D_HH
 

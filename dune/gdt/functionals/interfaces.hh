@@ -9,6 +9,10 @@
 //   René Fritze     (2014, 2016, 2018)
 //   Tobias Leibner  (2014, 2017)
 
+/**
+ * \file  interfaces.hh
+ * \brief Interface for functionals acting on discrete function spaces.
+ **/
 #ifndef DUNE_GDT_FUNCTIONALS_INTERFACES_HH
 #define DUNE_GDT_FUNCTIONALS_INTERFACES_HH
 

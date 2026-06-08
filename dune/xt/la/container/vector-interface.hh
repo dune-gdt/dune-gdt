@@ -10,6 +10,9 @@
 //   René Fritze      (2013 - 2020)
 //   Tobias Leibner   (2014, 2017 - 2020)
 
+/// \file
+/// \brief CRTP interface for linear algebra vector containers.
+
 #ifndef DUNE_XT_LA_CONTAINER_VECTOR_INTERFACE_HH
 #define DUNE_XT_LA_CONTAINER_VECTOR_INTERFACE_HH
 
@@ -63,6 +66,7 @@ public:
 } // namespace internal
 
 
+/// \brief CRTP base interface for vector containers, providing access, arithmetic, norms and dot products.
 template <class Traits, class ScalarImp = typename Traits::ScalarType>
 class VectorInterface : public ContainerInterface<Traits, ScalarImp>
 {
@@ -733,6 +737,7 @@ struct VectorAbstractionBase
 } // namespace internal
 
 
+/// \brief Writes a VectorInterface to an output stream in human-readable form.
 template <class T, class S>
 std::ostream& operator<<(std::ostream& out, const VectorInterface<T, S>& vector)
 {

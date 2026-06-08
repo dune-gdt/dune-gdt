@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014)
 
+/**
+ * \file  l2.hh
+ * \brief Vector-based functionals assembling L^2 products against a given source function.
+ **/
 #ifndef DUNE_GDT_FUNCTIONALS_L2_HH
 #define DUNE_GDT_FUNCTIONALS_L2_HH
 

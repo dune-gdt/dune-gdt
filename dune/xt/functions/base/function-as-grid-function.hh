@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Wraps a (spatial) function as a grid function.
+
 #ifndef DUNE_XT_FUNCTIONS_BASE_FUNCTION_AS_GRID_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_BASE_FUNCTION_AS_GRID_FUNCTION_HH
 
@@ -23,6 +26,7 @@
 namespace Dune::XT::Functions {
 
 
+/// \brief Wraps a FunctionInterface as a GridFunctionInterface, evaluating it at the global coordinates.
 template <class E, size_t r, size_t rC, class R>
 class FunctionAsGridFunctionWrapper : public GridFunctionInterface<E, r, rC, R>
 {

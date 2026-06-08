@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  lax-friedrichs.hh
+ * \brief Lax-Friedrichs numerical flux for advection problems.
+ **/
 #ifndef DUNE_GDT_LOCAL_NUMERICAL_FLUXES_LAX_FRIEDRICHS_HH
 #define DUNE_GDT_LOCAL_NUMERICAL_FLUXES_LAX_FRIEDRICHS_HH
 
@@ -19,6 +23,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Implementation of NumericalFluxInterface using the Lax-Friedrichs numerical flux.
+ */
 template <class I, size_t d, size_t m, class R = double>
 class NumericalLaxFriedrichsFlux : public NumericalFluxInterface<I, d, m, R>
 {
@@ -95,6 +102,9 @@ private:
 }; // class NumericalLaxFriedrichsFlux
 
 
+/**
+ * \brief Creates a NumericalLaxFriedrichsFlux from an x- and state-dependent flux function.
+ */
 template <class I, size_t d, size_t m, class R>
 NumericalLaxFriedrichsFlux<I, d, m, R>
 make_numerical_lax_friedrichs_flux(const XT::Functions::FluxFunctionInterface<I, m, d, m, R>& flux)
@@ -102,6 +112,9 @@ make_numerical_lax_friedrichs_flux(const XT::Functions::FluxFunctionInterface<I,
   return NumericalLaxFriedrichsFlux<I, d, m, R>(flux);
 }
 
+/**
+ * \brief Creates a NumericalLaxFriedrichsFlux from a state-dependent (x-independent) flux function.
+ */
 template <class I, size_t d, size_t m, class R>
 NumericalLaxFriedrichsFlux<I, d, m, R>
 make_numerical_lax_friedrichs_flux(const XT::Functions::FunctionInterface<m, d, m, R>& flux)

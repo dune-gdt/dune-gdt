@@ -8,6 +8,10 @@
 //   Rene Milk      (2018)
 //   Tobias Leibner (2017)
 
+/**
+ * \file  discretevalued-grid-function.hh
+ * \brief Grid function holding discrete per-element values, e.g. for finite volume schemes.
+ **/
 #ifndef DUNE_GDT_TOOLS_DISCRETEVALUED_GRID_FUNCTION_HH
 #define DUNE_GDT_TOOLS_DISCRETEVALUED_GRID_FUNCTION_HH
 

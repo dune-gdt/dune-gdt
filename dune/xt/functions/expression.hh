@@ -11,6 +11,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014 - 2017, 2020)
 
+/// \file
+/// \brief Include aggregator for the expression-based function implementations.
+
 #ifndef DUNE_XT_FUNCTIONS_EXPRESSION_HH
 #define DUNE_XT_FUNCTIONS_EXPRESSION_HH
 

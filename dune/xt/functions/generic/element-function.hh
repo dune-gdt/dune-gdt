@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2020 - 2021)
 
+/// \file
+/// \brief Provides generic element functions defined by lambda expressions or std::functions.
+
 #ifndef DUNE_XT_FUNCTIONS_GENERIC_ELEMENT_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_GENERIC_ELEMENT_FUNCTION_HH
 

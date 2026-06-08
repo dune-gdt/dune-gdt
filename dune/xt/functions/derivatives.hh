@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Free functions to form divergence and gradient of element and grid functions.
+
 #ifndef DUNE_XT_FUNCTIONS_DERIVATIVES_HH
 #define DUNE_XT_FUNCTIONS_DERIVATIVES_HH
 
@@ -20,6 +23,7 @@
 namespace Dune::XT::Functions {
 
 
+/// \brief Returns the divergence of a (mutable) vector-valued element function.
 template <class E, class R>
 DivergenceElementFunction<ElementFunctionInterface<E, E::dimension, 1, R>>
 divergence(ElementFunctionInterface<E, E::dimension, 1, R>& func)
@@ -27,6 +31,7 @@ divergence(ElementFunctionInterface<E, E::dimension, 1, R>& func)
   return DivergenceElementFunction<ElementFunctionInterface<E, E::dimension, 1, R>>(func);
 }
 
+/// \brief Returns the divergence of a (const) vector-valued element function.
 template <class E, class R>
 DivergenceElementFunction<ElementFunctionInterface<E, E::dimension, 1, R>>
 divergence(const ElementFunctionInterface<E, E::dimension, 1, R>& func)
@@ -34,6 +39,7 @@ divergence(const ElementFunctionInterface<E, E::dimension, 1, R>& func)
   return DivergenceElementFunction<ElementFunctionInterface<E, E::dimension, 1, R>>(func);
 }
 
+/// \brief Returns the divergence of a vector-valued grid function.
 template <class E, class R>
 DivergenceGridFunction<GridFunctionInterface<E, E::dimension, 1, R>>
 divergence(const GridFunctionInterface<E, E::dimension, 1, R>& func)
@@ -42,12 +48,14 @@ divergence(const GridFunctionInterface<E, E::dimension, 1, R>& func)
 }
 
 
+/// \brief Returns the gradient of a scalar element function.
 template <class E, class R>
 GradientElementFunction<ElementFunctionInterface<E, 1, 1, R>> gradient(const ElementFunctionInterface<E, 1, 1, R>& func)
 {
   return GradientElementFunction<ElementFunctionInterface<E, 1, 1, R>>(func);
 }
 
+/// \brief Returns the gradient of a scalar grid function.
 template <class E, class R>
 GradientGridFunction<GridFunctionInterface<E, 1, 1, R>> gradient(const GridFunctionInterface<E, 1, 1, R>& func)
 {

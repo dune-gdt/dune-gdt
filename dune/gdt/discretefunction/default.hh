@@ -11,6 +11,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014, 2016 - 2017)
 
+/**
+ * \file  default.hh
+ * \brief Default (const and mutable) discrete function as a grid function backed by a space and DoF vector.
+ **/
 #ifndef DUNE_GDT_DISCRETEFUNCTION_DEFAULT_HH
 #define DUNE_GDT_DISCRETEFUNCTION_DEFAULT_HH
 
@@ -44,6 +48,9 @@ struct AssertArgumentsOfConstDiscreteFunction
 } // namespace internal
 
 
+/**
+ * \brief Read-only discrete function, a grid function defined by a space and an immutable DoF vector.
+ */
 template <class Vector, class GridView, size_t range_dim = 1, size_t range_dim_cols = 1, class RangeField = double>
 class ConstDiscreteFunction
   : public XT::Functions::GridFunctionInterface<
@@ -181,6 +188,9 @@ private:
 }; // class ConstDiscreteFunction
 
 
+/**
+ * \brief Creates a ConstDiscreteFunction from a space and an immutable DoF vector.
+ */
 template <class V, class GV, size_t r, size_t rC, class R>
 ConstDiscreteFunction<typename XT::LA::VectorInterface<V>::derived_type, GV, r, rC, R>
 make_discrete_function(const SpaceInterface<GV, r, rC, R>& space,
@@ -192,6 +202,9 @@ make_discrete_function(const SpaceInterface<GV, r, rC, R>& space,
 }
 
 
+/**
+ * \brief Mutable discrete function, a grid function defined by a space and a (owned or referenced) DoF vector.
+ */
 template <class Vector, class GridView, size_t range_dim = 1, size_t range_dim_cols = 1, class RangeField = double>
 class DiscreteFunction
   : XT::Common::StorageProvider<Vector>
@@ -286,6 +299,9 @@ private:
 }; // class DiscreteFunction
 
 
+/**
+ * \brief Creates a DiscreteFunction referencing an existing mutable DoF vector.
+ */
 template <class V, class GV, size_t r, size_t rC, class R>
 DiscreteFunction<typename XT::LA::VectorInterface<V>::derived_type, GV, r, rC, R>
 make_discrete_function(const SpaceInterface<GV, r, rC, R>& space,
@@ -296,6 +312,9 @@ make_discrete_function(const SpaceInterface<GV, r, rC, R>& space,
 }
 
 
+/**
+ * \brief Creates a DiscreteFunction taking ownership of a moved-in DoF vector.
+ */
 template <class V, class GV, size_t r, size_t rC, class R>
 DiscreteFunction<typename XT::LA::VectorInterface<V>::derived_type, GV, r, rC, R>
 make_discrete_function(const SpaceInterface<GV, r, rC, R>& space,
@@ -307,6 +326,9 @@ make_discrete_function(const SpaceInterface<GV, r, rC, R>& space,
 }
 
 
+/**
+ * \brief Creates a DiscreteFunction with a freshly allocated DoF vector of the explicitly given vector type.
+ */
 template <class VectorType, class GV, size_t r, size_t rC, class R>
 DiscreteFunction<VectorType, GV, r, rC, R> make_discrete_function(const SpaceInterface<GV, r, rC, R>& space,
                                                                   const std::string nm = "dune.gdt.discretefunction")
@@ -315,6 +337,9 @@ DiscreteFunction<VectorType, GV, r, rC, R> make_discrete_function(const SpaceInt
 }
 
 
+/**
+ * \brief Creates a DiscreteFunction with a freshly allocated default DoF vector for the range field.
+ */
 template <class GV, size_t r, size_t rC, class R>
 DiscreteFunction<typename XT::LA::Container<R>::VectorType, GV, r, rC, R>
 make_discrete_function(const SpaceInterface<GV, r, rC, R>& space, const std::string nm = "dune.gdt.discretefunction")

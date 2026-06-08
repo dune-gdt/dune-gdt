@@ -9,6 +9,9 @@
 //   René Fritze     (2015 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2020 - 2021)
 
+/// \file
+/// \brief Defines the DXTC_DEBUG_ONLY and DXTC_MPI_ONLY macros to mark conditionally unused entities.
+
 #ifndef DXTC_UNUSED_HH
 #define DXTC_UNUSED_HH
 

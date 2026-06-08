@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  print.hh
+ * \brief Re-exports the print and repr utilities from dune-xt into the GDT namespace.
+ **/
 #ifndef DUNE_GDT_PRINT_HH
 #define DUNE_GDT_PRINT_HH
 

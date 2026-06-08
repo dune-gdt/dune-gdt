@@ -10,6 +10,9 @@
 //   René Fritze      (2014 - 2016, 2018 - 2019)
 //   Tobias Leibner   (2014, 2016 - 2017, 2020)
 
+/// \file
+/// \brief Aggregator header for the common (built-in) vector and matrix containers.
+
 #ifndef DUNE_XT_LA_CONTAINER_COMMON_HH
 #define DUNE_XT_LA_CONTAINER_COMMON_HH
 

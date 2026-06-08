@@ -8,6 +8,10 @@
 //   Felix Schindler (2015 - 2018)
 //   René Fritze     (2016, 2018)
 
+/**
+ * \file  reinterpret.hh
+ * \brief Reinterpret a discrete function as a localizable function on a different (target) grid view.
+ **/
 #ifndef DUNE_GDT_DISCRETEFUNCTION_REINTERPRET_HH
 #define DUNE_GDT_DISCRETEFUNCTION_REINTERPRET_HH
 

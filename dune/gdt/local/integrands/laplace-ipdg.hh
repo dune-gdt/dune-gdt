@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  laplace-ipdg.hh
+ * \brief Local integrands for the consistency terms of the Laplace operator in IPDG discretizations.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_LAPLACE_IPDG_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_LAPLACE_IPDG_HH
 

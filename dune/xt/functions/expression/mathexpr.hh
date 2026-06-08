@@ -19,6 +19,9 @@ This software comes with absolutely no warranty.
 
 */
 
+/// \file
+/// \brief Bundled third-party (Yann Ollivier) math expression parser used by the expression functions.
+
 #ifndef DUNE_XT_FUNCTIONS_NONPARAMETRIC_EXPRESSION_MATHEXPRESSION_HH
 #define DUNE_XT_FUNCTIONS_NONPARAMETRIC_EXPRESSION_MATHEXPRESSION_HH
 
@@ -49,6 +52,7 @@ const double ErrVal = DBL_MAX;
 
 // Class definitions for operations
 
+/// \brief Named variable bound to a value, part of the bundled math expression parser.
 class RVar
 {
 public:
@@ -106,6 +110,7 @@ typedef ROperation* PROperation;
 class RFunction;
 typedef RFunction* PRFunction;
 
+/// \brief Parsed expression tree that can be evaluated and differentiated (part of the bundled math expression parser).
 class ROperation
 {
   pfoncld* pinstr;
@@ -164,6 +169,7 @@ public:
   ROperation Substitute(const RVar&, const ROperation&) const;
 };
 
+/// \brief User-defined function over one or more variables, part of the bundled math expression parser.
 class RFunction
 {
   double* buf;

@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  products.hh
+ * \brief Free functions to create L2, H1 semi and H1 bilinear forms (products) on a grid view.
+ **/
 #ifndef DUNE_GDT_PRODUCTS_HH
 #define DUNE_GDT_PRODUCTS_HH
 
@@ -22,6 +26,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Creates the (optionally weighted) L2 bilinear form for vector-valued functions on the given grid view.
+ */
 template <size_t r, // <- needs to be specified manually
           class GridViewType>
 auto L2Product(const GridViewType& grid_view,
@@ -35,6 +42,9 @@ auto L2Product(const GridViewType& grid_view,
   return product;
 }
 
+/**
+ * \brief Creates the (optionally weighted) L2 bilinear form for scalar functions on the given grid view.
+ */
 template <class GridViewType>
 auto L2Product(const GridViewType& grid_view,
                XT::Functions::GridFunction<XT::Grid::extract_entity_t<GridViewType>> weight = 1.,
@@ -44,6 +54,9 @@ auto L2Product(const GridViewType& grid_view,
 }
 
 
+/**
+ * \brief Creates the (optionally weighted) H1 semi bilinear form for vector-valued functions on the given grid view.
+ */
 template <size_t r, // <- needs to be specified manually
           class GridViewType>
 auto H1SemiProduct(const GridViewType& grid_view,
@@ -59,6 +72,9 @@ auto H1SemiProduct(const GridViewType& grid_view,
   return product;
 }
 
+/**
+ * \brief Creates the (optionally weighted) H1 semi bilinear form for scalar functions on the given grid view.
+ */
 template <class GridViewType>
 auto H1SemiProduct(const GridViewType& grid_view,
                    XT::Functions::GridFunction<XT::Grid::extract_entity_t<GridViewType>> weight = 1.,
@@ -68,6 +84,9 @@ auto H1SemiProduct(const GridViewType& grid_view,
 }
 
 
+/**
+ * \brief Creates the H1 bilinear form for vector-valued functions using separate L2 and H1 semi weights.
+ */
 template <size_t r, // <- needs to be specified manually
           class GridViewType>
 auto H1Product(const GridViewType& grid_view,
@@ -85,6 +104,10 @@ auto H1Product(const GridViewType& grid_view,
   return product;
 }
 
+/**
+ * \brief Creates the (optionally weighted) H1 bilinear form for vector-valued functions whose range dimension equals
+ * the grid dimension.
+ */
 template <size_t r, // <- needs to be specified manually
           class GridViewType>
 std::enable_if_t<r == GridViewType::dimension, BilinearForm<GridViewType, r, 1, r, 1>>
@@ -100,6 +123,10 @@ H1Product(const GridViewType& grid_view,
   return product;
 }
 
+/**
+ * \brief Creates the (optionally weighted) H1 bilinear form for vector-valued functions whose range dimension differs
+ *        from the grid dimension.
+ */
 template <size_t r, // <- needs to be specified manually
           class GridViewType>
 std::enable_if_t<r != GridViewType::dimension, BilinearForm<GridViewType, r, 1, r, 1>>
@@ -115,6 +142,9 @@ H1Product(const GridViewType& grid_view,
   return product;
 }
 
+/**
+ * \brief Creates the H1 bilinear form for scalar functions using separate L2 and H1 semi weights.
+ */
 template <class GridViewType>
 auto H1Product(const GridViewType& grid_view,
                XT::Functions::GridFunction<XT::Grid::extract_entity_t<GridViewType>> l2_weight,
@@ -124,6 +154,9 @@ auto H1Product(const GridViewType& grid_view,
   return H1Product<1>(grid_view, l2_weight, h1_semi_weight, over_integrate);
 }
 
+/**
+ * \brief Creates the (optionally weighted) H1 bilinear form for scalar functions on the given grid view.
+ */
 template <class GridViewType>
 auto H1Product(const GridViewType& grid_view,
                XT::Functions::GridFunction<XT::Grid::extract_entity_t<GridViewType>> weight = 1.,

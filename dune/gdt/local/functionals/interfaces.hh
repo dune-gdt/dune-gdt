@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2016 - 2017)
 
+/**
+ * \file  interfaces.hh
+ * \brief Interfaces for local functionals associated with grid elements and intersections.
+ **/
 #ifndef DUNE_GDT_LOCAL_FUNCTIONALS_INTERFACES_HH
 #define DUNE_GDT_LOCAL_FUNCTIONALS_INTERFACES_HH
 

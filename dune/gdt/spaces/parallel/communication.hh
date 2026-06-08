@@ -9,6 +9,10 @@
 //   René Fritze     (2014, 2016 - 2018)
 //   Tobias Leibner  (2014, 2016)
 
+/**
+ * \file  communication.hh
+ * \brief Selects the appropriate DoF communicator for a space depending on whether the grid is parallel.
+ **/
 #ifndef DUNE_GDT_SPACES_PARALLEL_COMMUNICATION_HH
 #define DUNE_GDT_SPACES_PARALLEL_COMMUNICATION_HH
 
@@ -24,6 +28,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Chooses the DoF communicator type for a grid view and provides its creation/preparation; this sequential
+ *        default uses a no-op communicator.
+ */
 template <class ViewImp,
           bool is_parallel =
               Dune::XT::UseParallelCommunication<typename XT::Grid::extract_grid<ViewImp>::type::Communication>::value>
@@ -47,6 +55,10 @@ struct DofCommunicationChooser
 #if HAVE_MPI
 
 
+/**
+ * \brief Parallel specialization of DofCommunicationChooser, providing an OwnerOverlapCopyCommunication and setting up
+ *        its parallel index set from a space.
+ */
 template <class ViewImp>
 struct DofCommunicationChooser<ViewImp, true>
 {

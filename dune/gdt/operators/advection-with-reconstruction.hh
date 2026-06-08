@@ -8,6 +8,10 @@
 //   Rene Milk      (2017 - 2018)
 //   Tobias Leibner (2017)
 
+/**
+ * \file  advection-with-reconstruction.hh
+ * \brief Operators combining an advection operator with a preceding reconstruction of the source.
+ **/
 #ifndef DUNE_GDT_OPERATORS_ADVECTION_WITH_RECONSTRUCTION_HH
 #define DUNE_GDT_OPERATORS_ADVECTION_WITH_RECONSTRUCTION_HH
 
@@ -19,6 +23,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Applies an advection operator to a reconstruction of the source obtained from a reconstruction operator.
+ */
 template <class AdvectionOperatorImp, class ReconstructionOperatorImp>
 class AdvectionWithReconstructionOperator
   : public OperatorInterface<typename AdvectionOperatorImp::AGV,
@@ -122,6 +129,9 @@ protected:
 }; // class AdvectionWithReconstructionOperator<...>
 
 
+/**
+ * \brief Applies an advection operator to a pointwise reconstructed function obtained from a reconstruction operator.
+ */
 template <class AdvectionOperatorImp, class ReconstructionOperatorImp>
 class AdvectionWithPointwiseReconstructionOperator
   : public OperatorInterface<typename AdvectionOperatorImp::AGV,

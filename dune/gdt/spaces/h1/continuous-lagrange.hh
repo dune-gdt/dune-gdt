@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  continuous-lagrange.hh
+ * \brief Continuous H^1-conforming Lagrange finite element space.
+ **/
 #ifndef DUNE_GDT_SPACES_H1_CONTINUOUS_LAGRANGE_HH
 #define DUNE_GDT_SPACES_H1_CONTINUOUS_LAGRANGE_HH
 

@@ -10,6 +10,9 @@
 //   Sven Kaulmann   (2011 - 2012)
 //   Tobias Leibner  (2014, 2016, 2020)
 
+/// \file
+/// \brief Provides FixedMap, a std::map-like container of fixed size, and its iterators.
+
 #ifndef DUNE_XT_COMMON_FIXED_MAP_HH
 #define DUNE_XT_COMMON_FIXED_MAP_HH
 
@@ -242,6 +245,7 @@ private:
 namespace std {
 
 
+//! writes a FixedMap to an output stream via FixedMap::print
 template <class key_imp, class T, std::size_t nin>
 inline ostream& operator<<(ostream& out, const Dune::XT::Common::FixedMap<key_imp, T, nin>& map)
 {

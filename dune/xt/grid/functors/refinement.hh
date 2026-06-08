@@ -9,6 +9,9 @@
 //   René Fritze     (2012, 2015 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Provides a functor and helper to refine grid entities exceeding a maximum entity volume.
+
 #ifndef DUNE_XT_GRID_FUNCTORS_REFINEMENT_HH
 #define DUNE_XT_GRID_FUNCTORS_REFINEMENT_HH
 

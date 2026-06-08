@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Defines the FluxFunctionInterface for functions f(x, u) which can be partially localized to an element in x.
+
 #ifndef DUNE_XT_FUNCTIONS_INTERFACES_FLUX_FUNCTION_HH
 #define DUNE_XT_FUNCTIONS_INTERFACES_FLUX_FUNCTION_HH
 

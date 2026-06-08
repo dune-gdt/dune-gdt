@@ -7,6 +7,9 @@
 // Authors:
 //   Felix Schindler (2021)
 
+/// \file
+/// \brief Boundary info determining boundary types from registered grid functions.
+
 #ifndef DUNE_XT_GRID_BOUNDARYINFO_FUNCTIONBASED_HH
 #define DUNE_XT_GRID_BOUNDARYINFO_FUNCTIONBASED_HH
 
@@ -32,6 +35,7 @@ namespace Dune::XT::Grid {
 #  pragma GCC diagnostic ignored "-Wdelete-non-virtual-dtor"
 #endif
 
+/// \brief Boundary info that assigns boundary types based on registered grid functions evaluated at the boundary.
 template <class I>
 class FunctionBasedBoundaryInfo : public BoundaryInfo<I>
 {

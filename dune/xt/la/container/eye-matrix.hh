@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Factory functions to create or fill identity matrices for arbitrary matrix types.
+
 #ifndef DUNE_XT_LA_CONTAINER_EYE_MATRIX_HH
 #define DUNE_XT_LA_CONTAINER_EYE_MATRIX_HH
 
@@ -34,6 +37,7 @@ typename std::enable_if<Common::is_matrix<MatrixType>::value, void>::type set_di
 } // namespace internal
 
 
+/// \brief Creates a rows x cols identity matrix of the given LA matrix type (optionally with a sparsity pattern).
 template <class MatrixType>
 typename std::enable_if<is_matrix<MatrixType>::value, MatrixType>::type
 eye_matrix(const size_t rows, const size_t cols, const SparsityPatternDefault& pattern = SparsityPatternDefault())
@@ -43,6 +47,7 @@ eye_matrix(const size_t rows, const size_t cols, const SparsityPatternDefault& p
   return mat;
 }
 
+/// \brief Overwrites the given matrix with the identity (zeros off-diagonal, ones on the diagonal).
 template <class MatrixType>
 typename std::enable_if<Common::is_matrix<MatrixType>::value, void>::type eye_matrix(MatrixType& matrix)
 {
@@ -50,6 +55,7 @@ typename std::enable_if<Common::is_matrix<MatrixType>::value, void>::type eye_ma
   internal::set_diagonal_to_one(matrix);
 }
 
+/// \brief Creates a rows x cols identity matrix for a generic (non-LA) matrix type.
 template <class MatrixType>
 typename std::enable_if<Common::is_matrix<MatrixType>::value && !is_matrix<MatrixType>::value, MatrixType>::type
 eye_matrix(const size_t rows, const size_t cols, const SparsityPatternDefault& /*pattern*/ = SparsityPatternDefault())
@@ -62,6 +68,7 @@ eye_matrix(const size_t rows, const size_t cols, const SparsityPatternDefault& /
 }
 
 
+/// \brief Creates a square size x size identity matrix of the given matrix type.
 template <class MatrixType>
 typename std::enable_if<Common::is_matrix<MatrixType>::value, MatrixType>::type
 eye_matrix(const size_t size, const SparsityPatternDefault& pattern = SparsityPatternDefault())

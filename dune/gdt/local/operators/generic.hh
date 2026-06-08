@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  generic.hh
+ * \brief Local operators wrapping a user-provided lambda expression.
+ **/
 #ifndef DUNE_GDT_LOCAL_OPERATORS_GENERIC_HH
 #define DUNE_GDT_LOCAL_OPERATORS_GENERIC_HH
 

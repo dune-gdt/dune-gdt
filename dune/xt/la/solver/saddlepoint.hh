@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief Solver for saddle point systems via the Schur complement.
+
 #ifndef DUNE_XT_LA_SOLVER_ISTL_SADDLEPOINT_HH
 #define DUNE_XT_LA_SOLVER_ISTL_SADDLEPOINT_HH
 
@@ -34,6 +37,7 @@ namespace Dune::XT::LA {
 
 // Solver for saddle point system (A B1; B2^T C) (u; p) = (f; g) using the Schur complement, i.e., solve (B2^T A^{-1} B1
 // - C) p = B2^T A^{-1} f - g first and then u = A^{-1} (F - B1 p)
+/// \brief Solves a saddle point system (A B1; B2^T C) (u; p) = (f; g) using the Schur complement.
 template <class VectorType, class MatrixType, class CommunicatorType = SequentialCommunication>
 class SaddlePointSolver
 {

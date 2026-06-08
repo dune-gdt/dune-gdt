@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2019)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Declares extern-template instantiations of the cube grid provider factory methods for the Python bindings.
+
 #ifndef DUNE_XT_GRID_GRIDPROVIDER_CUBE_LIB_HH
 #define DUNE_XT_GRID_GRIDPROVIDER_CUBE_LIB_HH
 

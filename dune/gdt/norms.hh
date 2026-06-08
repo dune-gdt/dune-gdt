@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  norms.hh
+ * \brief Free functions to compute L2, H1 semi and H1 norms of grid functions.
+ **/
 #ifndef DUNE_GDT_NORMS_HH
 #define DUNE_GDT_NORMS_HH
 
@@ -17,6 +21,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Computes the (optionally weighted) L2 norm of a vector-valued grid function over the given grid view.
+ */
 template <class GridViewType, size_t r>
 double l2_norm(const GridViewType& grid_view,
                const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_t<GridViewType>, r>& function,
@@ -26,6 +33,9 @@ double l2_norm(const GridViewType& grid_view,
   return L2Product<r>(grid_view, weight, over_integrate).norm(function);
 }
 
+/**
+ * \brief Computes the (optionally weighted) L2 norm of a scalar grid function over the given grid view.
+ */
 template <class GridViewType>
 double l2_norm(const GridViewType& grid_view,
                XT::Functions::GridFunction<XT::Grid::extract_entity_t<GridViewType>> function,
@@ -36,6 +46,9 @@ double l2_norm(const GridViewType& grid_view,
 }
 
 
+/**
+ * \brief Computes the (optionally weighted) H1 semi norm of a vector-valued grid function over the given grid view.
+ */
 template <class GridViewType, size_t r>
 double h1_semi_norm(const GridViewType& grid_view,
                     const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_t<GridViewType>, r>& function,
@@ -47,6 +60,9 @@ double h1_semi_norm(const GridViewType& grid_view,
   return H1SemiProduct<r>(grid_view, weight, over_integrate).norm(function);
 }
 
+/**
+ * \brief Computes the (optionally weighted) H1 semi norm of a scalar grid function over the given grid view.
+ */
 template <class GridViewType>
 double h1_semi_norm(const GridViewType& grid_view,
                     XT::Functions::GridFunction<XT::Grid::extract_entity_t<GridViewType>> function,
@@ -59,6 +75,10 @@ double h1_semi_norm(const GridViewType& grid_view,
 }
 
 
+/**
+ * \brief Computes the (optionally weighted) H1 norm of a vector-valued grid function whose range dimension equals the
+ *        grid dimension.
+ */
 template <class GridViewType, size_t r>
 std::enable_if_t<r == GridViewType::dimension, double>
 h1_norm(const GridViewType& grid_view,
@@ -69,6 +89,10 @@ h1_norm(const GridViewType& grid_view,
   return H1Product<r>(grid_view, weight, over_integrate).norm(function);
 }
 
+/**
+ * \brief Computes the (optionally weighted) H1 norm of a vector-valued grid function whose range dimension differs from
+ *        the grid dimension.
+ */
 template <class GridViewType, size_t r>
 std::enable_if_t<r != GridViewType::dimension, double>
 h1_norm(const GridViewType& grid_view,
@@ -79,6 +103,9 @@ h1_norm(const GridViewType& grid_view,
   return H1Product<r>(grid_view, weight, over_integrate).norm(function);
 }
 
+/**
+ * \brief Computes the H1 norm of a vector-valued grid function using separate weights for the L2 and H1 semi parts.
+ */
 template <class GridViewType, size_t r>
 double h1_norm(const GridViewType& grid_view,
                const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_t<GridViewType>, r>& function,
@@ -91,6 +118,9 @@ double h1_norm(const GridViewType& grid_view,
   return H1Product<r>(grid_view, l2_weight, h1_semi_weight, over_integrate).norm(function);
 }
 
+/**
+ * \brief Computes the (optionally weighted) H1 norm of a scalar grid function over the given grid view.
+ */
 template <class GridViewType>
 double h1_norm(const GridViewType& grid_view,
                XT::Functions::GridFunction<XT::Grid::extract_entity_t<GridViewType>> function,
@@ -100,6 +130,9 @@ double h1_norm(const GridViewType& grid_view,
   return H1Product(grid_view, weight, over_integrate).norm(function);
 }
 
+/**
+ * \brief Computes the H1 norm of a scalar grid function using separate weights for the L2 and H1 semi parts.
+ */
 template <class GridViewType>
 double h1_norm(const GridViewType& grid_view,
                XT::Functions::GridFunction<XT::Grid::extract_entity_t<GridViewType>> function,

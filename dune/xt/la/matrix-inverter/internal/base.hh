@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2020)
 //   Tobias Leibner  (2018, 2020)
 
+/// \file
+/// \brief Internal base class and helpers shared by the matrix-inverter implementations.
+
 #ifndef DUNE_XT_LA_MATRIX_INVERTER_BASE_HH
 #define DUNE_XT_LA_MATRIX_INVERTER_BASE_HH
 

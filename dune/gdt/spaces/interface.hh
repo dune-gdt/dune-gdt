@@ -11,6 +11,10 @@
 //   Sven Kaulmann   (2014)
 //   Tobias Leibner  (2014, 2016 - 2017)
 
+/**
+ * \file  interface.hh
+ * \brief Interface for discrete function spaces, tying together mapper, basis and finite elements.
+ **/
 #ifndef DUNE_GDT_SPACES_INTERFACE_HH
 #define DUNE_GDT_SPACES_INTERFACE_HH
 
@@ -46,6 +50,10 @@ template <class V, class GV, size_t r, size_t rC, class R>
 class ConstDiscreteFunction;
 
 
+/**
+ * \brief Interface for discrete function spaces, providing grid view, mapper, basis, finite elements and
+ *        functionality for adaptation and parallel communication.
+ */
 template <class GridView, size_t range_dim = 1, size_t range_dim_columns = 1, class RangeField = double>
 class SpaceInterface : public XT::Common::WithLogger<SpaceInterface<GridView, range_dim, range_dim_columns, RangeField>>
 {
@@ -381,6 +389,9 @@ private:
 }; // class SpaceInterface
 
 
+/**
+ * \brief Writes a short textual representation of a space (type and number of DoFs) to an output stream.
+ */
 template <class GV, size_t r, size_t rC, class R>
 std::ostream& operator<<(std::ostream& out, const SpaceInterface<GV, r, rC, R>& space)
 {

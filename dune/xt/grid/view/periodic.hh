@@ -9,6 +9,9 @@
 //   René Fritze     (2015 - 2020)
 //   Tobias Leibner  (2015 - 2018, 2020 - 2021)
 
+/// \file
+/// \brief Provides a PeriodicGridView that wraps an arbitrary grid view and adds periodic boundaries.
+
 #ifndef DUNE_XT_GRID_VIEW_PERIODIC_HH
 #define DUNE_XT_GRID_VIEW_PERIODIC_HH
 
@@ -925,6 +928,7 @@ public:
 }; // class PeriodicGridView
 
 
+/// \brief Creates a PeriodicGridView wrapping the given base grid view, with explicit codim iterator support flag.
 template <bool codim_iters_provided, class GL>
 PeriodicGridView<GL, codim_iters_provided>
 make_periodic_grid_view(const GL& base_grid_view,
@@ -933,6 +937,7 @@ make_periodic_grid_view(const GL& base_grid_view,
   return PeriodicGridView<GL, codim_iters_provided>(base_grid_view, periodic_directions);
 }
 
+/// \brief Creates a PeriodicGridView wrapping the given base grid view.
 template <class GL>
 PeriodicGridView<GL>
 make_periodic_grid_view(const GL& base_grid_view,
@@ -948,6 +953,7 @@ make_periodic_grid_view(const GL& base_grid_view,
 template <class GL, bool c = false>
 using PeriodicGridLayer = PeriodicGridView<GL, c>;
 
+/// \brief Creates a PeriodicGridLayer wrapping the given base grid layer, with explicit codim iterator support flag.
 template <bool codim_iters_provided, class GP>
 PeriodicGridView<GP, codim_iters_provided>
 make_periodic_grid_layer(const GP& base_grid_view,
@@ -956,6 +962,7 @@ make_periodic_grid_layer(const GP& base_grid_view,
   return PeriodicGridView<GP, codim_iters_provided>(base_grid_view, periodic_directions);
 }
 
+/// \brief Creates a PeriodicGridLayer wrapping the given base grid layer.
 template <class GP>
 PeriodicGridView<GP>
 make_periodic_grid_layer(const GP& base_grid_view,

@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2016 - 2017, 2019 - 2020)
 
+/// \file
+/// \brief Grid function representing the composition (outer of inner) of two functions.
+
 #ifndef DUNE_XT_FUNCTIONS_COMPOSITION_HH
 #define DUNE_XT_FUNCTIONS_COMPOSITION_HH
 
@@ -182,6 +185,9 @@ struct ElementFunctionChooser
 } // namespace internal
 
 
+/// \brief Grid function representing the composition outer_function(inner_function(.)), evaluating the inner function
+///        and feeding its value (located in the outer grid view via an element search, unless the outer function is a
+///        global FunctionInterface) into the outer function.
 template <class InnerType, class OuterType, class OuterGridViewType = typename Dune::YaspGrid<1>::LeafGridView>
 class CompositionFunction
   : public GridFunctionInterface<typename InnerType::ElementType,

@@ -11,6 +11,9 @@
 //   René Fritze     (2012 - 2013, 2015 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2014, 2016, 2020)
 
+/// \file
+/// \brief Provides a grid provider factory and convenience functions for grids read from DGF files.
+
 #ifndef DUNE_XT_GRID_GRIDPROVIDER_DGF_HH
 #define DUNE_XT_GRID_GRIDPROVIDER_DGF_HH
 
@@ -31,12 +34,14 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Returns the identifier string of the DGF grid provider.
 static inline std::string dgf_gridprovider_id()
 {
   return "xt.grid.gridprovider.dgf";
 }
 
 
+/// \brief Returns the default configuration for the DGF grid provider.
 static inline Common::Configuration dgf_gridprovider_default_config()
 {
   Common::Configuration config;
@@ -46,6 +51,7 @@ static inline Common::Configuration dgf_gridprovider_default_config()
 }
 
 
+/// \brief Factory creating grid providers from DGF (Dune Grid Format) files.
 template <class GridType>
 class DgfGridProviderFactory
 {
@@ -78,14 +84,16 @@ public:
 }; // class DgfGridProviderFactory
 
 
+/// \brief Creates a grid from a DGF file given by filename.
 template <class GridType>
 auto make_dgf_grid(const std::string& filename, MPIHelper::MPICommunicator mpi_comm = MPIHelper::getCommunicator())
 {
   static_assert(is_grid<GridType>::value);
-  return DgfGridProviderFactory<GridType>(filename, mpi_comm);
+  return DgfGridProviderFactory<GridType>::create(filename, mpi_comm);
 }
 
 
+/// \brief Creates a grid from a DGF file specified by a configuration object.
 template <class GridType>
 auto make_dgf_grid(const Common::Configuration& cfg = DgfGridProviderFactory<GridType>::default_config(),
                    MPIHelper::MPICommunicator mpi_comm = MPIHelper::getCommunicator())

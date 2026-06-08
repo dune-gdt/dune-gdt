@@ -9,6 +9,9 @@
 //   René Fritze     (2017 - 2020)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Provides ParameterType, Parameter and the ParametricInterface for parameter-dependent objects.
+
 #ifndef DUNE_XT_COMMON_PARAMETER_HH
 #define DUNE_XT_COMMON_PARAMETER_HH
 
@@ -173,6 +176,7 @@ extern template class SimpleDict<std::vector<double>>;
 } // namespace internal
 
 
+/// \brief Describes the type of a Parameter as a set of named keys with their respective value sizes.
 class ParameterType : public internal::SimpleDict<size_t>
 {
   using BaseType = internal::SimpleDict<size_t>;
@@ -225,9 +229,11 @@ public:
 }; // class ParameterType
 
 
+//! writes a ParameterType (its keys and value sizes) to an output stream
 std::ostream& operator<<(std::ostream& out, const ParameterType& param_type);
 
 
+/// \brief A named collection of (vector-valued) parameter values, e.g. mapping "t" or "mu" to their current values.
 class Parameter : public internal::SimpleDict<std::vector<double>>
 {
   using BaseType = internal::SimpleDict<std::vector<double>>;
@@ -274,9 +280,11 @@ public:
 }; // class Parameter
 
 
+//! writes a Parameter (its keys and values) to an output stream
 std::ostream& operator<<(std::ostream& out, const Parameter& mu);
 
 
+/// \brief Interface for parameter-dependent objects, exposing their ParameterType and parsing/validating Parameters.
 class ParametricInterface
 {
 public:

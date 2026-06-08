@@ -8,6 +8,9 @@
 //   Felix Schindler (2020)
 //   René Fritze     (2020)
 
+/// \file
+/// \brief Grid function returning the elementwise minimum of another function.
+
 #ifndef DUNE_XT_FUNCTIONS_ELEMENTWISE_MINIMUM_HH
 #define DUNE_XT_FUNCTIONS_ELEMENTWISE_MINIMUM_HH
 
@@ -83,6 +86,7 @@ public:
 } // namespace internal
 
 
+/// \brief Scalar grid function that is constant on each element and equals the minimum of another function there.
 /// \todo Consider searching the elements corners!
 template <class SomeFunction>
 class ElementwiseMinimumFunction : public GridFunctionInterface<typename SomeFunction::E>

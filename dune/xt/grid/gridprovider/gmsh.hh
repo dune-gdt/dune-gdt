@@ -11,6 +11,9 @@
 //   René Fritze     (2012 - 2013, 2015 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2014 - 2016, 2020)
 
+/// \file
+/// \brief Provides a grid provider factory and convenience functions for grids read from gmsh files.
+
 #ifndef DUNE_XT_GRID_GRIDPROVIDER_GMSH_HH
 #define DUNE_XT_GRID_GRIDPROVIDER_GMSH_HH
 
@@ -30,12 +33,14 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Returns the identifier string of the gmsh grid provider.
 static inline std::string gmsh_gridprovider_id()
 {
   return "xt.grid.gridprovider.gmsh";
 }
 
 
+/// \brief Returns the default configuration for the gmsh grid provider.
 static inline Common::Configuration gmsh_gridprovider_default_config()
 {
   Common::Configuration config;
@@ -48,7 +53,7 @@ static inline Common::Configuration gmsh_gridprovider_default_config()
 template <class GridType>
 class GmshGridProviderFactory;
 
-//! Gmsh grid creation relies on unstructured grid factory -> disable yasp
+/// \brief Specialization disabling gmsh grid creation for YaspGrid (gmsh requires an unstructured grid factory).
 template <int dim, class Coordinates>
 class GmshGridProviderFactory<Dune::YaspGrid<dim, Coordinates>>
 {
@@ -73,6 +78,7 @@ public:
 }; // class GmshGridProviderFactory<Dune::YaspGrid<...>>
 
 
+/// \brief Factory creating grid providers from gmsh (.msh) mesh files.
 template <class GridType>
 class GmshGridProviderFactory
 {
@@ -111,6 +117,7 @@ public:
 }; // class GmshGridProviderFactory
 
 
+/// \brief Creates a grid from a gmsh file given by filename.
 template <class GridType>
 auto make_gmsh_grid(const std::string& filename, MPIHelper::MPICommunicator mpi_comm = MPIHelper::getCommunicator())
 {
@@ -119,6 +126,7 @@ auto make_gmsh_grid(const std::string& filename, MPIHelper::MPICommunicator mpi_
 }
 
 
+/// \brief Creates a grid from a gmsh file specified by a configuration object.
 template <class GridType>
 auto make_gmsh_grid(const Common::Configuration& cfg = GmshGridProviderFactory<GridType>::default_config(),
                     MPIHelper::MPICommunicator mpi_comm = MPIHelper::getCommunicator())

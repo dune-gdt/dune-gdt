@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  identity.hh
+ * \brief Operator representing the identity map from a discrete function space onto itself.
+ **/
 #ifndef DUNE_GDT_OPERATORS_IDENTITY_HH
 #define DUNE_GDT_OPERATORS_IDENTITY_HH
 
@@ -23,6 +27,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Operator that maps the source onto itself, i.e. the identity on a discrete function space.
+ */
 template <class GV, size_t r = 1, size_t rC = 1, class F = double, class M = XT::LA::IstlRowMajorSparseMatrix<F>>
 class IdentityOperator : public OperatorInterface<GV, r, rC, r, rC, F, M, GV, GV>
 {

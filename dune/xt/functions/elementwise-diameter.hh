@@ -8,6 +8,9 @@
 //   Felix Schindler (2020)
 //   René Fritze     (2020)
 
+/// \file
+/// \brief Grid function returning the diameter of each grid element.
+
 #ifndef DUNE_XT_FUNCTIONS_ELEMENTWISE_DIAMETER_HH
 #define DUNE_XT_FUNCTIONS_ELEMENTWISE_DIAMETER_HH
 
@@ -17,6 +20,7 @@
 namespace Dune::XT::Functions {
 
 
+/// \brief Scalar grid function that is constant on each element and equals that element's diameter.
 template <class E>
 class ElementwiseDiameterFunction : public GridFunctionInterface<E>
 {

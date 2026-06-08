@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2017 - 2020)
 
+/// \file
+/// \brief Provides the CommonDenseVector implementation of the VectorInterface together with its backend storage.
+
 #ifndef DUNE_XT_LA_CONTAINER_COMMON_VECTOR_DENSE_HH
 #define DUNE_XT_LA_CONTAINER_COMMON_VECTOR_DENSE_HH
 

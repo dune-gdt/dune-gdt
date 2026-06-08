@@ -9,6 +9,9 @@
 //   René Fritze     (2011 - 2012, 2014 - 2020)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Storage providers giving generic (const) access to objects held by reference, pointer or value.
+
 #ifndef DUNE_XT_COMMON_MEMORY_HH
 #define DUNE_XT_COMMON_MEMORY_HH
 
@@ -389,6 +392,7 @@ private:
 }; // class ConstStorageProvider
 
 
+//! creates a ConstStorageProvider owning a T constructed from the given arguments
 template <typename T, typename... Args>
 ConstStorageProvider<T> make_const_storage(Args&&... args)
 {
@@ -480,6 +484,7 @@ private:
 }; // class StorageProvider
 
 
+//! creates a StorageProvider owning a T constructed from the given arguments
 template <typename T, typename... Args>
 StorageProvider<T> make_storage(Args&&... args)
 {
@@ -555,6 +560,7 @@ private:
 }; // class ConstSharedStorageProvider
 
 
+//! creates a ConstSharedStorageProvider owning a T constructed from the given arguments
 template <typename T, typename... Args>
 ConstSharedStorageProvider<T> make_const_shared_storage(Args&&... args)
 {
@@ -565,6 +571,7 @@ ConstSharedStorageProvider<T> make_const_shared_storage(Args&&... args)
 //! dumps kernel stats into a file
 void mem_usage(std::string filename);
 
+//! dumps kernel memory-usage stats into the default profiler output file
 void mem_usage();
 
 

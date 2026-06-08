@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2016 - 2018)
 
+/**
+ * \file  matrix.hh
+ * \brief Operators backed by an assembled matrix (ConstMatrixOperator and MatrixOperator).
+ **/
 #ifndef DUNE_GDT_OPERATORS_MATRIX_HH
 #define DUNE_GDT_OPERATORS_MATRIX_HH
 

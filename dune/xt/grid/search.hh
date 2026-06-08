@@ -9,6 +9,9 @@
 //   René Fritze     (2013 - 2016, 2018 - 2020)
 //   Tobias Leibner  (2014 - 2017, 2020)
 
+/// \file
+/// \brief Provides facilities to search a grid layer for the entities containing given global points.
+
 #ifndef DUNE_XT_GRID_SEARCH_HH
 #define DUNE_XT_GRID_SEARCH_HH
 
@@ -30,6 +33,7 @@
 namespace Dune::XT::Grid {
 
 
+/// \brief Base class for entity searches, providing the common entity and coordinate types for a grid layer and codim.
 template <class GridLayerType, int codim = 0>
 class EntitySearchBase
 {
@@ -43,6 +47,8 @@ public:
 }; // class EntitySearchBase
 
 
+/// \brief Helper that checks whether a global point lies inside (or coincides with) an entity's geometry of a given
+///        codimension.
 template <int codim>
 struct CheckInside
 {
@@ -247,6 +253,7 @@ private:
 }; // class FallbackEntityInlevelSearch
 
 
+/// \brief Searches for entities containing given points by descending the grid hierarchy from a start level.
 template <class GridLayerType>
 class EntityHierarchicSearch : public EntitySearchBase<GridLayerType>
 {
@@ -302,6 +309,7 @@ private:
 }; // class EntityHierarchicSearch
 
 
+/// \brief Creates an EntityInlevelSearch for the given grid view and codimension.
 template <class GV, int codim = 0>
 EntityInlevelSearch<GV, codim> make_entity_in_level_search(const GV& grid_view)
 {
@@ -309,6 +317,7 @@ EntityInlevelSearch<GV, codim> make_entity_in_level_search(const GV& grid_view)
 }
 
 
+/// \brief Creates an EntityHierarchicSearch for the given grid view.
 template <class GV>
 EntityHierarchicSearch<GV> make_entity_hierarchic_search(const GV& grid_view)
 {

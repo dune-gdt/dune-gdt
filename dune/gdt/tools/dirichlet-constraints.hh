@@ -10,6 +10,10 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2014, 2016, 2018)
 
+/**
+ * \file  dirichlet-constraints.hh
+ * \brief Element functor collecting the degrees of freedom on the Dirichlet boundary and applying constraints.
+ **/
 #ifndef DUNE_GDT_SPACES_TOOLS_DIRICHLET_CONSTRAINTS_HH
 #define DUNE_GDT_SPACES_TOOLS_DIRICHLET_CONSTRAINTS_HH
 
@@ -44,6 +48,10 @@ struct setUnion
 } // namespace internal
 
 
+/**
+ * \brief Element functor that gathers the global degrees of freedom located on the Dirichlet boundary and applies the
+ *        corresponding Dirichlet constraints to matrices and vectors.
+ */
 template <class IntersectionType, class SpaceType>
 class DirichletConstraints
   : public Dune::XT::Grid::ElementFunctor<typename SpaceType::GridViewType>
@@ -213,6 +221,9 @@ private:
 }; // class DirichletConstraints
 
 
+/**
+ * \brief Creates DirichletConstraints for the given space and boundary info.
+ */
 template <class GV, size_t r, size_t rC, class R>
 DirichletConstraints<XT::Grid::extract_intersection_t<GV>, SpaceInterface<GV, r, rC, R>>
 make_dirichlet_constraints(const SpaceInterface<GV, r, rC, R>& space,

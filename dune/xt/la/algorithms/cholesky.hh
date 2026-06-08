@@ -8,6 +8,9 @@
 //   René Fritze    (2018 - 2020)
 //   Tobias Leibner (2017 - 2018, 2020)
 
+/// \file
+/// \brief Cholesky (LL^T) and tridiagonal LDL^T factorizations and corresponding solvers.
+
 #ifndef DUNE_XT_LA_ALGORITHMS_CHOLESKY_HH
 #define DUNE_XT_LA_ALGORITHMS_CHOLESKY_HH
 
@@ -296,12 +299,14 @@ struct LDLTSolver
 } // namespace internal
 
 
+/// \brief Computes the Cholesky (LL^T) factorization of a symmetric positive definite matrix in place.
 template <class MatrixType>
 typename std::enable_if_t<Common::is_matrix<MatrixType>::value, void> cholesky(MatrixType& A)
 {
   internal::CholeskySolver<MatrixType>::cholesky(A);
 } // void solve_lower_triangular(...)
 
+/// \brief Solves L L^T x = rhs in place given the Cholesky factor L (result overwrites rhs).
 template <class MatrixType, class VectorType>
 typename std::enable_if_t<Common::is_matrix<MatrixType>::value && Common::is_vector<VectorType>::value, void>
 solve_cholesky_factorized(const MatrixType& L, VectorType& rhs)
@@ -312,6 +317,7 @@ solve_cholesky_factorized(const MatrixType& L, VectorType& rhs)
 } // void solve_lower_triangular(...)
 
 
+/// \brief Computes the LDL^T factorization of a symmetric tridiagonal matrix in place (given diagonal and subdiagonal).
 template <class FirstVectorType, class SecondVectorType>
 typename std::enable_if_t<Common::is_vector<FirstVectorType>::value && Common::is_vector<SecondVectorType>::value, void>
 tridiagonal_ldlt(FirstVectorType& diag, SecondVectorType& subdiag)
@@ -320,6 +326,7 @@ tridiagonal_ldlt(FirstVectorType& diag, SecondVectorType& subdiag)
 } // void tridiagonal_ldlt(...)
 
 
+/// \brief Solves a tridiagonal system in place given its LDL^T factorization (rhs may be a vector or matrix).
 template <class FirstVectorType, class SecondVectorType, class RhsType>
 typename std::enable_if_t<Common::is_vector<FirstVectorType>::value && Common::is_vector<SecondVectorType>::value
                               && (Common::is_vector<RhsType>::value || Common::is_matrix<RhsType>::value),

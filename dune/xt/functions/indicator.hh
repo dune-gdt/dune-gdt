@@ -10,6 +10,9 @@
 //   Tim Keil        (2018)
 //   Tobias Leibner  (2017, 2019 - 2020)
 
+/// \file
+/// \brief Indicator (piecewise constant on axis-aligned subdomains) function and grid function.
+
 #ifndef DUNE_XT_FUNCTIONS_INDICATOR_HH
 #define DUNE_XT_FUNCTIONS_INDICATOR_HH
 
@@ -24,6 +27,7 @@
 namespace Dune::XT::Functions {
 
 
+/// \brief Grid function that sums the values of all axis-aligned subdomains containing an element's center.
 template <class E, size_t r, size_t rC = 1, class R = double>
 class IndicatorGridFunction : public GridFunctionInterface<E, r, rC, R>
 {
@@ -199,6 +203,7 @@ private:
 }; // class IndicatorGridFunction
 
 
+/// \brief Function that sums the values of all axis-aligned subdomains containing the evaluation point.
 template <size_t d, size_t r = 1, size_t rC = 1, class R = double>
 class IndicatorFunction : public FunctionInterface<d, r, rC, R>
 {

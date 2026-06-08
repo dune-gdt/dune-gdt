@@ -9,6 +9,9 @@
 //   René Fritze     (2019 - 2020)
 //   Tobias Leibner  (2020)
 
+/// \file
+/// \brief Internal generalized eigen-solver implementation backed by LAPACK/LAPACKE.
+
 #ifndef DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_INTERNAL_LAPACKE_HH
 #define DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_INTERNAL_LAPACKE_HH
 

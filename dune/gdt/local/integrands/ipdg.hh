@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  ipdg.hh
+ * \brief Local penalty integrands for interior penalty discontinuous Galerkin (IPDG) discretizations.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_IPDG_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_IPDG_HH
 
@@ -41,6 +45,9 @@ static std::function<double(const Intersection&)> default_intersection_diameter(
 } // namespace internal
 
 
+/**
+ * \brief Local quaternary intersection integrand computing the weighted IPDG penalty term on inner intersections.
+ */
 template <class I>
 class InnerPenalty : public LocalQuaternaryIntersectionIntegrandInterface<I>
 {
@@ -186,6 +193,9 @@ private:
 }; // InnerPenalty
 
 
+/**
+ * \brief Local binary intersection integrand computing the weighted IPDG penalty term on boundary intersections.
+ */
 template <class I>
 class BoundaryPenalty : public LocalBinaryIntersectionIntegrandInterface<I>
 {

@@ -8,5 +8,13 @@ A subset of the API is exposed as Python-bindings using [pybind11](https://githu
 ```{toctree}
 tutorials
 examples
+benchmarks
 bibliography
+```
+
+```{toctree}
+:caption: C++ API Reference
+:maxdepth: 1
+
+cpp_api/index
 ```

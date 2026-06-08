@@ -9,6 +9,9 @@
 //   René Fritze     (2018 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/// \file
+/// \brief A resizable array of vectors, each annotated with a parameter note.
+
 #ifndef DUNE_XT_LA_CONTAINER_VECTOR_ARRAY_LIST_HH
 #define DUNE_XT_LA_CONTAINER_VECTOR_ARRAY_LIST_HH
 
@@ -22,6 +25,7 @@
 namespace Dune::XT::LA {
 
 
+/// \brief A dynamic array of vectors, each annotated with a Common::Parameter note.
 template <class Vector>
 class ListVectorArray
 {
