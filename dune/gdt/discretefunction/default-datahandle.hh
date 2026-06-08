@@ -8,6 +8,10 @@
 //   Rene Milk      (2018)
 //   Tobias Leibner (2017)
 
+/**
+ * \file  default-datahandle.hh
+ * \brief Communication data handle for the parallel exchange of discrete function DoFs.
+ **/
 #ifndef DUNE_GDT_DISCRETEFUNCTION_DATAHANDLE_HH
 #define DUNE_GDT_DISCRETEFUNCTION_DATAHANDLE_HH
 
@@ -19,6 +23,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Communication data handle to exchange the DoFs of a discrete function across process boundaries.
+ */
 template <class DiscreteFunctionType>
 class DiscreteFunctionDataHandle
   : public Dune::CommDataHandleIF<DiscreteFunctionDataHandle<DiscreteFunctionType>,

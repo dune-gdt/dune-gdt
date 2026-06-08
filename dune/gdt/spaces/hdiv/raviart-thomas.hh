@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2019 - 2020)
 
+/**
+ * \file  raviart-thomas.hh
+ * \brief H(div)-conforming Raviart-Thomas finite element space.
+ **/
 #ifndef DUNE_GDT_SPACES_HDIV_RAVIART_THOMAS_HH
 #define DUNE_GDT_SPACES_HDIV_RAVIART_THOMAS_HH
 

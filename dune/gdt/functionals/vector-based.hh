@@ -10,6 +10,10 @@
 //   Tim Keil        (2017)
 //   Tobias Leibner  (2019 - 2020)
 
+/**
+ * \file  vector-based.hh
+ * \brief Functionals represented by a vector, assembled from local functionals by walking a grid view.
+ **/
 #ifndef DUNE_GDT_FUNCTIONALS_VECTOR_BASED_HH
 #define DUNE_GDT_FUNCTIONALS_VECTOR_BASED_HH
 

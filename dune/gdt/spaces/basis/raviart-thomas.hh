@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  raviart-thomas.hh
+ * \brief Global basis for Raviart-Thomas finite element spaces.
+ **/
 #ifndef DUNE_GDT_SPACES_BASIS_RAVIART_THOMAS_HH
 #define DUNE_GDT_SPACES_BASIS_RAVIART_THOMAS_HH
 

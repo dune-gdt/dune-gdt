@@ -9,6 +9,10 @@
 //   René Fritze     (2017 - 2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  datahandles.hh
+ * \brief Communication data handles and gather/scatter functors for exchanging space DoF data between MPI processes.
+ **/
 #ifndef DUNE_GDT_SPACES_PARALLEL_DATAHANDLES_HH
 #define DUNE_GDT_SPACES_PARALLEL_DATAHANDLES_HH
 
@@ -125,6 +129,10 @@ private:
 };
 
 
+/**
+ * \brief Generic Dune communication data handle exchanging a space's DoF data, delegating the actual packing to a
+ *        gather/scatter functor and a communication descriptor.
+ */
 template <class GV,
           size_t r,
           size_t rD,
@@ -213,6 +221,10 @@ private:
 };
 
 
+/**
+ * \brief Gather/scatter adaptor communicating DoF values entrywise, requiring an identical function space structure on
+ *        sender and receiver side.
+ */
 template <typename GatherScatter>
 class DataGatherScatter
 {
@@ -266,6 +278,10 @@ private:
 };
 
 
+/**
+ * \brief Gather/scatter adaptor communicating DoF values entrywise while also passing the grid entity to the underlying
+ *        gather/scatter functor.
+ */
 template <typename GatherScatter>
 class DataEntityGatherScatter
 {
@@ -316,6 +332,9 @@ private:
   GatherScatter gather_scatter_;
 };
 
+/**
+ * \brief Gather/scatter functor reducing communicated values by taking the per-DoF minimum across processes.
+ */
 class MinGatherScatter
 {
 public:
@@ -334,6 +353,9 @@ public:
   }
 };
 
+/**
+ * \brief Data handle communicating a space's DoF data and reducing it to the per-DoF minimum across processes.
+ */
 template <class GV, size_t r, size_t rD, class R, class VectorType>
 class MinDataHandle
   : public SpaceDataHandle<GV,

@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  discontinuous-lagrange.hh
+ * \brief Discontinuous L^2 Lagrange finite element space.
+ **/
 #ifndef DUNE_GDT_SPACES_L2_DISCONTINUOUS_LAGRANGE_HH
 #define DUNE_GDT_SPACES_L2_DISCONTINUOUS_LAGRANGE_HH
 

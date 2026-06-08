@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  hyperbolic.hh
+ * \brief Tools related to hyperbolic conservation laws.
+ **/
 #ifndef DUNE_GDT_TOOLS_HYPERBOLIC_HH
 #define DUNE_GDT_TOOLS_HYPERBOLIC_HH
 

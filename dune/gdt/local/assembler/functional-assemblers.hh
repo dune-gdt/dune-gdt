@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  functional-assemblers.hh
+ * \brief Grid functors assembling local functionals into a global vector.
+ **/
 #ifndef DUNE_GDT_LOCAL_ASSEMBLER_FUNCTIONAL_ASSEMBLERS_HH
 #define DUNE_GDT_LOCAL_ASSEMBLER_FUNCTIONAL_ASSEMBLERS_HH
 
@@ -21,6 +25,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Assembles a local element functional into a global vector while iterating over the grid elements.
+ */
 template <class Vector, class GridView, size_t r, size_t rC, class R = double, class SpaceGridView = GridView>
 class LocalElementFunctionalAssembler : public XT::Grid::ElementFunctor<GridView>
 {
@@ -97,6 +104,9 @@ private:
 }; // class LocalElementFunctionalAssembler
 
 
+/**
+ * \brief Assembles a local intersection functional into a global vector while iterating over the grid intersections.
+ */
 template <class Vector, class GridView, size_t r, size_t rC, class R = double, class SpaceGridView = GridView>
 class LocalIntersectionFunctionalAssembler : public XT::Grid::IntersectionFunctor<GridView>
 {

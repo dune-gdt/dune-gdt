@@ -9,6 +9,10 @@
 //   Rene Milk       (2016 - 2018)
 //   Tobias Leibner  (2016 - 2017)
 
+/**
+ * \file  fractional-step.hh
+ * \brief Fractional step (operator splitting) time stepping schemes.
+ **/
 #ifndef DUNE_GDT_TIMESTEPPER_FRACTIONAL_STEP_HH
 #define DUNE_GDT_TIMESTEPPER_FRACTIONAL_STEP_HH
 

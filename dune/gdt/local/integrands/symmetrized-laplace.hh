@@ -7,6 +7,10 @@
 // Authors:
 //   Tobias Leibner  (2014, 2016 - 2018)
 
+/**
+ * \file  symmetrized-laplace.hh
+ * \brief Local binary element integrand for the (weighted) symmetrized-gradient Laplace operator.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_SYMMETRIZED_LAPLACE_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_SYMMETRIZED_LAPLACE_HH
 

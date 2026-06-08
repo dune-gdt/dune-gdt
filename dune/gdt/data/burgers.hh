@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  burgers.hh
+ * \brief Problem data for the Burgers equation test case.
+ **/
 #ifndef DUNE_GDT_DATA_BURGERS_HH
 #define DUNE_GDT_DATA_BURGERS_HH
 

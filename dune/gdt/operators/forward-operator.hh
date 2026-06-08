@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  forward-operator.hh
+ * \brief Operator assembled from local operators that can only be applied (no matrix representation required).
+ **/
 #ifndef DUNE_GDT_OPERATORS_FORWARD_OPERATOR_HH
 #define DUNE_GDT_OPERATORS_FORWARD_OPERATOR_HH
 
@@ -27,6 +31,9 @@ template <class AGV, size_t s_r, size_t s_rC, size_t r_r, size_t r_rC, class F, 
 class Operator; // include is below
 
 
+/**
+ * \brief Operator built up from local element and intersection operators, applied by walking the assembly grid view.
+ */
 template <class AssemblyGridView,
           size_t s_r = 1,
           size_t s_rC = 1,
@@ -368,6 +375,9 @@ protected:
 }; // class ForwardOperatorAssembler
 
 
+/**
+ * \brief Creates an empty ForwardOperator from a separate assembly grid view and range space.
+ */
 template <class AssemblyGridViewType,
           class RGV,
           size_t r_r,

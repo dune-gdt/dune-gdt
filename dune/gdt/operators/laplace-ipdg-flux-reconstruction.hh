@@ -8,6 +8,10 @@
 //   Felix Schindler (2019 - 2020)
 //   Tobias Leibner  (2019 - 2020)
 
+/**
+ * \file  laplace-ipdg-flux-reconstruction.hh
+ * \brief Operator reconstructing the diffusive flux of an interior penalty DG discretization of the Laplace operator.
+ **/
 #ifndef DUNE_GDT_OPERATORS_LAPLACE_IPDG_FLUX_RECONSTRUCTION_HH
 #define DUNE_GDT_OPERATORS_LAPLACE_IPDG_FLUX_RECONSTRUCTION_HH
 

@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  finite-volume.hh
+ * \brief Finite volume skeleton space (one constant DoF per intersection) and its factory functions.
+ **/
 #ifndef DUNE_GDT_SPACES_SKELETON_FINITE_VOLUME_HH
 #define DUNE_GDT_SPACES_SKELETON_FINITE_VOLUME_HH
 
@@ -31,6 +35,10 @@ class FiniteVolumeSkeletonSpace
 };
 
 
+/**
+ * \brief Finite volume skeleton space of scalar (r == rC == 1), piecewise constant discrete functions living on the
+ *        grid intersections.
+ */
 template <class GV, class R>
 class FiniteVolumeSkeletonSpace<GV, 1, 1, R> : public SpaceInterface<GV, 1, 1, R>
 {
@@ -166,24 +174,37 @@ private:
 }; // class FiniteVolumeSkeletonSpace< ..., 1, 1 >
 
 
+/**
+ * \brief Creates a FiniteVolumeSkeletonSpace with given range dimensions and range field type over a grid view.
+ */
 template <size_t r, size_t rC, class R, class GV>
 FiniteVolumeSkeletonSpace<GV, r, rC, R> make_finite_volume_skeleton_space(const GV& grid_view)
 {
   return FiniteVolumeSkeletonSpace<GV, r, rC, R>(grid_view);
 }
 
+/**
+ * \brief Creates a FiniteVolumeSkeletonSpace with given range dimensions and double range field over a grid view.
+ */
 template <size_t r, size_t rC, class GV>
 FiniteVolumeSkeletonSpace<GV, r, rC, double> make_finite_volume_skeleton_space(const GV& grid_view)
 {
   return FiniteVolumeSkeletonSpace<GV, r, rC, double>(grid_view);
 }
 
+/**
+ * \brief Creates a scalar-columns FiniteVolumeSkeletonSpace with given range dimension and double range field over a
+ *        grid view.
+ */
 template <size_t r, class GV>
 FiniteVolumeSkeletonSpace<GV, r, 1, double> make_finite_volume_skeleton_space(const GV& grid_view)
 {
   return FiniteVolumeSkeletonSpace<GV, r, 1, double>(grid_view);
 }
 
+/**
+ * \brief Creates a scalar FiniteVolumeSkeletonSpace with double range field over a grid view.
+ */
 template <class GV>
 FiniteVolumeSkeletonSpace<GV, 1, 1, double> make_finite_volume_skeleton_space(const GV& grid_view)
 {

@@ -9,6 +9,11 @@
 //   René Fritze     (2016, 2018)
 //   Tobias Leibner  (2014, 2016 - 2017)
 
+/**
+ * \file  interfaces.hh
+ * \brief Interfaces for bilinear forms and operators (BilinearFormInterface, ForwardOperatorInterface,
+ * OperatorInterface).
+ **/
 #ifndef DUNE_GDT_OPERATORS_INTERFACES_HH
 #define DUNE_GDT_OPERATORS_INTERFACES_HH
 
@@ -55,6 +60,9 @@ template <class AGV, size_t s_r, size_t s_rC, size_t r_r, size_t r_rC, class F, 
 class MatrixOperator;
 
 
+/**
+ * \brief Interface for bilinear forms acting on a range and a source grid function (providing apply2()).
+ */
 template <class SourceGridView,
           size_t source_dim = 1,
           size_t source_dim_cols = 1,
@@ -157,6 +165,9 @@ public:
 }; // class BilinearFormInterface
 
 
+/**
+ * \brief Interface for operators which can only be applied to a source (providing apply() into a range vector).
+ */
 template <class SGV,
           size_t s_r = 1,
           size_t s_rC = 1,

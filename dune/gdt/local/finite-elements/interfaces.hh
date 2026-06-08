@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  interfaces.hh
+ * \brief Interfaces for local finite elements and their basis, interpolation, coefficients and families.
+ **/
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_INTERFACES_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_INTERFACES_HH
 
@@ -38,6 +42,9 @@ template <class Vector, class GridView>
 class LocalDofVector;
 
 
+/**
+ * \brief Interface for the basis (shape functions) of a local finite element on a reference element.
+ */
 template <class DomainField, size_t domain_dim, class RangeField, size_t range_dim, size_t range_dim_columns = 1>
 class LocalFiniteElementBasisInterface
 {
@@ -90,6 +97,9 @@ public:
 }; // class LocalFiniteElementBasisInterface
 
 
+/**
+ * \brief Interface for the interpolation (computation of DoFs from a local function) of a local finite element.
+ */
 template <class DomainField, size_t domain_dim, class RangeField, size_t range_dim, size_t range_dim_columns = 1>
 class LocalFiniteElementInterpolationInterface
 {
@@ -150,6 +160,9 @@ private:
 }; // class LocalFiniteElementInterpolationInterface
 
 
+/**
+ * \brief Interface for the coefficients (local keys associating DoFs with subentities) of a local finite element.
+ */
 template <class DomainField, size_t domain_dim>
 class LocalFiniteElementCoefficientsInterface
 {
@@ -251,6 +264,9 @@ for (size_t codim = 0; codim < codim_to_subentity_index_to_key_indices_map.size(
 }; // class LocalFiniteElementCoefficientsInterface
 
 
+/**
+ * \brief Interface for a local finite element, combining its basis, coefficients and interpolation.
+ */
 template <class DomainField, size_t domain_dim, class RangeField, size_t range_dim, size_t range_dim_columns = 1>
 class LocalFiniteElementInterface
 {
@@ -344,6 +360,9 @@ for (size_t ii = 0; ii < lagrange_points.size(); ++ii)
 }; // class LocalFiniteElementInterface
 
 
+/**
+ * \brief Interface for a family of local finite elements, providing one per geometry type and order.
+ */
 /// \todo allow for variable orders
 template <class DomainField, size_t domain_dim, class RangeField, size_t range_dim, size_t range_dim_columns = 1>
 class LocalFiniteElementFamilyInterface

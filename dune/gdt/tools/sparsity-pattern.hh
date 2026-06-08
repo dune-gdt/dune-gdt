@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  sparsity-pattern.hh
+ * \brief Tools for computing the sparsity pattern of matrices arising from discrete spaces.
+ **/
 #ifndef DUNE_GDT_TOOLS_SPARSITY_PATTERN_HH
 #define DUNE_GDT_TOOLS_SPARSITY_PATTERN_HH
 

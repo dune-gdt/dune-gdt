@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2018)
 
+/**
+ * \file  localizable-functional.hh
+ * \brief Grid-walker based functional that accumulates local element functionals applied to a fixed source.
+ **/
 #ifndef DUNE_GDT_FUNCTIONALS_LOCALIZABLE_FUNCTIONAL_HH
 #define DUNE_GDT_FUNCTIONALS_LOCALIZABLE_FUNCTIONAL_HH
 
@@ -22,6 +26,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Functional evaluated by walking a grid view and accumulating local element functionals on a fixed source.
+ */
 template <class GridView,
           size_t range_dim = 1,
           size_t range_dim_cols = 1,
@@ -101,6 +108,9 @@ protected:
 }; // class LocalizableFunctionalBase
 
 
+/**
+ * \brief Creates a LocalizableFunctionalBase for the given assembly grid view and source function.
+ */
 template <class GV, size_t r, size_t rC, class R>
 std::enable_if_t<XT::Grid::is_view<GV>::value, LocalizableFunctionalBase<GV, r, rC, R>> make_localizable_functional(
     GV assembly_grid_view, const XT::Functions::GridFunctionInterface<XT::Grid::extract_entity_t<GV>, r, rC, R>& source)

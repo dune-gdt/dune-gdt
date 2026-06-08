@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2018)
 
+/**
+ * \file  doerfler-marking.hh
+ * \brief Doerfler marking strategy for selecting grid elements to refine and coarsen.
+ **/
 #ifndef DUNE_GDT_TOOLS_DOERFLER_MARKING_HH
 #define DUNE_GDT_TOOLS_DOERFLER_MARKING_HH
 
@@ -21,6 +25,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Doerfler marking: selects the elements with the largest contributions for refinement and the smallest for
+ *        coarsening, based on the given squared local error indicators.
+ */
 template <class V>
 std::pair<std::set<size_t>, std::set<size_t>>
 doerfler_marking(const XT::LA::VectorInterface<V>& squared_local_indicators,

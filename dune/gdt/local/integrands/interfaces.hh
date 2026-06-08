@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014)
 
+/**
+ * \file  interfaces.hh
+ * \brief Interfaces for local integrands over grid elements and intersections.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_INTERFACES_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_INTERFACES_HH
 
@@ -545,6 +549,14 @@ protected:
 }; // class LocalBinaryIntersectionIntegrandInterface
 
 
+/**
+ * Interface for integrands in integrals over grid intersections, which depend on four arguments (the test and ansatz
+ * bases on both the inside and the outside of the intersection, as used in coupling/DG operators).
+ *
+ * \note Regarding SMP: the integrand is copied for each thread, so
+ *       - no shared mutable state between copies to be thread safe, but
+ *       - local mutable state is ok.
+ */
 template <class Intersection,
           size_t test_range_dim = 1,
           size_t test_range_dim_cols = 1,

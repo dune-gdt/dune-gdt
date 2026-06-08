@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  raviart-thomas.hh
+ * \brief Interpolation of (grid) functions into a Raviart-Thomas discrete function space.
+ **/
 #ifndef DUNE_GDT_INTERPOLATIONS_RAVIART_THOMAS_HH
 #define DUNE_GDT_INTERPOLATIONS_RAVIART_THOMAS_HH
 
@@ -231,6 +235,10 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
 } // ... raviart_thomas_interpolation()
 
 
+/**
+ * \brief Interpolates a grid function into a Raviart-Thomas space [uses target.space().grid_view() as
+ *        interpolation_grid_view].
+ */
 template <class E, size_t d, class R, class V, class GV>
 void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
                                   const DiscreteFunction<V, GV, d, 1, R>& target,
@@ -240,6 +248,10 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
 }
 
 
+/**
+ * \brief Interpolates a grid function into a Raviart-Thomas space [creates a suitable target function of the explicitly
+ *        given vector type].
+ */
 template <class VectorType, // <- has to be specified manually
           class GV,
           size_t d,
@@ -258,6 +270,10 @@ raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1,
   return target;
 }
 
+/**
+ * \brief Interpolates a grid function into a Raviart-Thomas space [creates a suitable target function with a default
+ *        vector type].
+ */
 template <class GV, size_t d, class R, class E, class IGV>
 auto raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
                                   const SpaceInterface<GV, d, 1, R>& target_space,
@@ -268,6 +284,10 @@ auto raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
 }
 
 
+/**
+ * \brief Interpolates a grid function into a Raviart-Thomas space [creates a suitable target function of the explicitly
+ *        given vector type, uses target_space.grid_view() as interpolation_grid_view].
+ */
 template <class VectorType, // <- has to be specified manually
           class GV,
           size_t d,
@@ -280,6 +300,10 @@ auto raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
   return raviart_thomas_interpolation<VectorType>(source, target_space, target_space.grid_view(), param);
 }
 
+/**
+ * \brief Interpolates a grid function into a Raviart-Thomas space [creates a suitable target function with a default
+ *        vector type, uses target_space.grid_view() as interpolation_grid_view].
+ */
 template <class GV, size_t d, class R, class E>
 auto raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, d, 1, R>& source,
                                   const SpaceInterface<GV, d, 1, R>& target_space,

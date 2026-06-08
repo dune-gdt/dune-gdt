@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  operator-fd-jacobian-assemblers.hh
+ * \brief Grid functors assembling finite-difference approximations of operator jacobians into a matrix.
+ **/
 #ifndef DUNE_GDT_LOCAL_ASSEMBLER_OPERATOR_FD_JACOBIAN_ASSEMBLERS_HH
 #define DUNE_GDT_LOCAL_ASSEMBLER_OPERATOR_FD_JACOBIAN_ASSEMBLERS_HH
 

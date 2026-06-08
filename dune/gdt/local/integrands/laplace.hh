@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  laplace.hh
+ * \brief Local binary element integrand for the (weighted) Laplace operator.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_LAPLACE_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_LAPLACE_HH
 

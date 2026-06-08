@@ -7,6 +7,10 @@
 // Authors:
 //   Tobias Leibner (2019)
 
+/**
+ * \file  stokes.hh
+ * \brief Problem data for the Stokes equation test case.
+ **/
 #ifndef DUNE_GDT_DATA_STOKES_HH
 #define DUNE_GDT_DATA_STOKES_HH
 

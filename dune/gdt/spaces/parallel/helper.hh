@@ -9,6 +9,10 @@
 //   René Fritze     (2017 - 2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  helper.hh
+ * \brief Helper for setting up the parallel DoF index set (owner/ghost partitioning) of a space for MPI communication.
+ **/
 #ifndef DUNE_GDT_SPACES_PARALLEL_HELPER_HH
 #define DUNE_GDT_SPACES_PARALLEL_HELPER_HH
 
@@ -30,6 +34,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Determines DoF ownership and ghost information for a space and sets up the parallel index set required for MPI
+ *        communication.
+ */
 template <class GV, size_t r, size_t rD, class R>
 class GenericParallelHelper
 {

@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  advection-dg.hh
+ * \brief Discontinuous Galerkin operator for the discretization of advection (hyperbolic) problems.
+ **/
 #ifndef DUNE_GDT_OPERATORS_ADVECTION_DG_HH
 #define DUNE_GDT_OPERATORS_ADVECTION_DG_HH
 
@@ -38,16 +42,25 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Default value for the nu_1 parameter of the artificial viscosity shock capturing.
+ */
 static inline double advection_dg_artificial_viscosity_default_nu_1()
 {
   return 0.2;
 }
 
+/**
+ * \brief Default value for the alpha_1 parameter of the artificial viscosity shock capturing.
+ */
 static inline double advection_dg_artificial_viscosity_default_alpha_1()
 {
   return 1.0;
 }
 
+/**
+ * \brief Default value for the solution component used by the artificial viscosity shock capturing.
+ */
 static inline size_t advection_dg_artificial_viscosity_default_component()
 {
   return 0;
@@ -192,6 +205,9 @@ protected:
 }; // class AdvectionDgOperator
 
 
+/**
+ * \brief Creates an AdvectionDgOperator with the matrix type specified manually as first template argument.
+ */
 template <class MatrixType, // <- has to be specified manually
           class AGV,
           size_t m,
@@ -222,6 +238,9 @@ auto make_advection_dg_operator(
                                                               logging_state);
 }
 
+/**
+ * \brief Creates an AdvectionDgOperator using the default ISTL sparse matrix type.
+ */
 template <class AGV, size_t m, class F, class RGV, class SGV>
 auto make_advection_dg_operator(
     const AGV& assembly_grid_view,

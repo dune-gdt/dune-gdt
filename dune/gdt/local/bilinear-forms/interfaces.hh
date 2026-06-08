@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  interfaces.hh
+ * \brief Interface for local bilinear forms.
+ **/
 #ifndef DUNE_GDT_LOCAL_BILINEAR_FORMS_INTERFACES_HH
 #define DUNE_GDT_LOCAL_BILINEAR_FORMS_INTERFACES_HH
 

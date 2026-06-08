@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  boundary.hh
+ * \brief Interpolation of functions into discrete spaces restricted to (parts of) the boundary.
+ **/
 #ifndef DUNE_GDT_INTERPOLATIONS_BOUNDARY_HH
 #define DUNE_GDT_INTERPOLATIONS_BOUNDARY_HH
 

@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  linear-advection-upwind.hh
+ * \brief Local integrands for the upwind flux of a linear advection operator.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_LINEAR_ADVECTION_UPWIND_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_LINEAR_ADVECTION_UPWIND_HH
 

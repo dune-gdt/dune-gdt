@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  euler.hh
+ * \brief Tools related to the Euler equations of gas dynamics.
+ **/
 #ifndef DUNE_GDT_TOOLS_EULER_HH
 #define DUNE_GDT_TOOLS_EULER_HH
 

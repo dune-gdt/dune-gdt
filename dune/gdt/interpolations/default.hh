@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  default.hh
+ * \brief Default interpolation of (grid) functions into a discrete function space via the local basis.
+ **/
 #ifndef DUNE_GDT_INTERPOLATIONS_DEFAULT_HH
 #define DUNE_GDT_INTERPOLATIONS_DEFAULT_HH
 
@@ -31,6 +35,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Element functor that interpolates a source grid function into the target discrete function element-wise.
+ */
 template <class GV, size_t r, size_t rC, class R, class V, class IGV>
 class DefaultInterpolationElementFunctor : public XT::Grid::ElementFunctor<IGV>
 {

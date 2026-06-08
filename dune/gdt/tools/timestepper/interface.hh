@@ -9,6 +9,10 @@
 //   Rene Milk       (2016 - 2018)
 //   Tobias Leibner  (2016 - 2017)
 
+/**
+ * \file  interface.hh
+ * \brief Interface for time stepping schemes evolving a discrete function in time.
+ **/
 #ifndef DUNE_GDT_TIMESTEPPER_INTERFACE_HH
 #define DUNE_GDT_TIMESTEPPER_INTERFACE_HH
 
@@ -49,6 +53,10 @@ struct FloatCmpLt
 } // namespace internal
 
 
+/**
+ * \brief Interface for time stepping schemes that evolve a discrete function from an initial time to a final time,
+ *        storing, visualizing and writing the solution at requested time points.
+ */
 template <class DiscreteFunctionImp>
 class TimeStepperInterface
   : Dune::XT::Common::StorageProvider<DiscreteFunctionImp>

@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  oswald-interpolation.hh
+ * \brief Oswald interpolation operator, averaging a discontinuous Lagrange function into a continuous one.
+ **/
 #ifndef DUNE_GDT_OPERATORS_OSWALD_INTERPOLATION_HH
 #define DUNE_GDT_OPERATORS_OSWALD_INTERPOLATION_HH
 
@@ -33,6 +37,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Oswald interpolation, averaging the values of a discontinuous Lagrange function at shared Lagrange points to
+ *        obtain a continuous Lagrange function (optionally setting Dirichlet boundary DoFs to zero).
+ */
 template <class AssemblyGridView,
           size_t r = 1,
           size_t rC = 1,
@@ -215,6 +223,9 @@ private:
 }; // class OswaldInterpolationOperator
 
 
+/**
+ * \brief Creates an OswaldInterpolationOperator with the vector type specified manually.
+ */
 template <class VectorType, //  <- has to be specified manually
           class AssemblyGridView,
           class RGV,
@@ -234,6 +245,9 @@ auto make_oswald_interpolation_operator(
 }
 
 
+/**
+ * \brief Creates an OswaldInterpolationOperator using the default ISTL dense vector type.
+ */
 template <class AssemblyGridView, class RGV, size_t r, size_t rC, class F>
 auto make_oswald_interpolation_operator(
     const AssemblyGridView& assembly_grid_view,

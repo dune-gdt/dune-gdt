@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  bochner.hh
+ * \brief Bochner space combining a spatial space with a temporal Lagrange discretization.
+ **/
 #ifndef DUNE_GDT_SPACES_BOCHNER_HH
 #define DUNE_GDT_SPACES_BOCHNER_HH
 
@@ -23,6 +27,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Bochner space pairing a spatial space with a temporal Lagrange discretization on a 1d time grid.
+ */
 template <class GV, size_t r = 1, size_t rC = 1, class R = double>
 class BochnerSpace
 {

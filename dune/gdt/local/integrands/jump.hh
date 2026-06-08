@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  jump.hh
+ * \brief Local intersection integrands penalizing the jump of the bases across intersections.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_JUMP_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_JUMP_HH
 
@@ -24,6 +28,9 @@ namespace GDT {
 namespace LocalJumpIntegrands {
 
 
+/**
+ * \brief Local quaternary intersection integrand penalizing the jump of the bases across an inner intersection.
+ */
 template <class I, size_t r = 1>
 class Inner : public LocalQuaternaryIntersectionIntegrandInterface<I, r, 1, double, double, r, 1>
 {
@@ -160,6 +167,9 @@ private:
 }; // Inner
 
 
+/**
+ * \brief Local binary intersection integrand penalizing the test and ansatz bases on a boundary intersection.
+ */
 template <class I, size_t r = 1>
 class Boundary : public LocalBinaryIntersectionIntegrandInterface<I, r, 1, double, double, r, 1>
 {

@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  interface.hh
+ * \brief Interface for numerical fluxes approximating the flux times the normal at an intersection.
+ **/
 #ifndef DUNE_GDT_LOCAL_NUMERICAL_FLUXES_INTERFACE_HH
 #define DUNE_GDT_LOCAL_NUMERICAL_FLUXES_INTERFACE_HH
 

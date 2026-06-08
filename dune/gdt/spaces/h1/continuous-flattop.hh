@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  continuous-flattop.hh
+ * \brief Continuous H^1-conforming space based on flat-top finite elements.
+ **/
 #ifndef DUNE_GDT_SPACES_H1_CONTINUOUS_FLATTOP_HH
 #define DUNE_GDT_SPACES_H1_CONTINUOUS_FLATTOP_HH
 

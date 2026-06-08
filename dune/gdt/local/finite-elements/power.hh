@@ -9,6 +9,11 @@
 //   René Fritze     (2018)
 
 /**
+ * \file  power.hh
+ * \brief Power (vector-valued) local finite elements formed as the product of a scalar/vector local finite element.
+ **/
+
+/**
  * There is similar functionality in dune/localfunctions/meta/power.hh, but that one is only implemented for the
  * "global" finite elements, while we use the local finite elements.
  **/
@@ -366,6 +371,10 @@ public:
 }; // class LocalPowerFiniteElement
 
 
+/**
+ * \brief Creates a LocalPowerFiniteElement modelling the product of the given local finite element with itself, power
+ *        times.
+ */
 template <size_t power, class D, size_t d, class R, size_t r>
 std::unique_ptr<LocalFiniteElementInterface<D, d, R, power * r>>
 make_local_powered_finite_element(const LocalFiniteElementInterface<D, d, R, r>& unpowered_finite_element)

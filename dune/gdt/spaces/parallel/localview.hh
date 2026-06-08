@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2017 - 2018)
 
+/**
+ * \file  localview.hh
+ * \brief Element-local view into a global vector, caching the DoF values of a single grid entity.
+ **/
 #ifndef DUNE_GDT_SPACES_PARALLEL_LOCALVIEW_HH
 #define DUNE_GDT_SPACES_PARALLEL_LOCALVIEW_HH
 
@@ -23,6 +27,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Element-local view into a global vector, caching the DoF values associated with a bound grid entity for
+ *        gather/scatter during parallel communication.
+ */
 template <class VectorType, class ScalarType, class SpaceType, class Descriptor>
 class LocalView
 {

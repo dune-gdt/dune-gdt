@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  generic.hh
+ * \brief Local integrands whose order, evaluation and post-bind behavior are provided as std::function objects.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_GENERIC_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_GENERIC_HH
 
@@ -21,6 +25,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Local unary element integrand whose order, evaluation and post-bind behavior are given as std::functions.
+ */
 template <class E, size_t r = 1, size_t rC = 1, class R = double, class F = double>
 class GenericLocalUnaryElementIntegrand : public LocalUnaryElementIntegrandInterface<E, r, rC, R, F>
 {
@@ -102,6 +109,9 @@ private:
 }; // class GenericLocalUnaryElementIntegrand
 
 
+/**
+ * \brief Local binary element integrand whose order, evaluation and post-bind behavior are given as std::functions.
+ */
 template <class E,
           size_t t_r = 1,
           size_t t_rC = 1,
@@ -200,6 +210,9 @@ private:
 }; // class GenericLocalBinaryElementIntegrand
 
 
+/**
+ * \brief Local unary intersection integrand whose order, evaluation and post-bind behavior are given as std::functions.
+ */
 template <class I, size_t r = 1, size_t rC = 1, class RF = double, class F = double>
 class GenericLocalUnaryIntersectionIntegrand : public LocalUnaryIntersectionIntegrandInterface<I, r, rC, RF, F>
 {
@@ -283,6 +296,10 @@ private:
 }; // class GenericLocalUnaryIntersectionIntegrand
 
 
+/**
+ * \brief Local binary intersection integrand whose order, evaluation and post-bind behavior are given as
+ *        std::functions.
+ */
 template <class I,
           size_t t_r = 1,
           size_t t_rC = 1,

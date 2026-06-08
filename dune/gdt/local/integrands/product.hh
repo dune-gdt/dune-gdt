@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014, 2017)
 
+/**
+ * \file  product.hh
+ * \brief Local product integrands for (weighted) L2-type products over elements and intersections.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_PRODUCTS_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_PRODUCTS_HH
 
@@ -508,6 +512,9 @@ private:
 }; // class LocalIntersectionNormalComponentProductIntegrand
 
 
+/**
+ * \brief Local product integrand selecting the element or intersection product integrand depending on E_or_I.
+ */
 template <class E_or_I, size_t r = 1, class TR = double, class F = double, class AR = TR>
 class LocalProductIntegrand
   : public std::conditional_t<XT::Grid::is_entity<E_or_I>::value,

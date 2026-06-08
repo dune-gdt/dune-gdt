@@ -9,6 +9,10 @@
 //   René Fritze     (2016, 2018)
 //   René Milk       (2017)
 
+/**
+ * \file  integrals.hh
+ * \brief Local functionals defined by numerically integrating an integrand over elements or intersections.
+ **/
 #ifndef DUNE_GDT_LOCAL_FUNCTIONALS_INTEGRALS_HH
 #define DUNE_GDT_LOCAL_FUNCTIONALS_INTEGRALS_HH
 
@@ -23,6 +27,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Local element functional given by the quadrature of a local unary element integrand.
+ */
 template <class E, size_t r = 1, size_t rC = 1, class R = double, class F = R>
 class LocalElementIntegralFunctional : public LocalElementFunctionalInterface<E, r, rC, R, F>
 {
@@ -106,6 +113,9 @@ private:
 }; // class LocalElementIntegralFunctional
 
 
+/**
+ * \brief Local intersection functional given by the quadrature of a local unary intersection integrand.
+ */
 template <class I, size_t r = 1, size_t rC = 1, class R = double, class F = R>
 class LocalIntersectionIntegralFunctional : public LocalIntersectionFunctionalInterface<I, r, rC, R, F>
 {

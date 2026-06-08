@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2019)
 
+/**
+ * \file  grid-quality-estimates.hh
+ * \brief Numerical estimates of inverse-inequality and element-to-intersection equivalence constants for a grid.
+ **/
 #ifndef DUNE_GDT_TOOLS_GRID_QUALITY_ESTIMATES_HH
 #define DUNE_GDT_TOOLS_GRID_QUALITY_ESTIMATES_HH
 
@@ -32,6 +36,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Numerically estimates the constant C_I of the inverse inequality over the given space's grid.
+ */
 template <class GV, size_t r>
 double estimate_inverse_inequality_constant(const SpaceInterface<GV, r>& space)
 {
@@ -64,6 +71,10 @@ double estimate_inverse_inequality_constant(const SpaceInterface<GV, r>& space)
 } // ... estimate_inverse_inequality_constant(...)
 
 
+/**
+ * \brief Numerically estimates the combined inverse trace inequality constant C_M (1 + C_I) over the given space's
+ * grid.
+ */
 template <class GV, size_t r>
 double estimate_combined_inverse_trace_inequality_constant(const SpaceInterface<GV, r>& space)
 {
@@ -104,6 +115,10 @@ double estimate_combined_inverse_trace_inequality_constant(const SpaceInterface<
 } // ... estimate_combined_inverse_trace_inequality_constant(...)
 
 
+/**
+ * \brief Numerically estimates the element-to-intersection equivalence constant (maximal ratio of intersection diameter
+ *        to element diameter) over the given grid view.
+ */
 template <class GV>
 double estimate_element_to_intersection_equivalence_constant(
     const GridView<GV>& grid_view,

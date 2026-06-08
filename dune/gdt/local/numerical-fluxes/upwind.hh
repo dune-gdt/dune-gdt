@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  upwind.hh
+ * \brief Upwind numerical flux for advection problems.
+ **/
 #ifndef DUNE_GDT_LOCAL_NUMERICAL_FLUXES_UPWIND_HH
 #define DUNE_GDT_LOCAL_NUMERICAL_FLUXES_UPWIND_HH
 
@@ -17,6 +21,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Implementation of NumericalFluxInterface using the upwind numerical flux (only available for m == 1).
+ */
 template <class I, size_t d, size_t m = 1, class R = double>
 class NumericalUpwindFlux : public internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>
 {
@@ -83,6 +90,9 @@ private:
 }; // class NumericalUpwindFlux
 
 
+/**
+ * \brief Creates a NumericalUpwindFlux from an x- and state-dependent flux function.
+ */
 template <class E, size_t d, size_t m, class R>
 auto make_numerical_upwind_flux(const XT::Functions::FluxFunctionInterface<E, m, d, m, R>& flux)
 {
@@ -90,6 +100,9 @@ auto make_numerical_upwind_flux(const XT::Functions::FluxFunctionInterface<E, m,
   return NumericalUpwindFlux<I, d, m, R>(flux);
 }
 
+/**
+ * \brief Creates a NumericalUpwindFlux from a state-dependent (x-independent) flux function.
+ */
 template <class I, // <- has to be specified manually
           size_t d,
           size_t m,

@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  bilinear-form.hh
+ * \brief A bilinear form assembled from local element and intersection bilinear forms on a grid view.
+ **/
 #ifndef DUNE_GDT_OPERATORS_BILINEAR_FORM_HH
 #define DUNE_GDT_OPERATORS_BILINEAR_FORM_HH
 
@@ -497,6 +501,9 @@ public:
 }; // class BilinearFormAssembler
 
 
+/**
+ * \brief Creates a BilinearForm on a grid view with the source and range dimensions specified manually.
+ */
 template <size_t s_r, // <- needs to be specified manually
           size_t s_rC, // <- needs to be specified manually
           size_t r_r, // <- needs to be specified manually
@@ -510,6 +517,9 @@ auto make_bilinear_form(const GridViewType& grid_view,
   return BilinearForm<GridViewType, s_r, s_rC, r_r, r_rC>(grid_view, logging_prefix, logging_state);
 }
 
+/**
+ * \brief Creates a scalar BilinearForm on a grid view (all source and range dimensions equal to one).
+ */
 template <class GridViewType>
 auto make_bilinear_form(const GridViewType& grid_view,
                         const std::string& logging_prefix = "",

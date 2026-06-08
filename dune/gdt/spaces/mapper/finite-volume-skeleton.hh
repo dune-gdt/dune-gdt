@@ -7,6 +7,10 @@
 // Authors:
 //   Felix Schindler (2020)
 
+/**
+ * \file  finite-volume-skeleton.hh
+ * \brief Mapper for finite volume skeleton spaces, attaching one DoF to each grid intersection.
+ **/
 #ifndef DUNE_GDT_SPACES_MAPPER_FINITE_VOLUME_SKELETON_HH
 #define DUNE_GDT_SPACES_MAPPER_FINITE_VOLUME_SKELETON_HH
 
@@ -29,6 +33,10 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Mapper for finite volume skeleton spaces, attaching a single DoF to every intersection (codim 1 entity) of the
+ *        grid.
+ */
 template <class GV, size_t r = 1, size_t rC = 1>
 class FiniteVolumeSkeletonMapper : public MapperInterface<GV>
 {

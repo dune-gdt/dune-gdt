@@ -8,6 +8,10 @@
 //   Rene Milk      (2017 - 2018)
 //   Tobias Leibner (2017)
 
+/**
+ * \file  internal.hh
+ * \brief Internal helpers (eigenvector wrappers) used by the linear reconstruction operators.
+ **/
 #ifndef DUNE_GDT_OPERATORS_RECONSTRUCTION_INTERNAL_HH
 #define DUNE_GDT_OPERATORS_RECONSTRUCTION_INTERNAL_HH
 

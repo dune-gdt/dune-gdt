@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  orthonormal.hh
+ * \brief Local orthonormal finite elements and the corresponding factory.
+ **/
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_ORTHONORMAL_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_ORTHONORMAL_HH
 
@@ -90,6 +94,9 @@ public:
 }; // class LocalOrthonormalFiniteElementFactory
 
 
+/**
+ * \brief Creates a local orthonormal finite element for the given geometry type and order.
+ */
 template <class D, size_t d, class R, size_t r = 1>
 std::unique_ptr<LocalFiniteElementInterface<D, d, R, r>>
 make_local_orthonormal_finite_element(const GeometryType& geometry_type, const int order)

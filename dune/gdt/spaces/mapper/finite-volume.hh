@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  finite-volume.hh
+ * \brief Mapper for finite volume spaces, attaching r * rC DoFs to each element.
+ **/
 #ifndef DUNE_GDT_SPACES_MAPPER_FINITE_VOLUME_HH
 #define DUNE_GDT_SPACES_MAPPER_FINITE_VOLUME_HH
 
@@ -29,6 +33,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Mapper for finite volume spaces, attaching r * rC DoFs to every element.
+ */
 template <class GV, size_t r = 1, size_t rC = 1>
 class FiniteVolumeMapper : public MapperInterface<GV>
 {

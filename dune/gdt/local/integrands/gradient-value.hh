@@ -7,6 +7,10 @@
 // Authors:
 //   Tobias Leibner  (2019)
 
+/**
+ * \file  gradient-value.hh
+ * \brief Local integrands pairing the gradient of one basis with the value of another, weighted by a function.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_GRADIENT_VALUE_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_GRADIENT_VALUE_HH
 

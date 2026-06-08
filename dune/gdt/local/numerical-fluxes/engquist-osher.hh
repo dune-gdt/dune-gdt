@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  engquist-osher.hh
+ * \brief Engquist-Osher numerical flux for advection problems.
+ **/
 #ifndef DUNE_GDT_LOCAL_NUMERICAL_FLUXES_ENGQUIST_OSHER_HH
 #define DUNE_GDT_LOCAL_NUMERICAL_FLUXES_ENGQUIST_OSHER_HH
 
@@ -23,6 +27,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Implementation of NumericalFluxInterface using the Engquist-Osher numerical flux (only available for m == 1).
+ */
 template <class I, size_t d, size_t m = 1, class R = double>
 class NumericalEngquistOsherFlux : public internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>
 {
@@ -112,6 +119,9 @@ private:
 }; // class NumericalEngquistOsherFlux
 
 
+/**
+ * \brief Creates a NumericalEngquistOsherFlux from an x- and state-dependent flux function.
+ */
 template <class I, size_t d, size_t m, class R>
 NumericalEngquistOsherFlux<I, d, m, R>
 make_numerical_engquist_osher_flux(const XT::Functions::FluxFunctionInterface<I, m, d, m, R>& flux)
@@ -119,6 +129,9 @@ make_numerical_engquist_osher_flux(const XT::Functions::FluxFunctionInterface<I,
   return NumericalEngquistOsherFlux<I, d, m, R>(flux);
 }
 
+/**
+ * \brief Creates a NumericalEngquistOsherFlux from a state-dependent (x-independent) flux function.
+ */
 template <class I, size_t d, size_t m, class R>
 NumericalEngquistOsherFlux<I, d, m, R>
 make_numerical_engquist_osher_flux(const XT::Functions::FunctionInterface<m, d, m, R>& flux)

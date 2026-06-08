@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2016 - 2017)
 
+/**
+ * \file  interfaces.hh
+ * \brief Interfaces for local operators acting on single elements or intersections.
+ **/
 #ifndef DUNE_GDT_LOCAL_OPERATORS_INTERFACES_HH
 #define DUNE_GDT_LOCAL_OPERATORS_INTERFACES_HH
 
@@ -32,6 +36,9 @@ namespace Dune {
 namespace GDT {
 
 
+/**
+ * \brief Interface for local operators mapping a source grid function to a local range on a single element.
+ */
 template <class SourceVector,
           class SourceGridView,
           size_t source_range_dim = 1,
@@ -161,6 +168,10 @@ protected:
 }; // class LocalElementOperatorInterface
 
 
+/**
+ * \brief Interface for local operators mapping a source grid function to local ranges on the inside and outside of an
+ *        intersection.
+ */
 template <class Intersection,
           class SourceVector,
           class SourceGridView,

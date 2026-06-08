@@ -10,6 +10,10 @@
 //   René Milk       (2017)
 //   Tobias Leibner  (2014, 2016)
 
+/**
+ * \file  prolongations.hh
+ * \brief Free functions to prolong discrete functions onto refined or coarser discrete function spaces.
+ **/
 #ifndef DUNE_GDT_PROLONGATIONS_HH
 #define DUNE_GDT_PROLONGATIONS_HH
 
@@ -229,6 +233,10 @@ prolong(const DiscreteBochnerFunction<SV, SGV, r, rC, R>& source,
 }
 
 
+/**
+ * \brief Prolongs a DiscreteBochnerFunction onto target_space, creating a target function of TargetVectorType and using
+ *        target_space.spatial_space().grid_view() as the spatial prolongation grid view.
+ */
 template <class TargetVectorType, class SV, class SGV, size_t r, size_t rC, class R, class TGV>
 std::enable_if_t<XT::LA::is_vector<TargetVectorType>::value, DiscreteBochnerFunction<TargetVectorType, TGV, r, rC, R>>
 prolong(const DiscreteBochnerFunction<SV, SGV, r, rC, R>& source, const BochnerSpace<TGV, r, rC, R>& target_space)

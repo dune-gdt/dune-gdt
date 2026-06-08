@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+/**
+ * \file  conversion.hh
+ * \brief Local integrands converting a binary integrand into a unary one by fixing one argument to a function.
+ **/
 #ifndef DUNE_GDT_LOCAL_INTEGRANDS_CONVERSION_HH
 #define DUNE_GDT_LOCAL_INTEGRANDS_CONVERSION_HH
 

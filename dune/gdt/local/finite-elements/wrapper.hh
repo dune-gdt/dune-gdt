@@ -9,6 +9,10 @@
 //   René Fritze     (2018)
 //   Tobias Leibner  (2018)
 
+/**
+ * \file  wrapper.hh
+ * \brief Wrappers adapting local finite elements from dune-localfunctions to the dune-gdt interfaces.
+ **/
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_WRAPPER_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_WRAPPER_HH
 
