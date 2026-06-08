@@ -78,8 +78,13 @@ public:
   {
     if (mat.rows() != mat.cols())
       return false;
+    // Only stored entries can break symmetry: any asymmetric pair has its non-zero side stored, so iterating the
+    // sparsity pattern (O(nnz)) visits it and compares against the (possibly structurally-zero) transpose. Pairs where
+    // both sides are structural zeros are trivially symmetric. This is equivalent to the dense O(n^2) double loop but
+    // avoids scanning the (mostly empty) sparse matrix entry by entry.
+    const auto pattern = mat.pattern();
     for (size_t ii = 0; ii < mat.rows(); ++ii)
-      for (size_t jj = ii; jj < mat.cols(); ++jj)
+      for (const size_t jj : pattern.inner(ii))
         if (XT::Common::FloatCmp::ne(mat.get_entry(ii, jj), mat.get_entry(jj, ii))) {
           std::cerr << "mat.rows() = " << mat.rows() << ", mat.cols() = " << mat.cols() << std::endl;
           std::cerr << "not symmetric for indices " << ii << ", " << jj << " with values " << mat.get_entry(ii, jj)
