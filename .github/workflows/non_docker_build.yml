@@ -168,8 +168,8 @@ jobs:
         path: build/wheelhouse/final/
         if-no-files-found: error
 
-  build_tutorials:
-    name: Build tutorials docs (executes notebooks via myst-nb)
+  build_docs:
+    name: Build docs (executes notebooks via myst-nb)
     runs-on: ubuntu-24.04
     needs: build_wheels
     timeout-minutes: 60
@@ -210,7 +210,7 @@ jobs:
         # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
         # discretizer used in example__gmsh_grid; clang provides the builtin-header
         # resource dir (stddef.h & co.) that clangquill's bundled libclang needs to
-        # parse the C++ API headers (see tutorials/source/conf.py:_clang_resource_dir)
+        # parse the C++ API headers (see docs/source/conf.py:_clang_resource_dir)
         sudo apt-get install -y xvfb gmsh clang
 
     - name: Create the uv-managed virtualenv
@@ -236,7 +236,7 @@ jobs:
       run: |
         ./.ci/fetch_benchmark_reports.sh "${GITHUB_WORKSPACE}/build/benchmark_data"
 
-    - name: Build tutorials (sphinx + myst-nb notebook execution)
+    - name: Build docs (sphinx + myst-nb notebook execution)
       # Run from a neutral directory so the repo-root `dune/` source tree does not
       # shadow the installed bindings. Notebook execution is the actual test: myst-nb
       # is configured with nb_execution_raise_on_error=False, so a failing notebook
@@ -247,12 +247,12 @@ jobs:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
       run: |
         cd "${RUNNER_TEMP}"
-        OUT="${GITHUB_WORKSPACE}/build/tutorials_html"
+        OUT="${GITHUB_WORKSPACE}/build/docs_html"
         # --no-project: ignore the repo-root pyproject stub; run in the venv built above
         xvfb-run -a uv run --no-project \
           --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
           python -m sphinx --keep-going -j 1 -b html \
-          "${GITHUB_WORKSPACE}/tutorials/source" "${OUT}"
+          "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
           echo "::error::one or more executed tutorial notebooks failed (see dumped reports below)"
           exit 1
@@ -265,26 +265,26 @@ jobs:
       if: failure()
       run: |
         shopt -s nullglob
-        for f in "${GITHUB_WORKSPACE}"/build/tutorials_html/reports/*.err.log; do
+        for f in "${GITHUB_WORKSPACE}"/build/docs_html/reports/*.err.log; do
           echo "::group::$(basename "${f}")"
           cat "${f}"
           echo "::endgroup::"
         done
 
-    - name: Upload built tutorials HTML
+    - name: Upload built docs HTML
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: tutorials_html
-        path: build/tutorials_html
+        name: docs_html
+        path: build/docs_html
         if-no-files-found: warn
 
   deploy_docs:
-    name: Deploy tutorials docs to GitHub Pages
+    name: Deploy docs to GitHub Pages
     runs-on: ubuntu-24.04
-    needs: build_tutorials
+    needs: build_docs
     # publish only on pushes to main; PRs and the merge queue build (above) but
-    # never deploy. build_tutorials must have succeeded, so broken docs are not
+    # never deploy. build_docs must have succeeded, so broken docs are not
     # published.
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     timeout-minutes: 15
@@ -301,16 +301,16 @@ jobs:
       cancel-in-progress: false
 
     steps:
-    - name: Download built tutorials HTML
+    - name: Download built docs HTML
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
-        name: tutorials_html
-        path: tutorials_html
+        name: docs_html
+        path: docs_html
 
     - name: Upload Pages artifact
       uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
       with:
-        path: tutorials_html
+        path: docs_html
 
     - name: Deploy to GitHub Pages
       id: deployment

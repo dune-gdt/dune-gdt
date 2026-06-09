@@ -72,7 +72,7 @@ compile_commands.json
 build-cmake
 .secrets
 wheelhouse
-/tutorials/source/*.vtu
+/docs/source/*.vtu
 venvs
 /.vcpkg-root/
 tmp
