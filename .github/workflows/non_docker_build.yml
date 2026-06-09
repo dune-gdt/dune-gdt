@@ -14,6 +14,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Least-privilege default for the whole workflow: every job gets read-only access
+# to repo contents unless it overrides this. The jobs that need more declare it
+# explicitly (deploy_docs: pages/id-token write; test_publish/publish: id-token
+# write for PyPI Trusted Publishing).
+permissions:
+  contents: read
+
 jobs:
   build-linux:
     name: Build on Linux
