@@ -48,9 +48,14 @@ jobs:
         # Key on the inputs that determine the toolchain/manifest so the cache is
         # rebuilt when they change. The trailing-dash restore-key only matches
         # caches written by this (consistent) scheme, never the legacy build-only one.
-        key: ${{ runner.os }}-build-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+        # The -v2- generation token deliberately invalidates older caches: a cancelled
+        # run left a corrupted dune-env (a half-installed "~une-common" distribution and
+        # conflicting dune-common versions) in the cached build/, which broke configure
+        # ("Dune python package could not be found"). Bump this token to force a clean
+        # rebuild if the cached dune-env is ever poisoned again.
+        key: ${{ runner.os }}-build-v2-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
         restore-keys: |
-          ${{ runner.os }}-build-
+          ${{ runner.os }}-build-v2-
 
     - name: Drop stale build cache if vcpkg toolchain is missing
       run: |
@@ -109,7 +114,7 @@ jobs:
         path: |
           build
           .vcpkg-root
-        key: ${{ runner.os }}-build-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+        key: ${{ runner.os }}-build-v2-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
 
     - name: Save ccache
       # Always persist the compiler cache (even when the build or tests fail) so
