@@ -150,9 +150,10 @@ clangquill_std = "c++17"
 clangquill_clang_resource_dir = _clang_resource_dir()
 clangquill_output_dir = "cpp_api"
 clangquill_group_by = "file"
-# Emit only symbols that carry a documentation comment; flip to True to also
-# list the (largely templated) undocumented internals.
-clangquill_include_undocumented = False
+# Emit every symbol clangquill extracts, including the (largely templated)
+# undocumented internals, so the C++ API pages cover all in-tree headers rather
+# than only those carrying a documentation comment.
+clangquill_include_undocumented = True
 # Persist the SQLite IR + page hashes so local rebuilds are incremental.
 clangquill_cache_dir = "_clangquill_cache"
 
