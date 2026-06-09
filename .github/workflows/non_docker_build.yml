@@ -174,8 +174,8 @@ jobs:
     needs: build_wheels
     timeout-minutes: 60
     env:
-      # the tutorials are executed against the freshly built wheels (current,
-      # git-derived version), not the stale dune-gdt release on PyPI
+      # the documentation notebooks are executed against the freshly built wheels
+      # (current, git-derived version), not the stale dune-gdt release on PyPI
       PYTHON_VERSION: "3.13"
 
     steps:
@@ -242,7 +242,7 @@ jobs:
       # is configured with nb_execution_raise_on_error=False, so a failing notebook
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
       # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
-      # inventory fetches emit network-dependent warnings unrelated to the tutorials.
+      # inventory fetches emit network-dependent warnings unrelated to the docs build.
       env:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
       run: |
@@ -254,7 +254,7 @@ jobs:
           python -m sphinx --keep-going -j 1 -b html \
           "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
-          echo "::error::one or more executed tutorial notebooks failed (see dumped reports below)"
+          echo "::error::one or more executed documentation notebooks failed (see dumped reports below)"
           exit 1
         fi
 
