@@ -277,10 +277,6 @@ public:
     return std::make_unique<ThisType>(space_, dofs_.vector().copy());
   }
 
-  /**
-   * \}
-   */
-
   ThisType& operator+=(const BaseType& other)
   {
     dofs().vector() += other.dofs().vector();
