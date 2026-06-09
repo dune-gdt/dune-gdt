@@ -35,7 +35,7 @@ docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.1
                  # meshio is required by pymor's discretize_gmsh (used in the gmsh tutorial)
                  # to read Gmsh meshes, and the tutorial uses it to re-write a dune-grid
                  # readable version 2.2 mesh
-                 'meshio>=4']
+                 'meshio>=4.4']
 examples_packages = ['pymor==2022.2.0; python_version < "3.11"',
                      'pymor; python_version >= "3.11"']
 
