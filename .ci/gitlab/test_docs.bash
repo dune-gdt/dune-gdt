@@ -5,17 +5,17 @@ COV_OPTION="--cov=dune"
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit ; pwd -P )"
 BINARY_DIR="${1}"
 
-for fn in "${THIS_DIR}"/../../tutorials/source/example__*md ; do
+for fn in "${THIS_DIR}"/../../docs/source/example__*md ; do
   mystnb-to-jupyter -o "${fn}" "${fn/example/..\/converted_example}".ipynb
 done
 
-COMMON_PYTEST_OPTS="--junitxml=${BINARY_DIR}/dune/pytest_results_tutorials.xml \
+COMMON_PYTEST_OPTS="--junitxml=${BINARY_DIR}/dune/pytest_results_docs.xml \
   --cov-report= ${COV_OPTION} --cov-config=${BINARY_DIR}/python/xt/setup.cfg --cov-context=test"
-export COVERAGE_FILE=${BINARY_DIR}/coverage-tutorials
+export COVERAGE_FILE=${BINARY_DIR}/coverage-docs
 # manually add plugins to load that are excluded for other runs
 cd "${THIS_DIR}"/../.. || exit
 # COMMON_PYTEST_OPTS intentionally holds multiple options that must be word-split
 # shellcheck disable=SC2086
 xvfb-run -a pytest ${COMMON_PYTEST_OPTS} --nb-coverage -s -p no:pycharm -v -s\
-  -p nb_regression -p notebook tutorials/test_tutorials.py
+  -p nb_regression -p notebook docs/test_tutorials.py
 

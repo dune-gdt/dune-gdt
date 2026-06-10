@@ -129,7 +129,7 @@ add_subdirectory(dune)
 add_subdirectory("cmake/modules")
 add_subdirectory(examples)
 add_subdirectory(benchmarks)
-add_subdirectory(tutorials)
+add_subdirectory(docs)
 
 add_tidy(${CMAKE_CURRENT_SOURCE_DIR})
 add_pylicense()

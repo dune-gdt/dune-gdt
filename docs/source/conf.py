@@ -100,7 +100,7 @@ nb_execution_excludepatterns = []
 # pages are written under this srcdir into clangquill_output_dir and pulled into
 # the manual through the cpp_api/index toctree entry in index.md.
 #
-# All clangquill paths are resolved relative to this srcdir (tutorials/source),
+# All clangquill paths are resolved relative to this srcdir (docs/source),
 # so "../.." is the repository root: the input glob covers dune/{gdt,xt}/**/*.hh
 # and the include dir lets the intra-tree `#include <dune/...>` headers resolve.
 # The external DUNE dependency headers (dune-common, dune-grid, ...) are not
@@ -376,14 +376,14 @@ def linkcode_resolve(domain, info):
         return None
     parts = info["module"].split(".")
     # dune.gdt / dune.xt bindings live under python/<gdt|xt>/dune/<gdt|xt>/...,
-    # while the tutorial helper modules sit next to this conf.py in
-    # tutorials/source/.
+    # while the documentation helper modules sit next to this conf.py in
+    # docs/source/.
     if parts[:2] == ["dune", "gdt"]:
         rel = Path("python", "gdt", *parts)
     elif parts[:2] == ["dune", "xt"]:
         rel = Path("python", "xt", *parts)
     else:
-        rel = Path("tutorials", "source", *parts)
+        rel = Path("docs", "source", *parts)
     # a package resolves to its __init__.py, a plain module to <name>.py
     if (_repo_root / rel / "__init__.py").is_file():
         rel = rel / "__init__.py"
