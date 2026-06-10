@@ -1,7 +1,7 @@
 set(VCPKG_BUILD_TYPE release)
 
 vcpkg_from_git(OUT_SOURCE_PATH SOURCE_PATH URL "https://github.com/dune-mirrors/dune-istl.git" REF
-               a255da6e72f3d0f2ccafec48374cc83f3bc66b60)
+               21c67275b17e93918365177f93f42e4aaa9afd23)
 
 vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_TESTING=OFF -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE)
 
