@@ -69,15 +69,25 @@ double estimate_dt_for_hyperbolic_system(
     if (!(data_minimum[ii] < data_maximum[ii]))
       data_maximum[ii] = data_minimum[ii] + 1e-6 * data_minimum[ii];
   // estimate flux derivative range
-  R max_flux_derivative = std::numeric_limits<R>::min();
+  R max_flux_derivative = 0.;
   const auto flux_range_grid = XT::Grid::make_cube_grid<YaspGrid<m, EquidistantOffsetCoordinates<double, m>>>(
       data_minimum, data_maximum, XT::Common::FieldVector<unsigned int, m>(1));
   const auto flux_range = *flux_range_grid.leaf_view().template begin<0>();
-  for (auto&& quadrature_point : QuadratureRules<R, m>::rule(flux_range.type(), flux.order())) {
-    const auto df = flux.jacobian(flux_range.geometry().global(quadrature_point.position()));
+  auto update_max_flux_derivative = [&](const auto& state) {
+    const auto df = flux.jacobian(state);
     for (size_t ss = 0; ss < d; ++ss)
       max_flux_derivative = std::max(max_flux_derivative, df[ss].infinity_norm());
-  }
+  };
+  for (auto&& quadrature_point : QuadratureRules<R, m>::rule(flux_range.type(), flux.order()))
+    update_max_flux_derivative(flux_range.geometry().global(quadrature_point.position()));
+  // Gauss points lie in the interior of the state range, but for the common case of a flux whose derivative is
+  // monotone in each component (e.g. any convex or concave flux) the maximum is attained on the boundary of the
+  // range, so additionally sample the corners (otherwise max|f'| is systematically underestimated and the returned
+  // dt is no upper bound, e.g. 27% too large for Burgers' flux on the data range [0, 1])
+  for (int ii = 0; ii < flux_range.geometry().corners(); ++ii)
+    update_max_flux_derivative(flux_range.geometry().corner(ii));
+  if (max_flux_derivative == 0.) // constant flux, no transport at all
+    return std::numeric_limits<double>::max();
   D perimeter_over_volume = std::numeric_limits<D>::min();
   for (auto&& element : elements(grid_view)) {
     D perimeter = 0;
