@@ -97,11 +97,11 @@ void multiply_householder_from_right(MatrixType& A,
   using M = Common::MatrixAbstraction<MatrixType>;
   using V = Common::VectorAbstraction<VectorType>;
   using W = Common::VectorAbstraction<DynamicVector<typename V::ScalarType>>;
-  // calculate A w first
+  // calculate A w first, (Aw)_r = \sum_c A_{rc} w_c
   auto Aw = W::create(M::rows(A), 0.);
   for (size_t rr = row_begin; rr < row_end; ++rr)
     for (size_t cc = col_begin; cc < col_end; ++cc)
-      W::add_to_entry(Aw, cc, V::get_entry(v, cc) * M::get_entry(A, rr, cc));
+      W::add_to_entry(Aw, rr, M::get_entry(A, rr, cc) * V::get_entry(v, cc));
   for (size_t rr = row_begin; rr < row_end; ++rr)
     for (size_t cc = col_begin; cc < col_end; ++cc)
       M::add_to_entry(A, rr, cc, -tau * W::get_entry(Aw, rr) * Common::conj(V::get_entry(v, cc)));
@@ -158,7 +158,11 @@ void qr_decomposition(MatrixType& A, VectorType& tau, IndexVectorType& permutati
 
   auto w = W::create(num_rows, ScalarType(0.));
 
-  for (size_t jj = 0; jj < num_cols - 1; ++jj) {
+  // As in LAPACK's geqp3, one Householder reflection is needed per column for matrices with num_rows > num_cols
+  // (stopping after num_cols - 1 reflections leaves the subdiagonal entries of the last column un-eliminated).
+  // For num_rows <= num_cols the last reflection would act on a single row and can be skipped.
+  const size_t num_reflections = std::min(num_rows > 0 ? num_rows - 1 : 0, num_cols);
+  for (size_t jj = 0; jj < num_reflections; ++jj) {
 
     // Pivoting
     // swap column jj and column with greatest norm
@@ -340,9 +344,9 @@ struct QrHelper
                                 transpose == XT::Common::Transpose::yes ? 'T' : 'N',
                                 num_rhs_rows,
                                 num_rhs_cols,
-                                static_cast<int>(num_rows),
+                                /*number of reflectors=*/static_cast<int>(std::min(num_rows, num_cols)),
                                 M::data(QR),
-                                num_rhs_rows,
+                                /*leading dimension of QR=*/static_cast<int>(is_row_major ? num_cols : num_rows),
                                 V::data(tau),
                                 V3::data(y),
                                 is_row_major ? num_rhs_cols : num_rhs_rows);
@@ -352,15 +356,19 @@ struct QrHelper
     } else {
       assert(num_cols < size_t(std::numeric_limits<int>::max()));
       auto w = W::create(num_rows, ScalarType(0.));
+      // at most min(num_rows, num_cols) reflectors are stored (as for dormqr above); iterating up to num_cols would
+      // access w (of length num_rows) out of bounds for matrices with num_cols > num_rows
+      const int num_reflectors = static_cast<int>(std::min(num_rows, num_cols));
       if (transpose == XT::Common::Transpose::no)
-        for (int jj = static_cast<int>(num_cols) - 1; jj >= 0; --jj) {
+        for (int jj = num_reflectors - 1; jj >= 0; --jj) {
           set_w_vector(QR, jj, w);
           multiply_householder_from_left(y, tau[jj], w, jj, num_rows);
         }
       else
-        for (int jj = 0; jj < static_cast<int>(num_cols); ++jj) {
+        for (int jj = 0; jj < num_reflectors; ++jj) {
           set_w_vector(QR, jj, w);
-          multiply_householder_from_left(y, tau[jj], w, jj, num_rows);
+          // Q^H = H_{k-1}^H ... H_0^H with H_j^H = I - conj(tau_j) w w^H
+          multiply_householder_from_left(y, Common::conj(tau[jj]), w, jj, num_rows);
         }
     }
   } // static void apply_q_from_qr(...)
