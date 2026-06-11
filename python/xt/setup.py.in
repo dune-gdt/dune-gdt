@@ -31,7 +31,7 @@ visualization_packages = [ 'k3d>=2.15.2', 'vtk', 'ipywidgets', 'lxml', 'xmljson'
 # clangquill parses the in-tree dune-gdt/dune-xt C++ headers with libclang and
 # renders the MyST C++ API pages consumed by the Sphinx build (see
 # docs/source/conf.py); it replaces the previous Doxygen-based API setup.
-docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor', 'clangquill>=0.1.1', 'plotly',
+docs_packages = ['python-slugify', 'sphinxcontrib-bibtex', 'furo', 'myst-nb>=0.16', 'pymor', 'clangquill>=0.3.0', 'plotly',
                  # meshio is required by pymor's discretize_gmsh (used in the gmsh tutorial)
                  # to read Gmsh meshes, and the tutorial uses it to re-write a dune-grid
                  # readable version 2.2 mesh
