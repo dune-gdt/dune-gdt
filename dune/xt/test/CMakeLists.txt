@@ -16,8 +16,8 @@ enable_testing()
 dependencycheck(${xtcommon})
 
 # GoogleTest is provided by vcpkg (see vcpkg.json, find_package(GTest) in the top-level CMakeLists.txt). gtest_dune_xt
-# bundles our test helpers (common.cxx) and links GTest publicly so that all test binaries linking gtest_dune_xt pick
-# up the GoogleTest headers and libraries.
+# bundles our test helpers (common.cxx) and links GTest publicly so that all test binaries linking gtest_dune_xt pick up
+# the GoogleTest headers and libraries.
 dune_library_add_sources(gtest_dune_xt SOURCES common.cxx)
 target_link_libraries(gtest_dune_xt PUBLIC GTest::gtest)
 
