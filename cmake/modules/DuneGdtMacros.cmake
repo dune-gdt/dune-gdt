@@ -153,14 +153,13 @@ dune_execute_process(
   install
   jinja2
   pyparsing)
-# Install the dune wheels from the vcpkg wheelhouse into the virtualenv. The wheel filenames are
-# globbed (can't use dune-common_WHEELHOUSE here, because it is not set yet) so a vcpkg port bump
-# cannot silently leave this pointing at a wheel that no longer exists. The installs run strictly
-# sequentially, one execute_process each: passing several COMMANDs to a single execute_process
-# runs them as a concurrent pipeline, and two pip processes racing in the same virtualenv corrupt
-# site-packages (half-uninstalled "~une-common" leftovers, BrokenPipeError). --no-index pins the
-# resolution to the wheelhouse: pip can never fall back to PyPI and install a dune-common release
-# that mismatches the vcpkg-built one.
+# Install the dune wheels from the vcpkg wheelhouse into the virtualenv. The wheel filenames are globbed (can't use
+# dune-common_WHEELHOUSE here, because it is not set yet) so a vcpkg port bump cannot silently leave this pointing at a
+# wheel that no longer exists. The installs run strictly sequentially, one execute_process each: passing several
+# COMMANDs to a single execute_process runs them as a concurrent pipeline, and two pip processes racing in the same
+# virtualenv corrupt site-packages (half-uninstalled "~une-common" leftovers, BrokenPipeError). --no-index pins the
+# resolution to the wheelhouse: pip can never fall back to PyPI and install a dune-common release that mismatches the
+# vcpkg-built one.
 set(_dune_wheelhouse ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse)
 foreach(_dune_wheel_pkg dune_common dune_testtools)
   file(GLOB _dune_wheel ${_dune_wheelhouse}/${_dune_wheel_pkg}-*.whl)
