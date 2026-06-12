@@ -13,6 +13,7 @@
 
 #include <cctype>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <dune/xt/common/exceptions.hh>
 
@@ -33,11 +34,26 @@ public:
     , expressions_(std::move(expressions))
     , values_(variables_.size(), 0.)
   {
-    // Map every (possibly bracketed) variable name to a safe placeholder identifier and bind that
-    // placeholder to our value buffer. The buffer is never resized, so the pointers ExprTk stores
+    // Gather every identifier already present in the variable names or the source expressions, so the
+    // synthetic placeholders bound below can be chosen disjoint from them. Otherwise a user expression
+    // containing a token that happens to equal a placeholder (e.g. "dxtvar0") would silently bind to a
+    // variable instead of being rejected by ExprTk as an unknown symbol.
+    std::unordered_set<std::string> reserved;
+    for (const auto& var : variables_)
+      collect_identifiers(var, reserved);
+    for (const auto& expr : expressions_)
+      collect_identifiers(expr, reserved);
+
+    // Map every (possibly bracketed) variable name to a collision-free placeholder identifier and bind
+    // that placeholder to our value buffer. The buffer is never resized, so the pointers ExprTk stores
     // into it remain valid for the lifetime of this object.
+    std::size_t counter = 0;
     for (std::size_t ii = 0; ii < variables_.size(); ++ii) {
-      const std::string placeholder = make_placeholder(ii);
+      std::string placeholder;
+      do {
+        placeholder = make_placeholder(counter++);
+      } while (reserved.count(placeholder) > 0);
+      reserved.insert(placeholder);
       name_to_placeholder_[variables_[ii]] = placeholder;
       symbol_table_.add_variable(placeholder, values_[ii]);
     }
@@ -80,11 +96,30 @@ public:
   }
 
 private:
-  //! Placeholder identifier for the ii-th variable; a plain alphanumeric token (ExprTk rejects names
-  //! starting with an underscore) that is unlikely to clash with user-provided function/variable names.
+  //! Candidate placeholder identifier; a plain alphanumeric token (ExprTk rejects names starting with an
+  //! underscore). The caller skips candidates that collide with identifiers present in the source.
   static std::string make_placeholder(std::size_t index)
   {
     return "dxtvar" + std::to_string(index);
+  }
+
+  //! Insert every maximal identifier run ([A-Za-z_][A-Za-z0-9_]*) found in \a s into \a out.
+  static void collect_identifiers(const std::string& s, std::unordered_set<std::string>& out)
+  {
+    const std::size_t n = s.size();
+    std::size_t i = 0;
+    while (i < n) {
+      const char c = s[i];
+      if ((std::isalpha(static_cast<unsigned char>(c)) != 0) || c == '_') {
+        std::size_t j = i + 1;
+        while (j < n && ((std::isalnum(static_cast<unsigned char>(s[j])) != 0) || s[j] == '_'))
+          ++j;
+        out.insert(s.substr(i, j - i));
+        i = j;
+      } else {
+        ++i;
+      }
+    }
   }
 
   /**
