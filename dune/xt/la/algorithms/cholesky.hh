@@ -35,7 +35,8 @@ void tridiagonal_ldlt(FirstVectorType& diag, SecondVectorType& subdiag)
 {
   using V1 = Common::VectorAbstraction<FirstVectorType>;
   using V2 = Common::VectorAbstraction<SecondVectorType>;
-  V1::set_entry(diag, 0, V1::get_entry(diag, 0));
+  if (diag.size() == 0)
+    return;
   for (size_t ii = 0; ii < diag.size() - 1; ++ii) {
     if (!(V1::get_entry(diag, ii) > 0)) // use !(.. > 0) instead of (.. <= 0) to also throw on NaNs
       DUNE_THROW(MathError, "LDL^T factorization failed!");
@@ -43,6 +44,9 @@ void tridiagonal_ldlt(FirstVectorType& diag, SecondVectorType& subdiag)
     V1::set_entry(
         diag, ii + 1, V1::get_entry(diag, ii + 1) - V1::get_entry(diag, ii) * std::pow(V2::get_entry(subdiag, ii), 2));
   }
+  // also check the last pivot (as LAPACK's dpttrf does), the loop above only validates d_0, ..., d_{n-2}
+  if (!(V1::get_entry(diag, diag.size() - 1) > 0))
+    DUNE_THROW(MathError, "LDL^T factorization failed!");
 }
 
 template <class FirstVectorType, class SecondVectorType, class VectorType>
@@ -54,8 +58,15 @@ solve_tridiag_ldlt(const FirstVectorType& diag, const SecondVectorType& subdiag,
   using V = Common::VectorAbstraction<VectorType>;
   using ScalarType = typename V::ScalarType;
   size_t size = vec.size();
+  if (size == 0)
+    return;
+  // the thread_local matrix is only initialized on the first call (per thread), so it has to be rebuilt whenever a
+  // system of a different size is solved on this thread (otherwise the solves below read/write out of bounds)
   thread_local auto L =
       eye_matrix<CommonSparseMatrix<ScalarType>>(size, diagonal_pattern(size, size) + diagonal_pattern(size, size, -1));
+  if (L.rows() != size)
+    L = eye_matrix<CommonSparseMatrix<ScalarType>>(size,
+                                                   diagonal_pattern(size, size) + diagonal_pattern(size, size, -1));
   for (size_t ii = 0; ii < size - 1; ++ii)
     L.set_entry(ii + 1, ii, V2::get_entry(subdiag, ii));
   // solve LDL^T x = rhs;
