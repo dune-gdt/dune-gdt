@@ -161,11 +161,11 @@ dune_execute_process(
 # resolution to the wheelhouse: pip can never fall back to PyPI and install a dune-common release that mismatches the
 # vcpkg-built one.
 set(_dune_wheelhouse ${CMAKE_BINARY_DIR}/vcpkg_installed/x64-linux/share/dune/wheelhouse)
-foreach(_dune_wheel_pkg dune_common dune_testtools)
-  file(GLOB _dune_wheel ${_dune_wheelhouse}/${_dune_wheel_pkg}-*.whl)
+foreach(dune_wheel_pkg dune_common dune_testtools)
+  file(GLOB _dune_wheel ${_dune_wheelhouse}/${dune_wheel_pkg}-*.whl)
   list(LENGTH _dune_wheel _dune_wheel_count)
   if(NOT _dune_wheel_count EQUAL 1)
-    message(FATAL_ERROR "Expected exactly one ${_dune_wheel_pkg} wheel in ${_dune_wheelhouse}, found: '${_dune_wheel}'")
+    message(FATAL_ERROR "Expected exactly one ${dune_wheel_pkg} wheel in ${_dune_wheelhouse}, found: '${_dune_wheel}'")
   endif()
   execute_process(
     COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install --no-index --find-links=${_dune_wheelhouse}
