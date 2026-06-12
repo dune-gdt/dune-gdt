@@ -160,8 +160,11 @@ dune_execute_process(
 # here, because it is not set yet) so a vcpkg port bump cannot silently leave this pointing at a wheel that no longer
 # exists. The installs run strictly sequentially, one execute_process each: passing several COMMANDs to a single
 # execute_process runs them as a concurrent pipeline, and two pip processes racing in the same virtualenv corrupt
-# site-packages (half-uninstalled "~une-common" leftovers, BrokenPipeError). --no-index pins the resolution to the
-# wheelhouse: pip can never fall back to PyPI and install a dune-common release that mismatches the vcpkg-built one.
+# site-packages (half-uninstalled "~une-common" leftovers, BrokenPipeError). The dune-common version is pinned by
+# installing the exact wheelhouse wheel by path before anything depends on it: pip then never resolves "dune-common" as
+# an abstract requirement (and won't upgrade an already-satisfied one), so it cannot pull a mismatching release from
+# PyPI. --no-index would pin even harder but breaks the install: the wheels' third-party dependencies (portalocker,
+# numpy, ...) are not in the wheelhouse and must come from PyPI.
 if(EXISTS ${CMAKE_BINARY_DIR}/dune-env/bin/python)
   if(NOT VCPKG_TARGET_TRIPLET)
     set(VCPKG_TARGET_TRIPLET x64-linux)
@@ -175,8 +178,7 @@ if(EXISTS ${CMAKE_BINARY_DIR}/dune-env/bin/python)
         FATAL_ERROR "Expected exactly one ${dune_wheel_pkg} wheel in ${_dune_wheelhouse}, found: '${_dune_wheel}'")
     endif()
     execute_process(
-      COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install --no-index --find-links=${_dune_wheelhouse}
-              ${_dune_wheel}
+      COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install --find-links=${_dune_wheelhouse} ${_dune_wheel}
       RESULT_VARIABLE _pip_install_result
       OUTPUT_VARIABLE pip_install_log ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
       ERROR_VARIABLE pip_install_log
