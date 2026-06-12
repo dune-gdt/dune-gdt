@@ -51,6 +51,7 @@
     "boost-format",
     "boost-serialization",
     "boost-timer",
+    "exprtk",
     "gtest",
     "nanobench",
     "pybind11",

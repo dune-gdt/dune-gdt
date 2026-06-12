@@ -76,7 +76,7 @@ macro(ADD_TIDY)
       fix_tidy_parallel
       COMMENT "If your fixes have been applied several times to each file, run this command sequentially (-j1)")
     foreach(file ${_files})
-      if(${file} MATCHES ".*/functions/expression/mathexpr.*" OR ${file} MATCHES ".*/test/gtest/gtest.*")
+      if(${file} MATCHES ".*/test/gtest/gtest.*")
         continue()
       endif()
       set(targname ${file})

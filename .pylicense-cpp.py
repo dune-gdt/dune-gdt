@@ -34,13 +34,10 @@ include_patterns = (
     "*.tpl",
 )
 exclude_patterns = (
-    "*mathexpr.*",
     "*gtest-all.cc",
     "*.vcsetup*",
     "*gtest-all.cxx",
     "*.ci/shared/*",
     "*/deps/*",
     "*/wheelhouse/*",
-    "*dune/xt/functions/expression/mathexpr.cc",
-    "*dune/xt/functions/expression/mathexpr.hh",
 )
