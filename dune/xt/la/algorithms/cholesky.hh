@@ -98,7 +98,10 @@ void cholesky_rowwise(MatrixType& A)
       for (size_t kk = 0; kk < jj; ++kk)
         L_ij -= M::get_entry(L, ii, kk) * M::get_entry(L, jj, kk);
       L_ij /= M::get_entry(L, jj, jj);
-      if (!only_set_nonzero || !XT::Common::is_zero(L_ij))
+      // for sparse matrices, only write entries that are part of the sparsity pattern; an entry certainly is if its
+      // currently stored value is nonzero, and it has to be overwritten then even if L_ij is exactly zero (otherwise
+      // the stale value of A would poison the remaining factorization)
+      if (!only_set_nonzero || !XT::Common::is_zero(L_ij) || !XT::Common::is_zero(M::get_entry(L, ii, jj)))
         M::set_entry(L, ii, jj, L_ij);
     } // jj
     auto L_ii = M::get_entry(A, ii, ii);
@@ -130,7 +133,8 @@ void cholesky_colwise(MatrixType& A)
       for (size_t kk = 0; kk < jj; ++kk)
         L_ij -= M::get_entry(L, ii, kk) * M::get_entry(L, jj, kk);
       L_ij *= L_jj_inv;
-      if (!only_set_nonzero || !XT::Common::is_zero(L_ij))
+      // see the comment in cholesky_rowwise: a stored nonzero entry has to be overwritten even if L_ij is zero
+      if (!only_set_nonzero || !XT::Common::is_zero(L_ij) || !XT::Common::is_zero(M::get_entry(L, ii, jj)))
         M::set_entry(L, ii, jj, L_ij);
     } // ii
   } // jj
@@ -160,7 +164,8 @@ cholesky_csr(MatrixType& A)
           L_ij -= entries[ll++] * entries[kk++];
       }
       L_ij /= M::get_entry(L, jj, jj);
-      if (!XT::Common::is_zero(L_ij))
+      // see the comment in cholesky_rowwise: a stored nonzero entry has to be overwritten even if L_ij is zero
+      if (!XT::Common::is_zero(L_ij) || !XT::Common::is_zero(M::get_entry(L, ii, jj)))
         M::set_entry(L, ii, jj, L_ij);
     } // jj
     auto L_ii = M::get_entry(A, ii, ii);
