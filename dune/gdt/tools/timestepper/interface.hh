@@ -88,8 +88,15 @@ private:
   using SolutionStorageProviderType = typename Dune::XT::Common::StorageProvider<DiscreteSolutionType>;
 
 protected:
-  TimeStepperInterface(const RangeFieldType t_0, DiscreteFunctionType& initial_values)
-    : CurrentSolutionStorageProviderType(initial_values)
+  /**
+   * \note The initial values are copied: the time stepper evolves its own internal copy in place and never modifies
+   *       the discrete function passed in here. Obtain the evolved state via current_solution().
+   */
+  TimeStepperInterface(const RangeFieldType t_0, const DiscreteFunctionType& initial_values)
+    // own a mutable copy: the stepper evolves u_n_ in place, so it must not alias the caller's (const) data. We cannot
+    // use initial_values.copy_as_discrete_function() here, as its const overload yields an immutable ConstDiscreteFunction.
+    : CurrentSolutionStorageProviderType(
+          new DiscreteFunctionType(initial_values.space(), initial_values.dofs().vector().copy()))
     , SolutionStorageProviderType(new DiscreteSolutionType())
     , t_(t_0)
     , u_n_(&CurrentSolutionStorageProviderType::access())

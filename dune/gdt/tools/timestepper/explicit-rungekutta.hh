@@ -188,7 +188,8 @@ public:
   /**
    * \brief Constructor for RungeKutta time stepper
    * \param op Operator L
-   * \param initial_values Discrete function containing initial values for u at time t_0.
+   * \param initial_values Discrete function containing initial values for u at time t_0. The values are copied; the
+   *        passed function is not modified. The evolved state is available via current_solution().
    * \param r Scalar factor (see above, default is 1)
    * \param t_0 Initial time (default is 0)
    * \param A Coefficient matrix (only provide if you use ExplicitRungeKuttaMethods::other)
@@ -196,7 +197,7 @@ public:
    * \param c Coefficients for time steps (only provide if you use ExplicitRungeKuttaMethods::other)
    */
   ExplicitRungeKuttaTimeStepper(const OperatorType& op,
-                                DiscreteFunctionType& initial_values,
+                                const DiscreteFunctionType& initial_values,
                                 const RangeFieldType r = 1.0,
                                 const double t_0 = 0.0,
                                 const MatrixType& A = ButcherArrayProviderType::A(),
