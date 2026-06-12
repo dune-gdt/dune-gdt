@@ -12,7 +12,7 @@
 
 #include <dune/common/typetraits.hh>
 
-#include <dune/xt/test/gtest/gtest.h>
+#include <gtest/gtest.h>
 #include <dune/xt/common/type_traits.hh>
 #include <dune/xt/la/container/eye-matrix.hh>
 #include <dune/xt/grid/boundaryinfo/alldirichlet.hh>

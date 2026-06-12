@@ -42,7 +42,7 @@
 
 #include <dune/xt/common/float_cmp.hh>
 #include <dune/xt/common/vector.hh>
-#include <dune/xt/test/gtest/gtest.h>
+#include <gtest/gtest.h>
 #include <dune/xt/common/configuration.hh>
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/common/logging.hh>

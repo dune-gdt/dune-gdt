@@ -19,7 +19,7 @@
 #include <string>
 #include <sstream>
 
-#include <dune/xt/test/gtest/gtest.h>
+#include <gtest/gtest.h>
 #include <dune/xt/test/common.hh>
 #include <dune/xt/common/configuration.hh>
 #include <dune/xt/common/exceptions.hh>
@@ -102,9 +102,9 @@ std::string get_unique_test_name()
     return std::string(id);
   };
   std::string result;
-  const auto* test_case_name = test_info->test_case_name();
-  if (test_case_name != nullptr) {
-    result += replace_if(test_case_name);
+  const auto* test_suite_name = test_info->test_suite_name();
+  if (test_suite_name != nullptr) {
+    result += replace_if(test_suite_name);
   }
   const auto* name = test_info->name();
   if (name != nullptr) {

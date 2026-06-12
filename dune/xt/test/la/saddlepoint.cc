@@ -15,7 +15,7 @@
 
 #include <dune/xt/test/main.hxx> // <- This one has to come first, includes config.h!
 #include <dune/xt/test/common/float_cmp.hh>
-#include <dune/xt/test/gtest/gtest.h>
+#include <gtest/gtest.h>
 
 #include <dune/xt/common/type_traits.hh>
 #include "dune/xt/la/solver/saddlepoint.hh"
