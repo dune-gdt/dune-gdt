@@ -94,7 +94,8 @@ protected:
    */
   TimeStepperInterface(const RangeFieldType t_0, const DiscreteFunctionType& initial_values)
     // own a mutable copy: the stepper evolves u_n_ in place, so it must not alias the caller's (const) data. We cannot
-    // use initial_values.copy_as_discrete_function() here, as its const overload yields an immutable ConstDiscreteFunction.
+    // use initial_values.copy_as_discrete_function() here, as its const overload yields an immutable
+    // ConstDiscreteFunction.
     : CurrentSolutionStorageProviderType(
           new DiscreteFunctionType(initial_values.space(), initial_values.dofs().vector().copy()))
     , SolutionStorageProviderType(new DiscreteSolutionType())
