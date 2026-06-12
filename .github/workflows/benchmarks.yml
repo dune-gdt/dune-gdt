@@ -52,6 +52,13 @@ jobs:
           rm -rf build
         fi
 
+    - name: Discard cached dune-env virtualenv
+      # See non_docker_build.yml: a venv reused from the cache can hold a
+      # dune-common Python package that mismatches the current vcpkg wheelhouse
+      # and break configure ("Dune python package could not be found"); configure
+      # recreates it from the current wheelhouse in seconds.
+      run: rm -rf build/*/dune-env
+
     - name: Install dependencies
       run: |
         sudo apt-get update
