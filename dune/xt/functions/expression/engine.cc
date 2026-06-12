@@ -50,8 +50,8 @@ public:
       const std::string translated = translate(expressions_[ii]);
       if (!parser.compile(translated, compiled_[ii]))
         DUNE_THROW(Common::Exceptions::wrong_input_given,
-                   "Could not parse the expression '" << expressions_[ii] << "'!\n   ExprTk reported: "
-                                                      << parser.error());
+                   "Could not parse the expression '" << expressions_[ii]
+                                                      << "'!\n   ExprTk reported: " << parser.error());
     }
   }
 
