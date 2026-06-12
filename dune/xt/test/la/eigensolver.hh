@@ -15,7 +15,7 @@
 
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/common/logging.hh>
-#include <dune/xt/test/gtest/gtest.h>
+#include <gtest/gtest.h>
 
 #include <dune/xt/la/container.hh>
 #include <dune/xt/la/container/conversion.hh>

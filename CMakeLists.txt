@@ -62,6 +62,9 @@ endforeach()
 find_package(Python COMPONENTS Interpreter Development)
 find_package(pybind11 CONFIG REQUIRED)
 
+# GoogleTest is provided by vcpkg (see vcpkg.json) and used by the gtest_dune_xt test-helper library.
+find_package(GTest CONFIG REQUIRED)
+
 # find_program(RUN_IN_ENV_SCRIPT gdt-run-in-dune-env PATHS /usr/local/bin/ ${CMAKE_CURRENT_BINARY_DIR}
 # ${CMAKE_CURRENT_BINARY_DIR}/../dune-testtools/ REQUIRED) execute_process(COMMAND ln -s ${RUN_IN_ENV_SCRIPT}
 # ${CMAKE_CURRENT_BINARY_DIR}/gdt-run-in-dune-env)

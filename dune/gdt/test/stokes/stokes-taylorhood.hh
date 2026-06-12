@@ -12,7 +12,7 @@
 
 #include <dune/xt/test/common.hh>
 #include <dune/xt/test/common/float_cmp.hh>
-#include <dune/xt/test/gtest/gtest.h>
+#include <gtest/gtest.h>
 
 #include <dune/xt/la/algorithms/cholesky.hh>
 #include <dune/xt/la/container/istl.hh>

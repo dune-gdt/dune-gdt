@@ -53,7 +53,6 @@ data
 cmake/modules/petsc
 .idea
 __pycache__
-dune/xt/test/gtest/lib
 data
 !dune/xt/data
 !dune/gdt/data

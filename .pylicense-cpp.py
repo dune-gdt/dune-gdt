@@ -35,9 +35,7 @@ include_patterns = (
 )
 exclude_patterns = (
     "*mathexpr.*",
-    "*gtest-all.cc",
     "*.vcsetup*",
-    "*gtest-all.cxx",
     "*.ci/shared/*",
     "*/deps/*",
     "*/wheelhouse/*",

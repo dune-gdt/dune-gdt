@@ -25,7 +25,7 @@
 #include <dune/xt/common/configuration.hh>
 #include <dune/xt/common/convergence-study.hh>
 #include <dune/xt/common/compiler.hh>
-#include <dune/xt/test/gtest/gtest.h>
+#include <gtest/gtest.h>
 #include <dune/xt/common/vector.hh>
 
 
