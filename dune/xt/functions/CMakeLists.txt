@@ -15,9 +15,9 @@
 set(_lib_dune_xt_functions_sources expression/engine.cc)
 dune_library_add_sources(dunext SOURCES ${_lib_dune_xt_functions_sources})
 
-# The expression functions are backed by ExprTk, a header-only math expression parser pulled in via
-# vcpkg (see vcpkg.json). Its vcpkg port ships only the header without a CMake config, so we locate
-# exprtk.hpp explicitly and add it as a SYSTEM include (the header is large and would otherwise emit
-# many warnings) to the dunext sources that need it (expression/engine.cc).
+# The expression functions are backed by ExprTk, a header-only math expression parser pulled in via vcpkg (see
+# vcpkg.json). Its vcpkg port ships only the header without a CMake config, so we locate exprtk.hpp explicitly and add
+# it as a SYSTEM include (the header is large and would otherwise emit many warnings) to the dunext sources that need it
+# (expression/engine.cc).
 find_path(EXPRTK_INCLUDE_DIR NAMES exprtk.hpp REQUIRED)
 target_include_directories(dunext SYSTEM PRIVATE $<BUILD_INTERFACE:${EXPRTK_INCLUDE_DIR}>)
