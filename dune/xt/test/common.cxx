@@ -96,9 +96,23 @@ std::string get_unique_test_name()
       {"Dune::YaspGrid<2, Dune::EquidistantOffsetCoordinates<double, 2> >", "YASP_2D_EQUIDISTANT_OFFSET"},
       {"Dune::YaspGrid<3, Dune::EquidistantOffsetCoordinates<double, 3> >", "YASP_3D_EQUIDISTANT_OFFSET"},
       {"Dune::YaspGrid<4, Dune::EquidistantOffsetCoordinates<double, 4> >", "YASP_4D_EQUIDISTANT_OFFSET"}};
+  // GoogleTest derives the type_param string above from the demangled type name, and different GoogleTest versions
+  // format it differently (e.g. "Dune::ALUGrid<3, 3, ...>" with spaces vs. "Dune::ALUGrid<3,3,...>" without). Match
+  // the replacements whitespace-insensitively so the expected-results lookup keeps working across versions.
+  auto strip_spaces = [](std::string str) {
+    str.erase(std::remove(str.begin(), str.end(), ' '), str.end());
+    return str;
+  };
+  static const std::map<std::string, std::string> stripped_replacements = [&] {
+    std::map<std::string, std::string> result;
+    for (const auto& replacement : replacements)
+      result.emplace(strip_spaces(replacement.first), replacement.second);
+    return result;
+  }();
   auto replace_if = [&](const auto& id) {
-    if (replacements.count(std::string(id)) > 0)
-      return replacements.at(std::string(id));
+    const auto key = strip_spaces(std::string(id));
+    if (stripped_replacements.count(key) > 0)
+      return stripped_replacements.at(key);
     return std::string(id);
   };
   std::string result;
