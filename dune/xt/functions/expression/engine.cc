@@ -131,6 +131,12 @@ private:
    * function names such as "tan", and "mu[1]" is never confused with "mu[10]". Anything that is not a
    * registered variable (function names, the constant pi, numeric literals, operators) is passed
    * through unchanged.
+   *
+   * Two identifier tokens written directly next to each other ("x[0]t_") denote implicit
+   * multiplication. Because each is rewritten to a placeholder, naive concatenation would glue them
+   * into a single unknown identifier ("dxtvar0dxtvar1"). We therefore emit an explicit '*' between
+   * directly adjacent identifier tokens, which is exactly the multiplication ExprTk's commutative
+   * check would insert for the original (non-remapped) names.
    */
   std::string translate(const std::string& expr) const
   {
@@ -142,9 +148,13 @@ private:
     out.reserve(expr.size());
     const std::size_t n = expr.size();
     std::size_t i = 0;
+    // Source end position of the identifier token emitted last (npos if the previous emission was not
+    // an identifier token). Used to detect two identifier tokens written directly next to each other.
+    std::size_t prev_ident_end = std::string::npos;
     while (i < n) {
       if (!is_ident_start(expr[i])) {
         out += expr[i];
+        prev_ident_end = std::string::npos;
         ++i;
         continue;
       }
@@ -160,9 +170,16 @@ private:
         if (k < n && expr[k] == ']' && k > j + 1)
           j = k + 1;
       }
+      // Two identifier tokens written directly next to each other ("x[0]t_") denote implicit
+      // multiplication; emit an explicit '*' so the remapped placeholders do not fuse into one unknown
+      // identifier. Numeric literals (incl. "1e-5") flow through the branch above, so this never splits
+      // a number from its exponent.
+      if (i == prev_ident_end)
+        out += '*';
       const std::string token = expr.substr(i, j - i);
       const auto it = name_to_placeholder_.find(token);
       out += (it != name_to_placeholder_.end()) ? it->second : token;
+      prev_ident_end = j;
       i = j;
     }
     return out;

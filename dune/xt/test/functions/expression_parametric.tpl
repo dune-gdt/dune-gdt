@@ -56,7 +56,7 @@ TEST_F(ParametricExpressionFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, is_
   // construct simple example
   const std::pair<const char*, int> param("t_", 1);
   const Common::ParameterType parameter(param);
-  const RangeExpressionType expr(std::string("sin(x[0]*t_)"));
+  const RangeExpressionType expr(std::string("sin(x[0]t_)"));
   FunctionType function("x", parameter, expr, 3);
 }
 
@@ -65,7 +65,7 @@ TEST_F(ParametricExpressionFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, glo
 {
   const int expected_order_function = 3;
 
-  const RangeExpressionType expr(std::string("sin(x[0]*t_)"));
+  const RangeExpressionType expr(std::string("sin(x[0]t_)"));
   FunctionType function("x", {"t_", 1}, expr, 3);
 
   const auto actual_order_function = function.order();
@@ -89,7 +89,7 @@ TEST_F(ParametricExpressionFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, glo
 
     // non constant function
     for (auto vv : {-10., 3., 17., 41.}) {
-      const RangeExpressionType expr(std::string("sin(x[0]*t_)"));
+      const RangeExpressionType expr(std::string("sin(x[0]t_)"));
       FunctionType function("x", {"t_", 1}, expr, 3);
       for (auto point : {-1., -0.5, 0., 0.5, 1.}) {
         const RangeReturnType expected_value(sin(point * vv));
@@ -103,7 +103,7 @@ TEST_F(ParametricExpressionFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, glo
 TEST_F(ParametricExpressionFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, is_bindable)
 {
   const auto leaf_view = grid_.leaf_view();
-  const RangeExpressionType expr(std::string("sin(x[0]*t_)"));
+  const RangeExpressionType expr(std::string("sin(x[0]t_)"));
   FunctionType function("x", {"t_", 1}, expr, 3);
 
   auto localizable_function = make_grid_function<ElementType>(function);
@@ -118,7 +118,7 @@ TEST_F(ParametricExpressionFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, loc
 {
   const int expected_order = 3;
 
-  const RangeExpressionType expr(std::string("sin(x[0]*t_)"));
+  const RangeExpressionType expr(std::string("sin(x[0]t_)"));
   FunctionType function("x", {"t_", 1}, expr, 3);
 
   const auto leaf_view = grid_.leaf_view();
@@ -136,7 +136,7 @@ TEST_F(ParametricExpressionFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, loc
 {
   const auto leaf_view = grid_.leaf_view();
 
-  const RangeExpressionType expr(std::string("sin(x[0]*t_)"));
+  const RangeExpressionType expr(std::string("sin(x[0]t_)"));
   FunctionType function("x", {"t_", 1}, expr, 3);
   auto localizable_function = make_grid_function<ElementType>(function);
   auto local_f = localizable_function.local_function();
