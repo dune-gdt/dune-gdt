@@ -138,12 +138,37 @@ private:
    * directly adjacent identifier tokens, which is exactly the multiplication ExprTk's commutative
    * check would insert for the original (non-remapped) names.
    */
+  static bool is_ident_start(char c)
+  {
+    return (std::isalpha(static_cast<unsigned char>(c)) != 0) || c == '_';
+  }
+
+  static bool is_digit(char c)
+  {
+    return std::isdigit(static_cast<unsigned char>(c)) != 0;
+  }
+
+  //! Return the end index of the identifier token starting at \a i: a maximal identifier run, plus an
+  //! optional immediately following bracketed integer index, so that "x[0]" is captured as one token.
+  static std::size_t scan_identifier(const std::string& expr, std::size_t i)
+  {
+    auto is_ident_char = [](char c) { return (std::isalnum(static_cast<unsigned char>(c)) != 0) || c == '_'; };
+    const std::size_t n = expr.size();
+    std::size_t j = i + 1;
+    while (j < n && is_ident_char(expr[j]))
+      ++j;
+    if (j < n && expr[j] == '[') {
+      std::size_t k = j + 1;
+      while (k < n && is_digit(expr[k]))
+        ++k;
+      if (k < n && expr[k] == ']' && k > j + 1)
+        j = k + 1;
+    }
+    return j;
+  }
+
   std::string translate(const std::string& expr) const
   {
-    auto is_ident_start = [](char c) { return (std::isalpha(static_cast<unsigned char>(c)) != 0) || c == '_'; };
-    auto is_ident_char = [](char c) { return (std::isalnum(static_cast<unsigned char>(c)) != 0) || c == '_'; };
-    auto is_digit = [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; };
-
     std::string out;
     out.reserve(expr.size());
     const std::size_t n = expr.size();
@@ -163,18 +188,7 @@ private:
         ++i;
         continue;
       }
-      // consume the identifier ...
-      std::size_t j = i + 1;
-      while (j < n && is_ident_char(expr[j]))
-        ++j;
-      // ... and an optional immediately following bracketed integer index, e.g. "[0]"
-      if (j < n && expr[j] == '[') {
-        std::size_t k = j + 1;
-        while (k < n && is_digit(expr[k]))
-          ++k;
-        if (k < n && expr[k] == ']' && k > j + 1)
-          j = k + 1;
-      }
+      const std::size_t j = scan_identifier(expr, i);
       // Two identifier tokens written directly next to each other ("x[0]t_") denote implicit
       // multiplication; emit an explicit '*' so the remapped placeholders do not fuse into one unknown
       // identifier. Numeric literals (incl. "1e-5") flow through the branch above, so this never splits
