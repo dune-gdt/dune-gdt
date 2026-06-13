@@ -86,6 +86,19 @@ public:
   using GenericFunctionType = GenericFunction<d, r, rC>;
 
 protected:
+  /// \brief The effective logging prefix for the default GridFunction convention: the given prefix, or "GridFunction"
+  ///        if none was provided.
+  static std::string logging_prefix_or_default(const std::string& logging_prefix)
+  {
+    return logging_prefix.empty() ? "GridFunction" : logging_prefix;
+  }
+
+  /// \brief The logging state for the default GridFunction convention (enabled iff an explicit prefix was provided).
+  static std::array<bool, 3> default_logging_state(const std::string& logging_prefix)
+  {
+    return {{!logging_prefix.empty(), !logging_prefix.empty(), true}};
+  }
+
   /// \brief Takes ownership of an already-built grid function. If nm has no value, the wrapped function's own name is
   ///        used. Meant to be called by the specialization-specific ctors of the derived GridFunction classes.
   GridFunctionBase(std::unique_ptr<InterfaceType> function,
@@ -99,13 +112,26 @@ protected:
   {
   }
 
+  /// \brief As above, but applies the default GridFunction logging convention to logging_prefix (see
+  ///        logging_prefix_or_default / default_logging_state). Lets the value/function-wrapping ctors avoid
+  ///        repeating that convention.
+  GridFunctionBase(std::unique_ptr<InterfaceType> function,
+                   std::optional<std::string> nm,
+                   const Common::ParameterType& param_type,
+                   const std::string& logging_prefix)
+    : GridFunctionBase(std::move(function),
+                       std::move(nm),
+                       param_type,
+                       logging_prefix_or_default(logging_prefix),
+                       default_logging_state(logging_prefix))
+  {
+  }
+
 public:
   GridFunctionBase(std::tuple<int, typename GenericFunctionType::GenericEvaluateFunctionType> order_evaluate,
                    std::string nm = "GridFunction",
                    const std::string& logging_prefix = "")
-    : InterfaceType({},
-                    logging_prefix.empty() ? "GridFunction" : logging_prefix,
-                    {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+    : InterfaceType({}, logging_prefix_or_default(logging_prefix), default_logging_state(logging_prefix))
     , function_(make_generic_grid_function<E, r, rC, R, GenericFunctionType>(order_evaluate))
     , name_(std::move(nm))
   {
@@ -114,9 +140,7 @@ public:
   GridFunctionBase(std::tuple<int, typename GenericFunctionType::GenericEvaluateFunctionType, const std::string&>
                        order_evaluate_name,
                    const std::string& logging_prefix = "")
-    : InterfaceType({},
-                    logging_prefix.empty() ? "GridFunction" : logging_prefix,
-                    {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+    : InterfaceType({}, logging_prefix_or_default(logging_prefix), default_logging_state(logging_prefix))
     , function_(make_generic_grid_function<E, r, rC, R, GenericFunctionType>(order_evaluate_name))
     , name_(std::get<2>(order_evaluate_name))
   {
@@ -126,9 +150,7 @@ public:
                               typename GenericFunctionType::GenericEvaluateFunctionType,
                               typename GenericFunctionType::GenericJacobianFunctionType> order_evaluate_jacobian,
                    const std::string& logging_prefix = "")
-    : InterfaceType({},
-                    logging_prefix.empty() ? "GridFunction" : logging_prefix,
-                    {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+    : InterfaceType({}, logging_prefix_or_default(logging_prefix), default_logging_state(logging_prefix))
     , function_(make_generic_grid_function_with_jacobian<E, r, rC, R, GenericFunctionType>(order_evaluate_jacobian))
     , name_("GridFunction")
   {
@@ -139,9 +161,7 @@ public:
                               typename GenericFunctionType::GenericJacobianFunctionType,
                               const std::string&> order_evaluate_jacobian_name,
                    const std::string& logging_prefix = "")
-    : InterfaceType({},
-                    logging_prefix.empty() ? "GridFunction" : logging_prefix,
-                    {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+    : InterfaceType({}, logging_prefix_or_default(logging_prefix), default_logging_state(logging_prefix))
     , function_(
           make_generic_grid_function_with_jacobian<E, r, rC, R, GenericFunctionType>(order_evaluate_jacobian_name))
     , name_(std::get<3>(order_evaluate_jacobian_name))
@@ -297,8 +317,7 @@ public:
                    std::make_unique<ConstantFunction<d, r, rC, R>>(value)),
                std::move(nm),
                {},
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
   }
 
@@ -306,8 +325,7 @@ public:
     : BaseType(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(func),
                std::nullopt,
                func.parameter_type(),
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
   }
 
@@ -315,8 +333,7 @@ public:
     : BaseType(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(std::move(func_ptr)),
                std::nullopt,
                func_ptr->parameter_type(),
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
   }
 
@@ -373,8 +390,7 @@ public:
                    std::make_unique<GridFunction<E, 1, 1, R>>(value), unit_matrix(), ""),
                nm,
                {},
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(debug) << "GridFunction(scalar_value=" << value << ", nm=" << nm << ")" << std::endl;
   }
@@ -386,8 +402,7 @@ public:
                    std::make_unique<ConstantFunction<d, r, r, R>>(value)),
                nm,
                {},
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(debug) << "GridFunction(matrix_value=" << print(value) << ", nm=" << nm << ")" << std::endl;
   }
@@ -398,8 +413,7 @@ public:
                    std::make_unique<FunctionAsGridFunctionWrapper<E, 1, 1, R>>(func), unit_matrix(), func.name()),
                std::nullopt,
                func.parameter_type(),
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(debug) << "GridFunction(scalar_func=" << &func << ")" << std::endl;
   }
@@ -412,8 +426,7 @@ public:
                    func_ptr->name()),
                std::nullopt,
                func_ptr->parameter_type(),
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(debug) << "GridFunction(scalar_func_ptr=" << func_ptr << ")" << std::endl;
   }
@@ -422,8 +435,7 @@ public:
     : BaseType(std::make_unique<FunctionAsGridFunctionWrapper<E, r, r, R>>(func),
                std::nullopt,
                func.parameter_type(),
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(debug) << "GridFunction(matrix_func=" << &func << ")" << std::endl;
   }
@@ -432,8 +444,7 @@ public:
     : BaseType(std::make_unique<FunctionAsGridFunctionWrapper<E, r, r, R>>(std::move(func_ptr)),
                std::nullopt,
                func_ptr->parameter_type(),
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(debug) << "GridFunction(matrix_func_ptr=" << func_ptr << ")" << std::endl;
   }
@@ -509,8 +520,7 @@ public:
                    std::make_unique<ConstantFunction<d, 1, 1, R>>(value)),
                nm,
                {},
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", value=" << value << ", nm=\"" << nm << "\")" << std::endl;
   }
@@ -522,8 +532,7 @@ public:
                    std::make_unique<ConstantFunction<d, 1, 1, R>>(value)),
                nm,
                {},
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", value_vec=" << Common::print(value) << ", nm=\"" << nm
                << "\")" << std::endl;
@@ -536,8 +545,7 @@ public:
                    std::make_unique<ConstantFunction<d, 1, 1, R>>(value[0][0])),
                nm,
                {},
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", value_mat=" << Common::print(value) << ", nm=\"" << nm
                << "\")" << std::endl;
@@ -547,8 +555,7 @@ public:
     : BaseType(std::make_unique<FunctionAsGridFunctionWrapper<E, 1, 1, R>>(func),
                std::nullopt,
                func.parameter_type(),
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", func=" << &func << ", func.name()=" << this->name_ << ")"
                << std::endl;
@@ -558,8 +565,7 @@ public:
     : BaseType(std::make_unique<FunctionAsGridFunctionWrapper<E, 1, 1, R>>(std::move(func_ptr)),
                std::nullopt,
                func_ptr->parameter_type(),
-               logging_prefix.empty() ? "GridFunction" : logging_prefix,
-               {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
+               logging_prefix)
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", func_ptr=" << func_ptr << ", func_ptr->name()=" << this->name_
                << ")" << std::endl;
