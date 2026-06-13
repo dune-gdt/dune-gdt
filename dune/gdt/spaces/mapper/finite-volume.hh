@@ -65,7 +65,7 @@ public:
   }
 
   FiniteVolumeMapper(const ThisType&) = default;
-  FiniteVolumeMapper(ThisType&&) = default;
+  FiniteVolumeMapper(ThisType&&) noexcept = default;
 
   FiniteVolumeMapper& operator=(const ThisType&) = delete;
   FiniteVolumeMapper& operator=(ThisType&&) = delete;

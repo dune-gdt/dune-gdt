@@ -109,7 +109,7 @@ public:
   {
   }
 
-  LocalElementAnsatzValueTestDivProductIntegrand(ThisType&& source) = default;
+  LocalElementAnsatzValueTestDivProductIntegrand(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_binary_element_integrand() const override final
   {
@@ -194,7 +194,7 @@ public:
   {
   }
 
-  LocalElementAnsatzDivTestValueProductIntegrand(ThisType&& source) = default;
+  LocalElementAnsatzDivTestValueProductIntegrand(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_binary_element_integrand() const override final
   {

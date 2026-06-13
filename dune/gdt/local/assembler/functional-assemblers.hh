@@ -75,7 +75,7 @@ public:
   {
   }
 
-  LocalElementFunctionalAssembler(ThisType&& source) = default;
+  LocalElementFunctionalAssembler(ThisType&& source) noexcept = default;
 
   BaseType* copy() override final
   {
@@ -155,7 +155,7 @@ public:
   {
   }
 
-  LocalIntersectionFunctionalAssembler(ThisType&& source) = default;
+  LocalIntersectionFunctionalAssembler(ThisType&& source) noexcept = default;
 
   BaseType* copy() override final
   {

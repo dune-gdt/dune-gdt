@@ -110,7 +110,7 @@ public:
     copy_local_data(other.intersection_data_, intersection_data_);
   } // BilinearForm(...)
 
-  BilinearForm(ThisType&&) = default;
+  BilinearForm(ThisType&&) noexcept = default;
 
   /// \brief allows to fix the arguments to apply2(), the resulting assembler can be appended to a GridWalker
   auto with(RangeFunctionType range_function,
@@ -354,7 +354,7 @@ public:
   {
   }
 
-  BilinearFormAssembler(ThisType&& source) = default;
+  BilinearFormAssembler(ThisType&& source) noexcept = default;
 
   /// \name Required by ElementAndIntersectionFunctor.
   /// \{

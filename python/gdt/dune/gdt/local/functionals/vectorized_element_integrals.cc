@@ -132,7 +132,7 @@ public:
 
   VectorizedLocalElementIntegralFunctional(const ThisType& other) = default;
 
-  VectorizedLocalElementIntegralFunctional(ThisType&& source) = default;
+  VectorizedLocalElementIntegralFunctional(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {

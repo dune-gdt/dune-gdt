@@ -563,7 +563,7 @@ public:
    *  \return Truth value of the comparison.
    *  \see    almost_equal()
    */
-  virtual bool operator==(const derived_type& other) const
+  bool operator==(const derived_type& other) const
   {
     return almost_equal(other);
   }
@@ -573,7 +573,7 @@ public:
    *  \param  other   A vector of same size to compare with.
    *  \return Truth value of the comparison.
    */
-  virtual bool operator!=(const derived_type& other) const
+  bool operator!=(const derived_type& other) const
   {
     return !(this->operator==(other));
   }

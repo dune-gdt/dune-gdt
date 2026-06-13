@@ -110,7 +110,7 @@ public:
   {
   }
 
-  ConstMatrixOperator(ThisType&& source)
+  ConstMatrixOperator(ThisType&& source) noexcept
     : BaseType(source)
     , assembly_grid_view_(source.assembly_grid_view_)
     , source_space_(source.source_space_)
@@ -420,7 +420,7 @@ public:
     copy_local_data(other.intersection_fd_operator_data_, intersection_fd_operator_data_);
   } // ... MatrixOperator(...)
 
-  MatrixOperator(ThisType&& source) = default;
+  MatrixOperator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseOperatorType::matrix;

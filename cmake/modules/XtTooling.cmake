@@ -76,9 +76,6 @@ macro(ADD_TIDY)
       fix_tidy_parallel
       COMMENT "If your fixes have been applied several times to each file, run this command sequentially (-j1)")
     foreach(file ${_files})
-      if(${file} MATCHES ".*/functions/expression/mathexpr.*")
-        continue()
-      endif()
       set(targname ${file})
       dxt_path_to_headercheck_name(targname)
       # Add targets for individual files

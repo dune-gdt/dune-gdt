@@ -134,7 +134,7 @@ public:
   {
   }
 
-  TransformedGridFunction(ThisType&&) = default;
+  TransformedGridFunction(ThisType&&) noexcept = default;
 
 
 private:

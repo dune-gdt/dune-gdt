@@ -155,7 +155,7 @@ public:
   {
   }
 
-  GridFunctionBase(ThisType&&) = default;
+  GridFunctionBase(ThisType&&) noexcept = default;
 
   std::unique_ptr<LocalFunctionType> local_function() const final
   {
@@ -339,7 +339,7 @@ public:
   }
 
   GridFunction(const ThisType& other) = default;
-  GridFunction(ThisType&& source) = default;
+  GridFunction(ThisType&& source) noexcept = default;
 
   // copy_as_grid_function[_impl]() are inherited from GridFunctionBase (CRTP).
 }; // class GridFunction<..., r, rC, ...>
@@ -482,7 +482,7 @@ public:
   }
 
   GridFunction(const ThisType& other) = default;
-  GridFunction(ThisType&&) = default;
+  GridFunction(ThisType&&) noexcept = default;
 
   // copy_as_grid_function[_impl]() are inherited from GridFunctionBase (CRTP).
 }; // class GridFunction<..., r, r, ...>
@@ -588,7 +588,7 @@ public:
   }
 
   GridFunction(const ThisType& other) = default;
-  GridFunction(ThisType&&) = default;
+  GridFunction(ThisType&&) noexcept = default;
 
   // copy_as_grid_function[_impl]() are inherited from GridFunctionBase (CRTP).
 }; // class GridFunction<..., 1, 1, ...>

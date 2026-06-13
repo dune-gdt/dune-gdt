@@ -253,9 +253,9 @@ public:
   } // constructor CouplingGridViewWrapper(...)
 
   CouplingGridViewWrapper(const ThisType& other) = default;
-  CouplingGridViewWrapper(ThisType&& other) = default;
+  CouplingGridViewWrapper(ThisType&& other) noexcept = default;
   ThisType& operator=(const ThisType& other) = default;
-  ThisType& operator=(ThisType&& other) = default;
+  ThisType& operator=(ThisType&& other) noexcept = default;
 
   // This is the only member function that actually changes the state of the CouplingGridView. The copy constructor and
   // copy assignment operators only do a shallow copy of the shared_ptrs, so we have to make sure that we reassign the

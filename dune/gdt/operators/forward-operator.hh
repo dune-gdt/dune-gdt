@@ -94,7 +94,7 @@ public:
     copy_local_data(other.intersection_data_, intersection_data_);
   } // ForwardOperator(...)
 
-  ForwardOperator(ThisType&& source) = default;
+  ForwardOperator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;
@@ -288,7 +288,7 @@ public:
     set_source_in_local_ops(operator_.intersection_data(), intersection_data_);
   }
 
-  ForwardOperatorAssembler(ThisType&& source) = default;
+  ForwardOperatorAssembler(ThisType&& source) noexcept = default;
 
   /// \name Required by ElementAndIntersectionFunctor.
   /// \{

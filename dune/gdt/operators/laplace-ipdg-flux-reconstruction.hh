@@ -107,7 +107,7 @@ public:
   {
   }
 
-  LaplaceIpdgFluxReconstructionOperator(ThisType&&) = default;
+  LaplaceIpdgFluxReconstructionOperator(ThisType&&) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;

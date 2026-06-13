@@ -65,7 +65,7 @@ public:
 
   FunctionBasedBoundaryInfo(const ThisType&) = delete;
 
-  FunctionBasedBoundaryInfo(ThisType&& source) = default;
+  FunctionBasedBoundaryInfo(ThisType&& source) noexcept = default;
 
   void repr(std::ostream& out) const final
   {

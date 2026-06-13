@@ -72,7 +72,7 @@ public:
   {
   }
 
-  FunctionalInterface(ThisType&& source) = default;
+  FunctionalInterface(ThisType&& source) noexcept = default;
 
   virtual ~FunctionalInterface() = default;
 

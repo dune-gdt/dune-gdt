@@ -70,7 +70,7 @@ public:
   {
   }
 
-  LocalElementIntegralFunctional(ThisType&& source) = default;
+  LocalElementIntegralFunctional(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -157,7 +157,7 @@ public:
   {
   }
 
-  LocalIntersectionIntegralFunctional(ThisType&& source) = default;
+  LocalIntersectionIntegralFunctional(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {

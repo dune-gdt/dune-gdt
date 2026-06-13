@@ -121,7 +121,7 @@ public:
 
   BilinearFormInterface(const ThisType& other) = default;
 
-  BilinearFormInterface(ThisType&& source) = default;
+  BilinearFormInterface(ThisType&& source) noexcept = default;
 
   virtual ~BilinearFormInterface() = default;
 
@@ -204,7 +204,7 @@ public:
 
   ForwardOperatorInterface(const ThisType& other) = default;
 
-  ForwardOperatorInterface(ThisType&& source) = default;
+  ForwardOperatorInterface(ThisType&& source) noexcept = default;
 
   virtual ~ForwardOperatorInterface() = default;
 
@@ -391,7 +391,7 @@ public:
 
   OperatorInterface(const ThisType& other) = default;
 
-  OperatorInterface(ThisType&& source) = default;
+  OperatorInterface(ThisType&& source) noexcept = default;
 
   ~OperatorInterface() override = default;
 

@@ -90,7 +90,7 @@ public:
 
   SpaceInterface(const ThisType& other) = default;
 
-  SpaceInterface(ThisType&& source) = default;
+  SpaceInterface(ThisType&& source) noexcept = default;
 
   virtual ThisType* copy() const = 0;
 

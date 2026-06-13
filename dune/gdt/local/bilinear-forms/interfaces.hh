@@ -98,7 +98,7 @@ public:
 
   LocalElementBilinearFormInterface(const ThisType&) = default;
 
-  LocalElementBilinearFormInterface(ThisType&&) = default;
+  LocalElementBilinearFormInterface(ThisType&&) noexcept = default;
 
   virtual ~LocalElementBilinearFormInterface() = default;
 
@@ -197,7 +197,7 @@ public:
 
   LocalCouplingIntersectionBilinearFormInterface(const ThisType&) = default;
 
-  LocalCouplingIntersectionBilinearFormInterface(ThisType&&) = default;
+  LocalCouplingIntersectionBilinearFormInterface(ThisType&&) noexcept = default;
 
   virtual ~LocalCouplingIntersectionBilinearFormInterface() = default;
 
@@ -316,7 +316,7 @@ public:
 
   LocalIntersectionBilinearFormInterface(const ThisType&) = default;
 
-  LocalIntersectionBilinearFormInterface(ThisType&&) = default;
+  LocalIntersectionBilinearFormInterface(ThisType&&) noexcept = default;
 
   virtual ~LocalIntersectionBilinearFormInterface() = default;
 

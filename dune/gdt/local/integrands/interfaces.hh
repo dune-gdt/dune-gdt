@@ -224,7 +224,7 @@ public:
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
   LocalBinaryElementIntegrandInterface(const LocalBinaryElementIntegrandInterface& other) = default;
-  LocalBinaryElementIntegrandInterface(LocalBinaryElementIntegrandInterface&& other) = default;
+  LocalBinaryElementIntegrandInterface(LocalBinaryElementIntegrandInterface&& other) noexcept = default;
 #pragma GCC diagnostic pop
 
   template <class... Args>

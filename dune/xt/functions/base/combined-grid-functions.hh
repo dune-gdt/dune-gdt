@@ -146,7 +146,7 @@ public:
   {
   }
 
-  CombinedGridFunction(ThisType&& source) = default;
+  CombinedGridFunction(ThisType&& source) noexcept = default;
 
   std::unique_ptr<LocalFunctionType> local_function() const final
   {

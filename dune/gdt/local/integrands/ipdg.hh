@@ -90,7 +90,7 @@ public:
   {
   }
 
-  InnerPenalty(ThisType&& source) = default;
+  InnerPenalty(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_quaternary_intersection_integrand() const final
   {
@@ -239,7 +239,7 @@ public:
   }
 #pragma GCC diagnostic pop
 
-  BoundaryPenalty(ThisType&& source) = default;
+  BoundaryPenalty(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_binary_intersection_integrand() const final
   {

@@ -126,7 +126,7 @@ public:
     DUNE_THROW(Dune::NotImplemented, "Copying is disabled, simply create a new view!");
   }
   // Moving from another view is fine
-  ConstVectorView(ThisType&& other) = default;
+  ConstVectorView(ThisType&& other) noexcept = default;
   // No assignment as this is a const view
   ThisType& operator=(const ThisType& other) = delete;
   ThisType& operator=(ThisType&& other) = delete;
@@ -306,8 +306,8 @@ public:
   }
 
   // Moving from another view is fine
-  VectorView(ThisType&& other) = default;
-  ThisType& operator=(VectorView&& other) = default;
+  VectorView(ThisType&& other) noexcept = default;
+  ThisType& operator=(VectorView&& other) noexcept = default;
 
   // Allow copy assignment from any vector
   template <class Vec>

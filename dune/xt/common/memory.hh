@@ -359,7 +359,7 @@ public:
   {
   }
 
-  ConstStorageProvider(ConstStorageProvider<T>&& source) = default;
+  ConstStorageProvider(ConstStorageProvider<T>&& source) noexcept = default;
 
   ConstStorageProvider<T>& operator=(const ConstStorageProvider<T>& other)
   {
@@ -368,7 +368,7 @@ public:
     return *this;
   }
 
-  ConstStorageProvider<T>& operator=(ConstStorageProvider<T>&& source) = default;
+  ConstStorageProvider<T>& operator=(ConstStorageProvider<T>&& source) noexcept = default;
 
   bool valid() const
   {
@@ -443,7 +443,7 @@ public:
   {
   }
 
-  StorageProvider(StorageProvider<T>&& source) = default;
+  StorageProvider(StorageProvider<T>&& source) noexcept = default;
 
   StorageProvider<T>& operator=(const StorageProvider<T>& other) = delete;
 
@@ -454,7 +454,7 @@ public:
     return *this;
   }
 
-  StorageProvider<T>& operator=(StorageProvider<T>&& source) = default;
+  StorageProvider<T>& operator=(StorageProvider<T>&& source) noexcept = default;
 
   bool valid() const
   {
@@ -538,10 +538,10 @@ public:
   }
 
   ConstSharedStorageProvider(const ConstSharedStorageProvider<T>& other) = default;
-  ConstSharedStorageProvider(ConstSharedStorageProvider<T>&& source) = default;
+  ConstSharedStorageProvider(ConstSharedStorageProvider<T>&& source) noexcept = default;
 
   ConstSharedStorageProvider<T>& operator=(const ConstSharedStorageProvider<T>& other) = default;
-  ConstSharedStorageProvider<T>& operator=(ConstSharedStorageProvider<T>&& source) = default;
+  ConstSharedStorageProvider<T>& operator=(ConstSharedStorageProvider<T>&& source) noexcept = default;
 
   std::shared_ptr<const T> access() const
   {

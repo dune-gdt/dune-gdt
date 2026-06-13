@@ -63,7 +63,7 @@ public:
   {
   }
 
-  InnerCoupling(ThisType&& source) = default;
+  InnerCoupling(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_quaternary_intersection_integrand() const final
   {
@@ -219,7 +219,7 @@ public:
   }
 #pragma GCC diagnostic pop
 
-  DirichletCoupling(ThisType&& source) = default;
+  DirichletCoupling(ThisType&& source) noexcept = default;
 
 protected:
   void post_bind(const IntersectionType& intersection) final

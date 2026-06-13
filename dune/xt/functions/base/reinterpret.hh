@@ -70,7 +70,7 @@ public:
   {
   }
 
-  ReinterpretLocalizableFunction(ThisType&&) = default;
+  ReinterpretLocalizableFunction(ThisType&&) noexcept = default;
 
 
 private:
