@@ -39,12 +39,12 @@ public:
 
   virtual BoundaryType* copy() const = 0;
 
-  virtual bool operator==(const BoundaryType& other) const
+  bool operator==(const BoundaryType& other) const
   {
     return id() == other.id();
   }
 
-  virtual bool operator!=(const BoundaryType& other) const
+  bool operator!=(const BoundaryType& other) const
   {
     return !operator==(other);
   }
