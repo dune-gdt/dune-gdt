@@ -168,7 +168,11 @@ void trim(std::vector<std::string>& v);
 //! returns string with local time in current locale's format
 inline std::string stringFromTime(time_t cur_time = time(nullptr))
 {
-  return ctime(&cur_time);
+  // ctime_r is the reentrant variant of ctime; it requires a buffer of at least 26 bytes and,
+  // like ctime, writes a string terminated by a newline character, which we keep to match the
+  // previous behavior.
+  char buf[26];
+  return ctime_r(&cur_time, buf);
 }
 
 
