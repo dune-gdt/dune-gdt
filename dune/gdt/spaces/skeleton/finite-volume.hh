@@ -80,7 +80,7 @@ public:
     this->update_after_adapt();
   }
 
-  FiniteVolumeSkeletonSpace(ThisType&&) = default;
+  FiniteVolumeSkeletonSpace(ThisType&&) noexcept = default;
 
   ThisType& operator=(const ThisType&) = delete;
 

@@ -100,7 +100,7 @@ public:
 
   RaviartThomasSpace(const ThisType& other) = delete;
 
-  RaviartThomasSpace(ThisType&&) = default;
+  RaviartThomasSpace(ThisType&&) noexcept = default;
 
   ThisType& operator=(const ThisType&) = delete;
 

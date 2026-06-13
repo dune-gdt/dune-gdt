@@ -195,7 +195,7 @@ public:
 
   CheckerboardFunction(const ThisType& other) = default;
 
-  CheckerboardFunction(ThisType&& source) = default;
+  CheckerboardFunction(ThisType&& source) noexcept = default;
 
 
 private:

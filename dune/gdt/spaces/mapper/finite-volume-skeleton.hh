@@ -70,7 +70,7 @@ public:
   }
 
   FiniteVolumeSkeletonMapper(const ThisType&) = default;
-  FiniteVolumeSkeletonMapper(ThisType&&) = default;
+  FiniteVolumeSkeletonMapper(ThisType&&) noexcept = default;
 
   FiniteVolumeSkeletonMapper& operator=(const ThisType&) = delete;
   FiniteVolumeSkeletonMapper& operator=(ThisType&&) = delete;

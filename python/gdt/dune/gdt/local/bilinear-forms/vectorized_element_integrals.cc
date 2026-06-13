@@ -170,7 +170,7 @@ public:
 
   VectorizedLocalElementIntegralBilinearForm(const ThisType& other) = default;
 
-  VectorizedLocalElementIntegralBilinearForm(ThisType&& source) = default;
+  VectorizedLocalElementIntegralBilinearForm(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {

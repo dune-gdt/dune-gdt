@@ -85,7 +85,7 @@ public:
   {
   }
 
-  EigenBaseVector(EigenBaseVector&& source) = default;
+  EigenBaseVector(EigenBaseVector&& source) noexcept = default;
 
   using InterfaceType::operator=;
 

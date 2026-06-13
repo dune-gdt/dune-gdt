@@ -73,7 +73,7 @@ public:
   }
 
   ContinuousMapper(const ThisType&) = default;
-  ContinuousMapper(ThisType&&) = default;
+  ContinuousMapper(ThisType&&) noexcept = default;
 
   ContinuousMapper& operator=(const ThisType&) = delete;
   ContinuousMapper& operator=(ThisType&&) = delete;

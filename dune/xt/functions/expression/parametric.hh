@@ -105,7 +105,7 @@ public:
   {
   }
 
-  ParametricExpressionFunction(ThisType&&) = default;
+  ParametricExpressionFunction(ThisType&&) noexcept = default;
 
 private:
   ThisType* copy_as_function_impl() const override

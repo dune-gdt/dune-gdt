@@ -259,7 +259,7 @@ public:
     reinitialize_thread_storage();
   }
 
-  Walker(ThisType&& source) = default;
+  Walker(ThisType&& source) noexcept = default;
 
   ~Walker() override = default;
 

@@ -64,7 +64,7 @@ public:
   {
   }
 
-  LocalIntersectionRestrictedIntegralFunctional(ThisType&& source) = default;
+  LocalIntersectionRestrictedIntegralFunctional(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {

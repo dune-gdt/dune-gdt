@@ -112,7 +112,7 @@ public:
   }
 
   ConstLocalDofVector(const ThisType& other) = default;
-  ConstLocalDofVector(ThisType&& source) = default;
+  ConstLocalDofVector(ThisType&& source) noexcept = default;
 
 protected:
   void post_bind(const ElementType& ele) override final
@@ -226,7 +226,7 @@ public:
   }
 
   LocalDofVector(const ThisType&) = default;
-  LocalDofVector(ThisType&&) = default;
+  LocalDofVector(ThisType&&) noexcept = default;
 
   using BaseType::global;
 

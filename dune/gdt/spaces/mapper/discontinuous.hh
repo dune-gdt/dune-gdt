@@ -74,7 +74,7 @@ public:
   }
 
   DiscontinuousMapper(const ThisType&) = default;
-  DiscontinuousMapper(ThisType&&) = default;
+  DiscontinuousMapper(ThisType&&) noexcept = default;
 
   DiscontinuousMapper& operator=(const ThisType&) = delete;
   DiscontinuousMapper& operator=(ThisType&&) = delete;

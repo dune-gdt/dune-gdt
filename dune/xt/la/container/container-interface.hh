@@ -121,7 +121,7 @@ public:
     return *this;
   }
 
-  ThisType& operator=(ThisType&& other)
+  ThisType& operator=(ThisType&& other) noexcept
   {
     this->as_imp() = std::move(other.as_imp());
     return *this;
@@ -129,7 +129,7 @@ public:
 
 protected:
   ContainerInterface(const ThisType& other) = default;
-  ContainerInterface(ThisType&& other) = default;
+  ContainerInterface(ThisType&& other) noexcept = default;
 
 public:
   /// \name Have to be implemented by a derived class!

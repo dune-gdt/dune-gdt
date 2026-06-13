@@ -63,7 +63,7 @@ public:
   {
   }
 
-  FunctionAsGridFunctionWrapper(ThisType&&) = default;
+  FunctionAsGridFunctionWrapper(ThisType&&) noexcept = default;
 
 
 private:

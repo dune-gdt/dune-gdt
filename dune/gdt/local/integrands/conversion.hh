@@ -76,7 +76,7 @@ public:
   {
   }
 
-  LocalBinaryToUnaryElementIntegrand(ThisType&&) = default;
+  LocalBinaryToUnaryElementIntegrand(ThisType&&) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_unary_element_integrand() const override final
   {
@@ -176,7 +176,7 @@ public:
   }
 #pragma GCC diagnostic pop
 
-  LocalBinaryToUnaryIntersectionIntegrand(ThisType&&) = default;
+  LocalBinaryToUnaryIntersectionIntegrand(ThisType&&) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_unary_intersection_integrand() const override final
   {

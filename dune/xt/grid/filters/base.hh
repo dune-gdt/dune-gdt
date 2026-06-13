@@ -140,7 +140,7 @@ public:
 
   IntersectionFilter(const IntersectionFilter<GL>&) = default;
 
-  IntersectionFilter(IntersectionFilter<GL>&&) = default;
+  IntersectionFilter(IntersectionFilter<GL>&&) noexcept = default;
 
   virtual ~IntersectionFilter() = default;
 

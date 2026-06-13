@@ -48,7 +48,7 @@ public:
   using FiniteElementFamilyType = LocalFiniteElementFamilyInterface<D, d, R, r, rC>;
 
   DefaultGlobalBasis(const ThisType&) = default;
-  DefaultGlobalBasis(ThisType&&) = default;
+  DefaultGlobalBasis(ThisType&&) noexcept = default;
 
   ThisType& operator=(const ThisType&) = delete;
   ThisType& operator=(ThisType&&) = delete;
@@ -105,7 +105,7 @@ private:
     }
 
     LocalizedDefaultGlobalBasis(const ThisType&) = delete;
-    LocalizedDefaultGlobalBasis(ThisType&&) = default;
+    LocalizedDefaultGlobalBasis(ThisType&&) noexcept = default;
 
     ThisType& operator=(const ThisType&) = delete;
     ThisType& operator=(ThisType&&) = delete;

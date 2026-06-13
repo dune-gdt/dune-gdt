@@ -73,7 +73,7 @@ public:
   {
   }
 
-  LocalElementGradientValueIntegrand(ThisType&& source) = default;
+  LocalElementGradientValueIntegrand(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_binary_element_integrand() const override final
   {

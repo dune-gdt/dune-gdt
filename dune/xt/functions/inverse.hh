@@ -181,7 +181,7 @@ public:
   {
   }
 
-  InverseFunction(ThisType&&) = default;
+  InverseFunction(ThisType&&) noexcept = default;
 
 private:
   ThisType* copy_as_function_impl() const override
@@ -258,7 +258,7 @@ public:
   {
   }
 
-  InverseGridFunction(ThisType&&) = default;
+  InverseGridFunction(ThisType&&) noexcept = default;
 
 
 private:

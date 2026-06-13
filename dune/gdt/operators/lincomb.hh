@@ -71,7 +71,7 @@ public:
 
   ConstLincombOperator(const ThisType& other) = default;
 
-  ConstLincombOperator(ThisType&& source) = default;
+  ConstLincombOperator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;
@@ -517,7 +517,7 @@ public:
 
   LincombOperator(ThisType& other) = default;
 
-  LincombOperator(ThisType&& source) = default;
+  LincombOperator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;

@@ -133,7 +133,7 @@ public:
   {
   }
 
-  SlicedGridFunction(ThisType&&) = default;
+  SlicedGridFunction(ThisType&&) noexcept = default;
 
 
 private:

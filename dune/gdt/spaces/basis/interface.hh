@@ -57,7 +57,7 @@ public:
 
   LocalizedGlobalFiniteElementInterface(const ThisType&) = default;
 
-  LocalizedGlobalFiniteElementInterface(ThisType&&) = default;
+  LocalizedGlobalFiniteElementInterface(ThisType&&) noexcept = default;
 
   virtual ~LocalizedGlobalFiniteElementInterface() = default;
 
@@ -164,7 +164,7 @@ public:
 
   GlobalBasisInterface(const ThisType&) = default;
 
-  GlobalBasisInterface(ThisType&&) = default;
+  GlobalBasisInterface(ThisType&&) noexcept = default;
 
   virtual ~GlobalBasisInterface() = default;
 

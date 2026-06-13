@@ -87,7 +87,7 @@ public:
 
   ConstDiscreteFunction(const ThisType&) = default;
 
-  ConstDiscreteFunction(ThisType&&) = default;
+  ConstDiscreteFunction(ThisType&&) noexcept = default;
 
   const SpaceType& space() const
   {
@@ -247,7 +247,7 @@ public:
 
   DiscreteFunction(ThisType& other) = delete;
 
-  DiscreteFunction(ThisType&&) = default;
+  DiscreteFunction(ThisType&&) noexcept = default;
 
   using BaseType::dofs;
 

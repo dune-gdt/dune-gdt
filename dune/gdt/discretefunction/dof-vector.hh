@@ -53,7 +53,7 @@ public:
 
   ConstDofVector(const ThisType&) = default;
 
-  ConstDofVector(ThisType&&) = default;
+  ConstDofVector(ThisType&&) noexcept = default;
 
   const VectorType& vector() const
   {
@@ -98,7 +98,7 @@ public:
 
   DofVector(const ThisType&) = default;
 
-  DofVector(ThisType&&) = default;
+  DofVector(ThisType&&) noexcept = default;
 
   using BaseType::vector;
 

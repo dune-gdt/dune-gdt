@@ -120,7 +120,7 @@ public:
 
   GenericFunction(const ThisType&) = default;
 
-  GenericFunction(ThisType&&) = default;
+  GenericFunction(ThisType&&) noexcept = default;
 
 private:
   ThisType* copy_as_function_impl() const override

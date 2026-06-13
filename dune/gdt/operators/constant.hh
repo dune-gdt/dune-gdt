@@ -80,7 +80,7 @@ public:
 
   ConstantForwardOperator(const ThisType& other) = default;
 
-  ConstantForwardOperator(ThisType&& source) = default;
+  ConstantForwardOperator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;
@@ -213,7 +213,7 @@ public:
 
   ConstantOperator(const ThisType& other) = default;
 
-  ConstantOperator(ThisType&& source) = default;
+  ConstantOperator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;
