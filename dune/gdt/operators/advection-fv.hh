@@ -96,7 +96,7 @@ public:
               *(XT::Grid::ApplyOn::PeriodicBoundaryIntersectionsOnce<AGV>() && !(*periodicity_exception_))};
   }
 
-  AdvectionFvOperator(ThisType&& source)
+  AdvectionFvOperator(ThisType&& source) noexcept
     : BaseType(std::move(source))
     , numerical_flux_(std::move(source.numerical_flux_))
     , periodicity_exception_(std::move(source.periodicity_exception_))

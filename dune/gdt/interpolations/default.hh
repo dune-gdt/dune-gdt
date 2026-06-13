@@ -76,7 +76,7 @@ public:
   {
   }
 
-  DefaultInterpolationElementFunctor(ThisType&&) = default;
+  DefaultInterpolationElementFunctor(ThisType&&) noexcept = default;
 
   XT::Grid::ElementFunctor<IGV>* copy() override final
   {

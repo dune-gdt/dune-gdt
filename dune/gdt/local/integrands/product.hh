@@ -74,7 +74,7 @@ public:
   {
   }
 
-  LocalElementProductIntegrand(ThisType&& source) = default;
+  LocalElementProductIntegrand(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_binary_element_integrand() const final
   {
@@ -183,7 +183,7 @@ public:
   {
   }
 
-  LocalCouplingIntersectionProductIntegrand(ThisType&& source) = default;
+  LocalCouplingIntersectionProductIntegrand(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_quaternary_intersection_integrand() const final
   {
@@ -320,7 +320,7 @@ public:
   }
 #pragma GCC diagnostic pop
 
-  LocalIntersectionProductIntegrand(ThisType&& source) = default;
+  LocalIntersectionProductIntegrand(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_binary_intersection_integrand() const final
   {
@@ -438,7 +438,7 @@ public:
   {
   }
 
-  LocalIntersectionNormalComponentProductIntegrand(ThisType&& source) = default;
+  LocalIntersectionNormalComponentProductIntegrand(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_binary_intersection_integrand() const override final
   {

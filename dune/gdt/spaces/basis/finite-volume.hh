@@ -51,7 +51,7 @@ private:
 
 public:
   FiniteVolumeGlobalBasis(const ThisType&) = default;
-  FiniteVolumeGlobalBasis(ThisType&&) = default;
+  FiniteVolumeGlobalBasis(ThisType&&) noexcept = default;
 
   ThisType& operator=(const ThisType&) = delete;
   ThisType& operator=(ThisType&&) = delete;
@@ -105,7 +105,7 @@ private:
     }
 
     LocalizedFiniteVolumeGlobalBasis(const ThisType&) = default;
-    LocalizedFiniteVolumeGlobalBasis(ThisType&&) = default;
+    LocalizedFiniteVolumeGlobalBasis(ThisType&&) noexcept = default;
 
     ThisType& operator=(const ThisType&) = delete;
     ThisType& operator=(ThisType&&) = delete;

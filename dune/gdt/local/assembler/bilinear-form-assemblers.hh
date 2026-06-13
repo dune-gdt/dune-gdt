@@ -108,7 +108,7 @@ public:
   {
   }
 
-  LocalElementBilinearFormAssembler(ThisType&& source) = default;
+  LocalElementBilinearFormAssembler(ThisType&& source) noexcept = default;
 
   BaseType* copy() override final
   {
@@ -241,7 +241,7 @@ public:
   {
   }
 
-  LocalCouplingIntersectionBilinearFormAssembler(ThisType&& source) = default;
+  LocalCouplingIntersectionBilinearFormAssembler(ThisType&& source) noexcept = default;
 
   BaseType* copy() override final
   {
@@ -388,7 +388,7 @@ public:
   {
   }
 
-  LocalIntersectionBilinearFormAssembler(ThisType&& source) = default;
+  LocalIntersectionBilinearFormAssembler(ThisType&& source) noexcept = default;
 
   BaseType* copy() override final
   {

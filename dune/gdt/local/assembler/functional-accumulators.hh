@@ -81,7 +81,7 @@ public:
   {
   }
 
-  LocalElementFunctionalAccumulator(ThisType&& other) = default;
+  LocalElementFunctionalAccumulator(ThisType&& other) noexcept = default;
 
   BaseType* copy() override final
   {

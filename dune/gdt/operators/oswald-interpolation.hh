@@ -104,7 +104,7 @@ public:
 
   OswaldInterpolationOperator(const ThisType& other) = default;
 
-  OswaldInterpolationOperator(ThisType&& source) = default;
+  OswaldInterpolationOperator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;

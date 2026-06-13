@@ -61,7 +61,7 @@ public:
   {
   }
 
-  Inner(ThisType&& source) = default;
+  Inner(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_quaternary_intersection_integrand() const override final
   {
@@ -203,7 +203,7 @@ public:
   }
 #pragma GCC diagnostic pop
 
-  Boundary(ThisType&& source) = default;
+  Boundary(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy_as_binary_intersection_integrand() const override final
   {

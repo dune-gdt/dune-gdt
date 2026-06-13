@@ -340,7 +340,7 @@ struct CombinedStorageProvider
 
   CombinedStorageProvider(ThisType&) = default;
 
-  CombinedStorageProvider(ThisType&&) = default;
+  CombinedStorageProvider(ThisType&&) noexcept = default;
 }; // struct CombinedStorageProvider
 
 

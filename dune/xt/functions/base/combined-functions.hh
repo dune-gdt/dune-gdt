@@ -116,7 +116,7 @@ public:
   {
   }
 
-  CombinedFunction(ThisType&& source) = default;
+  CombinedFunction(ThisType&& source) noexcept = default;
 
 private:
   ThisType* copy_as_function_impl() const override

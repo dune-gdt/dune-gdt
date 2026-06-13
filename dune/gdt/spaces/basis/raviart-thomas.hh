@@ -78,7 +78,7 @@ public:
 
   RaviartThomasGlobalBasis(const ThisType&) = default;
 
-  RaviartThomasGlobalBasis(ThisType&&) = default;
+  RaviartThomasGlobalBasis(ThisType&&) noexcept = default;
 
   ThisType& operator=(const ThisType&) = delete;
 
@@ -133,7 +133,7 @@ private:
     }
 
     LocalizedRaviartThomasGlobalBasis(const ThisType&) = default;
-    LocalizedRaviartThomasGlobalBasis(ThisType&&) = default;
+    LocalizedRaviartThomasGlobalBasis(ThisType&&) noexcept = default;
 
     ThisType& operator=(const ThisType&) = delete;
     ThisType& operator=(ThisType&&) = delete;

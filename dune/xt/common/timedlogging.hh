@@ -446,13 +446,13 @@ public:
 
   NoOpEnableDebugLoggingForCtors(const ThisType& other) = default;
 
-  NoOpEnableDebugLoggingForCtors(ThisType&& source) = default;
+  NoOpEnableDebugLoggingForCtors(ThisType&& source) noexcept = default;
 
   ~NoOpEnableDebugLoggingForCtors() = default;
 
   ThisType& operator=(const ThisType& other) = default;
 
-  ThisType& operator=(ThisType&& source) = default;
+  ThisType& operator=(ThisType&& source) noexcept = default;
 
 }; // class NoOpEnableDebugLoggingForCtors
 

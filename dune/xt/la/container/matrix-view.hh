@@ -128,8 +128,8 @@ public:
   }
 
   // Moving from another view is fine
-  ConstMatrixView(ThisType&& other) = default;
-  ThisType& operator=(ThisType&& other) = default;
+  ConstMatrixView(ThisType&& other) noexcept = default;
+  ThisType& operator=(ThisType&& other) noexcept = default;
 
   // No assignment as this is a const view
   ThisType& operator=(const ThisType& other) = delete;
@@ -348,8 +348,8 @@ public:
   }
 
   // Moving from another view is fine
-  MatrixView(ThisType&& other) = default;
-  ThisType& operator=(ThisType&& other) = default;
+  MatrixView(ThisType&& other) noexcept = default;
+  ThisType& operator=(ThisType&& other) noexcept = default;
 
   // Allow copy assignment from any dune-xt-la matrix
   template <class Mat>

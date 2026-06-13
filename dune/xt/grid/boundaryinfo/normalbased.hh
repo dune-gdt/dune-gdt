@@ -178,7 +178,7 @@ public:
 
   NormalBasedBoundaryInfo(const ThisType&) = delete;
 
-  NormalBasedBoundaryInfo(ThisType&& source) = default;
+  NormalBasedBoundaryInfo(ThisType&& source) noexcept = default;
 
   void repr(std::ostream& out) const final
   {

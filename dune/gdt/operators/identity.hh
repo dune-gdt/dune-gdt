@@ -55,7 +55,7 @@ public:
 
   IdentityOperator(const ThisType& other) = default;
 
-  IdentityOperator(ThisType&& source) = default;
+  IdentityOperator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;

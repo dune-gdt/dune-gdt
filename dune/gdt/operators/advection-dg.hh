@@ -148,7 +148,7 @@ public:
         artificial_viscosity_component_)};
   } // AdvectionDgOperator(...)
 
-  AdvectionDgOperator(ThisType&& source) = default;
+  AdvectionDgOperator(ThisType&& source) noexcept = default;
 
   /// \name Required by BilinearFormInterface
   /// \{

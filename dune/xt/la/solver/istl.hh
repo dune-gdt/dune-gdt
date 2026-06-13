@@ -188,7 +188,7 @@ public:
   {
   }
 
-  Solver(Solver&& source) = default;
+  Solver(Solver&& source) noexcept = default;
 
   static std::vector<std::string> types()
   {

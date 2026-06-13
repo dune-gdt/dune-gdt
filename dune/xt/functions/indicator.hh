@@ -156,7 +156,7 @@ FunctionType function({{{{0., 1.}, {0., 1.}}, 0.7}, {{{6., 10.}, {8., 10.}}, 0.9
 
   IndicatorGridFunction(const ThisType&) = default;
 
-  IndicatorGridFunction(ThisType&&) = default;
+  IndicatorGridFunction(ThisType&&) noexcept = default;
 
 
 private:
@@ -237,7 +237,7 @@ public:
 
   IndicatorFunction(const ThisType&) = default;
 
-  IndicatorFunction(ThisType&&) = default;
+  IndicatorFunction(ThisType&&) noexcept = default;
 
 private:
   ThisType* copy_as_function_impl() const override

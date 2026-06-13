@@ -103,7 +103,7 @@ public:
     this->update_after_adapt();
   }
 
-  DiscontinuousLagrangeSpace(ThisType&&) = default;
+  DiscontinuousLagrangeSpace(ThisType&&) noexcept = default;
 
   ThisType& operator=(const ThisType&) = delete;
 

@@ -123,7 +123,7 @@ public:
 
   GeneralizedEigenSolverBase(const ThisType& other) = default;
 
-  GeneralizedEigenSolverBase(ThisType&& source) = default;
+  GeneralizedEigenSolverBase(ThisType&& source) noexcept = default;
 
   virtual ~GeneralizedEigenSolverBase() = default;
 

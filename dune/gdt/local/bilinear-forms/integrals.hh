@@ -89,7 +89,7 @@ public:
   {
   }
 
-  LocalElementIntegralBilinearForm(ThisType&& source) = default;
+  LocalElementIntegralBilinearForm(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -194,7 +194,7 @@ public:
   {
   }
 
-  LocalCouplingIntersectionIntegralBilinearForm(ThisType&& source) = default;
+  LocalCouplingIntersectionIntegralBilinearForm(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {
@@ -332,7 +332,7 @@ public:
   {
   }
 
-  LocalIntersectionIntegralBilinearForm(ThisType&& source) = default;
+  LocalIntersectionIntegralBilinearForm(ThisType&& source) noexcept = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {

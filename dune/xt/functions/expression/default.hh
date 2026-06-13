@@ -154,7 +154,7 @@ public:
     }
   }
 
-  ExpressionFunction(ThisType&&) = default;
+  ExpressionFunction(ThisType&&) noexcept = default;
 
 private:
   ThisType* copy_as_function_impl() const override
@@ -348,7 +348,7 @@ public:
       gradients_.emplace_back(new MathExpressionGradientType(*other.gradients_[ii]));
   }
 
-  ExpressionFunction(ThisType&&) = default;
+  ExpressionFunction(ThisType&&) noexcept = default;
 
 private:
   ThisType* copy_as_function_impl() const override

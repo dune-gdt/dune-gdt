@@ -96,7 +96,7 @@ public:
     copy_local_data(other.intersection_data_, intersection_data_);
   } // Operator(...)
 
-  Operator(ThisType&& source) = default;
+  Operator(ThisType&& source) noexcept = default;
 
   // pull in methods from various base classes
   using BaseType::apply;

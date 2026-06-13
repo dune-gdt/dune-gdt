@@ -35,7 +35,7 @@ public:
 
   SimpleDict(const SimpleDict& other) = default;
 
-  SimpleDict(SimpleDict&& source) = default;
+  SimpleDict(SimpleDict&& source) noexcept = default;
 
   SimpleDict(const std::string& key, const ValueType& value)
     : dict_({std::make_pair(key, value)})

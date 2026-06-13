@@ -185,7 +185,7 @@ public:
     // we do not even try to create the FEs in a thread safe way, they will just be recreated when required
   }
 
-  ThreadSafeDefaultLocalFiniteElementFamily(ThisType&& source)
+  ThreadSafeDefaultLocalFiniteElementFamily(ThisType&& source) noexcept
     : factory_(std::move(source.factory_))
     , fes_(std::move(source.fes_))
   {

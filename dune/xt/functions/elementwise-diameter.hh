@@ -84,7 +84,7 @@ public:
 
   ElementwiseDiameterFunction(const ThisType&) = default;
 
-  ElementwiseDiameterFunction(ThisType&&) = default;
+  ElementwiseDiameterFunction(ThisType&&) noexcept = default;
 
 
 private:

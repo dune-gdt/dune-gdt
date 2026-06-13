@@ -248,7 +248,7 @@ public:
   {
   }
 
-  GridFunction(ThisType&& source) = default;
+  GridFunction(ThisType&& source) noexcept = default;
 
 
 private:
@@ -482,7 +482,7 @@ public:
   {
   }
 
-  GridFunction(ThisType&&) = default;
+  GridFunction(ThisType&&) noexcept = default;
 
 private:
   ThisType* copy_as_grid_function_impl() const override
@@ -682,7 +682,7 @@ public:
   {
   }
 
-  GridFunction(ThisType&&) = default;
+  GridFunction(ThisType&&) noexcept = default;
 
 
 private:

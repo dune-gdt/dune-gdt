@@ -70,7 +70,7 @@ public:
   }
 
   ConstVectorBasedFunctional(const ThisType&) = default;
-  ConstVectorBasedFunctional(ThisType&&) = default;
+  ConstVectorBasedFunctional(ThisType&&) noexcept = default;
 
   bool linear() const override
   {
@@ -201,7 +201,7 @@ public:
     // If this constructor is defaulted, the Intel Compiler thinks it is deleted (tested with icc 2021.1 Beta 20200827)
   }
 
-  VectorBasedFunctional(ThisType&&) = default;
+  VectorBasedFunctional(ThisType&&) noexcept = default;
 
   typename BaseWalkerType::BaseType* copy() override
   {

@@ -176,7 +176,7 @@ public:
   {
   }
 
-  ElementwiseMinimumFunction(ThisType&&) = default;
+  ElementwiseMinimumFunction(ThisType&&) noexcept = default;
 
 
 private:

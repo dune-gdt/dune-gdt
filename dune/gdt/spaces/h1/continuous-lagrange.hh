@@ -95,7 +95,7 @@ public:
     this->update_after_adapt();
   }
 
-  ContinuousLagrangeSpace(ThisType&&) = default;
+  ContinuousLagrangeSpace(ThisType&&) noexcept = default;
 
   ThisType& operator=(const ThisType&) = delete;
 
