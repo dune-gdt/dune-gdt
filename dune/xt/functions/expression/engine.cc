@@ -153,6 +153,11 @@ private:
     std::size_t prev_ident_end = std::string::npos;
     while (i < n) {
       if (!is_ident_start(expr[i])) {
+        // A digit directly following an identifier token (e.g. "x[0]2") is implicit multiplication too.
+        // The placeholder ends in a digit ("dxtvar0"), so without a separator it would fuse with the
+        // literal into one symbol ("dxtvar02"); emit the '*' that ExprTk would insert for the raw "]2".
+        if (i == prev_ident_end && is_digit(expr[i]))
+          out += '*';
         out += expr[i];
         prev_ident_end = std::string::npos;
         ++i;
