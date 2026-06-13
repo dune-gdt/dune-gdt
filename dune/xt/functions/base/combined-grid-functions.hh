@@ -121,6 +121,23 @@ public:
                 << ", right=" << right << ", nm=\"" << nm << "\")" << std::endl;
   }
 
+  CombinedGridFunction(std::unique_ptr<LeftType>&& left,
+                       std::unique_ptr<RightType>&& right,
+                       const std::string nm = "",
+                       const std::string& logging_prefix = "",
+                       const std::array<bool, 3>& logging_state = Common::default_logger_state())
+    : BaseType(left->parameter_type() + right->parameter_type(),
+               logging_prefix.empty() ? Common::to_camel_case(get_combination_name(comb{}) + "GridFunction")
+                                      : logging_prefix,
+               logging_state)
+    , left_(std::move(left))
+    , right_(std::move(right))
+    , name_(nm.empty() ? "(" + left_->name() + GetCombination<comb>::symbol() + right_->name() + ")" : nm)
+  {
+    LOG_(debug) << Common::to_camel_case(get_combination_name(comb{}) + "GridFunction") << "(left=" << left_.get()
+                << ", right=" << right_.get() << ", nm=\"" << nm << "\")" << std::endl;
+  }
+
   CombinedGridFunction(const ThisType& other)
     : BaseType(other)
     , left_(other.left_->copy_as_grid_function())

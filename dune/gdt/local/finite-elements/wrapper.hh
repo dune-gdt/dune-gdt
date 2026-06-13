@@ -363,12 +363,14 @@ private:
 public:
   LocalFiniteElementWrapper(const int ord, Implementation*&& imp_ptr)
     : ImplementationProvider(std::move(imp_ptr))
-    , BaseType(
-          ord,
-          new LocalFiniteElementBasisWrapper<Implementation, D, d, R, r, rC>(ImplementationProvider::access()),
-          new LocalFiniteElementCoefficientsWrapper<Implementation, D, d>(ImplementationProvider::access()),
-          new LocalFiniteElementInterpolationWrapper<Implementation, D, d, R, r, rC>(ImplementationProvider::access()),
-          LpAccessor::get(ImplementationProvider::access()->localInterpolation()))
+    , BaseType(ord,
+               std::make_unique<LocalFiniteElementBasisWrapper<Implementation, D, d, R, r, rC>>(
+                   ImplementationProvider::access()),
+               std::make_unique<LocalFiniteElementCoefficientsWrapper<Implementation, D, d>>(
+                   ImplementationProvider::access()),
+               std::make_unique<LocalFiniteElementInterpolationWrapper<Implementation, D, d, R, r, rC>>(
+                   ImplementationProvider::access()),
+               LpAccessor::get(ImplementationProvider::access()->localInterpolation()))
   {
   }
 

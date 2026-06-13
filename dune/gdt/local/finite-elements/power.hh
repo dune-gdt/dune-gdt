@@ -361,9 +361,9 @@ public:
 
   LocalPowerFiniteElement(const UnpoweredType& unpowered)
     : BaseType(unpowered.order(),
-               new LocalPowerFiniteElementBasis<power, D, d, R, r>(unpowered.basis()),
-               new LocalPowerFiniteElementCoefficients<D, d>(unpowered.coefficients(), power),
-               new LocalPowerFiniteElementInterpolation<power, D, d, R, r>(unpowered.interpolation()),
+               std::make_unique<LocalPowerFiniteElementBasis<power, D, d, R, r>>(unpowered.basis()),
+               std::make_unique<LocalPowerFiniteElementCoefficients<D, d>>(unpowered.coefficients(), power),
+               std::make_unique<LocalPowerFiniteElementInterpolation<power, D, d, R, r>>(unpowered.interpolation()),
                unpowered.is_lagrangian() ? unpowered.lagrange_points() : std::vector<DomainType>(),
                /*powered=*/true)
   {

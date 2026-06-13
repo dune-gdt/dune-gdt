@@ -323,8 +323,8 @@ protected:
     // build residual operator (need pointers for residual_op to manage the memory)
     auto residual_op = std::make_unique<typename O::LincombOperatorType>(make_lincomb_operator<M>(space));
     residual_op->add(lhs_op.release(), 1.);
-    residual_op->add(new ConstantOperator<GV, 1, 1, 1, 1, R, M>(
-                         space.grid_view(), space, space, new V(std::move(rhs_func.vector()))),
+    auto rhs_vector = std::make_unique<V>(std::move(rhs_func.vector()));
+    residual_op->add(new ConstantOperator<GV, 1, 1, 1, 1, R, M>(space.grid_view(), space, space, rhs_vector.release()),
                      -1);
     return residual_op;
   } // ... make_residual_operator(...)

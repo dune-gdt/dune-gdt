@@ -141,7 +141,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(new ConstantFunction<d, r, rC, R>(value)))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<ConstantFunction<d, r, rC, R>>(value)))
     , name_(std::move(nm))
   {
   }
@@ -188,8 +189,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate), std::get<1>(order_evaluate))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate), std::get<1>(order_evaluate))))
     , name_(std::move(nm))
   {
   }
@@ -200,8 +201,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate_name), std::get<1>(order_evaluate_name))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_name), std::get<1>(order_evaluate_name))))
     , name_(std::get<2>(order_evaluate_name))
   {
   }
@@ -213,12 +214,12 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(
-          new FunctionAsGridFunctionWrapper<E, r, rC, R>(new GenericFunctionType(std::get<0>(order_evaluate_jacobian),
-                                                                                 std::get<1>(order_evaluate_jacobian),
-                                                                                 /*name=*/"",
-                                                                                 /*param_type=*/{},
-                                                                                 std::get<2>(order_evaluate_jacobian))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_jacobian),
+                                                std::get<1>(order_evaluate_jacobian),
+                                                /*name=*/"",
+                                                /*param_type=*/{},
+                                                std::get<2>(order_evaluate_jacobian))))
     , name_("GridFunction")
   {
   }
@@ -231,12 +232,12 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate_jacobian_name),
-                                  std::get<1>(order_evaluate_jacobian_name),
-                                  /*name=*/"",
-                                  /*param_type=*/{},
-                                  std::get<2>(order_evaluate_jacobian_name))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_jacobian_name),
+                                                std::get<1>(order_evaluate_jacobian_name),
+                                                /*name=*/"",
+                                                /*param_type=*/{},
+                                                std::get<2>(order_evaluate_jacobian_name))))
     , name_(std::get<3>(order_evaluate_jacobian_name))
   {
   }
@@ -290,9 +291,9 @@ class GridFunction<E, r, r, R> : public GridFunctionInterface<E, r, r, R>
   using ThisType = GridFunction;
 
 private:
-  static GridFunctionInterface<E, r, r, R>* unit_matrix()
+  static std::unique_ptr<GridFunctionInterface<E, r, r, R>> unit_matrix()
   {
-    return new FunctionAsGridFunctionWrapper<E, r, r, R>(new ConstantFunction<d, r, r, R>(
+    return std::make_unique<FunctionAsGridFunctionWrapper<E, r, r, R>>(std::make_unique<ConstantFunction<d, r, r, R>>(
         XT::LA::eye_matrix<typename FunctionInterface<d, r, r, R>::RangeReturnType>(r, r)));
   }
 
@@ -306,8 +307,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new ProductGridFunction<GridFunction<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>(
-          new GridFunction<E, 1, 1, R>(value), std::move(unit_matrix()), ""))
+    , function_(std::make_unique<ProductGridFunction<GridFunction<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>>(
+          std::make_unique<GridFunction<E, 1, 1, R>>(value), unit_matrix(), ""))
     , name_(nm)
   {
     LOG_(debug) << "GridFunction(scalar_value=" << value << ", nm=" << nm << ")" << std::endl;
@@ -319,7 +320,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, r, R>(new ConstantFunction<d, r, r, R>(value)))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, r, R>>(
+          std::make_unique<ConstantFunction<d, r, r, R>>(value)))
     , name_(nm)
   {
     LOG_(debug) << "GridFunction(matrix_value=" << print(value) << ", nm=" << nm << ")" << std::endl;
@@ -329,8 +331,9 @@ public:
     : BaseType(func.parameter_type(),
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new ProductGridFunction<FunctionAsGridFunctionWrapper<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>(
-          new FunctionAsGridFunctionWrapper<E, 1, 1, R>(func), std::move(unit_matrix()), func.name()))
+    , function_(std::make_unique<
+                ProductGridFunction<FunctionAsGridFunctionWrapper<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>>(
+          std::make_unique<FunctionAsGridFunctionWrapper<E, 1, 1, R>>(func), unit_matrix(), func.name()))
     , name_(function_->name())
   {
     LOG_(debug) << "GridFunction(scalar_func=" << &func << ")" << std::endl;
@@ -340,9 +343,10 @@ public:
     : BaseType(func_ptr->parameter_type(),
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new ProductGridFunction<FunctionAsGridFunctionWrapper<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>(
-          new FunctionAsGridFunctionWrapper<E, 1, 1, R>(std::move(func_ptr)),
-          std::move(unit_matrix()),
+    , function_(std::make_unique<
+                ProductGridFunction<FunctionAsGridFunctionWrapper<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>>(
+          std::make_unique<FunctionAsGridFunctionWrapper<E, 1, 1, R>>(std::move(func_ptr)),
+          unit_matrix(),
           func_ptr->name()))
     , name_(function_->name())
   {
@@ -373,8 +377,8 @@ public:
     : BaseType(func.parameter_type(),
                logging_prefix.empty() ? func.logger.prefix : logging_prefix,
                logging_prefix.empty() ? func.logger.state : Common::default_logger_state())
-    , function_(new ProductGridFunction<GridFunction<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>(
-          new GridFunction<E, 1, 1, R>(func), std::move(unit_matrix()), func.name()))
+    , function_(std::make_unique<ProductGridFunction<GridFunction<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>>(
+          std::make_unique<GridFunction<E, 1, 1, R>>(func), unit_matrix(), func.name()))
     , name_(function_->name())
   {
     LOG_(debug) << "GridFunction(scalar_grid_func=" << &func << ")" << std::endl;
@@ -384,8 +388,9 @@ public:
     : BaseType(func_ptr->parameter_type(),
                logging_prefix.empty() ? func_ptr->logger.prefix : logging_prefix,
                logging_prefix.empty() ? func_ptr->logger.state : Common::default_logger_state())
-    , function_(new ProductGridFunction<GridFunctionInterface<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>(
-          std::move(func_ptr), std::move(unit_matrix()), func_ptr->name()))
+    , function_(
+          std::make_unique<ProductGridFunction<GridFunctionInterface<E, 1, 1, R>, GridFunctionInterface<E, r, r, R>>>(
+              std::unique_ptr<GridFunctionInterface<E, 1, 1, R>>(std::move(func_ptr)), unit_matrix(), func_ptr->name()))
     , name_(function_->name())
   {
     LOG_(debug) << "GridFunction(scalar_grid_func_ptr=" << func_ptr << ")" << std::endl;
@@ -416,8 +421,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate), std::get<1>(order_evaluate))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate), std::get<1>(order_evaluate))))
     , name_("GridFunction")
   {
     LOG_(debug) << "GridFunction(tuple_of_order_and_evaluate=" << &order_evaluate << ")" << std::endl;
@@ -429,8 +434,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate_name), std::get<1>(order_evaluate_name))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_name), std::get<1>(order_evaluate_name))))
     , name_(std::get<2>(order_evaluate_name))
   {
     LOG_(debug) << "GridFunction(tuple_of_order_and_evaluate_and_name=" << &order_evaluate_name << ")" << std::endl;
@@ -443,12 +448,12 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(
-          new FunctionAsGridFunctionWrapper<E, r, rC, R>(new GenericFunctionType(std::get<0>(order_evaluate_jacobian),
-                                                                                 std::get<1>(order_evaluate_jacobian),
-                                                                                 /*name=*/"",
-                                                                                 /*param_type=*/{},
-                                                                                 std::get<2>(order_evaluate_jacobian))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_jacobian),
+                                                std::get<1>(order_evaluate_jacobian),
+                                                /*name=*/"",
+                                                /*param_type=*/{},
+                                                std::get<2>(order_evaluate_jacobian))))
     , name_("GridFunction")
   {
     LOG_(debug) << "GridFunction(tuple_of_order_and_evaluate_and_jacobian=" << &order_evaluate_jacobian << ")"
@@ -463,12 +468,12 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate_jacobian_name),
-                                  std::get<1>(order_evaluate_jacobian_name),
-                                  /*name=*/"",
-                                  /*param_type=*/{},
-                                  std::get<2>(order_evaluate_jacobian_name))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_jacobian_name),
+                                                std::get<1>(order_evaluate_jacobian_name),
+                                                /*name=*/"",
+                                                /*param_type=*/{},
+                                                std::get<2>(order_evaluate_jacobian_name))))
     , name_(std::get<3>(order_evaluate_jacobian_name))
   {
     LOG_(debug) << "GridFunction(tuple_of_order_and_evaluate_and_jacobian_and_name=" << &order_evaluate_jacobian_name
@@ -533,7 +538,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, 1, 1, R>(new ConstantFunction<d, 1, 1, R>(value)))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, 1, 1, R>>(
+          std::make_unique<ConstantFunction<d, 1, 1, R>>(value)))
     , name_(nm)
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", value=" << value << ", nm=\"" << nm << "\")" << std::endl;
@@ -545,7 +551,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, 1, 1, R>(new ConstantFunction<d, 1, 1, R>(value)))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, 1, 1, R>>(
+          std::make_unique<ConstantFunction<d, 1, 1, R>>(value)))
     , name_(nm)
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", value_vec=" << Common::print(value) << ", nm=\"" << nm
@@ -558,7 +565,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, 1, 1, R>(new ConstantFunction<d, 1, 1, R>(value[0][0])))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, 1, 1, R>>(
+          std::make_unique<ConstantFunction<d, 1, 1, R>>(value[0][0])))
     , name_(nm)
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", value_mat=" << Common::print(value) << ", nm=\"" << nm
@@ -614,8 +622,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate), std::get<1>(order_evaluate))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate), std::get<1>(order_evaluate))))
     , name_("GridFunction")
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", order_evaluate_lambda=" << &order_evaluate << ")"
@@ -628,8 +636,8 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate_name), std::get<1>(order_evaluate_name))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_name), std::get<1>(order_evaluate_name))))
     , name_(std::get<2>(order_evaluate_name))
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", order_evaluate_name_lambda=" << &order_evaluate_name << ")"
@@ -643,12 +651,12 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(
-          new FunctionAsGridFunctionWrapper<E, r, rC, R>(new GenericFunctionType(std::get<0>(order_evaluate_jacobian),
-                                                                                 std::get<1>(order_evaluate_jacobian),
-                                                                                 /*name=*/"",
-                                                                                 /*param_type=*/{},
-                                                                                 std::get<2>(order_evaluate_jacobian))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_jacobian),
+                                                std::get<1>(order_evaluate_jacobian),
+                                                /*name=*/"",
+                                                /*param_type=*/{},
+                                                std::get<2>(order_evaluate_jacobian))))
     , name_("GridFunction")
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this << ", order_evaluate_jacobian_lambda=" << &order_evaluate_jacobian
@@ -663,12 +671,12 @@ public:
     : BaseType({},
                logging_prefix.empty() ? "GridFunction" : logging_prefix,
                {{!logging_prefix.empty(), !logging_prefix.empty(), true}})
-    , function_(new FunctionAsGridFunctionWrapper<E, r, rC, R>(
-          new GenericFunctionType(std::get<0>(order_evaluate_jacobian_name),
-                                  std::get<1>(order_evaluate_jacobian_name),
-                                  /*name=*/"",
-                                  /*param_type=*/{},
-                                  std::get<2>(order_evaluate_jacobian_name))))
+    , function_(std::make_unique<FunctionAsGridFunctionWrapper<E, r, rC, R>>(
+          std::make_unique<GenericFunctionType>(std::get<0>(order_evaluate_jacobian_name),
+                                                std::get<1>(order_evaluate_jacobian_name),
+                                                /*name=*/"",
+                                                /*param_type=*/{},
+                                                std::get<2>(order_evaluate_jacobian_name))))
     , name_(std::get<3>(order_evaluate_jacobian_name))
   {
     LOG_(info) << "GridFunction<1,1>(this=" << this
