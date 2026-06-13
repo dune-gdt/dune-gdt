@@ -17,8 +17,12 @@
 #ifndef DUNE_XT_FUNCTIONS_EXPRESSION_BASE_HH
 #define DUNE_XT_FUNCTIONS_EXPRESSION_BASE_HH
 
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <iostream>
+#include <memory>
 #include <mutex>
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -26,11 +30,10 @@
 #include <dune/common/exceptions.hh>
 #include <dune/common/fvector.hh>
 
-#include <dune/xt/common/color.hh>
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/common/string.hh>
 
-#include "mathexpr.hh"
+#include "engine.hh"
 
 #ifndef DUNE_XT_FUNCTIONS_EXPRESSION_BASE_MAX_DYNAMIC_SIZE
 #  define DUNE_XT_FUNCTIONS_EXPRESSION_BASE_MAX_DYNAMIC_SIZE 64
@@ -41,7 +44,7 @@ namespace Dune::XT::Functions {
 
 
 /**
- *  \brief      Base class that makes a function out of the stuff from mathexpr.hh
+ *  \brief      Base class that makes a function out of mathematical expression strings.
  *  \attention  Most surely you do not want to use this class directly, but Functions::ExpressionFunction!
  */
 template <class DomainField, size_t domainDim, class RangeField, size_t rangeDim>
@@ -76,19 +79,14 @@ public:
   ThisType& operator=(const ThisType& other)
   {
     if (this != &other) {
-      cleanup();
-      variable_ = std::string("");
-      variables_ = Common::FieldVector<std::string, domain_dim>(std::string(""));
-      expressions_ = Common::FieldVector<std::string, range_dim>(std::string(""));
+      variable_ = other.variable_;
+      expressions_ = other.expressions_;
       setup();
     }
-    return this;
+    return *this;
   }
 
-  ~MathExpressionBase()
-  {
-    cleanup();
-  }
+  ~MathExpressionBase() = default;
 
   std::string variable() const
   {
@@ -104,12 +102,10 @@ public:
                 Dune::FieldVector<RangeFieldType, range_dim>& ret) const
   {
     std::lock_guard<std::mutex> guard(mutex_);
-    // copy arg
-    for (typename Dune::FieldVector<DomainFieldType, domain_dim>::size_type ii = 0; ii < domain_dim; ++ii)
-      *(arg_[ii]) = arg[ii];
-    // copy ret
-    for (typename Dune::FieldVector<RangeFieldType, range_dim>::size_type ii = 0; ii < range_dim; ++ii)
-      ret[ii] = op_[ii]->Val();
+    std::array<double, domain_dim> values{};
+    for (size_t ii = 0; ii < domain_dim; ++ii)
+      values[ii] = static_cast<double>(arg[ii]);
+    evaluate_into(values.data(), domain_dim, ret);
   }
 
   /**
@@ -118,31 +114,25 @@ public:
   void evaluate(const Dune::DynamicVector<DomainFieldType>& arg, Dune::DynamicVector<RangeFieldType>& ret) const
   {
     std::lock_guard<std::mutex> guard(mutex_);
-    // check for sizes
     assert(arg.size() > 0);
     if (ret.size() != range_dim)
       ret = Dune::DynamicVector<RangeFieldType>(range_dim);
-    // copy arg
+    std::array<double, domain_dim> values{};
     for (size_t ii = 0; ii < std::min(domain_dim, arg.size()); ++ii)
-      *(arg_[ii]) = arg[ii];
-    // copy ret
-    for (typename Dune::DynamicVector<RangeFieldType>::size_type ii = 0; ii < range_dim; ++ii)
-      ret[ii] = op_[ii]->Val();
+      values[ii] = static_cast<double>(arg[ii]);
+    evaluate_into(values.data(), domain_dim, ret);
   }
 
   void evaluate(const Dune::FieldVector<DomainFieldType, domain_dim>& arg,
                 Dune::DynamicVector<RangeFieldType>& ret) const
   {
     std::lock_guard<std::mutex> guard(mutex_);
-    // check for sizes
     if (ret.size() != range_dim)
       ret = Dune::DynamicVector<RangeFieldType>(range_dim);
-    // copy arg
-    for (typename Dune::FieldVector<DomainFieldType, domain_dim>::size_type ii = 0; ii < domain_dim; ++ii)
-      *(arg_[ii]) = arg[ii];
-    // copy ret
-    for (typename Dune::DynamicVector<RangeFieldType>::size_type ii = 0; ii < range_dim; ++ii)
-      ret[ii] = op_[ii]->Val();
+    std::array<double, domain_dim> values{};
+    for (size_t ii = 0; ii < domain_dim; ++ii)
+      values[ii] = static_cast<double>(arg[ii]);
+    evaluate_into(values.data(), domain_dim, ret);
   }
 
   /**
@@ -153,12 +143,10 @@ public:
   {
     std::lock_guard<std::mutex> guard(mutex_);
     assert(arg.size() > 0);
-    // copy arg
+    std::array<double, domain_dim> values{};
     for (size_t ii = 0; ii < std::min(domain_dim, arg.size()); ++ii)
-      *(arg_[ii]) = arg[ii];
-    // copy ret
-    for (size_t ii = 0; ii < range_dim; ++ii)
-      ret[ii] = op_[ii]->Val();
+      values[ii] = static_cast<double>(arg[ii]);
+    evaluate_into(values.data(), domain_dim, ret);
   }
 
   void report(const std::string& _name = "function.mathexpressionbase",
@@ -182,44 +170,31 @@ private:
   void setup()
   {
     // fill variables (i.e. "x[0]", "x[1]", ...)
+    std::vector<std::string> variables(domain_dim);
     for (size_t ii = 0; ii < domain_dim; ++ii)
-      variables_[ii] = variable_ + "[" + Common::to_string(ii) + "]";
-    // create expressions
-    for (size_t ii = 0; ii < domain_dim; ++ii) {
-      arg_[ii] = new DomainFieldType(0.0);
-      var_arg_[ii] = new RVar(variables_[ii].c_str(), arg_[ii]);
-      vararray_[ii] = var_arg_[ii];
-    }
-    for (size_t ii = 0; ii < range_dim; ++ii) {
-      op_[ii] = new ROperation(expressions_[ii].c_str(), domain_dim, vararray_.data());
-    }
+      variables[ii] = variable_ + "[" + Common::to_string(ii) + "]";
+    std::vector<std::string> expressions(expressions_.begin(), expressions_.end());
+    engine_ = std::make_unique<internal::MathExpressionEngine>(std::move(variables), std::move(expressions));
   } // ... setup(...)
 
-  void cleanup()
+  template <class RangeVector>
+  void evaluate_into(const double* values, size_t num_values, RangeVector& ret) const
   {
-    for (size_t ii = 0; ii < range_dim; ++ii) {
-      delete op_[ii];
-    }
-    for (size_t ii = 0; ii < domain_dim; ++ii) {
-      delete var_arg_[ii];
-      delete arg_[ii];
-    }
-  } // void cleanup()
+    std::array<double, range_dim> results{};
+    engine_->evaluate(values, num_values, results.data(), range_dim);
+    for (size_t ii = 0; ii < range_dim; ++ii)
+      ret[ii] = static_cast<RangeFieldType>(results[ii]);
+  }
 
   std::string variable_;
-  Common::FieldVector<std::string, domain_dim> variables_;
   Common::FieldVector<std::string, range_dim> expressions_;
-  size_t actualDimRange_;
-  mutable std::array<DomainFieldType*, domain_dim> arg_;
-  std::array<RVar*, domain_dim> var_arg_;
-  std::array<RVar*, domain_dim> vararray_;
-  std::array<ROperation*, range_dim> op_;
+  std::unique_ptr<internal::MathExpressionEngine> engine_;
   mutable std::mutex mutex_;
 }; // class MathExpressionBase
 
 
 /**
- *  \brief      Base class that makes a function out of the stuff from mathexpr.hh
+ *  \brief      Base class that makes a function out of mathematical expression strings (dynamic domain dim).
  *  \attention  Most surely you do not want to use this class directly, but Functions::ParametricExpressionFunction!
  */
 template <class D, class R, size_t r, size_t max_d = DUNE_XT_FUNCTIONS_EXPRESSION_BASE_MAX_DYNAMIC_SIZE>
@@ -246,14 +221,11 @@ public:
 
   DynamicMathExpressionBase(ThisType&&) = default;
 
-  ~DynamicMathExpressionBase()
-  {
-    cleanup();
-  }
+  ~DynamicMathExpressionBase() = default;
 
   const std::vector<std::string>& variables() const
   {
-    return originalvars_;
+    return variables_;
   }
 
   const std::vector<std::string>& expressions() const
@@ -265,16 +237,17 @@ public:
   {
     std::lock_guard<std::mutex> guard(mutex_);
     // check for sizes
-    if (arg.size() != originalvars_.size())
+    if (arg.size() != variables_.size())
       DUNE_THROW(Common::Exceptions::shapes_do_not_match,
                  "arg.size(): " << arg.size() << "\n   "
-                                << "variables.size(): " << originalvars_.size());
-    // copy arg
-    for (size_t ii = 0; ii < originalvars_.size(); ++ii)
-      *(arg_[ii]) = arg[ii];
-    // copy ret
+                                << "variables.size(): " << variables_.size());
+    std::vector<double> values(variables_.size());
+    for (size_t ii = 0; ii < variables_.size(); ++ii)
+      values[ii] = static_cast<double>(arg[ii]);
+    std::array<double, range_dim> results{};
+    engine_->evaluate(values.data(), values.size(), results.data(), range_dim);
     for (size_t ii = 0; ii < range_dim; ++ii)
-      ret[ii] = op_[ii]->Val();
+      ret[ii] = static_cast<RangeFieldType>(results[ii]);
   }
 
 private:
@@ -297,44 +270,16 @@ private:
                      << DUNE_XT_FUNCTIONS_EXPRESSION_BASE_MAX_DYNAMIC_SIZE << " variables, but you provided "
                      << vars.size() << "!\n\n"
                      << "Configure dune-xt with a larger DUNE_XT_FUNCTIONS_EXPRESSION_BASE_MAX_DYNAMIC_SIZE!");
-    originalvars_ = vars;
-    for (const auto& var : originalvars_)
+    variables_ = vars;
+    for (const auto& var : variables_)
       if (var.empty())
         DUNE_THROW(Common::Exceptions::wrong_input_given, "Given variables must not be empty!");
-    variables_ = originalvars_;
-    for (size_t ii = variables_.size(); ii < maxDimDomain; ++ii)
-      variables_.push_back("this_is_a_long_dummy_name_to_make_sure_it_is_not_used_" + Common::to_string(ii));
-    assert(variables_.size() == maxDimDomain);
-    // create expressions
-    for (size_t ii = 0; ii < maxDimDomain; ++ii) {
-      arg_[ii] = new DomainFieldType(0.0);
-      var_arg_[ii] = new RVar(variables_[ii].c_str(), arg_[ii]);
-      vararray_[ii] = var_arg_[ii];
-    }
-    for (size_t ii = 0; ii < range_dim; ++ii) {
-      op_[ii] = new ROperation(expressions_[ii].c_str(), maxDimDomain, vararray_.data());
-    }
-  } // void setup(const std::string& var, const std::vector< std::string >& expressions)
+    engine_ = std::make_unique<internal::MathExpressionEngine>(variables_, expressions_);
+  } // void setup(const std::vector<std::string>& vars, const std::vector<std::string>& exprs)
 
-  void cleanup()
-  {
-    for (size_t ii = 0; ii < range_dim; ++ii) {
-      delete op_[ii];
-    }
-    for (size_t ii = 0; ii < maxDimDomain; ++ii) {
-      delete var_arg_[ii];
-      delete arg_[ii];
-    }
-  } // void cleanup()
-
-  std::vector<std::string> originalvars_;
   std::vector<std::string> variables_;
   std::vector<std::string> expressions_;
-  size_t actualDimRange_;
-  mutable std::array<DomainFieldType*, maxDimDomain> arg_;
-  std::array<RVar*, maxDimDomain> var_arg_;
-  std::array<RVar*, maxDimDomain> vararray_;
-  std::array<ROperation*, range_dim> op_;
+  std::unique_ptr<internal::MathExpressionEngine> engine_;
   mutable std::mutex mutex_;
 }; // class DynamicMathExpressionBase
 

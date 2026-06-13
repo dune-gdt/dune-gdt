@@ -34,11 +34,8 @@ include_patterns = (
     "*.tpl",
 )
 exclude_patterns = (
-    "*mathexpr.*",
     "*.vcsetup*",
     "*.ci/shared/*",
     "*/deps/*",
     "*/wheelhouse/*",
-    "*dune/xt/functions/expression/mathexpr.cc",
-    "*dune/xt/functions/expression/mathexpr.hh",
 )
