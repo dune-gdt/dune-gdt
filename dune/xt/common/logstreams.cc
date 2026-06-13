@@ -16,6 +16,8 @@
 #include <boost/format.hpp>
 
 #include <dune/xt/common/string.hh>
+#include <initializer_list>
+#include <memory>
 #include <utility>
 
 #include "logstreams.hh"
@@ -202,11 +204,25 @@ int CombinedBuffer::sync()
   return ret;
 }
 
+namespace {
+
+// Builds a CombinedBuffer forwarding to one OstreamBuffer per stream. Each resource is allocated through a factory and
+// owned by a smart pointer before the next allocation, so a single statement never holds more than one unowned resource
+// (see cpp:S5502).
+SuspendableStrBuffer*
+make_dual_combined_buffer(int loglevel, int& logflags, std::ostream& outstream, std::ofstream& file)
+{
+  auto out_buffer = std::make_unique<OstreamBuffer>(loglevel, logflags, outstream);
+  auto file_buffer = std::make_unique<OstreamBuffer>(loglevel, logflags, file);
+  auto combined = std::make_unique<CombinedBuffer>(
+      loglevel, logflags, std::initializer_list<SuspendableStrBuffer*>{out_buffer.release(), file_buffer.release()});
+  return combined.release();
+}
+
+} // namespace
+
 DualLogStream::DualLogStream(int loglevel, int& logflags, std::ostream& outstream, std::ofstream& file)
-  : LogStream(new CombinedBuffer(
-        loglevel,
-        logflags,
-        {new OstreamBuffer(loglevel, logflags, outstream), new OstreamBuffer(loglevel, logflags, file)}))
+  : LogStream(make_dual_combined_buffer(loglevel, logflags, outstream, file))
 {
 }
 

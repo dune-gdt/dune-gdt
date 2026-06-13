@@ -76,6 +76,23 @@ public:
     check_input();
   }
 
+  LocalFiniteElementDefault(const int ord,
+                            std::unique_ptr<BasisType> bas_ptr,
+                            std::unique_ptr<CoefficientsType> coeffs_ptr,
+                            std::unique_ptr<InterpolationType> inter_ptr,
+                            std::vector<DomainType> lps = {},
+                            const bool pwrd = false)
+    : geometry_type_(bas_ptr->geometry_type())
+    , order_(ord)
+    , basis_(std::unique_ptr<const BasisType>(std::move(bas_ptr)))
+    , coefficients_(std::unique_ptr<const CoefficientsType>(std::move(coeffs_ptr)))
+    , interpolation_(std::unique_ptr<const InterpolationType>(std::move(inter_ptr)))
+    , lagrange_points_(lps)
+    , powered_(pwrd)
+  {
+    check_input();
+  }
+
   const GeometryType& geometry_type() const override
   {
     return geometry_type_;

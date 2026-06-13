@@ -109,6 +109,21 @@ public:
                        const std::string nm = "",
                        const std::string& logging_prefix = "",
                        const std::array<bool, 3>& logging_state = Common::default_logger_state())
+    // Wrap the raw pointers in unique_ptrs immediately (RAII) and delegate to the unique_ptr ctor below, so the
+    // shared initialization lives in a single place.
+    : CombinedGridFunction(std::unique_ptr<LeftType>(std::move(left)),
+                           std::unique_ptr<RightType>(std::move(right)),
+                           nm,
+                           logging_prefix,
+                           logging_state)
+  {
+  }
+
+  CombinedGridFunction(std::unique_ptr<LeftType>&& left,
+                       std::unique_ptr<RightType>&& right,
+                       const std::string nm = "",
+                       const std::string& logging_prefix = "",
+                       const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : BaseType(left->parameter_type() + right->parameter_type(),
                logging_prefix.empty() ? Common::to_camel_case(get_combination_name(comb{}) + "GridFunction")
                                       : logging_prefix,
@@ -117,8 +132,8 @@ public:
     , right_(std::move(right))
     , name_(nm.empty() ? "(" + left_->name() + GetCombination<comb>::symbol() + right_->name() + ")" : nm)
   {
-    LOG_(debug) << Common::to_camel_case(get_combination_name(comb{}) + "GridFunction") << "(left=" << left
-                << ", right=" << right << ", nm=\"" << nm << "\")" << std::endl;
+    LOG_(debug) << Common::to_camel_case(get_combination_name(comb{}) + "GridFunction") << "(left=" << left_.get()
+                << ", right=" << right_.get() << ", nm=\"" << nm << "\")" << std::endl;
   }
 
   CombinedGridFunction(const ThisType& other)
