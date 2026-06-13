@@ -306,8 +306,16 @@ public:
   {
     VectorType ret(0.);
     for (size_t ii = 0; ii < first_slope.size(); ++ii)
-      ret[ii] = superbee(first_slope[ii], second_slope[ii]);
+      ret[ii] = superbee_scalar(first_slope[ii], second_slope[ii]);
     return ret;
+  }
+
+  // superbee(a, b) = maxmod(minmod(2a, b), minmod(a, 2b)), see e.g. LeVeque, "Finite Volume Methods for Hyperbolic
+  // Problems", 2002, Section 6.10
+  template <class FieldType>
+  static FieldType superbee_scalar(const FieldType a, const FieldType b)
+  {
+    return XT::Common::maxmod(XT::Common::minmod(2. * a, b), XT::Common::minmod(a, 2. * b));
   }
 }; // class SuperbeeSlope
 
