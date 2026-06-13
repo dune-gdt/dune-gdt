@@ -33,8 +33,9 @@ namespace Dune::XT::Functions::internal {
  * \c sin, \c cos, \c tan, \c exp, \c log (alias \c ln), \c sqrt, \c abs, \c asin, \c acos, \c atan and
  * the constant \c pi (plus the additional functionality ExprTk provides).
  *
- * \note Unlike the bundled parser, implicit multiplication by juxtaposition (e.g. "x[0]t" meaning
- *       "x[0]*t") is not supported; use an explicit \c * instead.
+ * \note Implicit multiplication by juxtaposition is supported, e.g. "x[0]t" means "x[0]*t",
+ *       "x[0]2" means "x[0]*2" and "sin(t)(x)" means "sin(t)*(x)". An explicit \c * is still
+ *       recommended for readability.
  */
 class MathExpressionEngine
 {
