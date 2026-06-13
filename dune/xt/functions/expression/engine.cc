@@ -122,6 +122,37 @@ private:
     }
   }
 
+  //! True if \a c may start an identifier (a letter or an underscore).
+  static bool is_ident_start(char c)
+  {
+    return (std::isalpha(static_cast<unsigned char>(c)) != 0) || c == '_';
+  }
+
+  //! True if \a c is a decimal digit.
+  static bool is_digit(char c)
+  {
+    return std::isdigit(static_cast<unsigned char>(c)) != 0;
+  }
+
+  //! Return the end index of the identifier token starting at \a i: a maximal identifier run, plus an
+  //! optional immediately following bracketed integer index, so that "x[0]" is captured as one token.
+  static std::size_t scan_identifier(const std::string& expr, std::size_t i)
+  {
+    auto is_ident_char = [](char c) { return (std::isalnum(static_cast<unsigned char>(c)) != 0) || c == '_'; };
+    const std::size_t n = expr.size();
+    std::size_t j = i + 1;
+    while (j < n && is_ident_char(expr[j]))
+      ++j;
+    if (j < n && expr[j] == '[') {
+      std::size_t k = j + 1;
+      while (k < n && is_digit(expr[k]))
+        ++k;
+      if (k < n && expr[k] == ']' && k > j + 1)
+        j = k + 1;
+    }
+    return j;
+  }
+
   /**
    * \brief Replace every occurrence of a registered variable name in \a expr by its placeholder.
    *
@@ -131,38 +162,45 @@ private:
    * function names such as "tan", and "mu[1]" is never confused with "mu[10]". Anything that is not a
    * registered variable (function names, the constant pi, numeric literals, operators) is passed
    * through unchanged.
+   *
+   * Two identifier tokens written directly next to each other ("x[0]t_") denote implicit
+   * multiplication. Because each is rewritten to a placeholder, naive concatenation would glue them
+   * into a single unknown identifier ("dxtvar0dxtvar1"). We therefore emit an explicit '*' between
+   * directly adjacent identifier tokens, which is exactly the multiplication ExprTk's commutative
+   * check would insert for the original (non-remapped) names.
    */
   std::string translate(const std::string& expr) const
   {
-    auto is_ident_start = [](char c) { return (std::isalpha(static_cast<unsigned char>(c)) != 0) || c == '_'; };
-    auto is_ident_char = [](char c) { return (std::isalnum(static_cast<unsigned char>(c)) != 0) || c == '_'; };
-    auto is_digit = [](char c) { return std::isdigit(static_cast<unsigned char>(c)) != 0; };
-
     std::string out;
     out.reserve(expr.size());
     const std::size_t n = expr.size();
     std::size_t i = 0;
+    // Source end position of the identifier token emitted last (npos if the previous emission was not
+    // an identifier token). Used to detect two identifier tokens written directly next to each other.
+    std::size_t prev_ident_end = std::string::npos;
     while (i < n) {
       if (!is_ident_start(expr[i])) {
+        // A digit directly following an identifier token (e.g. "x[0]2") is implicit multiplication too.
+        // The placeholder ends in a digit ("dxtvar0"), so without a separator it would fuse with the
+        // literal into one symbol ("dxtvar02"); emit the '*' that ExprTk would insert for the raw "]2".
+        if (i == prev_ident_end && is_digit(expr[i]))
+          out += '*';
         out += expr[i];
+        prev_ident_end = std::string::npos;
         ++i;
         continue;
       }
-      // consume the identifier ...
-      std::size_t j = i + 1;
-      while (j < n && is_ident_char(expr[j]))
-        ++j;
-      // ... and an optional immediately following bracketed integer index, e.g. "[0]"
-      if (j < n && expr[j] == '[') {
-        std::size_t k = j + 1;
-        while (k < n && is_digit(expr[k]))
-          ++k;
-        if (k < n && expr[k] == ']' && k > j + 1)
-          j = k + 1;
-      }
+      const std::size_t j = scan_identifier(expr, i);
+      // Two identifier tokens written directly next to each other ("x[0]t_") denote implicit
+      // multiplication; emit an explicit '*' so the remapped placeholders do not fuse into one unknown
+      // identifier. Numeric literals (incl. "1e-5") flow through the branch above, so this never splits
+      // a number from its exponent.
+      if (i == prev_ident_end)
+        out += '*';
       const std::string token = expr.substr(i, j - i);
       const auto it = name_to_placeholder_.find(token);
       out += (it != name_to_placeholder_.end()) ? it->second : token;
+      prev_ident_end = j;
       i = j;
     }
     return out;

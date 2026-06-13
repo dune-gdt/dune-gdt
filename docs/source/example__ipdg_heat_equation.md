@@ -173,7 +173,7 @@ u_0 = GF(grid,
 diffusion = GF(grid, 1., dim_range=(Dim(d), Dim(d)), name='diffusion')
 source = GF(grid, ParametricExpressionFunction(
     dim_domain=Dim(d), variable='x', param_type={'_t': 1},
-    expressions=['exp(-0.1*(x[0]*x[0]+x[1]*x[1]))*(2*pi*cos(20*pi*_t)+4*sin(20*pi*_t)-40*sin(20*pi*_t)*(x[0]*x[0]+x[1]*x[1]))'],
+    expressions=['exp(-0.1*(x[0]*x[0]+x[1]*x[1]))*(2*pi*cos(20*pi*_t)+4*sin(20*pi*_t)-40*sin(20*pi*_t)(x[0]*x[0]+x[1]*x[1]))'],
     order=2, name='source'))
 ```
 
