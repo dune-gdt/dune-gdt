@@ -54,6 +54,11 @@ function(dune_pybindxi_install_python_package)
     # itself, and is what `pip wheel` is pointed at. We always assemble there, regardless of whether the package ships a
     # plain setup.py or a setup.py.in template.
     file(GLOB_RECURSE files "${pyinst_fullpath}/*")
+    if(EXISTS ${pyinst_fullpath}/setup.py.in)
+      # Do not symlink a (possibly stale) source setup.py into the binary dir; configure_file below generates it and
+      # must write a real file, not follow a symlink back into the source tree.
+      list(REMOVE_ITEM files "${pyinst_fullpath}/setup.py")
+    endif()
     foreach(fn ${files})
       file(RELATIVE_PATH rel_fn ${CMAKE_CURRENT_SOURCE_DIR} ${fn})
       get_filename_component(directory ${rel_fn} DIRECTORY)
@@ -63,6 +68,8 @@ function(dune_pybindxi_install_python_package)
     endforeach()
     # Legacy support for templated setup.py.in; plain setup.py packages are symlinked above and need no configuration.
     if(EXISTS ${pyinst_fullpath}/setup.py.in)
+      # Drop any symlink left from a previous configure so configure_file cannot write through it into the source tree.
+      file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH}/setup.py)
       configure_file(${PYINST_PATH}/setup.py.in ${PYINST_PATH}/setup.py)
     endif()
     set(pyinst_fullpath ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH})
