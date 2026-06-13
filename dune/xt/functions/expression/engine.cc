@@ -163,11 +163,11 @@ private:
    * registered variable (function names, the constant pi, numeric literals, operators) is passed
    * through unchanged.
    *
-   * Two identifier tokens written directly next to each other ("x[0]t_") denote implicit
-   * multiplication. Because each is rewritten to a placeholder, naive concatenation would glue them
-   * into a single unknown identifier ("dxtvar0dxtvar1"). We therefore emit an explicit '*' between
-   * directly adjacent identifier tokens, which is exactly the multiplication ExprTk's commutative
-   * check would insert for the original (non-remapped) names.
+   * Juxtaposition denotes implicit multiplication. ExprTk's commutative check does not cover every
+   * such case (and the variable remapping can defeat it), so we insert the explicit '*' ourselves
+   * for: two adjacent identifier tokens ("x[0]t_", which would otherwise fuse into one unknown
+   * identifier "dxtvar0dxtvar1"), a digit right after an identifier ("x[0]2"), and a "(" right after
+   * a ")" ("sin(...)(...)", which ExprTk rejects rather than reading as multiplication).
    */
   std::string translate(const std::string& expr) const
   {
@@ -180,10 +180,12 @@ private:
     std::size_t prev_ident_end = std::string::npos;
     while (i < n) {
       if (!is_ident_start(expr[i])) {
-        // A digit directly following an identifier token (e.g. "x[0]2") is implicit multiplication too.
-        // The placeholder ends in a digit ("dxtvar0"), so without a separator it would fuse with the
-        // literal into one symbol ("dxtvar02"); emit the '*' that ExprTk would insert for the raw "]2".
-        if (i == prev_ident_end && is_digit(expr[i]))
+        // Implicit multiplications that ExprTk's commutative check does not insert on its own:
+        //   - a digit directly after an identifier token ("x[0]2"): the placeholder ends in a digit
+        //     ("dxtvar0"), so without a separator it would fuse with the literal into one symbol;
+        //   - a "(" directly after a ")" ("sin(...)(...)"): ExprTk rejects ")(" rather than reading it
+        //     as multiplication.
+        if ((i == prev_ident_end && is_digit(expr[i])) || (expr[i] == '(' && !out.empty() && out.back() == ')'))
           out += '*';
         out += expr[i];
         prev_ident_end = std::string::npos;
