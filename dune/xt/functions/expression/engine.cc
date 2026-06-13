@@ -122,22 +122,6 @@ private:
     }
   }
 
-  /**
-   * \brief Replace every occurrence of a registered variable name in \a expr by its placeholder.
-   *
-   * We tokenize \a expr into maximal identifier runs (optionally followed by a bracketed integer index,
-   * to capture names like "x[0]") and replace a token only if it matches a registered variable name
-   * exactly. This is robust against substring clashes: a single-letter variable "t" never corrupts
-   * function names such as "tan", and "mu[1]" is never confused with "mu[10]". Anything that is not a
-   * registered variable (function names, the constant pi, numeric literals, operators) is passed
-   * through unchanged.
-   *
-   * Two identifier tokens written directly next to each other ("x[0]t_") denote implicit
-   * multiplication. Because each is rewritten to a placeholder, naive concatenation would glue them
-   * into a single unknown identifier ("dxtvar0dxtvar1"). We therefore emit an explicit '*' between
-   * directly adjacent identifier tokens, which is exactly the multiplication ExprTk's commutative
-   * check would insert for the original (non-remapped) names.
-   */
   //! True if \a c may start an identifier (a letter or an underscore).
   static bool is_ident_start(char c)
   {
@@ -169,6 +153,22 @@ private:
     return j;
   }
 
+  /**
+   * \brief Replace every occurrence of a registered variable name in \a expr by its placeholder.
+   *
+   * We tokenize \a expr into maximal identifier runs (optionally followed by a bracketed integer index,
+   * to capture names like "x[0]") and replace a token only if it matches a registered variable name
+   * exactly. This is robust against substring clashes: a single-letter variable "t" never corrupts
+   * function names such as "tan", and "mu[1]" is never confused with "mu[10]". Anything that is not a
+   * registered variable (function names, the constant pi, numeric literals, operators) is passed
+   * through unchanged.
+   *
+   * Two identifier tokens written directly next to each other ("x[0]t_") denote implicit
+   * multiplication. Because each is rewritten to a placeholder, naive concatenation would glue them
+   * into a single unknown identifier ("dxtvar0dxtvar1"). We therefore emit an explicit '*' between
+   * directly adjacent identifier tokens, which is exactly the multiplication ExprTk's commutative
+   * check would insert for the original (non-remapped) names.
+   */
   std::string translate(const std::string& expr) const
   {
     std::string out;
