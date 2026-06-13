@@ -169,19 +169,20 @@ void trim(std::vector<std::string>& v);
 inline std::string stringFromTime(time_t cur_time = time(nullptr))
 {
   // Use the reentrant variant of ctime to avoid the data race on the shared static buffer that
-  // plain ctime uses. Both write a newline-terminated string into a buffer of at least 26 bytes,
-  // which we keep to match the previous behavior. MSVC does not provide POSIX ctime_r, so fall
-  // back to its ctime_s there. Either way an empty string is returned on conversion failure
-  // (e.g. an out-of-range time_t) to avoid constructing a std::string from a null pointer.
-  char buf[26];
+  // plain ctime uses. Both write a newline-terminated string of at least 26 bytes (including the
+  // terminating '\0') into the given buffer; we keep the trailing newline to match the previous
+  // behavior. MSVC does not provide POSIX ctime_r, so fall back to its ctime_s there. An empty
+  // string is returned on conversion failure (e.g. an out-of-range time_t).
+  std::string buffer(26, '\0');
 #ifdef _MSC_VER
-  if (ctime_s(buf, sizeof(buf), &cur_time) != 0)
+  if (ctime_s(buffer.data(), buffer.size(), &cur_time) != 0)
     return {};
-  return buf;
 #else
-  const char* result = ctime_r(&cur_time, buf);
-  return result ? std::string(result) : std::string();
+  if (ctime_r(&cur_time, buffer.data()) == nullptr)
+    return {};
 #endif
+  buffer.resize(buffer.find('\0'));
+  return buffer;
 }
 
 
