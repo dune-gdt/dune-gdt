@@ -883,8 +883,12 @@ void IsolateVars(char*& s, int nvar, PRVar* ppvar, int nfunc, PRFunction* ppfunc
         return;
       continue;
     };
-    if (((j = IsVar(s, i, nvar, ppvar)) > IsFunction(s, i, nfunc, ppfunc))
-        || ((CompStr(s, i, "pi") || CompStr(s, i, "PI") || CompStr(s, i, "Pi")) && (j = 2))) {
+    j = IsVar(s, i, nvar, ppvar);
+    const bool is_var = (j > IsFunction(s, i, nfunc, ppfunc));
+    const bool is_pi = (CompStr(s, i, "pi") || CompStr(s, i, "PI") || CompStr(s, i, "Pi"));
+    if (!is_var && is_pi)
+      j = 2;
+    if (is_var || is_pi) {
       InsStr(s, i, '(');
       InsStr(s, i + j + 1, ')');
       i += j + 1;
@@ -1608,8 +1612,10 @@ char* ROperation::Expr() const
   s = new char[n];
   switch (op) {
     case Num:
+      delete[] s;
       return ValToStr(ValC);
     case Var:
+      delete[] s;
       return CopyStr(pvar->name);
     case Juxt:
       sprintf(s, "%s , %s", s1, s2);
@@ -1780,7 +1786,10 @@ char* ROperation::Expr() const
       sprintf(s, "%s(%s)", pfunc->name, s2);
       break;
     default:
-      return CopyStr("Error");
+      // n >= 10, so "Error" always fits; routing through the common cleanup
+      // path below avoids leaking the buffer s (and s1/s2).
+      sprintf(s, "Error");
+      break;
   };
   if (s1 != NULL)
     delete[] s1;
