@@ -168,11 +168,20 @@ void trim(std::vector<std::string>& v);
 //! returns string with local time in current locale's format
 inline std::string stringFromTime(time_t cur_time = time(nullptr))
 {
-  // ctime_r is the reentrant variant of ctime; it requires a buffer of at least 26 bytes and,
-  // like ctime, writes a string terminated by a newline character, which we keep to match the
-  // previous behavior.
+  // Use the reentrant variant of ctime to avoid the data race on the shared static buffer that
+  // plain ctime uses. Both write a newline-terminated string into a buffer of at least 26 bytes,
+  // which we keep to match the previous behavior. MSVC does not provide POSIX ctime_r, so fall
+  // back to its ctime_s there. Either way an empty string is returned on conversion failure
+  // (e.g. an out-of-range time_t) to avoid constructing a std::string from a null pointer.
   char buf[26];
-  return ctime_r(&cur_time, buf);
+#ifdef _MSC_VER
+  if (ctime_s(buf, sizeof(buf), &cur_time) != 0)
+    return {};
+  return buf;
+#else
+  const char* result = ctime_r(&cur_time, buf);
+  return result ? std::string(result) : std::string();
+#endif
 }
 
 
