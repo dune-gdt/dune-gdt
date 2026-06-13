@@ -14,18 +14,18 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Least-privilege default for the whole workflow: every job gets read-only access
-# to repo contents unless it overrides this. The jobs that need more declare it
-# explicitly (deploy_docs: pages/id-token write; test_publish/publish: id-token
-# write for PyPI Trusted Publishing).
-permissions:
-  contents: read
+# Permissions are declared per job (least privilege) rather than at workflow level,
+# as recommended by SonarCloud rule githubactions:S8264. The build jobs only need
+# read access to repo contents; deploy_docs and test_publish/publish declare the
+# extra scopes they require (pages / id-token write for Trusted Publishing).
 
 jobs:
   build-linux:
     name: Build on Linux
     runs-on: ubuntu-24.04
     timeout-minutes: 120
+    permissions:
+      contents: read
     env:
       # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
       # hash), the ccache survives manifest changes and partial rebuilds, so the
@@ -156,6 +156,8 @@ jobs:
     name: Build wheels
     runs-on: ubuntu-24.04
     timeout-minutes: 120
+    permissions:
+      contents: read
     strategy:
       matrix:
         python-version: ["3.13"] #, "3.9", "3.10", "3.11", "3.12"]
@@ -190,6 +192,8 @@ jobs:
     runs-on: ubuntu-24.04
     needs: build_wheels
     timeout-minutes: 60
+    permissions:
+      contents: read
     env:
       # the documentation notebooks are executed against the freshly built wheels
       # (current, git-derived version), not the stale dune-gdt release on PyPI

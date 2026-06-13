@@ -1,0 +1,17 @@
+# Limit what `COPY . /src/` pulls into the build image (SonarCloud docker:S6470).
+# Keep version-control metadata, local build trees, caches and any credentials
+# out of the image context.
+.git
+.github
+**/build
+**/build-*
+**/*.o
+**/*.so
+**/*.pyc
+**/__pycache__
+.ccache
+.vcpkg-root
+*.key
+*.pem
+id_rsa*
+.env

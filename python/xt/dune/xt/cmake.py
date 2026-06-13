@@ -37,5 +37,11 @@ def parse_cache(filepath):
 
 
 if __name__ == "__main__":
-    kv, types = parse_cache("/tmp/CMakeCache.txt")
+    import sys
+
+    # Read the cache path from the command line (default to the CMakeCache.txt in
+    # the current build directory). Avoids reading from a hardcoded, publicly
+    # writable location such as /tmp (SonarCloud python:S5443).
+    cache_file = sys.argv[1] if len(sys.argv) > 1 else "CMakeCache.txt"
+    kv, types = parse_cache(cache_file)
     pprint.pprint(kv)
