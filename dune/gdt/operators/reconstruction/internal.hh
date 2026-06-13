@@ -152,14 +152,14 @@ public:
   void compute_eigenvectors(const E& /*entity*/,
                             const DomainType& /*x_local*/,
                             const VectorType& /*u*/,
-                            const XT::Common::Parameter& /*param*/) const override final
+                            const XT::Common::Parameter& /*param*/) override final
   {
   }
 
   void compute_eigenvectors_impl(const E& /*entity*/,
                                  const DomainType& /*x_local*/,
                                  const VectorType& /*u*/,
-                                 const XT::Common::Parameter& /*param*/) const override final
+                                 const XT::Common::Parameter& /*param*/) override final
   {
   }
 
@@ -170,7 +170,7 @@ public:
   }
 
 private:
-  static const MatrixType zero_ = 0.;
+  static constexpr MatrixType zero_ = 0;
 };
 
 
