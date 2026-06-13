@@ -231,7 +231,7 @@ public:
    * \brief Constructor ignoring the tol argument for compatibility with AdaptiveRungeKuttaTimeStepper
    */
   ExplicitRungeKuttaTimeStepper(const OperatorType& op,
-                                const DiscreteFunctionType& initial_values,
+                                DiscreteFunctionType& initial_values,
                                 const RangeFieldType r,
                                 const double t_0,
                                 const RangeFieldType /*tol*/)
@@ -282,8 +282,8 @@ public:
     auto& t = current_time();
     auto& u_n = current_solution();
     assert(treshold > 0);
-    // save current state
-    DiscreteFunctionType initial_u_n = u_n;
+    // save current state (DiscreteFunction's copy constructor is deleted)
+    const auto initial_u_n = u_n.copy_as_discrete_function();
     RangeFieldType initial_t = t;
     // start with initial dt
     RangeFieldType current_dt = initial_dt;
@@ -294,7 +294,7 @@ public:
       size_t num_steps = 0;
       // do max_steps_per_dt time steps...
       while (!unlikely_value_occured) {
-        step(current_dt);
+        step(current_dt, current_dt);
         ++num_steps;
         // ... unless there is a value above threshold
         for (size_t kk = 0; kk < u_n.dofs().vector().size(); ++kk) {
@@ -307,13 +307,13 @@ public:
         // if we are able to do max_steps_per_dt time steps with this dt, we accept this dt
         if (num_steps == max_steps_per_dt) {
           std::cout << "looks fine" << std::endl;
-          u_n.dofs().vector() = initial_u_n.dofs().vector();
+          u_n.dofs().vector() = initial_u_n->dofs().vector();
           t = initial_t;
           return std::make_pair(bool(true), current_dt);
         }
       }
       // if there was a value above threshold start over with smaller dt
-      u_n.dofs().vector() = initial_u_n.dofs().vector();
+      u_n.dofs().vector() = initial_u_n->dofs().vector();
       t = initial_t;
       current_dt /= dt_refinement_factor;
       ++num_refinements;

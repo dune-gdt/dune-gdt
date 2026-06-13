@@ -50,7 +50,9 @@ public:
   }
 
   //! returns true if size per entity of given dim and codim is a constant
-  bool fixedsize(int /*dim*/, int /*codim*/) const
+  //! \note has to be spelled fixedSize: CommDataHandleIF dispatches via CRTP and its default implementation calls
+  //!       asImp().fixedSize(...), so a misspelled override recurses infinitely (stack overflow) when communicating
+  bool fixedSize(int /*dim*/, int /*codim*/) const
   {
     return fixed_size_;
   }
