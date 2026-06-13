@@ -244,7 +244,7 @@ jobs:
         uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
           --find-links wheelhouse/ wheelhouse/*.whl
         # docs + visualisation extras of the just-installed dune-gdt; the extra
-        # contents are the single source of truth in python/{xt,gdt}/setup.py.in
+        # contents are the single source of truth in python/xt/pyproject.toml
         # (myst-nb executes the notebook cells; k3d provides visualize_function
         # rendering when the wheels were built with K3D).
         uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \

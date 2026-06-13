@@ -23,8 +23,10 @@ endmacro(INCLUDE_DEPENDENT_BINARY_PYTHON_DIRS)
 
 # Copy of dune_python_install_package from dune-common. Changes:
 #
-# * Package is always installed into the dune-env, even if a setup.py.in is found instead of a setup.py.
-# * If a setup.py.in is found, the whole directory is symlinked to the binary dir.
+# * Package is always installed into the dune-env.
+# * The whole package directory is symlinked to the binary dir so the build dir can serve as the assembly point for the
+#   symlinked sources, the configured _version.py and the compiled .so modules. A legacy setup.py.in is still configured
+#   into the build dir; a plain setup.py is symlinked along with the rest.
 #
 # cmake-lint: disable=R0915
 function(dune_pybindxi_install_python_package)
@@ -46,9 +48,17 @@ function(dune_pybindxi_install_python_package)
   endif()
 
   set(pyinst_fullpath ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
-  if(EXISTS ${pyinst_fullpath}/setup.py.in)
-    # symlink files to binary dir
+  if(EXISTS ${pyinst_fullpath}/setup.py.in OR EXISTS ${pyinst_fullpath}/setup.py)
+    # Symlink the whole package source tree into the binary dir. The binary dir is the assembly point: it gathers the
+    # symlinked sources, the configured _version.py, the compiled .so modules and (for a plain setup.py) the setup.py
+    # itself, and is what `pip wheel` is pointed at. We always assemble there, regardless of whether the package ships a
+    # plain setup.py or a setup.py.in template.
     file(GLOB_RECURSE files "${pyinst_fullpath}/*")
+    if(EXISTS ${pyinst_fullpath}/setup.py.in)
+      # Do not symlink a (possibly stale) source setup.py into the binary dir; configure_file below generates it and
+      # must write a real file, not follow a symlink back into the source tree.
+      list(REMOVE_ITEM files "${pyinst_fullpath}/setup.py")
+    endif()
     foreach(fn ${files})
       file(RELATIVE_PATH rel_fn ${CMAKE_CURRENT_SOURCE_DIR} ${fn})
       get_filename_component(directory ${rel_fn} DIRECTORY)
@@ -56,10 +66,13 @@ function(dune_pybindxi_install_python_package)
       execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${rel_fn}"
                               "${CMAKE_CURRENT_BINARY_DIR}/${rel_fn}")
     endforeach()
-    configure_file(${PYINST_PATH}/setup.py.in ${PYINST_PATH}/setup.py)
+    # Legacy support for templated setup.py.in; plain setup.py packages are symlinked above and need no configuration.
+    if(EXISTS ${pyinst_fullpath}/setup.py.in)
+      # Drop any symlink left from a previous configure so configure_file cannot write through it into the source tree.
+      file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH}/setup.py)
+      configure_file(${PYINST_PATH}/setup.py.in ${PYINST_PATH}/setup.py)
+    endif()
     set(pyinst_fullpath ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH})
-    set(pyinst_purepython TRUE)
-  elseif(EXISTS ${pyinst_fullpath}/setup.py)
     set(pyinst_purepython TRUE)
   else()
     message(

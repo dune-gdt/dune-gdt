@@ -12,31 +12,36 @@
 #   Rene Fritze     (2016, 2018)
 # ~~~
 
-import sys
+# Static package metadata lives in pyproject.toml ([project] table). This file only carries what cannot be expressed
+# declaratively:
+#   * the platform (non-pure) wheel forcing via BinaryDistribution/InstallPlatlib,
+#   * the version and the dune.xt dependency/extras, which are pinned to the exact same version and are read from the
+#     CMake-generated dune/gdt/_version.py (see dune/gdt/_version.py.in), and
+#   * package discovery and the `dune` namespace package.
+
 from pathlib import Path
 
-from setuptools import setup, find_packages
-from setuptools.dist import Distribution
+from setuptools import find_packages, setup
 from setuptools.command.install import install
+from setuptools.dist import Distribution
 
-requires = ["dune.xt==${PROJECT_VERSION}"]
+HERE = Path(__file__).parent
+
+# Read the CMake-generated version module directly. We must not `import dune.gdt`, which pulls in the compiled extension
+# modules; _version.py contains only plain assignments, so executing it in an empty namespace is safe.
+_version = {}
+exec((HERE / "dune" / "gdt" / "_version.py").read_text(), _version)
+version = _version["__git_revision__"]
+
+install_requires = [f"dune.xt=={version}"]
 
 extras_require = {
-    "visualisation": [
-        "dune-xt[visualisation]==${PROJECT_VERSION}",
-    ],
-    "docs": [
-        "dune-xt[docs]==${PROJECT_VERSION}",
-    ],
-    "examples": [
-        "dune-xt[examples]==${PROJECT_VERSION}",
-    ],
-    "infrastructure": [
-        "dune-xt[infrastructure]==${PROJECT_VERSION}",
-    ],
-    "parallel": ["dune-xt[parallel]==${PROJECT_VERSION}"],
+    "visualisation": [f"dune-xt[visualisation]=={version}"],
+    "docs": [f"dune-xt[docs]=={version}"],
+    "examples": [f"dune-xt[examples]=={version}"],
+    "infrastructure": [f"dune-xt[infrastructure]=={version}"],
+    "parallel": [f"dune-xt[parallel]=={version}"],
 }
-
 extras_require["all"] = [p for plist in extras_require.values() for p in plist]
 
 
@@ -57,15 +62,8 @@ class InstallPlatlib(install):
 
 
 setup(
-    name="dune.gdt",
-    version="${PROJECT_VERSION}",
+    version=version,
     namespace_packages=["dune"],
-    description="Python bindings for dune-gdt",
-    long_description=open("README.md").read(),
-    long_description_content_type="text/markdown",
-    author="The dune-gdt devs",
-    author_email="felix.schindler@uni-muenster.de",
-    url="https://github.com/dune-gdt/dune-gdt",
     packages=find_packages(),
     package_data={"": ["*.so"]},
     include_package_data=True,
@@ -73,6 +71,6 @@ setup(
         "install": InstallPlatlib,
     },
     distclass=BinaryDistribution,
-    install_requires=requires,
+    install_requires=install_requires,
     extras_require=extras_require,
 )
