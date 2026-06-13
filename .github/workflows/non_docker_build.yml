@@ -55,11 +55,9 @@ jobs:
         # Key on the inputs that determine the toolchain/manifest so the cache is
         # rebuilt when they change. The trailing-dash restore-key only matches
         # caches written by this (consistent) scheme, never the legacy build-only one.
-        # The -v2- generation token deliberately invalidates older caches: a cancelled
-        # run left a corrupted dune-env (a half-installed "~une-common" distribution and
-        # conflicting dune-common versions) in the cached build/, which broke configure
-        # ("Dune python package could not be found"). Bump this token to force a clean
-        # rebuild if the cached dune-env is ever poisoned again.
+        # Note the cached dune-env virtualenv is never reused: it is deleted right
+        # after restore (see "Discard cached dune-env virtualenv" below), so a stale
+        # or corrupted venv in the cache cannot break configure.
         key: ${{ runner.os }}-build-v2-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
         restore-keys: |
           ${{ runner.os }}-build-v2-
@@ -71,6 +69,18 @@ jobs:
                "build/ so CMake re-bootstraps vcpkg from scratch."
           rm -rf build
         fi
+
+    - name: Discard cached dune-env virtualenv
+      # The dune-env virtualenv inside build/ must not be reused across runs: a
+      # cached venv can hold a dune-common Python package whose version differs
+      # from the current vcpkg wheelhouse, and the in-configure pip downgrade that
+      # follows is fragile (an interrupted uninstall leaves a half-removed
+      # "~une-common" distribution and a dune package without __main__, failing
+      # configure with "Dune python package could not be found"). Deleting the
+      # venv here makes dune-common's CMake recreate it during configure and
+      # install the wheels from the current wheelhouse — a few seconds of work
+      # that removes this whole class of random merge-queue failures.
+      run: rm -rf build/*/dune-env
 
     - name: Install dependencies
       run: |

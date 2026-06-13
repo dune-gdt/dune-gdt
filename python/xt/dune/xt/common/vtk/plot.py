@@ -23,13 +23,13 @@ if config.HAVE_K3D:
     from ipywidgets import IntSlider, Play, interact, widgets
     from k3d.helpers import minmax
     from k3d.plot import Plot as k3dPlot
-    from matplotlib.cm import get_cmap
+    from matplotlib import colormaps
     from matplotlib.colors import Colormap
     from vtk.util import numpy_support
 
     from .reader import read_vtkfile
 
-    DEFAULT_COLOR_MAP = get_cmap("viridis")
+    DEFAULT_COLOR_MAP = colormaps["viridis"]
 
     def _transform_to_k3d(timestep, poly_data, color_attribute_name):
         """
