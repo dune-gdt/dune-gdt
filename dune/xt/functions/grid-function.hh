@@ -70,10 +70,11 @@ make_generic_grid_function_with_jacobian(const OrderEvaluateJacobianTuple& order
  *
  * Owns the wrapped grid function and its name, implements the GridFunctionInterface, and provides the constructors
  * shared by every GridFunction specialization: the tuple-based generic-function variants and a forwarding ctor used
- * by the specialization-specific ctors. Keeping them here means they are written once instead of being duplicated
- * across the three specializations.
+ * by the specialization-specific ctors. It also implements the polymorphic copy (copy_as_grid_function[_impl]) once,
+ * via CRTP on the concrete \a Derived type. Keeping all of this here means it is written once instead of being
+ * duplicated across the three specializations.
  */
-template <class E, size_t r, size_t rC, class R>
+template <class Derived, class E, size_t r, size_t rC, class R>
 class GridFunctionBase : public GridFunctionInterface<E, r, rC, R>
 {
   using ThisType = GridFunctionBase;
@@ -166,9 +167,22 @@ public:
     return name_;
   }
 
+  /// \brief Polymorphic copy: returns a copy of the concrete (Derived) specialization. Implemented once here via CRTP
+  ///        instead of being repeated identically in every GridFunction specialization.
+  std::unique_ptr<Derived> copy_as_grid_function() const
+  {
+    return std::unique_ptr<Derived>(static_cast<Derived*>(this->copy_as_grid_function_impl()));
+  }
+
 protected:
   std::unique_ptr<InterfaceType> function_;
   std::string name_;
+
+private:
+  InterfaceType* copy_as_grid_function_impl() const final
+  {
+    return new Derived(static_cast<const Derived&>(*this));
+  }
 }; // class GridFunctionBase
 
 
@@ -266,10 +280,10 @@ Bar bar(some_grid_function);
  * the magic happens due to the various non explicit ctors.
  */
 template <class E, size_t r = 1, size_t rC = 1, class R = double>
-class GridFunction : public internal::GridFunctionBase<E, r, rC, R>
+class GridFunction : public internal::GridFunctionBase<GridFunction<E, r, rC, R>, E, r, rC, R>
 {
   using ThisType = GridFunction;
-  using BaseType = internal::GridFunctionBase<E, r, rC, R>;
+  using BaseType = internal::GridFunctionBase<GridFunction<E, r, rC, R>, E, r, rC, R>;
 
 public:
   using BaseType::d;
@@ -327,17 +341,7 @@ public:
   GridFunction(const ThisType& other) = default;
   GridFunction(ThisType&& source) = default;
 
-private:
-  ThisType* copy_as_grid_function_impl() const override
-  {
-    return new ThisType(*this);
-  }
-
-public:
-  std::unique_ptr<ThisType> copy_as_grid_function() const
-  {
-    return std::unique_ptr<ThisType>(this->copy_as_grid_function_impl());
-  }
+  // copy_as_grid_function[_impl]() are inherited from GridFunctionBase (CRTP).
 }; // class GridFunction<..., r, rC, ...>
 
 
@@ -347,9 +351,9 @@ public:
  * \sa GridFunction
  */
 template <class E, size_t r, class R>
-class GridFunction<E, r, r, R> : public internal::GridFunctionBase<E, r, r, R>
+class GridFunction<E, r, r, R> : public internal::GridFunctionBase<GridFunction<E, r, r, R>, E, r, r, R>
 {
-  using BaseType = internal::GridFunctionBase<E, r, r, R>;
+  using BaseType = internal::GridFunctionBase<GridFunction<E, r, r, R>, E, r, r, R>;
   using ThisType = GridFunction;
 
 private:
@@ -480,17 +484,7 @@ public:
   GridFunction(const ThisType& other) = default;
   GridFunction(ThisType&&) = default;
 
-private:
-  ThisType* copy_as_grid_function_impl() const override
-  {
-    return new ThisType(*this);
-  }
-
-public:
-  std::unique_ptr<ThisType> copy_as_grid_function() const
-  {
-    return std::unique_ptr<ThisType>(this->copy_as_grid_function_impl());
-  }
+  // copy_as_grid_function[_impl]() are inherited from GridFunctionBase (CRTP).
 }; // class GridFunction<..., r, r, ...>
 
 
@@ -500,10 +494,10 @@ public:
  * \sa GridFunction
  */
 template <class E, class R>
-class GridFunction<E, 1, 1, R> : public internal::GridFunctionBase<E, 1, 1, R>
+class GridFunction<E, 1, 1, R> : public internal::GridFunctionBase<GridFunction<E, 1, 1, R>, E, 1, 1, R>
 {
   using ThisType = GridFunction;
-  using BaseType = internal::GridFunctionBase<E, 1, 1, R>;
+  using BaseType = internal::GridFunctionBase<GridFunction<E, 1, 1, R>, E, 1, 1, R>;
 
 public:
   using BaseType::d;
@@ -596,18 +590,7 @@ public:
   GridFunction(const ThisType& other) = default;
   GridFunction(ThisType&&) = default;
 
-
-private:
-  ThisType* copy_as_grid_function_impl() const override
-  {
-    return new ThisType(*this);
-  }
-
-public:
-  std::unique_ptr<ThisType> copy_as_grid_function() const
-  {
-    return std::unique_ptr<ThisType>(this->copy_as_grid_function_impl());
-  }
+  // copy_as_grid_function[_impl]() are inherited from GridFunctionBase (CRTP).
 }; // class GridFunction<..., 1, 1, ...>
 
 
