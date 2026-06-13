@@ -138,11 +138,13 @@ private:
    * directly adjacent identifier tokens, which is exactly the multiplication ExprTk's commutative
    * check would insert for the original (non-remapped) names.
    */
+  //! True if \a c may start an identifier (a letter or an underscore).
   static bool is_ident_start(char c)
   {
     return (std::isalpha(static_cast<unsigned char>(c)) != 0) || c == '_';
   }
 
+  //! True if \a c is a decimal digit.
   static bool is_digit(char c)
   {
     return std::isdigit(static_cast<unsigned char>(c)) != 0;
