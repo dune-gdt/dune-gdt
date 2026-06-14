@@ -136,6 +136,27 @@ void cholesky_colwise(MatrixType& A)
   } // jj
 }
 
+template <class Field, class EntryType, class RowPtrType, class ColIdxType>
+Field csr_row_dot_product(const EntryType* entries,
+                          const ColIdxType* column_indices,
+                          const RowPtrType* row_pointers,
+                          const size_t ii,
+                          const size_t jj,
+                          Field L_ij)
+{
+  auto ll = row_pointers[ii];
+  auto kk = row_pointers[jj];
+  while (ll < row_pointers[ii + 1] && kk < row_pointers[jj + 1] && size_t(column_indices[kk]) < jj) {
+    if (column_indices[ll] < column_indices[kk])
+      ++ll;
+    else if (column_indices[ll] > column_indices[kk])
+      ++kk;
+    else
+      L_ij -= entries[ll++] * entries[kk++];
+  }
+  return L_ij;
+}
+
 template <class MatrixType>
 typename std::enable_if_t<Common::MatrixAbstraction<MatrixType>::storage_layout == Common::StorageLayout::csr, void>
 cholesky_csr(MatrixType& A)
@@ -149,16 +170,7 @@ cholesky_csr(MatrixType& A)
   for (size_t ii = 0; ii < size; ++ii) {
     for (size_t jj = 0; jj < ii; ++jj) {
       auto L_ij = M::get_entry(A, ii, jj);
-      auto ll = row_pointers[ii];
-      auto kk = row_pointers[jj];
-      while (ll < row_pointers[ii + 1] && kk < row_pointers[jj + 1] && size_t(column_indices[kk]) < jj) {
-        if (column_indices[ll] < column_indices[kk])
-          ++ll;
-        else if (column_indices[ll] > column_indices[kk])
-          ++kk;
-        else
-          L_ij -= entries[ll++] * entries[kk++];
-      }
+      L_ij = csr_row_dot_product(entries, column_indices, row_pointers, ii, jj, L_ij);
       L_ij /= M::get_entry(L, jj, jj);
       if (!XT::Common::is_zero(L_ij))
         M::set_entry(L, ii, jj, L_ij);

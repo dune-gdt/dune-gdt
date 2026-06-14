@@ -33,6 +33,24 @@ namespace Dune {
 namespace GDT {
 
 
+namespace internal {
+
+
+template <class DataContainer, class RestrictionContainer, class Element>
+void restrict_data_to_element(DataContainer& data_, RestrictionContainer& restriction_required, const Element& element)
+{
+  for (auto& data : *data_) {
+    const auto& space = std::get<0>(data).access();
+    auto& persistent_data = std::get<2>(data);
+    if (restriction_required[element])
+      space.restrict_to(element, persistent_data);
+  }
+}
+
+
+} // namespace internal
+
+
 /**
  * \brief Manages the persistence and prolongation/restriction of discrete functions and their spaces across grid
  *        adaptation (pre_adapt, adapt, post_adapt).
@@ -116,24 +134,19 @@ public:
     }
     LOG_(info) << "    computing restrictions ..." << std::endl;
     // * now walk the grid up all coarser levels ...
-    if (elements_may_be_coarsened) {
-      for (int level = grid_.maxLevel() - 1; level >= 0; --level) {
-        auto level_view = grid_.levelGridView(level);
-        for (auto&& element : elements(level_view)) {
-          // ... to compute restrictions ...
-          for (auto& data : *data_) {
-            const auto& space = std::get<0>(data).access();
-            auto& persistent_data = std::get<2>(data);
-            if (restriction_required[element])
-              space.restrict_to(element, persistent_data);
-          }
-          // ... and to mark father elements
-          if (element.mightVanish()) {
-            DUNE_THROW_IF(
-                level == 0, Exceptions::space_error, "It does not make sense that a level 0 element might vanish!!");
-            restriction_required[element.father()] = true;
-          }
-        }
+    if (!elements_may_be_coarsened)
+      return;
+    for (int level = grid_.maxLevel() - 1; level >= 0; --level) {
+      auto level_view = grid_.levelGridView(level);
+      for (auto&& element : elements(level_view)) {
+        // ... to compute restrictions ...
+        internal::restrict_data_to_element(data_, restriction_required, element);
+        // ... and to mark father elements
+        if (!element.mightVanish())
+          continue;
+        DUNE_THROW_IF(
+            level == 0, Exceptions::space_error, "It does not make sense that a level 0 element might vanish!!");
+        restriction_required[element.father()] = true;
       }
     }
   } // ... pre_adapt(...)
