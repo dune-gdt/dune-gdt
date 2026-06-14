@@ -35,7 +35,7 @@ namespace Dune::XT::Grid {
 struct PgfCoordWrapper : Dune::FieldVector<double, 2>
 {
   template <int wdim>
-  explicit PgfCoordWrapper(const Dune::FieldVector<double, wdim>& vector)
+  PgfCoordWrapper(const Dune::FieldVector<double, wdim>& vector)
     : Dune::FieldVector<double, 2>(0.0)
   {
     for (size_t i = 0; i < size_t(std::min(wdim, 2)); ++i)
