@@ -10,7 +10,7 @@ for fn in "${THIS_DIR}"/../../docs/source/example__*md ; do
 done
 
 COMMON_PYTEST_OPTS="--junitxml=${BINARY_DIR}/dune/pytest_results_docs.xml \
-  --cov-report= ${COV_OPTION} --cov-config=${BINARY_DIR}/python/xt/setup.cfg --cov-context=test"
+  --cov-report= ${COV_OPTION} --cov-config=${BINARY_DIR}/python/xt/pyproject.toml --cov-context=test"
 export COVERAGE_FILE=${BINARY_DIR}/coverage-docs
 # manually add plugins to load that are excluded for other runs
 cd "${THIS_DIR}"/../.. || exit
