@@ -186,6 +186,30 @@ private:
     return nullptr;
   }
 
+  // Scans the entities in [first, last) for one containing point; on success stores it in ret[idx], advances idx,
+  // updates it_last_ and returns true.
+  template <class PointType>
+  bool scan_range(const IteratorType& first,
+                  const IteratorType& last,
+                  const PointType& point,
+                  EntityVectorType& ret,
+                  typename EntityVectorType::size_type& idx)
+  {
+    typename EntityVectorType::value_type tmp_ptr(nullptr);
+    for (IteratorType it_current = first; it_current != last; ++it_current) {
+      const auto& entity = *it_current;
+      for (unsigned int local_index = 0; local_index < entity.subEntities(codim); ++local_index) {
+        const auto& sub_entity = entity.template subEntity<codim>(local_index);
+        if ((tmp_ptr = check_add(sub_entity, point))) {
+          ret[idx++] = std::move(tmp_ptr);
+          it_last_ = it_current;
+          return true;
+        }
+      } // loop over subentities
+    } // loop over codim 0 entities
+    return false;
+  }
+
 public:
   FallbackEntityInlevelSearch(const GridLayerType& grid_layer)
     : grid_layer_(grid_layer)
@@ -205,42 +229,10 @@ public:
     EntityVectorType ret(points.size());
     typename EntityVectorType::size_type idx(0);
     for (const auto& point : points) {
-      IteratorType it_current = it_last_;
-      bool it_reset = true;
-      typename EntityVectorType::value_type tmp_ptr(nullptr);
-      for (; it_current != end; ++it_current) {
-        const auto& entity = *it_current;
-        for (unsigned int local_index = 0; local_index < entity.subEntities(codim); ++local_index) {
-          const auto& sub_entity = entity.template subEntity<codim>(local_index);
-          if ((tmp_ptr = check_add(sub_entity, point))) {
-            ret[idx++] = std::move(tmp_ptr);
-            tmp_ptr = nullptr;
-            it_reset = false;
-            it_last_ = it_current;
-            break;
-          }
-        } // loop over subentities
-        if (!it_reset)
-          break;
-      } // loop over codim 0 entities
-      if (!it_reset)
+      const IteratorType search_start = it_last_;
+      if (scan_range(search_start, end, point, ret, idx))
         continue;
-      for (it_current = begin; it_current != it_last_; ++it_current) {
-        const auto& entity = *it_current;
-        for (unsigned int local_index = 0; local_index < entity.subEntities(codim); ++local_index) {
-          const auto& sub_entity = entity.template subEntity<codim>(local_index);
-          if ((tmp_ptr = check_add(sub_entity, point))) {
-            ret[idx++] = std::move(tmp_ptr);
-            tmp_ptr = nullptr;
-            it_reset = false;
-            it_last_ = it_current;
-            break;
-          }
-        } // loop over subentities
-        if (!it_reset)
-          break;
-      } // loop over codim 0 entities
-      if (!it_reset)
+      if (scan_range(begin, search_start, point, ret, idx))
         continue;
       idx++;
     } // loop over points
@@ -290,17 +282,17 @@ private:
       const auto& geometry = my_ent.geometry();
       const auto& refElement = reference_element(geometry);
       for (const auto& point : quad_points) {
-        if (refElement.checkInside(geometry.local(point))) {
-          // if I cannot descend further add this entity even if it's not my view
-          if (grid_layer_.grid().maxLevel() <= my_level || grid_layer_.contains(my_ent)) {
-            ret.emplace_back(my_ent);
-          } else {
-            const auto h_end = my_ent.hend(my_level + 1);
-            const auto h_begin = my_ent.hbegin(my_level + 1);
-            const auto h_range = boost::make_iterator_range(h_begin, h_end);
-            const auto kids = process(QuadpointContainerType(1, point), h_range);
-            ret.insert(ret.end(), kids.begin(), kids.end());
-          }
+        if (!refElement.checkInside(geometry.local(point)))
+          continue;
+        // if I cannot descend further add this entity even if it's not my view
+        if (grid_layer_.grid().maxLevel() <= my_level || grid_layer_.contains(my_ent)) {
+          ret.emplace_back(my_ent);
+        } else {
+          const auto h_end = my_ent.hend(my_level + 1);
+          const auto h_begin = my_ent.hbegin(my_level + 1);
+          const auto h_range = boost::make_iterator_range(h_begin, h_end);
+          const auto kids = process(QuadpointContainerType(1, point), h_range);
+          ret.insert(ret.end(), kids.begin(), kids.end());
         }
       }
     }

@@ -111,28 +111,28 @@ public:
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
     , eps_(eps)
   {
-    if (num_rows_ > 0 && num_cols_ > 0) {
-      if (size_t(patt.size()) != num_rows_)
-        DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
-                   "The size of the pattern (" << patt.size() << ") does not match the number of rows of this ("
-                                               << num_rows_ << ")!");
-      for (size_t row = 0; row < num_rows_; ++row) {
-        const auto& columns = patt.inner(row);
-        const auto num_nonzero_entries_in_row = columns.size();
-        assert(columns.size() <= num_cols_);
-        row_pointers_->operator[](row + 1) = row_pointers_->operator[](row) + num_nonzero_entries_in_row;
-        for (size_t kk = 0; kk < num_nonzero_entries_in_row; ++kk) {
+    if (!(num_rows_ > 0 && num_cols_ > 0))
+      return;
+    if (size_t(patt.size()) != num_rows_)
+      DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
+                 "The size of the pattern (" << patt.size() << ") does not match the number of rows of this ("
+                                             << num_rows_ << ")!");
+    for (size_t row = 0; row < num_rows_; ++row) {
+      const auto& columns = patt.inner(row);
+      const auto num_nonzero_entries_in_row = columns.size();
+      assert(columns.size() <= num_cols_);
+      row_pointers_->operator[](row + 1) = row_pointers_->operator[](row) + num_nonzero_entries_in_row;
+      for (size_t kk = 0; kk < num_nonzero_entries_in_row; ++kk) {
 #ifndef NDEBUG
-          if (columns[kk] >= num_cols_)
-            DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
-                       "The size of row " << row << " of the pattern does not match the number of columns of this ("
-                                          << num_cols_ << ")!");
+        if (columns[kk] >= num_cols_)
+          DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
+                     "The size of row " << row << " of the pattern does not match the number of columns of this ("
+                                        << num_cols_ << ")!");
 #endif // NDEBUG
-          column_indices_->push_back(columns[kk]);
-        } // kk
-        entries_->resize(column_indices_->size(), 0.);
-      } // row
-    }
+        column_indices_->push_back(columns[kk]);
+      } // kk
+      entries_->resize(column_indices_->size(), 0.);
+    } // row
   } // CommonSparseMatrix(rr, cc, patt, num_mutexes)
 
   CommonSparseMatrix(const size_t rr = 0,
@@ -581,21 +581,21 @@ public:
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
     , eps_(eps)
   {
-    if (num_rows_ > 0 && num_cols_ > 0) {
-      if (size_t(patt.size()) != num_rows_)
-        DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
-                   "The size of the pattern (" << patt.size() << ") does not match the number of rows of this ("
-                                               << num_rows_ << ")!");
-      for (size_t col = 0; col < num_cols_; ++col) {
-        for (size_t row = 0; row < num_rows_; ++row) {
-          const auto& column_indices = patt.inner(row);
-          if (std::find(column_indices.begin(), column_indices.end(), col) != column_indices.end())
-            row_indices_->push_back(row);
-        } // row
-        (*column_pointers_)[col + 1] = row_indices_->size();
-      } // col
-      entries_->resize(row_indices_->size());
-    }
+    if (!(num_rows_ > 0 && num_cols_ > 0))
+      return;
+    if (size_t(patt.size()) != num_rows_)
+      DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
+                 "The size of the pattern (" << patt.size() << ") does not match the number of rows of this ("
+                                             << num_rows_ << ")!");
+    for (size_t col = 0; col < num_cols_; ++col) {
+      for (size_t row = 0; row < num_rows_; ++row) {
+        const auto& column_indices = patt.inner(row);
+        if (std::find(column_indices.begin(), column_indices.end(), col) != column_indices.end())
+          row_indices_->push_back(row);
+      } // row
+      (*column_pointers_)[col + 1] = row_indices_->size();
+    } // col
+    entries_->resize(row_indices_->size());
   } // CommonSparseMatrix(rr, cc, patt, num_mutexes)
 
   CommonSparseMatrix(const size_t rr = 0,
@@ -969,6 +969,21 @@ public:
 
   /// \}
 
+private:
+  // Computes the entry (rr, cc) of this * other for the generic-matrix rightmultiply below.
+  template <class OtherMatrixImp>
+  ScalarType rightmultiply_entry(const OtherMatrixImp& other, const size_t rr, const size_t cc) const
+  {
+    ScalarType new_entry(0);
+    for (size_t col = 0; col < num_cols_; ++col) {
+      for (size_t kk = (*column_pointers_)[col]; kk < (*column_pointers_)[col + 1]; ++kk)
+        if ((*row_indices_)[kk] == rr)
+          new_entry += (*entries_)[kk] * XT::Common::MatrixAbstraction<OtherMatrixImp>::get_entry(other, col, cc);
+    } // col
+    return new_entry;
+  }
+
+public:
   template <class OtherMatrixImp>
   typename std::enable_if_t<XT::Common::MatrixAbstraction<OtherMatrixImp>::is_matrix
                                 && !(std::is_base_of<ThisType, OtherMatrixImp>::value),
@@ -980,16 +995,10 @@ public:
     IndexVectorType new_column_pointers(num_cols_ + 1, 0);
     IndexVectorType new_row_indices;
     new_row_indices.reserve(row_indices_->size());
-    ScalarType new_entry(0);
     size_t index = 0;
     for (size_t cc = 0; cc < num_cols_; ++cc) {
       for (size_t rr = 0; rr < num_rows_; ++rr) {
-        new_entry = 0;
-        for (size_t col = 0; col < num_cols_; ++col) {
-          for (size_t kk = (*column_pointers_)[col]; kk < (*column_pointers_)[col + 1]; ++kk)
-            if ((*row_indices_)[kk] == rr)
-              new_entry += (*entries_)[kk] * XT::Common::MatrixAbstraction<OtherMatrixImp>::get_entry(other, col, cc);
-        } // col
+        const ScalarType new_entry = rightmultiply_entry(other, rr, cc);
         if (XT::Common::FloatCmp::ne(new_entry, 0., 0., eps_ / num_cols_)) {
           new_entries.push_back(new_entry);
           new_row_indices.push_back(rr);

@@ -289,16 +289,17 @@ public:
   {
     SparsityPatternDefault ret(rows());
     const ScalarType zero(0);
-    if (prune) {
-      for (size_t ii = 0; ii < rows(); ++ii)
-        for (size_t jj = 0; jj < cols(); ++jj)
-          if (Common::FloatCmp::ne<Common::FloatCmp::Style::absolute>(get_entry(ii, jj), zero, eps))
-            ret.insert(ii, jj);
-    } else {
+    if (!prune) {
       for (size_t ii = 0; ii < rows(); ++ii)
         for (size_t jj = 0; jj < cols(); ++jj)
           ret.insert(ii, jj);
+      ret.sort();
+      return ret;
     }
+    for (size_t ii = 0; ii < rows(); ++ii)
+      for (size_t jj = 0; jj < cols(); ++jj)
+        if (Common::FloatCmp::ne<Common::FloatCmp::Style::absolute>(get_entry(ii, jj), zero, eps))
+          ret.insert(ii, jj);
     ret.sort();
     return ret;
   } // ... pattern(...)
@@ -328,25 +329,20 @@ public:
   {
     if (other.rows() != rows())
       DUNE_THROW(Common::Exceptions::shapes_do_not_match,
-                 "rows(): " << rows() << "\n   "
-                            << "other.rows(): " << other.rows());
+                 "rows(): " << rows() << "\n   " << "other.rows(): " << other.rows());
     if (other.cols() != cols())
       DUNE_THROW(Common::Exceptions::shapes_do_not_match,
-                 "cols(): " << cols() << "\n   "
-                            << "other.cols(): " << other.cols());
+                 "cols(): " << cols() << "\n   " << "other.cols(): " << other.cols());
     auto my_pattern = pattern();
     auto other_pattern = other.pattern();
     for (size_t ii = 0; ii < rows(); ++ii) {
       const auto my_cols = std::set<size_t>(my_pattern.inner(ii).begin(), my_pattern.inner(ii).end());
       const auto other_cols = std::set<size_t>(other_pattern.inner(ii).begin(), other_pattern.inner(ii).end());
-      for (const auto& jj : my_cols)
-        if (other_cols.count(jj) == 0) {
-          if (Common::FloatCmp::ne(get_entry(ii, jj), ScalarType(0.), epsilon))
-            return false;
-        } else {
-          if (Common::FloatCmp::ne(get_entry(ii, jj), other.get_entry(ii, jj), epsilon))
-            return false;
-        }
+      for (const auto& jj : my_cols) {
+        const ScalarType reference = (other_cols.count(jj) == 0) ? ScalarType(0.) : other.get_entry(ii, jj);
+        if (Common::FloatCmp::ne(get_entry(ii, jj), reference, epsilon))
+          return false;
+      }
       for (const auto& jj : other_cols)
         if (my_cols.count(jj) == 0 && Common::FloatCmp::ne(other.get_entry(ii, jj), ScalarType(0.), epsilon))
           return false;
