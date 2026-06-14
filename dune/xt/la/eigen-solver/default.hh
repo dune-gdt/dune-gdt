@@ -108,19 +108,19 @@ protected:
     } else
 #endif // HAVE_LAPACKE || HAVE_MKL
       if (type == "shifted_qr") {
-        if (options_->template get<bool>("compute_eigenvalues")
-            || options_->template get<bool>("compute_eigenvectors")) {
-          eigenvalues_ = std::make_unique<std::vector<ComplexType>>(rows);
-          eigenvectors_ = ComplexM::make_unique(rows, cols);
-          std::vector<RealType> real_eigenvalues(rows);
-          auto real_eigenvectors = RealM::make_unique(rows, cols);
-          internal::compute_real_eigenvalues_and_real_right_eigenvectors_using_qr(
-              matrix_, real_eigenvalues, *real_eigenvectors);
-          for (size_t ii = 0; ii < rows; ++ii) {
-            (*eigenvalues_)[ii] = real_eigenvalues[ii];
-            for (size_t jj = 0; jj < cols; ++jj)
-              ComplexM::set_entry(*eigenvectors_, ii, jj, RealM::get_entry(*real_eigenvectors, ii, jj));
-          }
+        if (!(options_->template get<bool>("compute_eigenvalues")
+              || options_->template get<bool>("compute_eigenvectors")))
+          return;
+        eigenvalues_ = std::make_unique<std::vector<ComplexType>>(rows);
+        eigenvectors_ = ComplexM::make_unique(rows, cols);
+        std::vector<RealType> real_eigenvalues(rows);
+        auto real_eigenvectors = RealM::make_unique(rows, cols);
+        internal::compute_real_eigenvalues_and_real_right_eigenvectors_using_qr(
+            matrix_, real_eigenvalues, *real_eigenvectors);
+        for (size_t ii = 0; ii < rows; ++ii) {
+          (*eigenvalues_)[ii] = real_eigenvalues[ii];
+          for (size_t jj = 0; jj < cols; ++jj)
+            ComplexM::set_entry(*eigenvectors_, ii, jj, RealM::get_entry(*real_eigenvectors, ii, jj));
         }
       } else
         DUNE_THROW(Common::Exceptions::internal_error,
