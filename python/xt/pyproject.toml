@@ -86,3 +86,13 @@ packages = ["dune"]
 "scripts/dxt_code_generation.py" = "dxt_code_generation.py"
 "scripts/generate_compare_functions.py" = "generate_compare_functions.py"
 "wrapper/dune_xt_execute.py" = "dune_xt_execute.py"
+
+# Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.
+# test/base.py (not test_*.py), so without this pattern pytest would collect nothing. The `make xt_test_python` target
+# runs pytest from the binary dir, where this pyproject.toml is the assembly-point config. (The obsolete pytest-pep8
+# options and the setuptools `[aliases] test = pytest` from setup.cfg are intentionally dropped.)
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = ["test/*.py"]
+junit_family = "xunit2"
+addopts = "-p no:warnings"
