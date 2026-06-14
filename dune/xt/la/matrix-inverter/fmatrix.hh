@@ -23,6 +23,7 @@
 #include <dune/xt/la/container/conversion.hh>
 #include <dune/xt/la/container/eigen/dense.hh>
 #include <dune/xt/la/matrix-inverter.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "internal/base.hh"
 #include "internal/eigen.hh"
@@ -70,7 +71,7 @@ class MatrixInverter<FieldMatrix<K, ROWS, COLS>, true> : public internal::Matrix
 public:
   using MatrixType = typename BaseType::MatrixType;
 
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<MatrixInverter, Args...>>
   explicit MatrixInverter(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -126,7 +127,7 @@ template <class K, int ROWS, int COLS>
 class MatrixInverter<Common::FieldMatrix<K, ROWS, COLS>, true> : public MatrixInverter<FieldMatrix<K, ROWS, COLS>>
 {
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<MatrixInverter, Args...>>
   explicit MatrixInverter(Args&&... args)
     : MatrixInverter<FieldMatrix<K, ROWS, COLS>>(std::forward<Args>(args)...)
   {

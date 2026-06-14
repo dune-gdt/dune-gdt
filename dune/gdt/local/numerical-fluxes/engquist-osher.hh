@@ -22,6 +22,7 @@
 #include <dune/grid/onedgrid.hh>
 
 #include "interface.hh"
+#include <dune/xt/common/type_traits.hh>
 
 namespace Dune {
 namespace GDT {
@@ -34,7 +35,7 @@ template <class I, size_t d, size_t m = 1, class R = double>
 class NumericalEngquistOsherFlux : public internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>
 {
 public:
-  template <class... Args>
+  template <class... Args, typename = XT::Common::require_not_self_t<NumericalEngquistOsherFlux, Args...>>
   explicit NumericalEngquistOsherFlux(Args&&... /*args*/)
     : internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>()
   {

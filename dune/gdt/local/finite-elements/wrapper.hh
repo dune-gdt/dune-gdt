@@ -112,7 +112,7 @@ public:
   {
   }
 
-  template <class... Args>
+  template <class... Args, typename = XT::Common::require_not_self_t<LocalFiniteElementBasisWrapper, Args...>>
   explicit LocalFiniteElementBasisWrapper(Args&&... args)
     : LocalFiniteElementBasisWrapper(new Implementation(std::forward<Args>(args)...))
   {
@@ -212,7 +212,7 @@ public:
   {
   }
 
-  template <class... Args>
+  template <class... Args, typename = XT::Common::require_not_self_t<LocalFiniteElementInterpolationWrapper, Args...>>
   explicit LocalFiniteElementInterpolationWrapper(Args&&... args)
     : LocalFiniteElementInterpolationWrapper(new Implementation(std::forward<Args>(args)...))
   {
@@ -291,7 +291,7 @@ public:
   {
   }
 
-  template <class... Args>
+  template <class... Args, typename = XT::Common::require_not_self_t<LocalFiniteElementCoefficientsWrapper, Args...>>
   explicit LocalFiniteElementCoefficientsWrapper(Args&&... args)
     : LocalFiniteElementCoefficientsWrapper(new Implementation(std::forward<Args>(args)...))
   {

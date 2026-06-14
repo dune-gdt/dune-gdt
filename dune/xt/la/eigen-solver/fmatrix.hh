@@ -30,6 +30,7 @@
 #include <dune/xt/la/container/eigen/dense.hh>
 #include <dune/xt/la/solver.hh>
 #include <dune/xt/la/eigen-solver.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "internal/base.hh"
 #include "internal/eigen.hh"
@@ -106,7 +107,7 @@ class EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>, true>
 public:
   using typename BaseType::MatrixType;
 
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<EigenSolver, Args...>>
   explicit EigenSolver(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -200,7 +201,7 @@ class EigenSolver<Dune::XT::Common::FieldMatrix<K, SIZE, SIZE>, true>
   : public EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>>
 {
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<EigenSolver, Args...>>
   EigenSolver(Args&&... args)
     : EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>>(std::forward<Args>(args)...)
   {

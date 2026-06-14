@@ -89,18 +89,25 @@ void Timings::start(const std::string& section_name)
 long Timings::stop(const std::string& section_name)
 {
   DXTC_LIKWID_END_SECTION(section_name)
-  if (known_timers_map_.find(section_name) == known_timers_map_.end())
+  const auto section = known_timers_map_.find(section_name);
+  if (section == known_timers_map_.end())
     DUNE_THROW(Dune::RangeError, "trying to stop timer " << section_name << " that wasn't started\n");
 
-  known_timers_map_[section_name].first = false; // marks as not running
-  TimingData& timing = *(known_timers_map_[section_name].second);
+  const bool was_running = section->second.first;
+  section->second.first = false; // marks as not running
+  TimingData& timing = *(section->second.second);
   timing.stop();
   const auto dlt = timing.delta();
-  if (commited_deltas_.find(section_name) == commited_deltas_.end())
-    commited_deltas_[section_name] = dlt;
-  else {
-    for (auto i : value_range(dlt.size()))
-      commited_deltas_[section_name][i] += dlt[i];
+  // Only commit the delta if the section was actually running. Stopping an already-stopped section (e.g. when a derived
+  // RAII timer such as OutputScopedTiming stops the section in its destructor and the ScopedTiming base destructor
+  // stops it again) must not commit the same delta twice and thereby inflate the recorded time.
+  if (was_running) {
+    if (commited_deltas_.find(section_name) == commited_deltas_.end())
+      commited_deltas_[section_name] = dlt;
+    else {
+      for (auto i : value_range(dlt.size()))
+        commited_deltas_[section_name][i] += dlt[i];
+    }
   }
   return dlt[0];
 } // StopTiming
@@ -228,9 +235,19 @@ OutputScopedTiming::OutputScopedTiming(const std::string& section_name, std::ost
 
 OutputScopedTiming::~OutputScopedTiming()
 {
-  const auto duration = timings().stop(section_name_);
-  const double millis_per_s{1000.f};
-  out_ << "Executing " << section_name_ << " took " << duration / millis_per_s << "s\n";
+  // A destructor must not let exceptions escape (it is implicitly noexcept, so an escaping exception would call
+  // std::terminate). Stopping the timing and writing to the stream is best-effort on destruction. Note that stop()
+  // returns this scope's elapsed time and commits it once; the ScopedTiming base destructor stops the section again but
+  // no longer double-commits (see Timings::stop).
+  try {
+    const auto duration = timings().stop(section_name_);
+    const double millis_per_s{1000.f};
+    out_ << "Executing " << section_name_ << " took " << duration / millis_per_s << "s\n";
+  } catch (const std::exception& e) {
+    std::cerr << "Error in OutputScopedTiming for section " << section_name_ << " (ignored): " << e.what() << std::endl;
+  } catch (...) {
+    std::cerr << "Unknown error in OutputScopedTiming for section " << section_name_ << " (ignored)." << std::endl;
+  }
 }
 
 
