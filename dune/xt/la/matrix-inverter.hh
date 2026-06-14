@@ -79,7 +79,7 @@ class MatrixInverter
                 "Please implement for given MatrixType and add the respective include below!");
 
 public:
-  MatrixInverter(const MatrixType& /*matrix*/, const std::string& /*type*/ = "")
+  explicit MatrixInverter(const MatrixType& /*matrix*/, const std::string& /*type*/ = "")
   {
     static_assert(AlwaysFalse<MatrixType>::value,
                   "Please implement for given MatrixType and add the respective include below!");

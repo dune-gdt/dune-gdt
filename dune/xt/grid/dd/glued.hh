@@ -197,7 +197,7 @@ private:
     using ctype = typename GridView::ctype;
 
   public:
-    CouplingFaceDescriptor(const MacroIntersectionType& macro_intersection)
+    explicit CouplingFaceDescriptor(const MacroIntersectionType& macro_intersection)
       : macro_intersection_(macro_intersection)
     {
     }
@@ -229,11 +229,11 @@ private:
   }
 
 public:
-  Glued(MacroGridProviderType& macro_grid_provider,
-        const size_t num_local_refinements = 0,
-        const bool prepare_glues = false,
-        const bool allow_for_broken_orientation_of_coupling_intersections = false,
-        const ctype& allowed_overlap = 10 * XT::Common::FloatCmp::DefaultEpsilon<ctype>::value())
+  explicit Glued(MacroGridProviderType& macro_grid_provider,
+                 const size_t num_local_refinements = 0,
+                 const bool prepare_glues = false,
+                 const bool allow_for_broken_orientation_of_coupling_intersections = false,
+                 const ctype& allowed_overlap = 10 * XT::Common::FloatCmp::DefaultEpsilon<ctype>::value())
     : macro_grid_(macro_grid_provider)
     , allowed_overlap_(allowed_overlap)
     , macro_leaf_view_(macro_grid_.leaf_view())
@@ -1074,7 +1074,7 @@ class GluedVTKWriter
 public:
   using GluedGridType = Glued<MacroGridType, LocalGridType, layer>;
 
-  GluedVTKWriter(const GluedGridType& glued_grid, const int local_level = -1)
+  explicit GluedVTKWriter(const GluedGridType& glued_grid, const int local_level = -1)
     : glued_grid_(glued_grid)
     , local_levels_(glued_grid_.num_subdomains(), -1)
   {

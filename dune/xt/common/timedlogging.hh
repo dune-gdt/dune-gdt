@@ -82,10 +82,10 @@ public:
   std::array<bool, 3> state;
   size_t copy_count{0};
 
-  DefaultLogger(const std::string& prfx = "",
-                const std::array<bool, 3>& initial_state = default_logger_state(),
-                std::array<std::string, 3> colors = {{"blue", "darkgray", "red"}},
-                bool global_timer = true);
+  explicit DefaultLogger(const std::string& prfx = "",
+                         const std::array<bool, 3>& initial_state = default_logger_state(),
+                         std::array<std::string, 3> colors = {{"blue", "darkgray", "red"}},
+                         bool global_timer = true);
 
   DefaultLogger(const DefaultLogger&);
 
@@ -174,7 +174,7 @@ class WithLogger
 public:
   mutable DefaultLogger logger;
 
-  WithLogger(const std::string& id, const std::array<bool, 3>& initial_state = {{true, true, true}})
+  explicit WithLogger(const std::string& id, const std::array<bool, 3>& initial_state = {{true, true, true}})
     : logger(id, initial_state)
   {
     LOG_(debug) << "WithLogger(this=" << this << ")" << std::endl;

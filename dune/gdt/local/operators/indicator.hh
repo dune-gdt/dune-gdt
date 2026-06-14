@@ -49,7 +49,7 @@ public:
   using LocalBilinearFormType = LocalElementBilinearFormInterface<E, s_r, s_rC, SF, RF, s_r, s_rC, SF>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  LocalElementBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
+  explicit LocalElementBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
     : BaseType(1)
     , local_bilinear_form_(bilinear_form.copy())
   {
@@ -123,7 +123,7 @@ public:
   using LocalBilinearFormType = LocalCouplingIntersectionBilinearFormInterface<I, s_r, s_rC, SF, RF, s_r, s_rC, SF>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  LocalCouplingIntersectionBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
+  explicit LocalCouplingIntersectionBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
     : BaseType(2)
     , local_bilinear_form_(bilinear_form.copy())
   {
@@ -220,7 +220,7 @@ public:
   using LocalBilinearFormType = LocalIntersectionBilinearFormInterface<I, s_r, s_rC, SF, RF, s_r, s_rC, SF>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  LocalIntersectionBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
+  explicit LocalIntersectionBilinearFormIndicatorOperator(const LocalBilinearFormType& bilinear_form)
     : BaseType(1)
     , local_bilinear_form_(bilinear_form.copy())
   {

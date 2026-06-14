@@ -121,9 +121,9 @@ public:
     return c;
   } // ... bind(...)
 
-  VectorizedLocalElementIntegralFunctional(IntegrandType integrand,
-                                           const int integrand_order = 0,
-                                           const XT::Common::ParameterType& integrand_parameters = {})
+  explicit VectorizedLocalElementIntegralFunctional(IntegrandType integrand,
+                                                    const int integrand_order = 0,
+                                                    const XT::Common::ParameterType& integrand_parameters = {})
     : BaseType(integrand_parameters)
     , integrand_(integrand)
     , integrand_order_(integrand_order)

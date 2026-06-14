@@ -53,7 +53,7 @@ struct ESV2007DiffusionProblem
 
   // We can only reproduce the results from ESV2007 by using a quadrature of order 3, which we obtain with a p1 DG space
   // and a force of order 2.
-  ESV2007DiffusionProblem(int force_order = 2)
+  explicit ESV2007DiffusionProblem(int force_order = 2)
     : diffusion(XT::LA::eye_matrix<XT::Common::FieldMatrix<double, d, d>>(d, d))
     , dirichlet(0.)
     , neumann(0.)

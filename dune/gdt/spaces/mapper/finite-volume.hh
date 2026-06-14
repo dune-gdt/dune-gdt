@@ -56,7 +56,7 @@ public:
   using typename BaseType::ElementType;
   using typename BaseType::GridViewType;
 
-  FiniteVolumeMapper(const GridViewType& grd_vw)
+  explicit FiniteVolumeMapper(const GridViewType& grd_vw)
     : grid_view_(grd_vw)
     , local_finite_elements_()
     , mapper_(grid_view_, mcmgElementLayout())

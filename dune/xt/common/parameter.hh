@@ -288,7 +288,7 @@ std::ostream& operator<<(std::ostream& out, const Parameter& mu);
 class ParametricInterface
 {
 public:
-  ParametricInterface(ParameterType param_type = {});
+  explicit ParametricInterface(ParameterType param_type = {});
 
   ParametricInterface(const ParametricInterface& other) = default;
 

@@ -50,7 +50,7 @@ protected:
   using typename BaseType::V;
 
 public:
-  BurgersTest(const std::string timestepping)
+  explicit BurgersTest(const std::string timestepping)
     : Problem(new BurgersProblem<G>())
     , BaseType(Problem::access().T_end,
                timestepping,

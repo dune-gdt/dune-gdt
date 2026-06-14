@@ -96,7 +96,7 @@ public:
   using reference = typename AnnotatedVectorArrayType::reference;
   using const_reference = typename AnnotatedVectorArrayType::const_reference;
 
-  ListVectorArray(const size_t dm, const size_t lngth = 0, const size_t resrv = 0)
+  explicit ListVectorArray(const size_t dm, const size_t lngth = 0, const size_t resrv = 0)
     : dim_(dm)
     , len_(lngth)
     , vectors_()

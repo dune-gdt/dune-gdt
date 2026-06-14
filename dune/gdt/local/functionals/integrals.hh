@@ -43,7 +43,7 @@ public:
   using IntegrandType = LocalUnaryElementIntegrandInterface<E, r, rC, R>;
   using GenericIntegrand = GenericLocalUnaryElementIntegrand<E, r, rC, R>;
 
-  LocalElementIntegralFunctional(const IntegrandType& integrand, const int over_integrate = 0)
+  explicit LocalElementIntegralFunctional(const IntegrandType& integrand, const int over_integrate = 0)
     : BaseType(integrand.parameter_type())
     , integrand_(integrand.copy_as_unary_element_integrand())
     , over_integrate_(over_integrate)
@@ -130,7 +130,7 @@ public:
   using IntegrandType = LocalUnaryIntersectionIntegrandInterface<I, r, rC, R>;
   using GenericIntegrand = GenericLocalUnaryIntersectionIntegrand<I, r, rC, R>;
 
-  LocalIntersectionIntegralFunctional(const IntegrandType& integrand, const int over_integrate = 0)
+  explicit LocalIntersectionIntegralFunctional(const IntegrandType& integrand, const int over_integrate = 0)
     : BaseType(integrand.parameter_type())
     , integrand_(integrand.copy_as_unary_intersection_integrand())
     , over_integrate_(over_integrate)

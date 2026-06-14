@@ -176,7 +176,7 @@ public:
   using MatrixType = IstlRowMajorSparseMatrix<S>;
   using R = typename MatrixType::RealType;
 
-  Solver(const MatrixType& matrix)
+  explicit Solver(const MatrixType& matrix)
     : matrix_(matrix)
     , communicator_(CommunicatorType())
   {

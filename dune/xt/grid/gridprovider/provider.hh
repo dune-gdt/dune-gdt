@@ -69,12 +69,12 @@ public:
   /**
    * \attention Do not delete grd_ptr manually afterwards!
    */
-  GridProvider(GridType*&& grd_ptr)
+  explicit GridProvider(GridType*&& grd_ptr)
     : grid_ptr_(std::move(grd_ptr))
   {
   }
 
-  GridProvider(std::shared_ptr<GridType> grd_ptr)
+  explicit GridProvider(std::shared_ptr<GridType> grd_ptr)
     : grid_ptr_(std::move(grd_ptr))
   {
   }

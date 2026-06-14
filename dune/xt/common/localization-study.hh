@@ -31,7 +31,7 @@ class LocalizationStudy
 {
 public:
   /// \brief Constructs the study, optionally restricting it to the given indicators.
-  LocalizationStudy(std::vector<std::string> only_these_indicators = {});
+  explicit LocalizationStudy(std::vector<std::string> only_these_indicators = {});
 
   virtual ~LocalizationStudy();
 

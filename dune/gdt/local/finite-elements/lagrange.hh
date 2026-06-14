@@ -52,7 +52,7 @@ class LocalZeroOrderLagrangeFiniteElement
   using BaseType = LocalFiniteElementDefault<D, d, R, r>;
 
 public:
-  LocalZeroOrderLagrangeFiniteElement(const GeometryType& geometry_type)
+  explicit LocalZeroOrderLagrangeFiniteElement(const GeometryType& geometry_type)
     : Storage(new Wrapper(0, geometry_type))
     , BaseType(0,
                Storage::access().basis().copy(),

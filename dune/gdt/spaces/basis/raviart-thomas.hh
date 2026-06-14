@@ -120,9 +120,10 @@ private:
     using typename BaseType::LocalFiniteElementType;
     using typename BaseType::RangeType;
 
-    LocalizedRaviartThomasGlobalBasis(const RaviartThomasGlobalBasis<GL, R>& self,
-                                      const std::string& logging_prefix = "",
-                                      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+    explicit LocalizedRaviartThomasGlobalBasis(
+        const RaviartThomasGlobalBasis<GL, R>& self,
+        const std::string& logging_prefix = "",
+        const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
       : BaseType(logging_prefix.empty() ? "LocalizedRtGlobalBasis" : logging_prefix, logging_state)
       , self_(self)
       , set_data_in_post_bind_(true)

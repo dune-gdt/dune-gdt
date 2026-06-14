@@ -162,7 +162,7 @@ public:
   {
   }
 
-  FixedMap(const MapType& map)
+  explicit FixedMap(const MapType& map)
     : map_(map)
   {
   }

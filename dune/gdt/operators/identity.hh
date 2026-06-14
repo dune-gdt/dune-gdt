@@ -44,9 +44,9 @@ public:
   using typename BaseType::SourceSpaceType;
   using typename BaseType::VectorType;
 
-  IdentityOperator(const SourceSpaceType& space,
-                   const std::string& logging_prefix = "",
-                   const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+  explicit IdentityOperator(const SourceSpaceType& space,
+                            const std::string& logging_prefix = "",
+                            const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType({}, logging_prefix.empty() ? "IdentityOperator" : logging_prefix, logging_state)
     , space_(space)
   {

@@ -135,11 +135,11 @@ public:
     }
   } // CommonSparseMatrix(rr, cc, patt, num_mutexes)
 
-  CommonSparseMatrix(const size_t rr = 0,
-                     const size_t cc = 0,
-                     const ScalarType& value = ScalarType(0),
-                     const size_t num_mutexes = 1,
-                     const EpsType eps = Common::FloatCmp::DefaultEpsilon<ScalarType>::value() / 1000.)
+  explicit CommonSparseMatrix(const size_t rr = 0,
+                              const size_t cc = 0,
+                              const ScalarType& value = ScalarType(0),
+                              const size_t num_mutexes = 1,
+                              const EpsType eps = Common::FloatCmp::DefaultEpsilon<ScalarType>::value() / 1000.)
     : num_rows_(rr)
     , num_cols_(cc)
     , entries_(std::make_shared<EntriesVectorType>(is_zero(value, eps) ? 0 : num_rows_ * num_cols_, value))
@@ -598,11 +598,11 @@ public:
     }
   } // CommonSparseMatrix(rr, cc, patt, num_mutexes)
 
-  CommonSparseMatrix(const size_t rr = 0,
-                     const size_t cc = 0,
-                     const ScalarType& value = ScalarType(0),
-                     const size_t num_mutexes = 1,
-                     const EpsType eps = Common::FloatCmp::DefaultEpsilon<ScalarType>::value() / 1000.)
+  explicit CommonSparseMatrix(const size_t rr = 0,
+                              const size_t cc = 0,
+                              const ScalarType& value = ScalarType(0),
+                              const size_t num_mutexes = 1,
+                              const EpsType eps = Common::FloatCmp::DefaultEpsilon<ScalarType>::value() / 1000.)
     : num_rows_(rr)
     , num_cols_(cc)
     , entries_(std::make_shared<EntriesVectorType>(is_zero(value, eps) ? 0 : num_rows_ * num_cols_, value))
@@ -1154,12 +1154,12 @@ public:
     }
   } // CommonSparseOrDenseMatrix(rr, cc, patt, num_mutexes)
 
-  CommonSparseOrDenseMatrix(const size_t rr = 0,
-                            const size_t cc = 0,
-                            const ScalarType& value = ScalarType(0),
-                            const size_t num_mutexes = 1,
-                            bool use_sparse_if_zero = true,
-                            const EpsType eps = Common::FloatCmp::DefaultEpsilon<ScalarType>::value() / 1000.)
+  explicit CommonSparseOrDenseMatrix(const size_t rr = 0,
+                                     const size_t cc = 0,
+                                     const ScalarType& value = ScalarType(0),
+                                     const size_t num_mutexes = 1,
+                                     bool use_sparse_if_zero = true,
+                                     const EpsType eps = Common::FloatCmp::DefaultEpsilon<ScalarType>::value() / 1000.)
     : num_rows_(rr)
     , num_cols_(cc)
   {

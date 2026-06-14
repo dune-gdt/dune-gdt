@@ -499,7 +499,7 @@ struct EntityLess
   using IndexSet = typename GV::IndexSet;
   using E = typename GV::Grid::template Codim<0>::Entity;
 
-  EntityLess(const IndexSet& index_set)
+  explicit EntityLess(const IndexSet& index_set)
     : index_set_(index_set)
   {
   }

@@ -108,7 +108,7 @@ protected:
   using RangeType = XT::Common::FieldVector<R, m>;
 
 public:
-  InviscidCompressibleFlowEulerTest(const std::string timestepping, const size_t num_refinements = 2)
+  explicit InviscidCompressibleFlowEulerTest(const std::string timestepping, const size_t num_refinements = 2)
     : Problem(new InviscidCompressibleFlowEulerProblem<G>())
     , BaseType(
           this->access().T_end,

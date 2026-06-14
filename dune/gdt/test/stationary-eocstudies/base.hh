@@ -81,7 +81,7 @@ protected:
 public:
   using E = XT::Grid::extract_entity_t<GV>;
 
-  StationaryEocStudy(
+  explicit StationaryEocStudy(
       std::function<void(const DF&, const std::string&)> visualizer =
           [](const auto& solution, const auto& prefix) {
             if (DXTC_TEST_CONFIG_GET("setup.visualize", false))

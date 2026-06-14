@@ -69,7 +69,7 @@ class StokesDirichletTest : public ::testing::Test
   using RangeField = double;
 
 public:
-  StokesDirichletTest(StokesDirichletProblem<GV> problem)
+  explicit StokesDirichletTest(StokesDirichletProblem<GV> problem)
     : problem_(problem)
   {
   }

@@ -56,9 +56,9 @@ public:
                                                  const XT::Common::Parameter& /*param*/)>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  GenericLocalElementOperator(GenericFunctionType func,
-                              const size_t num_local_sources = 0,
-                              const XT::Common::ParameterType& param_type = {})
+  explicit GenericLocalElementOperator(GenericFunctionType func,
+                                       const size_t num_local_sources = 0,
+                                       const XT::Common::ParameterType& param_type = {})
     : BaseType(num_local_sources, param_type)
     , func_(func)
   {
@@ -134,9 +134,9 @@ public:
                                                  const XT::Common::Parameter& /*param*/)>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  GenericLocalIntersectionOperator(GenericFunctionType func,
-                                   const size_t num_local_sources = 1,
-                                   const XT::Common::ParameterType& param_type = {})
+  explicit GenericLocalIntersectionOperator(GenericFunctionType func,
+                                            const size_t num_local_sources = 1,
+                                            const XT::Common::ParameterType& param_type = {})
     : BaseType(num_local_sources, param_type)
     , func_(func)
   {

@@ -70,8 +70,8 @@ public:
   static const typename LocalSourceType::DomainType static_x;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  LocalAdvectionFvCouplingOperator(const NumericalFluxType& numerical_flux,
-                                   const bool source_is_elementwise_constant = false)
+  explicit LocalAdvectionFvCouplingOperator(const NumericalFluxType& numerical_flux,
+                                            const bool source_is_elementwise_constant = false)
     : BaseType(2, numerical_flux.parameter_type())
     , numerical_flux_(numerical_flux.copy())
     , source_is_elementwise_constant_(source_is_elementwise_constant)
@@ -224,7 +224,7 @@ public:
                                         const XT::Common::Parameter& /*param*/)>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  LocalAdvectionFvBoundaryTreatmentByCustomNumericalFluxOperator(
+  explicit LocalAdvectionFvBoundaryTreatmentByCustomNumericalFluxOperator(
       LambdaType numerical_boundary_flux_lambda,
       const XT::Common::ParameterType& boundary_treatment_param_type = {},
       const bool source_is_elementwise_constant = false)

@@ -51,7 +51,7 @@ template <class MatrixType>
 class MatrixDataProvider<MatrixType, true>
 {
 public:
-  MatrixDataProvider(MatrixType& matrix)
+  explicit MatrixDataProvider(MatrixType& matrix)
     : matrix_(matrix)
   {
   }
@@ -72,7 +72,7 @@ class MatrixDataProvider<MatrixType, false>
 {
 public:
   // lapacks favorite storage format is column-major, otherwise the matrix would be copied from row-major to col-major
-  MatrixDataProvider(const MatrixType& matrix)
+  explicit MatrixDataProvider(const MatrixType& matrix)
     : serialized_matrix_(Dune::XT::Common::serialize_colwise<double>(matrix))
   {
   }

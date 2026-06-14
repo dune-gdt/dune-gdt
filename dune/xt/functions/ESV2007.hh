@@ -76,8 +76,8 @@ public:
     return config;
   } // ... defaults(...)
 
-  Testcase1Force(const size_t ord = defaults().template get<int>("integration_order"),
-                 std::string nm = "ESV2007Testcase1Force")
+  explicit Testcase1Force(const size_t ord = defaults().template get<int>("integration_order"),
+                          std::string nm = "ESV2007Testcase1Force")
     : order_(static_cast<int>(ord))
     , name_(std::move(nm))
   {
@@ -176,8 +176,8 @@ public:
     return config;
   } // ... defaults(...)
 
-  Testcase1ExactSolution(const size_t ord = defaults().template get<int>("integration_order"),
-                         std::string nm = "ESV2007Testcase1ExactSolution")
+  explicit Testcase1ExactSolution(const size_t ord = defaults().template get<int>("integration_order"),
+                                  std::string nm = "ESV2007Testcase1ExactSolution")
     : order_(static_cast<int>(ord))
     , name_(std::move(nm))
   {

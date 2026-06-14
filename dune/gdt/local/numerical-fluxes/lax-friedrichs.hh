@@ -40,7 +40,7 @@ public:
   using typename BaseType::XIndependentFluxType;
   using FluxJacobianType = XT::Common::FieldVector<XT::Common::FieldMatrix<R, m, m>, d>;
 
-  NumericalLaxFriedrichsFlux(const FluxType& flx, const double lambda = 0.)
+  explicit NumericalLaxFriedrichsFlux(const FluxType& flx, const double lambda = 0.)
     : BaseType(flx)
     , lambda_(lambda)
   {
@@ -48,7 +48,7 @@ public:
       DUNE_THROW(Dune::NotImplemented, "Not yet implemented for m > 1 if lambda is not provided!");
   }
 
-  NumericalLaxFriedrichsFlux(const XIndependentFluxType& func, const double lambda = 0.)
+  explicit NumericalLaxFriedrichsFlux(const XIndependentFluxType& func, const double lambda = 0.)
     : BaseType(func)
     , lambda_(lambda)
   {

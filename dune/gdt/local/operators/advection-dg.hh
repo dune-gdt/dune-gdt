@@ -61,7 +61,7 @@ public:
   using LocalMassMatrixProviderType = LocalMassMatrixProvider<RGV, m, 1, RF>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  LocalAdvectionDgVolumeOperator(const FluxType& flux)
+  explicit LocalAdvectionDgVolumeOperator(const FluxType& flux)
     : BaseType(1, flux.parameter_type())
     , flux_(flux)
     , local_flux_(flux_.local_function())
@@ -212,7 +212,7 @@ public:
   using LocalMassMatrixProviderType = LocalMassMatrixProvider<IRGV, m, 1, IRR>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  LocalAdvectionDgCouplingOperator(const NumericalFluxType& numerical_flux, bool compute_outside = true)
+  explicit LocalAdvectionDgCouplingOperator(const NumericalFluxType& numerical_flux, bool compute_outside = true)
     : BaseType(2, numerical_flux.parameter_type())
     , numerical_flux_(numerical_flux.copy())
     , local_flux_inside_(numerical_flux_->flux().local_function())
@@ -682,10 +682,10 @@ public:
   using LocalMassMatrixProviderType = LocalMassMatrixProvider<RGV, m, 1, RF>;
 
   // When using this constructor, source has to be set by a call to with_source before calling apply
-  LocalAdvectionDgArtificialViscosityShockCapturingOperator(const SGV& assembly_grid_view,
-                                                            const double& nu_1 = 0.2,
-                                                            const double& alpha_1 = 1.0,
-                                                            const size_t index = 0)
+  explicit LocalAdvectionDgArtificialViscosityShockCapturingOperator(const SGV& assembly_grid_view,
+                                                                     const double& nu_1 = 0.2,
+                                                                     const double& alpha_1 = 1.0,
+                                                                     const size_t index = 0)
     : BaseType(2)
     , assembly_grid_view_(assembly_grid_view)
     , nu_1_(nu_1)

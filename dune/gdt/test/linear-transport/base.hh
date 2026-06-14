@@ -91,7 +91,7 @@ protected:
   using typename BaseType::V;
 
 public:
-  LinearTransportTest(const std::string timestepping)
+  explicit LinearTransportTest(const std::string timestepping)
     : Problem(new LinearTransportProblem<G>())
     , BaseType(Problem::access().T_end,
                timestepping,

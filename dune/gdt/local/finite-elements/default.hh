@@ -190,7 +190,7 @@ class ThreadSafeDefaultLocalFiniteElementFamily : public LocalFiniteElementFamil
 public:
   using typename BaseType::LocalFiniteElementType;
 
-  ThreadSafeDefaultLocalFiniteElementFamily(
+  explicit ThreadSafeDefaultLocalFiniteElementFamily(
       std::function<std::unique_ptr<LocalFiniteElementType>(const GeometryType&, const int&)> factory)
     : factory_(factory)
   {
@@ -246,7 +246,7 @@ public:
 
   using LocalBasisType = LocalFiniteElementBasisInterface<D, d, R, r, 1>;
 
-  LocalL2FiniteElementInterpolation(const LocalBasisType& local_basis)
+  explicit LocalL2FiniteElementInterpolation(const LocalBasisType& local_basis)
     : local_basis_(local_basis.copy())
   {
   }

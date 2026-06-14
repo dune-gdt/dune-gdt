@@ -201,7 +201,7 @@ class EigenSolver<Dune::XT::Common::FieldMatrix<K, SIZE, SIZE>, true>
 {
 public:
   template <class... Args>
-  EigenSolver(Args&&... args)
+  explicit EigenSolver(Args&&... args)
     : EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>>(std::forward<Args>(args)...)
   {
   }
@@ -219,7 +219,7 @@ class EigenSolver<Dune::XT::Common::FieldVector<K, 1>, true>
 
 public:
   template <class... Args>
-  EigenSolver(const Dune::XT::Common::FieldVector<K, 1>& vector, Args&&... args)
+  explicit EigenSolver(const Dune::XT::Common::FieldVector<K, 1>& vector, Args&&... args)
     : Storage(vector[0])
     , BaseType(Storage::access(), std::forward<Args>(args)...)
   {
@@ -238,7 +238,7 @@ class EigenSolver<Dune::FieldVector<K, 1>, true>
 
 public:
   template <class... Args>
-  EigenSolver(const Dune::FieldVector<K, 1>& vector, Args&&... args)
+  explicit EigenSolver(const Dune::FieldVector<K, 1>& vector, Args&&... args)
     : Storage(vector[0])
     , BaseType(Storage::access(), std::forward<Args>(args)...)
   {

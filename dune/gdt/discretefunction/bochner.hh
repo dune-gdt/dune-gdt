@@ -74,7 +74,7 @@ public:
                                                   << bochner_space_.spatial_space().mapper().size());
   } // DiscreteBochnerFunction(...)
 
-  DiscreteBochnerFunction(const BochnerSpace<GV, r, rC, R>& bochner_space, const std::string nm = "")
+  explicit DiscreteBochnerFunction(const BochnerSpace<GV, r, rC, R>& bochner_space, const std::string nm = "")
     : bochner_space_(bochner_space)
     , dof_vectors_(new XT::LA::ListVectorArray<V>(bochner_space_.spatial_space().mapper().size(),
                                                   bochner_space_.temporal_space().mapper().size()))

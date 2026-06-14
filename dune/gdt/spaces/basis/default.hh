@@ -98,7 +98,7 @@ private:
     using typename BaseType::LocalFiniteElementType;
     using typename BaseType::RangeType;
 
-    LocalizedDefaultGlobalBasis(const DefaultGlobalBasis<GV, r, rC, R>& self)
+    explicit LocalizedDefaultGlobalBasis(const DefaultGlobalBasis<GV, r, rC, R>& self)
       : BaseType()
       , self_(self)
     {

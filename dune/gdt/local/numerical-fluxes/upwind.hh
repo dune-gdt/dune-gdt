@@ -49,12 +49,12 @@ public:
   using typename BaseType::StateType;
   using typename BaseType::XIndependentFluxType;
 
-  NumericalUpwindFlux(const FluxType& flx)
+  explicit NumericalUpwindFlux(const FluxType& flx)
     : BaseType(flx)
   {
   }
 
-  NumericalUpwindFlux(const XIndependentFluxType& func)
+  explicit NumericalUpwindFlux(const XIndependentFluxType& func)
     : BaseType(func)
   {
   }

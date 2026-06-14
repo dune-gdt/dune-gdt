@@ -185,21 +185,21 @@ public:
   using typename BaseType::ElementType;
   using typename BaseType::RangeReturnType;
 
-  DerivativeElementFunction(ElementFunctionType& func)
+  explicit DerivativeElementFunction(ElementFunctionType& func)
     : BaseType()
     , func_(func)
     , do_post_bind_(true)
   {
   }
 
-  DerivativeElementFunction(std::shared_ptr<ElementFunctionType> func)
+  explicit DerivativeElementFunction(std::shared_ptr<ElementFunctionType> func)
     : BaseType()
     , func_(func)
     , do_post_bind_(true)
   {
   }
 
-  DerivativeElementFunction(std::unique_ptr<ElementFunctionType>&& func)
+  explicit DerivativeElementFunction(std::unique_ptr<ElementFunctionType>&& func)
     : BaseType()
     , func_(std::move(func))
     , do_post_bind_(true)

@@ -46,7 +46,7 @@ class IndicatorGridFunction : public GridFunctionInterface<E, r, rC, R>
     using typename InterfaceType::RangeType;
     using GeometryType = typename ElementType::Geometry;
 
-    LocalIndicatorGridFunction(
+    explicit LocalIndicatorGridFunction(
         const std::shared_ptr<std::vector<std::tuple<DomainType, DomainType, RangeType>>> subdomain_and_value_tuples)
       : InterfaceType()
       , subdomain_and_value_tuples_(subdomain_and_value_tuples)
@@ -120,8 +120,8 @@ public:
     return config;
   } // ... defaults(...)
 
-  IndicatorGridFunction(std::shared_ptr<std::vector<std::tuple<DomainType, DomainType, RangeType>>> values,
-                        std::string name_in = "IndicatorGridFunction")
+  explicit IndicatorGridFunction(std::shared_ptr<std::vector<std::tuple<DomainType, DomainType, RangeType>>> values,
+                                 std::string name_in = "IndicatorGridFunction")
     : subdomain_and_value_tuples_(std::move(values))
     , name_(std::move(name_in))
   {
@@ -133,8 +133,8 @@ public:
 FunctionType function({{lowerleft_1, upperright_1, value_1}, {lowerleft_2, upperright_2, value_2}});
 \endcode
    */
-  IndicatorGridFunction(const std::vector<std::tuple<DomainType, DomainType, RangeType>>& values,
-                        const std::string& nm = "IndicatorGridFunction")
+  explicit IndicatorGridFunction(const std::vector<std::tuple<DomainType, DomainType, RangeType>>& values,
+                                 const std::string& nm = "IndicatorGridFunction")
     : IndicatorGridFunction(std::make_shared<std::vector<std::tuple<DomainType, DomainType, RangeType>>>(values), nm)
   {
   }
@@ -148,8 +148,8 @@ FunctionType function({{{{0., 1.}, {0., 1.}}, 0.7}, {{{6., 10.}, {8., 10.}}, 0.9
 \endcode
    * if you want to set indicator intervals [0,1] x [0,1] with value 0.7 and [6,10] x [8,10] with value 0.9.
    */
-  IndicatorGridFunction(const std::vector<std::pair<Common::FieldMatrix<D, d, 2>, RangeType>>& values,
-                        const std::string& nm = "IndicatorGridFunction")
+  explicit IndicatorGridFunction(const std::vector<std::pair<Common::FieldMatrix<D, d, 2>, RangeType>>& values,
+                                 const std::string& nm = "IndicatorGridFunction")
     : IndicatorGridFunction(convert_from_domains(values), nm)
   {
   }
@@ -216,21 +216,21 @@ public:
   using typename BaseType::DomainType;
   using typename BaseType::RangeReturnType;
 
-  IndicatorFunction(std::shared_ptr<std::vector<std::tuple<DomainType, DomainType, RangeReturnType>>> values,
-                    std::string nm = "IndicatorFunction")
+  explicit IndicatorFunction(std::shared_ptr<std::vector<std::tuple<DomainType, DomainType, RangeReturnType>>> values,
+                             std::string nm = "IndicatorFunction")
     : subdomain_and_value_tuples_(std::move(values))
     , name_(std::move(nm))
   {
   }
 
-  IndicatorFunction(const std::vector<std::tuple<DomainType, DomainType, RangeReturnType>>& values,
-                    const std::string& nm = "IndicatorFunction")
+  explicit IndicatorFunction(const std::vector<std::tuple<DomainType, DomainType, RangeReturnType>>& values,
+                             const std::string& nm = "IndicatorFunction")
     : IndicatorFunction(std::make_shared<std::vector<std::tuple<DomainType, DomainType, RangeReturnType>>>(values), nm)
   {
   }
 
-  IndicatorFunction(const std::vector<std::pair<Common::FieldMatrix<D, d, 2>, RangeReturnType>>& values,
-                    const std::string& nm = "IndicatorFunction")
+  explicit IndicatorFunction(const std::vector<std::pair<Common::FieldMatrix<D, d, 2>, RangeReturnType>>& values,
+                             const std::string& nm = "IndicatorFunction")
     : IndicatorFunction(convert_from_domains(values), nm)
   {
   }

@@ -39,7 +39,7 @@ public:
     return "xt.grid.couplinggridprovider";
   }
 
-  CouplingGridProvider(const CouplingGridViewType view)
+  explicit CouplingGridProvider(const CouplingGridViewType view)
     : view_(view)
   {
   }
