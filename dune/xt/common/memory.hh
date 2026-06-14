@@ -19,6 +19,7 @@
 #include <memory>
 
 #include <dune/xt/common/debug.hh>
+#include <dune/xt/common/type_traits.hh>
 #include <utility>
 
 namespace Dune::XT::Common {
@@ -338,7 +339,9 @@ public:
   }
 
   // We have to disable this constructor if T is not a complete type to avoid compilation failures
-  template <class S, typename std::enable_if_t<std::is_constructible<T, S&&>::value, bool> = true>
+  template <class S,
+            typename std::enable_if_t<std::is_constructible<T, S&&>::value && !is_self<ConstStorageProvider, S>::value,
+                                      bool> = true>
   explicit ConstStorageProvider(S&& tt)
     : storage_(new internal::ConstAccessByValue<T>(std::forward<S>(tt)))
   {

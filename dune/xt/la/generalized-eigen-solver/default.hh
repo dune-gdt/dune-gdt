@@ -21,6 +21,7 @@
 #include <dune/xt/la/container/conversion.hh>
 #include <dune/xt/la/exceptions.hh>
 #include <dune/xt/la/generalized-eigen-solver.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "internal/base.hh"
 #include "internal/lapacke.hh"
@@ -86,7 +87,7 @@ public:
   using RealM = Common::MatrixAbstraction<RealMatrixType>;
   using ComplexM = Common::MatrixAbstraction<ComplexMatrixType>;
 
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!Common::is_self<GeneralizedEigenSolver, Args...>::value>>
   explicit GeneralizedEigenSolver(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

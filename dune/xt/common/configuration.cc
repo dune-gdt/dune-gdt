@@ -94,9 +94,14 @@ Configuration::Configuration(int argc, char** argv, ConfigurationDefaults defaul
 
 Configuration::~Configuration()
 {
-  if (log_on_exit_ && !empty()) {
-    test_create_directory(directory_only(logfile_));
-    report(*make_ofstream(logfile_));
+  // A destructor must not let exceptions escape (it is implicitly noexcept, so an escaping exception would call
+  // std::terminate). Writing the configuration to the logfile on exit is best-effort.
+  try {
+    if (log_on_exit_ && !empty()) {
+      test_create_directory(directory_only(logfile_));
+      report(*make_ofstream(logfile_));
+    }
+  } catch (...) {
   }
 }
 

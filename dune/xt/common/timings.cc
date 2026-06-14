@@ -228,9 +228,14 @@ OutputScopedTiming::OutputScopedTiming(const std::string& section_name, std::ost
 
 OutputScopedTiming::~OutputScopedTiming()
 {
-  const auto duration = timings().stop(section_name_);
-  const double millis_per_s{1000.f};
-  out_ << "Executing " << section_name_ << " took " << duration / millis_per_s << "s\n";
+  // A destructor must not let exceptions escape (it is implicitly noexcept, so an escaping exception would call
+  // std::terminate). Stopping the timing and writing to the stream is best-effort on destruction.
+  try {
+    const auto duration = timings().stop(section_name_);
+    const double millis_per_s{1000.f};
+    out_ << "Executing " << section_name_ << " took " << duration / millis_per_s << "s\n";
+  } catch (...) {
+  }
 }
 
 

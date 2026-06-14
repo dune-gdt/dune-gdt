@@ -25,6 +25,7 @@
 #include <dune/xt/functions/base/combined-grid-functions.hh>
 #include <dune/xt/functions/grid-function.hh>
 #include <dune/xt/functions/interfaces/grid-function.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include <dune/gdt/print.hh>
 
@@ -526,7 +527,7 @@ class LocalProductIntegrand
                                       LocalIntersectionProductIntegrand<E_or_I, r, TR, F, AR>>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!XT::Common::is_self<LocalProductIntegrand, Args...>::value>>
   explicit LocalProductIntegrand(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

@@ -33,6 +33,7 @@
 #include <memory>
 #include <boost/noncopyable.hpp>
 #include <dune/xt/common/parallel/threadmanager.hh>
+#include <dune/xt/common/type_traits.hh>
 
 namespace Dune::XT::Common {
 namespace internal {
@@ -52,7 +53,8 @@ public:
   using iterator = typename BackendType::iterator;
   using const_iterator = typename BackendType::const_iterator;
 
-  template <class... InitTypes>
+  template <class... InitTypes,
+            typename = std::enable_if_t<!is_self<EnumerableThreadSpecificWrapper, InitTypes...>::value>>
   explicit EnumerableThreadSpecificWrapper(InitTypes&&... ctor_args)
     : values_(std::forward<InitTypes>(ctor_args)...)
   {
@@ -120,7 +122,8 @@ public:
   }
 
   //! Initialization by in-place construction ValueType with \param ctor_args
-  template <class... InitTypes>
+  template <class... InitTypes,
+            typename = std::enable_if_t<!is_self<EnumerableThreadSpecificWrapper, InitTypes...>::value>>
   explicit EnumerableThreadSpecificWrapper(InitTypes&&... ctor_args)
     : values_(std::make_unique<std::remove_const_t<ValueType>>(std::forward<InitTypes>(ctor_args)...))
   {
@@ -190,7 +193,7 @@ public:
   }
 
   //! Initialization by in-place construction ValueType with \param ctor_args
-  template <class... InitTypes>
+  template <class... InitTypes, typename = std::enable_if_t<!is_self<PerThreadValue, InitTypes...>::value>>
   explicit PerThreadValue(InitTypes&&... ctor_args)
     : values_(std::forward<InitTypes>(ctor_args)...)
   {
@@ -287,7 +290,7 @@ public:
   }
 
   //! Initialization by in-place construction ValueType with \param ctor_args
-  template <class... InitTypes>
+  template <class... InitTypes, typename = std::enable_if_t<!is_self<UnsafePerThreadValue, InitTypes...>::value>>
   explicit UnsafePerThreadValue(InitTypes&&... ctor_args)
     : values_(threadManager().max_threads())
   {

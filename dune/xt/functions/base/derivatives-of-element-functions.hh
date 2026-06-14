@@ -19,6 +19,7 @@
 
 #include <dune/xt/functions/interfaces/element-functions.hh>
 #include <dune/xt/functions/type_traits.hh>
+#include <dune/xt/common/type_traits.hh>
 
 
 namespace Dune::XT::Functions {
@@ -262,7 +263,7 @@ class DivergenceElementFunction : public DerivativeElementFunction<ElementFuncti
   using BaseType = DerivativeElementFunction<ElementFunctionType, DerivativeType::divergence>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!Common::is_self<DivergenceElementFunction, Args...>::value>>
   explicit DivergenceElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -281,7 +282,7 @@ class GradientElementFunction : public DerivativeElementFunction<ElementFunction
   using BaseType = DerivativeElementFunction<ElementFunctionType, DerivativeType::gradient>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!Common::is_self<GradientElementFunction, Args...>::value>>
   explicit GradientElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

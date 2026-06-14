@@ -21,6 +21,7 @@
 #include <dune/xt/functions/constant.hh>
 #include <dune/xt/functions/interfaces/flux-function.hh>
 #include <dune/xt/functions/interfaces/function.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include <dune/gdt/exceptions.hh>
 
@@ -229,7 +230,9 @@ public:
   using typename BaseType::PhysicalDomainType;
   using typename BaseType::StateType;
 
-  template <class... Args>
+  template <class... Args,
+            typename = std::enable_if_t<
+                !XT::Common::is_self<ThisNumericalFluxIsNotAvailableForTheseDimensions, Args...>::value>>
   explicit ThisNumericalFluxIsNotAvailableForTheseDimensions(Args&&... /*args*/)
     : BaseType(std::make_unique<const XT::Functions::ConstantFunction<m, d, m, R>>(0.))
   {

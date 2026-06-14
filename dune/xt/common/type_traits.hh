@@ -327,6 +327,31 @@ struct is_complex<std::complex<T>> : public std::true_type
 {};
 
 
+/**
+ * \brief Trait whose value is true iff \a Args is a single argument that, ignoring cv- and reference-qualifiers, is \a
+ *        Self.
+ *
+ * This is used to constrain perfect-forwarding constructors of the form
+ * \code
+ *   template <class... Args>
+ *   explicit C(Args&&... args);
+ * \endcode
+ * Such a constructor is a better match than the copy/move constructor for non-const lvalues of type \a C and would
+ * therefore silently hijack copy construction. Guarding it with
+ * \code
+ *   template <class... Args, typename = std::enable_if_t<!is_self<C, Args...>::value>>
+ * \endcode
+ * disables the forwarding constructor exactly in the copy/move case.
+ */
+template <class Self, class... Args>
+struct is_self : std::false_type
+{};
+
+template <class Self, class Arg>
+struct is_self<Self, Arg> : std::is_same<Self, std::decay_t<Arg>>
+{};
+
+
 //! like std::is_arithmetic, but additionally treats Dune::bigunsignedint as arithmetic
 template <class T>
 struct is_arithmetic : public std::is_arithmetic<T>

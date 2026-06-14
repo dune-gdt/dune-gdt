@@ -161,7 +161,11 @@ public:
 
   inline ~ScopedTiming()
   {
-    timings().stop(section_name_);
+    // A destructor must not let exceptions escape (it is implicitly noexcept); stopping the timing is best-effort here.
+    try {
+      timings().stop(section_name_);
+    } catch (...) {
+    }
   }
 };
 

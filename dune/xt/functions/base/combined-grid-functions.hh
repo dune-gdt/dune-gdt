@@ -18,6 +18,7 @@
 #define DUNE_XT_FUNCTIONS_BASE_COMBINED_GRID_FUNCTIONS_HH
 
 #include <dune/xt/functions/interfaces/grid-function.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "combined.hh"
 
@@ -192,7 +193,7 @@ class DifferenceGridFunction : public CombinedGridFunction<MinuendType, Subtrahe
   using BaseType = CombinedGridFunction<MinuendType, SubtrahendType, CombinationType::difference>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!Common::is_self<DifferenceGridFunction, Args...>::value>>
   explicit DifferenceGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -211,7 +212,7 @@ class SumGridFunction : public CombinedGridFunction<LeftSummandType, RightSumman
   using BaseType = CombinedGridFunction<LeftSummandType, RightSummandType, CombinationType::sum>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!Common::is_self<SumGridFunction, Args...>::value>>
   explicit SumGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -230,7 +231,7 @@ class FractionGridFunction : public CombinedGridFunction<NominatorType, Denomina
   using BaseType = CombinedGridFunction<NominatorType, DenominatorType, CombinationType::fraction>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!Common::is_self<FractionGridFunction, Args...>::value>>
   explicit FractionGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -249,7 +250,7 @@ class ProductGridFunction : public CombinedGridFunction<LeftFactorType, RightFac
   using BaseType = CombinedGridFunction<LeftFactorType, RightFactorType, CombinationType::product>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!Common::is_self<ProductGridFunction, Args...>::value>>
   explicit ProductGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

@@ -112,7 +112,8 @@ public:
   {
   }
 
-  template <class... Args>
+  template <class... Args,
+            typename = std::enable_if_t<!XT::Common::is_self<LocalFiniteElementBasisWrapper, Args...>::value>>
   explicit LocalFiniteElementBasisWrapper(Args&&... args)
     : LocalFiniteElementBasisWrapper(new Implementation(std::forward<Args>(args)...))
   {
@@ -212,7 +213,8 @@ public:
   {
   }
 
-  template <class... Args>
+  template <class... Args,
+            typename = std::enable_if_t<!XT::Common::is_self<LocalFiniteElementInterpolationWrapper, Args...>::value>>
   explicit LocalFiniteElementInterpolationWrapper(Args&&... args)
     : LocalFiniteElementInterpolationWrapper(new Implementation(std::forward<Args>(args)...))
   {
@@ -291,7 +293,8 @@ public:
   {
   }
 
-  template <class... Args>
+  template <class... Args,
+            typename = std::enable_if_t<!XT::Common::is_self<LocalFiniteElementCoefficientsWrapper, Args...>::value>>
   explicit LocalFiniteElementCoefficientsWrapper(Args&&... args)
     : LocalFiniteElementCoefficientsWrapper(new Implementation(std::forward<Args>(args)...))
   {

@@ -21,6 +21,7 @@
 #include <dune/xt/common/matrix.hh>
 #include <dune/xt/la/container/conversion.hh>
 #include <dune/xt/la/eigen-solver.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "internal/base.hh"
 #include "internal/shifted-qr.hh"
@@ -84,7 +85,7 @@ public:
   using RealM = Common::MatrixAbstraction<RealMatrixType>;
   using ComplexM = Common::MatrixAbstraction<ComplexMatrixType>;
 
-  template <class... Args>
+  template <class... Args, typename = std::enable_if_t<!Common::is_self<EigenSolver, Args...>::value>>
   explicit EigenSolver(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
