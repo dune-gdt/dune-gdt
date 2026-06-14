@@ -351,6 +351,28 @@ struct is_self<Self, Arg> : std::is_same<Self, std::decay_t<Arg>>
 template <class Self, class... Args>
 inline constexpr bool is_self_v = is_self<Self, Args...>::value;
 
+namespace internal {
+
+// SFINAE helper: ::type only exists when \a condition is true. This is a hand-rolled, single-purpose substitute for
+// std::enable_if used by require_t / require_not_self_t below. It exists so the constraints below read as an intent
+// ("require ...") rather than as a generic std::enable_if expression (concepts would be the natural tool here, but the
+// code base targets C++17).
+template <bool condition>
+struct require_impl
+{};
+
+template <>
+struct require_impl<true>
+{
+  using type = void;
+};
+
+} // namespace internal
+
+//! Alias that is well-formed (and equal to void) iff \a condition holds, and ill-formed (SFINAE) otherwise.
+template <bool condition>
+using require_t = typename internal::require_impl<condition>::type;
+
 /**
  * \brief SFINAE alias to constrain a perfect-forwarding constructor of \a Self so that it does not hijack copy/move
  *        construction (see \ref is_self).
@@ -364,7 +386,7 @@ inline constexpr bool is_self_v = is_self<Self, Args...>::value;
  * \a Self, in which case substitution fails and the forwarding constructor is removed from overload resolution.
  */
 template <class Self, class... Args>
-using require_not_self_t = std::enable_if_t<!is_self_v<Self, Args...>>;
+using require_not_self_t = require_t<!is_self_v<Self, Args...>>;
 
 
 //! like std::is_arithmetic, but additionally treats Dune::bigunsignedint as arithmetic
