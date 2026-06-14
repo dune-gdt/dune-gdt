@@ -47,6 +47,41 @@ struct RealQrEigenSolver
   {
   }
 
+  // Computes out[rr][cc] = sum_ll lhs[rr][ll] * rhs_transposed[cc][ll] for rr in [0, out_rows), cc in [0, out_cols).
+  // Extracted to keep control-flow nesting <= 3 (cpp:S134).
+  static void mat_mult_rhs_transposed(MatrixType& out,
+                                      const MatrixType& lhs,
+                                      const MatrixType& rhs_transposed,
+                                      const size_t out_rows,
+                                      const size_t out_cols,
+                                      const size_t inner)
+  {
+    for (size_t rr = 0; rr < out_rows; ++rr)
+      for (size_t cc = 0; cc < out_cols; ++cc) {
+        out[rr][cc] = 0.;
+        for (size_t ll = 0; ll < inner; ++ll)
+          out[rr][cc] += lhs[rr][ll] * rhs_transposed[cc][ll];
+      }
+  }
+
+  // Computes out[rr][cc] = sum_ll lhs[rr][ll] * rhs[ll][cc] for rr in [0, out_rows), cc in [cc_begin, cc_end).
+  // Extracted to keep control-flow nesting <= 3 (cpp:S134).
+  static void mat_mult(MatrixType& out,
+                       const MatrixType& lhs,
+                       const MatrixType& rhs,
+                       const size_t out_rows,
+                       const size_t cc_begin,
+                       const size_t cc_end,
+                       const size_t inner)
+  {
+    for (size_t rr = 0; rr < out_rows; ++rr)
+      for (size_t cc = cc_begin; cc < cc_end; ++cc) {
+        out[rr][cc] = 0.;
+        for (size_t ll = 0; ll < inner; ++ll)
+          out[rr][cc] += lhs[rr][ll] * rhs[ll][cc];
+      }
+  }
+
   static void
   calculate_eigenvalues_by_shifted_qr(MatrixType& A, const std::unique_ptr<MatrixType>& Q, std::vector<double>& eigvals)
   {
@@ -93,37 +128,20 @@ struct RealQrEigenSolver
         // Calculate A_{k+1} = R_k Q_k + shift I. With the QR decomposition above, this
         // is calculated as A_{k+1} = [R1*Q1+shift*I Q1^T*A2; 0 A3]
         // calculate upper left part
-        for (size_t rr = 0; rr < num_remaining_rows; ++rr) {
-          for (size_t cc = 0; cc < num_remaining_cols; ++cc) {
-            A[rr][cc] = 0.;
-            for (size_t ll = 0; ll < num_remaining_rows; ++ll)
-              A[rr][cc] += (*R_k)[rr][ll] * (*Q_k)[cc][ll];
-          } // cc
+        mat_mult_rhs_transposed(A, *R_k, *Q_k, num_remaining_rows, num_remaining_cols, num_remaining_rows);
+        for (size_t rr = 0; rr < num_remaining_rows; ++rr)
           A[rr][rr] += shift;
-        } // rr
         // update upper right part
         // we do not need R_k anymore in this step, so use it as temporary storage
         auto& A_copy = *R_k;
         A_copy = A;
-        for (size_t rr = 0; rr < num_remaining_rows; ++rr) {
-          for (size_t cc = num_remaining_cols; cc < num_cols; ++cc) {
-            A[rr][cc] = 0.;
-            for (size_t ll = 0; ll < num_remaining_rows; ++ll)
-              A[rr][cc] += (*Q_k)[rr][ll] * A_copy[ll][cc];
-          } // cc
-        } // rr
+        mat_mult(A, *Q_k, A_copy, num_remaining_rows, num_remaining_cols, num_cols, num_remaining_rows);
 
         if (Q) {
           // Update Q by multiplicating Q_k from the right
           auto& Q_copy = *R_k;
           Q_copy = *Q;
-          for (size_t rr = 0; rr < num_rows; ++rr) {
-            for (size_t cc = 0; cc < num_remaining_cols; ++cc) {
-              (*Q)[rr][cc] = 0.;
-              for (size_t ll = 0; ll < num_remaining_rows; ++ll)
-                (*Q)[rr][cc] += Q_copy[rr][ll] * (*Q_k)[cc][ll];
-            } // cc
-          } // rr
+          mat_mult_rhs_transposed(*Q, Q_copy, *Q_k, num_rows, num_remaining_cols, num_remaining_rows);
         } // if (Q)
 
         ++kk;
@@ -165,11 +183,11 @@ struct RealQrEigenSolver
       assert(kk <= size_t(std::numeric_limits<int>::max()));
       for (int rr = static_cast<int>(kk) - 1; rr >= 0; --rr) {
         eigvec[rr] = 0.;
-        if (XT::Common::FloatCmp::ne(A[rr][rr], A[kk][kk])) {
-          for (size_t cc = rr + 1; cc <= kk; ++cc)
-            eigvec[rr] -= A[rr][cc] * eigvec[cc];
-          eigvec[rr] /= A[rr][rr] - A[kk][kk];
-        }
+        if (!XT::Common::FloatCmp::ne(A[rr][rr], A[kk][kk]))
+          continue;
+        for (size_t cc = rr + 1; cc <= kk; ++cc)
+          eigvec[rr] -= A[rr][cc] * eigvec[cc];
+        eigvec[rr] /= A[rr][rr] - A[kk][kk];
       } // rr
       // apply matrix Q
       for (size_t rr = 0; rr < M::rows(A); ++rr) {
@@ -268,35 +286,35 @@ struct RealQrEigenSolver
     FieldType tau;
     for (size_t jj = 0; jj < std::min(num_rows - 1, num_cols); ++jj) {
       const auto norm_x = get_norm_x(R, jj, num_rows);
-      if (XT::Common::FloatCmp::gt(norm_x, 0.)) {
-        // find entry with greatest absolute value for pivoting
-        size_t index = jj;
-        FieldType max = std::abs(R[jj][jj]);
-        for (size_t kk = jj + 1; kk < num_rows; ++kk) {
-          if (XT::Common::FloatCmp::gt(std::abs(R[kk][jj]), max)) {
-            max = std::abs(R[kk][jj]);
-            index = kk;
-          }
+      if (!XT::Common::FloatCmp::gt(norm_x, 0.))
+        continue;
+      // find entry with greatest absolute value for pivoting
+      size_t index = jj;
+      FieldType max = std::abs(R[jj][jj]);
+      for (size_t kk = jj + 1; kk < num_rows; ++kk) {
+        if (XT::Common::FloatCmp::gt(std::abs(R[kk][jj]), max)) {
+          max = std::abs(R[kk][jj]);
+          index = kk;
         }
-        if (index != jj) { // swap rows
-          // swapping of rows i,j can be done by Householder I - (e_i - e_j)(e_i-e_j)^T
-          e_diff = V::create(M::rows(A), 0.);
-          e_diff[jj] = 1.;
-          e_diff[index] = -1.;
-          multiply_householder_from_left(R, 1., e_diff, jj, num_rows);
-          multiply_householder_from_right_col_major(Q, 1., e_diff, jj, num_cols);
-        }
-        const auto s = -sign(R[jj][jj]);
-        const FieldType u1 = R[jj][jj] - s * norm_x;
-        w[jj] = 1.;
-        for (size_t rr = jj + 1; rr < num_rows; ++rr)
-          w[rr] = R[rr][jj] / u1;
-        tau = -s * u1 / norm_x;
+      }
+      if (index != jj) { // swap rows
+        // swapping of rows i,j can be done by Householder I - (e_i - e_j)(e_i-e_j)^T
+        e_diff = V::create(M::rows(A), 0.);
+        e_diff[jj] = 1.;
+        e_diff[index] = -1.;
+        multiply_householder_from_left(R, 1., e_diff, jj, num_rows);
+        multiply_householder_from_right_col_major(Q, 1., e_diff, jj, num_cols);
+      }
+      const auto s = -sign(R[jj][jj]);
+      const FieldType u1 = R[jj][jj] - s * norm_x;
+      w[jj] = 1.;
+      for (size_t rr = jj + 1; rr < num_rows; ++rr)
+        w[rr] = R[rr][jj] / u1;
+      tau = -s * u1 / norm_x;
 
-        // calculate R = Q_k R and Q = Q Q_k
-        multiply_householder_from_left(R, tau, w, jj, num_rows);
-        multiply_householder_from_right_col_major(Q, tau, w, jj, num_cols);
-      } // if (norm_x != 0)
+      // calculate R = Q_k R and Q = Q Q_k
+      multiply_householder_from_left(R, tau, w, jj, num_rows);
+      multiply_householder_from_right_col_major(Q, tau, w, jj, num_cols);
     } // jj
 
     // choose Q such that largest entry of each column is positive
