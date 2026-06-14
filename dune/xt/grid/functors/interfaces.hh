@@ -51,8 +51,8 @@ public:
   using GV = GridViewType;
   using E = ElementType;
 
-  ElementFunctor(const std::string& log_prefix = "",
-                 const std::array<bool, 3>& logging_state = Common::default_logger_state())
+  explicit ElementFunctor(const std::string& log_prefix = "",
+                          const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Common::WithLogger<ElementFunctor<GL>>(log_prefix.empty() ? "ElementFunctor" : log_prefix, logging_state)
   {
   }
@@ -99,8 +99,8 @@ public:
   using E = ElementType;
   using I = IntersectionType;
 
-  IntersectionFunctor(const std::string& log_prefix = "",
-                      const std::array<bool, 3>& logging_state = Common::default_logger_state())
+  explicit IntersectionFunctor(const std::string& log_prefix = "",
+                               const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Common::WithLogger<IntersectionFunctor<GL>>(log_prefix.empty() ? "IntersectionFunctor" : log_prefix,
                                                   logging_state)
   {
@@ -155,8 +155,8 @@ public:
   using E = ElementType;
   using I = IntersectionType;
 
-  ElementAndIntersectionFunctor(const std::string& log_prefix = "",
-                                const std::array<bool, 3>& logging_state = Common::default_logger_state())
+  explicit ElementAndIntersectionFunctor(const std::string& log_prefix = "",
+                                         const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Common::WithLogger<ElementAndIntersectionFunctor<GL>>(
           log_prefix.empty() ? "ElementAndIntersectionFunctor" : log_prefix, logging_state)
   {

@@ -66,7 +66,7 @@ public:
   using MatrixType = Matrix;
   using CommunicatorType = SequentialCommunication;
 
-  Solver(const MatrixType& matrix)
+  explicit Solver(const MatrixType& matrix)
     : matrix_(matrix)
   {
   }

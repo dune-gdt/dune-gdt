@@ -56,12 +56,12 @@ public:
   using typename BaseType::StateType;
   using typename BaseType::XIndependentFluxType;
 
-  NumericalEngquistOsherFlux(const FluxType& flx)
+  explicit NumericalEngquistOsherFlux(const FluxType& flx)
     : BaseType(flx)
   {
   }
 
-  NumericalEngquistOsherFlux(const XIndependentFluxType& flx)
+  explicit NumericalEngquistOsherFlux(const XIndependentFluxType& flx)
     : BaseType(flx)
   {
   }

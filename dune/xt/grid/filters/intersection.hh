@@ -248,7 +248,7 @@ public:
     }
   }
 
-  InnerIntersectionsOnceMap(const std::map<size_t, std::set<size_t>>& outside_indices_to_ignore)
+  explicit InnerIntersectionsOnceMap(const std::map<size_t, std::set<size_t>>& outside_indices_to_ignore)
     : outside_indices_to_ignore_(outside_indices_to_ignore)
   {
   }
@@ -474,7 +474,7 @@ public:
     InnerIntersectionsOnceMap<GV>::fill_ignore_map(outside_indices_to_ignore, entity_range, grid_view);
   }
 
-  PeriodicBoundaryIntersectionsOnceMap(const std::map<size_t, std::set<size_t>>& outside_indices_to_ignore)
+  explicit PeriodicBoundaryIntersectionsOnceMap(const std::map<size_t, std::set<size_t>>& outside_indices_to_ignore)
     : outside_indices_to_ignore_(outside_indices_to_ignore)
   {
   }

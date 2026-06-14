@@ -86,7 +86,7 @@ public:
                    << Common::Typename<MatrixType>::value() << "'!");
   }
 
-  Solver(const MatrixType& /*matrix*/)
+  explicit Solver(const MatrixType& /*matrix*/)
   {
     DUNE_THROW(NotImplemented,
                "This is the unspecialized version of LA::Solver< ... >. "

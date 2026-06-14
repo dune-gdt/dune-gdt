@@ -35,9 +35,9 @@ namespace XT::Common {
 /// \brief Bundles the default behaviour flags of a Configuration (default-access warnings, logging on exit, logfile).
 struct ConfigurationDefaults
 {
-  ConfigurationDefaults(bool warn_on_default_access_in = false,
-                        bool log_on_exit_in = false,
-                        std::string logfile_in = std::string("data/log/dxtc_parameter.log"));
+  explicit ConfigurationDefaults(bool warn_on_default_access_in = false,
+                                 bool log_on_exit_in = false,
+                                 std::string logfile_in = std::string("data/log/dxtc_parameter.log"));
   const bool warn_on_default_access;
   const bool log_on_exit;
   const std::string logfile;

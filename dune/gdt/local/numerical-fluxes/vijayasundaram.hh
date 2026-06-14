@@ -74,7 +74,7 @@ public:
     // };
   }
 
-  NumericalVijayasundaramFlux(const FluxType& flx)
+  explicit NumericalVijayasundaramFlux(const FluxType& flx)
     : BaseType(flx)
     , flux_eigen_decomposition_(default_flux_eigen_decomposition())
   {
@@ -82,7 +82,7 @@ public:
       DUNE_THROW(Dune::NotImplemented, "This flux is not yet implemented for x-dependent fluxes!");
   }
 
-  NumericalVijayasundaramFlux(const XIndependentFluxType& flx)
+  explicit NumericalVijayasundaramFlux(const XIndependentFluxType& flx)
     : BaseType(flx)
     , flux_eigen_decomposition_(default_flux_eigen_decomposition())
   {

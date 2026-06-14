@@ -54,12 +54,12 @@ public:
   using GenericDerivativeFunctionType = std::function<DerivativeRangeReturnType(
       const std::array<size_t, d>&, const DomainType&, const Common::Parameter&)>;
 
-  GenericFunction(GenericOrderFunctionType order_func,
-                  GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
-                  std::string nm = "smooth_lambda_function",
-                  const Common::ParameterType& param_type = {},
-                  GenericJacobianFunctionType jacobian_func = default_jacobian_function(),
-                  GenericDerivativeFunctionType derivative_func = default_derivative_function())
+  explicit GenericFunction(GenericOrderFunctionType order_func,
+                           GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
+                           std::string nm = "smooth_lambda_function",
+                           const Common::ParameterType& param_type = {},
+                           GenericJacobianFunctionType jacobian_func = default_jacobian_function(),
+                           GenericDerivativeFunctionType derivative_func = default_derivative_function())
     : BaseType(param_type)
     , order_(std::move(order_func))
     , evaluate_(evaluate_func)
@@ -70,12 +70,12 @@ public:
   {
   }
 
-  GenericFunction(int ord,
-                  GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
-                  std::string nm = "smooth_lambda_function",
-                  const Common::ParameterType& param_type = {},
-                  GenericJacobianFunctionType jacobian_func = default_jacobian_function(),
-                  GenericDerivativeFunctionType derivative_func = default_derivative_function())
+  explicit GenericFunction(int ord,
+                           GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
+                           std::string nm = "smooth_lambda_function",
+                           const Common::ParameterType& param_type = {},
+                           GenericJacobianFunctionType jacobian_func = default_jacobian_function(),
+                           GenericDerivativeFunctionType derivative_func = default_derivative_function())
     : BaseType(param_type)
     , order_([=](const auto& /*param*/) { return ord; })
     , evaluate_(std::move(evaluate_func))

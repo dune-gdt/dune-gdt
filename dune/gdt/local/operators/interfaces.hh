@@ -83,7 +83,8 @@ public:
   using SourceSpaceType = typename DiscreteSourceType::SpaceType;
 
   // Allows construction without source, source has to be set by a call to with_source before calling apply
-  LocalElementOperatorInterface(const size_t num_local_sources = 1, const XT::Common::ParameterType& param_type = {})
+  explicit LocalElementOperatorInterface(const size_t num_local_sources = 1,
+                                         const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type)
     , source_()
     , local_sources_(0)
@@ -92,9 +93,9 @@ public:
       local_sources_.emplace_back(nullptr);
   }
 
-  LocalElementOperatorInterface(const SourceType& source,
-                                const size_t num_local_sources = 1,
-                                const XT::Common::ParameterType& param_type = {})
+  explicit LocalElementOperatorInterface(const SourceType& source,
+                                         const size_t num_local_sources = 1,
+                                         const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type)
     , source_(source)
     , local_sources_(0)
@@ -226,8 +227,8 @@ public:
   using LocalOutsideRangeType = LocalDiscreteFunction<ORV, ORGV, r_r, r_rC, RF>;
 
   // Allows construction without source, source has to be set by a call to with_source before calling apply
-  LocalIntersectionOperatorInterface(const size_t num_local_sources = 2,
-                                     const XT::Common::ParameterType& param_type = {})
+  explicit LocalIntersectionOperatorInterface(const size_t num_local_sources = 2,
+                                              const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type)
     , source_()
     , local_sources_(0)
@@ -236,9 +237,9 @@ public:
       local_sources_.emplace_back(nullptr);
   }
 
-  LocalIntersectionOperatorInterface(const SourceType& src,
-                                     const size_t num_local_sources = 2,
-                                     const XT::Common::ParameterType& param_type = {})
+  explicit LocalIntersectionOperatorInterface(const SourceType& src,
+                                              const size_t num_local_sources = 2,
+                                              const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type)
     , source_(src)
     , local_sources_(0)

@@ -134,9 +134,9 @@ class DefaultRNG<std::complex<T>, false>
   using BaseType = RNG<std::complex<T>, typename UniformDistributionSelector<T>::type, std::default_random_engine>;
 
 public:
-  DefaultRNG(T min = std::numeric_limits<T>::min(),
-             T max = std::numeric_limits<T>::max(),
-             std::random_device::result_type seed = std::random_device()())
+  explicit DefaultRNG(T min = std::numeric_limits<T>::min(),
+                      T max = std::numeric_limits<T>::max(),
+                      std::random_device::result_type seed = std::random_device()())
     : BaseType(std::default_random_engine(seed), typename UniformDistributionSelector<T>::type(min, max))
   {
   }
@@ -149,15 +149,16 @@ class DefaultRNG<VectorType, true>
   using RngType = DefaultRNG<T>;
 
 public:
-  DefaultRNG(VectorType min_vec = VectorAbstraction<VectorType>::create(VectorAbstraction<VectorType>::has_static_size
-                                                                            ? VectorAbstraction<VectorType>::static_size
-                                                                            : 1,
-                                                                        std::numeric_limits<T>::min()),
-             VectorType max_vec = VectorAbstraction<VectorType>::create(VectorAbstraction<VectorType>::has_static_size
-                                                                            ? VectorAbstraction<VectorType>::static_size
-                                                                            : 1,
-                                                                        std::numeric_limits<T>::max()),
-             std::random_device::result_type seed = std::random_device()())
+  explicit DefaultRNG(
+      VectorType min_vec = VectorAbstraction<VectorType>::create(VectorAbstraction<VectorType>::has_static_size
+                                                                     ? VectorAbstraction<VectorType>::static_size
+                                                                     : 1,
+                                                                 std::numeric_limits<T>::min()),
+      VectorType max_vec = VectorAbstraction<VectorType>::create(VectorAbstraction<VectorType>::has_static_size
+                                                                     ? VectorAbstraction<VectorType>::static_size
+                                                                     : 1,
+                                                                 std::numeric_limits<T>::max()),
+      std::random_device::result_type seed = std::random_device()())
   {
     if (min_vec.size() != max_vec.size())
       DUNE_THROW(Exceptions::shapes_do_not_match,
@@ -187,7 +188,8 @@ template <>
 class DefaultRNG<std::string> : public RandomStrings
 {
 public:
-  DefaultRNG(size_t ilength = default_rng_string_length, std::random_device::result_type seed = std::random_device()())
+  explicit DefaultRNG(size_t ilength = default_rng_string_length,
+                      std::random_device::result_type seed = std::random_device()())
     : RandomStrings(ilength, seed)
   {
   }

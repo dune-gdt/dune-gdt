@@ -52,7 +52,7 @@ public:
   using type = ThisType;
   using bound_type = pybind11::class_<type>;
 
-  AdaptationHelper(G& grd, const std::string& logging_prefix = "")
+  explicit AdaptationHelper(G& grd, const std::string& logging_prefix = "")
     : BaseType(grd, logging_prefix)
     , marker_indices(grd.leafGridView()) // BAD, bad, bad, has to coincide with GV!
     , markers(marker_indices.mapper().size())

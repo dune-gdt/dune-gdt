@@ -72,7 +72,7 @@ public:
   /**
    * \attention The implementor has to call compute() in the ctor if (delay_computation == true).
    */
-  MatrixInverterBase(const MatrixType& matrix, const std::string& type = "")
+  explicit MatrixInverterBase(const MatrixType& matrix, const std::string& type = "")
     : matrix_(matrix)
     , options_(MatrixInverterOptions<MatrixType, true>::options(type))
     , inverse_(nullptr)

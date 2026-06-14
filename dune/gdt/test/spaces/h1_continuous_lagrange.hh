@@ -29,7 +29,7 @@ struct ContinuousLagrangeSpaceTest
 
   XT::Grid::GridProvider<G> grid_provider;
 
-  ContinuousLagrangeSpaceTest(XT::Grid::GridProvider<G>&& grid_provider_)
+  explicit ContinuousLagrangeSpaceTest(XT::Grid::GridProvider<G>&& grid_provider_)
     : grid_provider(grid_provider_)
   {
     this->grid_view = std::make_shared<typename XT::Grid::GridProvider<G>::LeafGridViewType>(grid_provider.leaf_view());

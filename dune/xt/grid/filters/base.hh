@@ -132,8 +132,8 @@ public:
 
   mutable Common::DefaultLogger logger;
 
-  IntersectionFilter(const std::string& logging_prefix = "xt.grid.intersectionfilter",
-                     const std::array<bool, 3>& logging_state = Common::default_logger_state())
+  explicit IntersectionFilter(const std::string& logging_prefix = "xt.grid.intersectionfilter",
+                              const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : logger(logging_prefix, logging_state)
   {
   }
@@ -311,12 +311,12 @@ public:
   using typename BaseType::GridViewType;
   using typename BaseType::IntersectionType;
 
-  NegatedIntersectionFilter(const BaseType& filter)
+  explicit NegatedIntersectionFilter(const BaseType& filter)
     : filter_(filter.copy())
   {
   }
 
-  NegatedIntersectionFilter(BaseType*&& filter)
+  explicit NegatedIntersectionFilter(BaseType*&& filter)
     : filter_(std::move(filter))
   {
   }
@@ -345,12 +345,12 @@ public:
   using typename BaseType::ElementType;
   using typename BaseType::GridViewType;
 
-  NegatedElementFilter(const BaseType& filter)
+  explicit NegatedElementFilter(const BaseType& filter)
     : filter_(filter.copy())
   {
   }
 
-  NegatedElementFilter(BaseType*&& filter)
+  explicit NegatedElementFilter(BaseType*&& filter)
     : filter_(std::move(filter))
   {
   }

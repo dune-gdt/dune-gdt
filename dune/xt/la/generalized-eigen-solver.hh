@@ -72,7 +72,7 @@ public:
   using RealMatrixType = int;
   using ComplexMatrixType = int;
 
-  GeneralizedEigenSolver(const MatrixType& /*matrix*/, const std::string& /*type*/ = "")
+  explicit GeneralizedEigenSolver(const MatrixType& /*matrix*/, const std::string& /*type*/ = "")
   {
     static_assert(AlwaysFalse<MatrixType>::value,
                   "Please implement for given MatrixType and add the respective include below!");

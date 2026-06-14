@@ -891,8 +891,8 @@ public:
   using BaseType::dimension;
   using BaseGridViewType = BaseGridViewImp;
 
-  PeriodicGridView(const BaseGridViewType& base_grid_view,
-                   const std::bitset<dimension> periodic_directions = std::bitset<dimension>().set())
+  explicit PeriodicGridView(const BaseGridViewType& base_grid_view,
+                            const std::bitset<dimension> periodic_directions = std::bitset<dimension>().set())
     : ImplementationStorage(new Implementation(base_grid_view, periodic_directions))
     , BaseType(ImplementationStorage::access())
   {

@@ -39,19 +39,19 @@ public:
   using typename BaseType::LocalFunctionType;
   using FunctionType = FunctionInterface<d, r, rC, R>;
 
-  FunctionAsGridFunctionWrapper(const FunctionType& function)
+  explicit FunctionAsGridFunctionWrapper(const FunctionType& function)
     : BaseType(function.parameter_type())
     , function_(function.copy_as_function())
   {
   }
 
-  FunctionAsGridFunctionWrapper(FunctionType*&& function_ptr)
+  explicit FunctionAsGridFunctionWrapper(FunctionType*&& function_ptr)
     : BaseType(function_ptr->parameter_type())
     , function_(std::move(function_ptr))
   {
   }
 
-  FunctionAsGridFunctionWrapper(std::unique_ptr<FunctionType>&& function_ptr)
+  explicit FunctionAsGridFunctionWrapper(std::unique_ptr<FunctionType>&& function_ptr)
     : BaseType(function_ptr->parameter_type())
     , function_(std::move(function_ptr))
   {
@@ -99,7 +99,7 @@ private:
     using typename BaseType::DomainType;
     using typename BaseType::RangeReturnType;
 
-    LocalFunction(const FunctionType& function)
+    explicit LocalFunction(const FunctionType& function)
       : BaseType()
       , function_(function.copy_as_function())
       , geometry_(nullptr)

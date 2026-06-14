@@ -76,7 +76,7 @@ public:
   using BaseType::rC;
   using typename BaseType::LocalFunctionType;
 
-  ElementwiseDiameterFunction(std::string nm = "ElementwiseDiameterFunction")
+  explicit ElementwiseDiameterFunction(std::string nm = "ElementwiseDiameterFunction")
     : BaseType()
     , name_(std::move(nm))
   {

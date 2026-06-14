@@ -146,7 +146,7 @@ class ComponentVisualizer : public VisualizerInterface<r, rC, R>
 public:
   using typename BaseType::RangeType;
 
-  ComponentVisualizer(const int comp)
+  explicit ComponentVisualizer(const int comp)
     : comp_(comp)
   {
   }

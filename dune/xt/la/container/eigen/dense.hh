@@ -452,7 +452,7 @@ public:
   }
 
   template <class M>
-  EigenDenseMatrix(const MatrixInterface<M, ScalarType>& other, const size_t num_mutexes = 1)
+  explicit EigenDenseMatrix(const MatrixInterface<M, ScalarType>& other, const size_t num_mutexes = 1)
     : backend_(new BackendType(other.rows(), other.cols()))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
   {
@@ -462,7 +462,7 @@ public:
   }
 
   template <class T>
-  EigenDenseMatrix(const DenseMatrix<T>& other, const size_t num_mutexes = 1)
+  explicit EigenDenseMatrix(const DenseMatrix<T>& other, const size_t num_mutexes = 1)
     : backend_(new BackendType(other.rows(), other.cols()))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
   {

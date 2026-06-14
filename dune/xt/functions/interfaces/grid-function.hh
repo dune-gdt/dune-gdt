@@ -106,9 +106,9 @@ private:
   }
 
 public:
-  GridFunctionInterface(const Common::ParameterType& param_type = {},
-                        const std::string& logging_prefix = "",
-                        const std::array<bool, 3>& logging_state = Common::default_logger_state())
+  explicit GridFunctionInterface(const Common::ParameterType& param_type = {},
+                                 const std::string& logging_prefix = "",
+                                 const std::array<bool, 3>& logging_state = Common::default_logger_state())
     : Common::ParametricInterface(param_type)
     , Logger(logging_prefix.empty() ? "GridFunctionInterface" : logging_prefix, logging_state)
   {

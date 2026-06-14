@@ -53,10 +53,11 @@ public:
   using IntegrandType = LocalBinaryElementIntegrandInterface<E, t_r, t_rC, TR, F, a_r, a_rC, AR>;
   using GenericIntegrand = GenericLocalBinaryElementIntegrand<E, t_r, t_rC, TR, F, a_r, a_rC, AR>;
 
-  LocalElementIntegralBilinearForm(const IntegrandType& integrand,
-                                   const int over_integrate = 0,
-                                   const std::string& logging_prefix = "",
-                                   const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+  explicit LocalElementIntegralBilinearForm(
+      const IntegrandType& integrand,
+      const int over_integrate = 0,
+      const std::string& logging_prefix = "",
+      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType(integrand.parameter_type(),
                logging_prefix.empty() ? "LocalElementIntegralBilinearForm" : logging_prefix,
                logging_state)
@@ -172,7 +173,7 @@ public:
 
   using IntegrandType = LocalQuaternaryIntersectionIntegrandInterface<I, t_r, t_rC, TR, F, a_r, a_rC, AR>;
 
-  LocalCouplingIntersectionIntegralBilinearForm(
+  explicit LocalCouplingIntersectionIntegralBilinearForm(
       const IntegrandType& integrand,
       const int over_integrate = 0,
       const std::string& logging_prefix = "",
@@ -311,10 +312,11 @@ public:
 
   using IntegrandType = LocalBinaryIntersectionIntegrandInterface<I, t_r, t_rC, TR, F, a_r, a_rC, AR>;
 
-  LocalIntersectionIntegralBilinearForm(const IntegrandType& integrand,
-                                        const int over_integrate = 0,
-                                        const std::string& logging_prefix = "",
-                                        const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+  explicit LocalIntersectionIntegralBilinearForm(
+      const IntegrandType& integrand,
+      const int over_integrate = 0,
+      const std::string& logging_prefix = "",
+      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType(integrand.parameter_type(),
                logging_prefix.empty() ? "LocalIntersectionIntegralBilinearForm" : logging_prefix,
                logging_state)

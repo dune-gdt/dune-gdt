@@ -92,7 +92,7 @@ public:
   using MatrixType = EigenDenseMatrix<S>;
   using R = typename MatrixType::RealType;
 
-  Solver(const MatrixType& matrix)
+  explicit Solver(const MatrixType& matrix)
     : matrix_(matrix)
   {
   }
@@ -343,7 +343,7 @@ private:
   using EIGEN_size_t = typename MatrixType::BackendType::Index;
 
 public:
-  Solver(const MatrixType& matrix)
+  explicit Solver(const MatrixType& matrix)
     : matrix_(matrix)
   {
   }

@@ -53,7 +53,7 @@ public:
   using StateType = typename FluxType::StateType;
   using DynamicStateType = typename FluxType::DynamicStateType;
 
-  NumericalFluxInterface(const FluxType& flx, const XT::Common::ParameterType& param_type = {})
+  explicit NumericalFluxInterface(const FluxType& flx, const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type + flx.parameter_type())
     , flux_(flx)
     , local_flux_inside_(flux_.access().local_function())
@@ -61,7 +61,8 @@ public:
   {
   }
 
-  NumericalFluxInterface(std::unique_ptr<const FluxType>&& flx_ptr, const XT::Common::ParameterType& param_type = {})
+  explicit NumericalFluxInterface(std::unique_ptr<const FluxType>&& flx_ptr,
+                                  const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type + flx_ptr->parameter_type())
     , flux_(std::move(flx_ptr))
     , local_flux_inside_(flux_.access().local_function())
@@ -69,7 +70,7 @@ public:
   {
   }
 
-  NumericalFluxInterface(const XIndependentFluxType& func, const XT::Common::ParameterType& param_type = {})
+  explicit NumericalFluxInterface(const XIndependentFluxType& func, const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type + func.parameter_type())
     , flux_(static_cast<std::unique_ptr<const FluxType>&&>(std::make_unique<const FluxWrapperType>(func)))
     , local_flux_inside_(flux_.access().local_function())
@@ -77,8 +78,8 @@ public:
   {
   }
 
-  NumericalFluxInterface(std::unique_ptr<const XIndependentFluxType>&& func_ptr,
-                         const XT::Common::ParameterType& param_type = {})
+  explicit NumericalFluxInterface(std::unique_ptr<const XIndependentFluxType>&& func_ptr,
+                                  const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type + func_ptr->parameter_type())
     , flux_(
           static_cast<std::unique_ptr<const FluxType>&&>(std::make_unique<const FluxWrapperType>(std::move(func_ptr))))

@@ -56,7 +56,7 @@ struct CommonDenseVectorBackend
   using ThisType = CommonDenseVectorBackend;
 
   // Constructs ss elements with value value.
-  CommonDenseVectorBackend(const size_t ss = 0, const ScalarType& value = ScalarType())
+  explicit CommonDenseVectorBackend(const size_t ss = 0, const ScalarType& value = ScalarType())
     : size_(ss)
     , values_vector_(size_, value)
     , values_ptr_(values_vector_.data())

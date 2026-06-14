@@ -74,7 +74,7 @@ private:
   using MutexesType = typename Traits::MutexesType;
 
 public:
-  EigenBaseVector(size_t num_mutexes = 1)
+  explicit EigenBaseVector(size_t num_mutexes = 1)
     : mutexes_(std::make_unique<MutexesType>(num_mutexes))
   {
   }
