@@ -35,8 +35,7 @@ template <class I, size_t d, size_t m = 1, class R = double>
 class NumericalEngquistOsherFlux : public internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>
 {
 public:
-  template <class... Args,
-            typename = std::enable_if_t<!XT::Common::is_self<NumericalEngquistOsherFlux, Args...>::value>>
+  template <class... Args, typename = XT::Common::require_not_self_t<NumericalEngquistOsherFlux, Args...>>
   explicit NumericalEngquistOsherFlux(Args&&... /*args*/)
     : internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>()
   {

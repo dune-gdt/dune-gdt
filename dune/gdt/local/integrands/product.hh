@@ -527,7 +527,7 @@ class LocalProductIntegrand
                                       LocalIntersectionProductIntegrand<E_or_I, r, TR, F, AR>>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!XT::Common::is_self<LocalProductIntegrand, Args...>::value>>
+  template <class... Args, typename = XT::Common::require_not_self_t<LocalProductIntegrand, Args...>>
   explicit LocalProductIntegrand(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

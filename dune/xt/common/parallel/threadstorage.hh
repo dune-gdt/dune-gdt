@@ -53,8 +53,7 @@ public:
   using iterator = typename BackendType::iterator;
   using const_iterator = typename BackendType::const_iterator;
 
-  template <class... InitTypes,
-            typename = std::enable_if_t<!is_self<EnumerableThreadSpecificWrapper, InitTypes...>::value>>
+  template <class... InitTypes, typename = require_not_self_t<EnumerableThreadSpecificWrapper, InitTypes...>>
   explicit EnumerableThreadSpecificWrapper(InitTypes&&... ctor_args)
     : values_(std::forward<InitTypes>(ctor_args)...)
   {
@@ -122,8 +121,7 @@ public:
   }
 
   //! Initialization by in-place construction ValueType with \param ctor_args
-  template <class... InitTypes,
-            typename = std::enable_if_t<!is_self<EnumerableThreadSpecificWrapper, InitTypes...>::value>>
+  template <class... InitTypes, typename = require_not_self_t<EnumerableThreadSpecificWrapper, InitTypes...>>
   explicit EnumerableThreadSpecificWrapper(InitTypes&&... ctor_args)
     : values_(std::make_unique<std::remove_const_t<ValueType>>(std::forward<InitTypes>(ctor_args)...))
   {
@@ -193,7 +191,7 @@ public:
   }
 
   //! Initialization by in-place construction ValueType with \param ctor_args
-  template <class... InitTypes, typename = std::enable_if_t<!is_self<PerThreadValue, InitTypes...>::value>>
+  template <class... InitTypes, typename = require_not_self_t<PerThreadValue, InitTypes...>>
   explicit PerThreadValue(InitTypes&&... ctor_args)
     : values_(std::forward<InitTypes>(ctor_args)...)
   {
@@ -290,7 +288,7 @@ public:
   }
 
   //! Initialization by in-place construction ValueType with \param ctor_args
-  template <class... InitTypes, typename = std::enable_if_t<!is_self<UnsafePerThreadValue, InitTypes...>::value>>
+  template <class... InitTypes, typename = require_not_self_t<UnsafePerThreadValue, InitTypes...>>
   explicit UnsafePerThreadValue(InitTypes&&... ctor_args)
     : values_(threadManager().max_threads())
   {

@@ -165,6 +165,7 @@ public:
     try {
       timings().stop(section_name_);
     } catch (...) {
+      // Intentionally swallowed: a destructor must not propagate exceptions.
     }
   }
 };

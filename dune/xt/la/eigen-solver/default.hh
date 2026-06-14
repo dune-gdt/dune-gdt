@@ -85,7 +85,7 @@ public:
   using RealM = Common::MatrixAbstraction<RealMatrixType>;
   using ComplexM = Common::MatrixAbstraction<ComplexMatrixType>;
 
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<EigenSolver, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<EigenSolver, Args...>>
   explicit EigenSolver(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

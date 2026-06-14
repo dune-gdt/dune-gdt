@@ -107,7 +107,7 @@ class EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>, true>
 public:
   using typename BaseType::MatrixType;
 
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<EigenSolver, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<EigenSolver, Args...>>
   explicit EigenSolver(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -201,7 +201,7 @@ class EigenSolver<Dune::XT::Common::FieldMatrix<K, SIZE, SIZE>, true>
   : public EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>>
 {
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<EigenSolver, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<EigenSolver, Args...>>
   EigenSolver(Args&&... args)
     : EigenSolver<Dune::FieldMatrix<K, SIZE, SIZE>>(std::forward<Args>(args)...)
   {

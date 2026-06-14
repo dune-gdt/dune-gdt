@@ -193,7 +193,7 @@ class DifferenceGridFunction : public CombinedGridFunction<MinuendType, Subtrahe
   using BaseType = CombinedGridFunction<MinuendType, SubtrahendType, CombinationType::difference>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<DifferenceGridFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<DifferenceGridFunction, Args...>>
   explicit DifferenceGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -212,7 +212,7 @@ class SumGridFunction : public CombinedGridFunction<LeftSummandType, RightSumman
   using BaseType = CombinedGridFunction<LeftSummandType, RightSummandType, CombinationType::sum>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<SumGridFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<SumGridFunction, Args...>>
   explicit SumGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -231,7 +231,7 @@ class FractionGridFunction : public CombinedGridFunction<NominatorType, Denomina
   using BaseType = CombinedGridFunction<NominatorType, DenominatorType, CombinationType::fraction>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<FractionGridFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<FractionGridFunction, Args...>>
   explicit FractionGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -250,7 +250,7 @@ class ProductGridFunction : public CombinedGridFunction<LeftFactorType, RightFac
   using BaseType = CombinedGridFunction<LeftFactorType, RightFactorType, CombinationType::product>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<ProductGridFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<ProductGridFunction, Args...>>
   explicit ProductGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

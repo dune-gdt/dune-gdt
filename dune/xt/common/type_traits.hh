@@ -337,11 +337,8 @@ struct is_complex<std::complex<T>> : public std::true_type
  *   explicit C(Args&&... args);
  * \endcode
  * Such a constructor is a better match than the copy/move constructor for non-const lvalues of type \a C and would
- * therefore silently hijack copy construction. Guarding it with
- * \code
- *   template <class... Args, typename = std::enable_if_t<!is_self<C, Args...>::value>>
- * \endcode
- * disables the forwarding constructor exactly in the copy/move case.
+ * therefore silently hijack copy construction. Guarding it with \ref require_not_self_t disables the forwarding
+ * constructor exactly in the copy/move case (see there for the recommended spelling).
  */
 template <class Self, class... Args>
 struct is_self : std::false_type
@@ -350,6 +347,24 @@ struct is_self : std::false_type
 template <class Self, class Arg>
 struct is_self<Self, Arg> : std::is_same<Self, std::decay_t<Arg>>
 {};
+
+template <class Self, class... Args>
+inline constexpr bool is_self_v = is_self<Self, Args...>::value;
+
+/**
+ * \brief SFINAE alias to constrain a perfect-forwarding constructor of \a Self so that it does not hijack copy/move
+ *        construction (see \ref is_self).
+ *
+ * Use it as the defaulted template argument of the constructor:
+ * \code
+ *   template <class... Args, typename = Common::require_not_self_t<C, Args...>>
+ *   explicit C(Args&&... args);
+ * \endcode
+ * The alias is well-formed (and equal to void) unless \a Args is a single argument that, ignoring cv-ref qualifiers, is
+ * \a Self, in which case substitution fails and the forwarding constructor is removed from overload resolution.
+ */
+template <class Self, class... Args>
+using require_not_self_t = std::enable_if_t<!is_self_v<Self, Args...>>;
 
 
 //! like std::is_arithmetic, but additionally treats Dune::bigunsignedint as arithmetic

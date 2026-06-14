@@ -231,8 +231,7 @@ public:
   using typename BaseType::StateType;
 
   template <class... Args,
-            typename = std::enable_if_t<
-                !XT::Common::is_self<ThisNumericalFluxIsNotAvailableForTheseDimensions, Args...>::value>>
+            typename = XT::Common::require_not_self_t<ThisNumericalFluxIsNotAvailableForTheseDimensions, Args...>>
   explicit ThisNumericalFluxIsNotAvailableForTheseDimensions(Args&&... /*args*/)
     : BaseType(std::make_unique<const XT::Functions::ConstantFunction<m, d, m, R>>(0.))
   {

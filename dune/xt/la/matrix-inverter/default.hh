@@ -55,7 +55,7 @@ class MatrixInverter<MatrixImp, true> : public internal::MatrixInverterBase<Matr
 public:
   using MatrixType = typename BaseType::MatrixType;
 
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<MatrixInverter, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<MatrixInverter, Args...>>
   explicit MatrixInverter(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

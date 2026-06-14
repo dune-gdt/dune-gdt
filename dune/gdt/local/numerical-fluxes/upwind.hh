@@ -29,7 +29,7 @@ template <class I, size_t d, size_t m = 1, class R = double>
 class NumericalUpwindFlux : public internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>
 {
 public:
-  template <class... Args, typename = std::enable_if_t<!XT::Common::is_self<NumericalUpwindFlux, Args...>::value>>
+  template <class... Args, typename = XT::Common::require_not_self_t<NumericalUpwindFlux, Args...>>
   explicit NumericalUpwindFlux(Args&&... /*args*/)
     : internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>()
   {

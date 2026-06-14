@@ -213,8 +213,7 @@ class ConstDifferenceElementFunction
   using BaseType = CombinedConstElementFunction<MinuendType, SubtrahendType, CombinationType::difference>;
 
 public:
-  template <class... Args,
-            typename = std::enable_if_t<!Common::is_self<ConstDifferenceElementFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<ConstDifferenceElementFunction, Args...>>
   explicit ConstDifferenceElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -234,7 +233,7 @@ class DifferenceElementFunction
   using BaseType = CombinedElementFunction<MinuendType, SubtrahendType, CombinationType::difference>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<DifferenceElementFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<DifferenceElementFunction, Args...>>
   explicit DifferenceElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -254,7 +253,7 @@ class ConstSumElementFunction
   using BaseType = CombinedConstElementFunction<LeftSummandType, RightSummandType, CombinationType::sum>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<ConstSumElementFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<ConstSumElementFunction, Args...>>
   explicit ConstSumElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -273,7 +272,7 @@ class SumElementFunction : public CombinedElementFunction<LeftSummandType, Right
   using BaseType = CombinedElementFunction<LeftSummandType, RightSummandType, CombinationType::sum>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<SumElementFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<SumElementFunction, Args...>>
   explicit SumElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -293,7 +292,7 @@ class ConstProductElementFunction
   using BaseType = CombinedConstElementFunction<LeftFactorType, RightFactorType, CombinationType::product>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<ConstProductElementFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<ConstProductElementFunction, Args...>>
   explicit ConstProductElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -312,7 +311,7 @@ class ProductElementFunction : public CombinedElementFunction<LeftFactorType, Ri
   using BaseType = CombinedElementFunction<LeftFactorType, RightFactorType, CombinationType::product>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<ProductElementFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<ProductElementFunction, Args...>>
   explicit ProductElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -332,7 +331,7 @@ class ConstFractionElementFunction
   using BaseType = CombinedConstElementFunction<LeftFactorType, RightFactorType, CombinationType::fraction>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<ConstFractionElementFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<ConstFractionElementFunction, Args...>>
   explicit ConstFractionElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -352,7 +351,7 @@ class FractionElementFunction
   using BaseType = CombinedElementFunction<LeftFactorType, RightFactorType, CombinationType::fraction>;
 
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<FractionElementFunction, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<FractionElementFunction, Args...>>
   explicit FractionElementFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

@@ -339,9 +339,9 @@ public:
   }
 
   // We have to disable this constructor if T is not a complete type to avoid compilation failures
-  template <class S,
-            typename std::enable_if_t<std::is_constructible<T, S&&>::value && !is_self<ConstStorageProvider, S>::value,
-                                      bool> = true>
+  template <
+      class S,
+      typename std::enable_if_t<std::is_constructible_v<T, S&&> && !is_self_v<ConstStorageProvider, S>, bool> = true>
   explicit ConstStorageProvider(S&& tt)
     : storage_(new internal::ConstAccessByValue<T>(std::forward<S>(tt)))
   {

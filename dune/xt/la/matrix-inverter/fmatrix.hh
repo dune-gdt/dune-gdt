@@ -71,7 +71,7 @@ class MatrixInverter<FieldMatrix<K, ROWS, COLS>, true> : public internal::Matrix
 public:
   using MatrixType = typename BaseType::MatrixType;
 
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<MatrixInverter, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<MatrixInverter, Args...>>
   explicit MatrixInverter(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -127,7 +127,7 @@ template <class K, int ROWS, int COLS>
 class MatrixInverter<Common::FieldMatrix<K, ROWS, COLS>, true> : public MatrixInverter<FieldMatrix<K, ROWS, COLS>>
 {
 public:
-  template <class... Args, typename = std::enable_if_t<!Common::is_self<MatrixInverter, Args...>::value>>
+  template <class... Args, typename = Common::require_not_self_t<MatrixInverter, Args...>>
   explicit MatrixInverter(Args&&... args)
     : MatrixInverter<FieldMatrix<K, ROWS, COLS>>(std::forward<Args>(args)...)
   {
