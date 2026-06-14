@@ -353,95 +353,90 @@ protected:
 
   void post_checks() const
   {
-    if (!disable_checks_) {
-      if (options_->get<bool>("compute_eigenvalues") && !eigenvalues_)
-        DUNE_THROW(Common::Exceptions::internal_error,
-                   "The eigenvalues_ member is not filled after calling compute()!");
-      if (options_->get<bool>("compute_eigenvectors") && !eigenvectors_)
-        DUNE_THROW(Common::Exceptions::internal_error,
-                   "The eigenvectors_ member is not filled after calling compute()!");
-      if (options_->get<bool>("check_for_inf_nan")) {
-        if (eigenvalues_ && contains_inf_or_nan(*eigenvalues_))
-          DUNE_THROW(Exceptions::eigen_solver_failed_bc_result_contained_inf_or_nan,
-                     "Computed eigenvalues contain inf or nan and you requested checking. To disable this check set "
-                     "'check_for_inf_nan' to false in the options."
-                         << "\n\nThese were the given options:\n\n"
-                         << *options_ << "\nThese are the computed eigenvalues:\n\n"
-                         << *eigenvalues_);
-        if (eigenvectors_ && contains_inf_or_nan(*eigenvectors_))
-          DUNE_THROW(Exceptions::eigen_solver_failed_bc_result_contained_inf_or_nan,
-                     "Computed eigenvectors contain inf or nan and you requested checking. To disable this check set "
-                     "'check_for_inf_nan' to false in the options."
-                         << "\n\nThese were the given options:\n\n"
-                         << *options_ << "\nThese are the computed eigenvectors:\n\n"
-                         << *eigenvectors_);
+    if (disable_checks_)
+      return;
+    if (options_->get<bool>("compute_eigenvalues") && !eigenvalues_)
+      DUNE_THROW(Common::Exceptions::internal_error, "The eigenvalues_ member is not filled after calling compute()!");
+    if (options_->get<bool>("compute_eigenvectors") && !eigenvectors_)
+      DUNE_THROW(Common::Exceptions::internal_error, "The eigenvectors_ member is not filled after calling compute()!");
+    if (options_->get<bool>("check_for_inf_nan")) {
+      if (eigenvalues_ && contains_inf_or_nan(*eigenvalues_))
+        DUNE_THROW(Exceptions::eigen_solver_failed_bc_result_contained_inf_or_nan,
+                   "Computed eigenvalues contain inf or nan and you requested checking. To disable this check set "
+                   "'check_for_inf_nan' to false in the options."
+                       << "\n\nThese were the given options:\n\n"
+                       << *options_ << "\nThese are the computed eigenvalues:\n\n"
+                       << *eigenvalues_);
+      if (eigenvectors_ && contains_inf_or_nan(*eigenvectors_))
+        DUNE_THROW(Exceptions::eigen_solver_failed_bc_result_contained_inf_or_nan,
+                   "Computed eigenvectors contain inf or nan and you requested checking. To disable this check set "
+                   "'check_for_inf_nan' to false in the options."
+                       << "\n\nThese were the given options:\n\n"
+                       << *options_ << "\nThese are the computed eigenvectors:\n\n"
+                       << *eigenvectors_);
+    }
+    const double assert_real_eigenvalues = options_->get<double>("assert_real_eigenvalues");
+    const double assert_positive_eigenvalues = options_->get<double>("assert_positive_eigenvalues");
+    const double assert_negative_eigenvalues = options_->get<double>("assert_negative_eigenvalues");
+    const double check_real_eigendecomposition = options_->get<double>("assert_real_eigendecomposition");
+    if (assert_real_eigenvalues > 0 || assert_positive_eigenvalues > 0 || assert_negative_eigenvalues > 0
+        || check_real_eigendecomposition > 0)
+      compute_real_eigenvalues();
+    if (assert_positive_eigenvalues > 0) {
+      assert(real_eigenvalues_ && "This must not happen after compute_real_eigenvalues()!");
+      for (const auto& ev : *real_eigenvalues_) {
+        if (ev < assert_positive_eigenvalues)
+          DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvalues_are_not_positive_as_requested,
+                     "These were the given options:\n\n"
+                         << *options_ << "\nThis was the given matrix:\n\n"
+                         << matrix_ << "\nThese are the computed eigenvalues:\n\n"
+                         << *real_eigenvalues_);
       }
-      const double assert_real_eigenvalues = options_->get<double>("assert_real_eigenvalues");
-      const double assert_positive_eigenvalues = options_->get<double>("assert_positive_eigenvalues");
-      const double assert_negative_eigenvalues = options_->get<double>("assert_negative_eigenvalues");
-      const double check_real_eigendecomposition = options_->get<double>("assert_real_eigendecomposition");
-      if (assert_real_eigenvalues > 0 || assert_positive_eigenvalues > 0 || assert_negative_eigenvalues > 0
-          || check_real_eigendecomposition > 0)
-        compute_real_eigenvalues();
-      if (assert_positive_eigenvalues > 0) {
-        assert(real_eigenvalues_ && "This must not happen after compute_real_eigenvalues()!");
-        for (const auto& ev : *real_eigenvalues_) {
-          if (ev < assert_positive_eigenvalues)
-            DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvalues_are_not_positive_as_requested,
-                       "These were the given options:\n\n"
-                           << *options_ << "\nThis was the given matrix:\n\n"
-                           << matrix_ << "\nThese are the computed eigenvalues:\n\n"
-                           << *real_eigenvalues_);
-        }
+    }
+    if (assert_negative_eigenvalues > 0) {
+      assert(real_eigenvalues_ && "This must not happen after compute_real_eigenvalues()!");
+      for (const auto& ev : *real_eigenvalues_) {
+        if (ev > -1 * assert_negative_eigenvalues)
+          DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvalues_are_not_negative_as_requested,
+                     "These were the given options:\n\n"
+                         << *options_ << "\nThis was the given matrix:\n\n"
+                         << matrix_ << "\nThese are the computed eigenvalues:\n\n"
+                         << *real_eigenvalues_);
       }
-      if (assert_negative_eigenvalues > 0) {
-        assert(real_eigenvalues_ && "This must not happen after compute_real_eigenvalues()!");
-        for (const auto& ev : *real_eigenvalues_) {
-          if (ev > -1 * assert_negative_eigenvalues)
-            DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvalues_are_not_negative_as_requested,
-                       "These were the given options:\n\n"
-                           << *options_ << "\nThis was the given matrix:\n\n"
-                           << matrix_ << "\nThese are the computed eigenvalues:\n\n"
-                           << *real_eigenvalues_);
-        }
-      }
-      if (options_->get<double>("assert_real_eigenvectors") > 0 || check_real_eigendecomposition > 0)
-        compute_real_eigenvectors();
-      const double check_eigendecomposition = options_->get<double>("assert_eigendecomposition");
-      if (check_eigendecomposition > 0)
-        complex_eigendecomposition_check(*this, check_eigendecomposition);
-      if (check_real_eigendecomposition > 0) {
-        invert_real_eigenvectors();
-        assert_eigendecomposition(matrix_,
-                                  *real_eigenvalues_,
-                                  *real_eigenvectors_,
-                                  *real_eigenvectors_inverse_,
-                                  check_real_eigendecomposition);
-      }
+    }
+    if (options_->get<double>("assert_real_eigenvectors") > 0 || check_real_eigendecomposition > 0)
+      compute_real_eigenvectors();
+    const double check_eigendecomposition = options_->get<double>("assert_eigendecomposition");
+    if (check_eigendecomposition > 0)
+      complex_eigendecomposition_check(*this, check_eigendecomposition);
+    if (check_real_eigendecomposition > 0) {
+      invert_real_eigenvectors();
+      assert_eigendecomposition(
+          matrix_, *real_eigenvalues_, *real_eigenvectors_, *real_eigenvectors_inverse_, check_real_eigendecomposition);
     }
   } // ... post_checks(...)
 
   void compute_real_eigenvalues() const
   {
     assert(eigenvalues_ && "This should not happen!");
-    if (!real_eigenvalues_) {
-      real_eigenvalues_ = std::make_unique<std::vector<RealType>>(eigenvalues_->size());
-      for (size_t ii = 0; ii < eigenvalues_->size(); ++ii)
-        (*real_eigenvalues_)[ii] = (*eigenvalues_)[ii].real();
+    if (real_eigenvalues_)
+      return;
+    real_eigenvalues_ = std::make_unique<std::vector<RealType>>(eigenvalues_->size());
+    for (size_t ii = 0; ii < eigenvalues_->size(); ++ii)
+      (*real_eigenvalues_)[ii] = (*eigenvalues_)[ii].real();
 
-      if (!disable_checks_) {
-        const double assert_real_eigenvalues = options_->get<double>("assert_real_eigenvalues");
-        const double tolerance =
-            (assert_real_eigenvalues > 0) ? assert_real_eigenvalues : options_->get<double>("real_tolerance");
-        for (size_t ii = 0; ii < eigenvalues_->size(); ++ii) {
-          if (std::abs((*eigenvalues_)[ii].imag()) > tolerance)
-            DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvalues_are_not_real_as_requested,
-                       "These were the given options:\n\n"
-                           << *options_ << "\nThese are the computed eigenvalues:\n\n"
-                           << *eigenvalues_);
-        } // ii
-      } // if (!disable_checks_)
-    } // if (!real_eigenvalues_)
+    if (!disable_checks_) {
+      const double assert_real_eigenvalues = options_->get<double>("assert_real_eigenvalues");
+      const double tolerance =
+          (assert_real_eigenvalues > 0) ? assert_real_eigenvalues : options_->get<double>("real_tolerance");
+      for (size_t ii = 0; ii < eigenvalues_->size(); ++ii) {
+        if (std::abs((*eigenvalues_)[ii].imag()) > tolerance)
+          DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvalues_are_not_real_as_requested,
+                     "These were the given options:\n\n"
+                         << *options_ << "\nThese are the computed eigenvalues:\n\n"
+                         << *eigenvalues_);
+      } // ii
+    } // if (!disable_checks_)
   } // ... compute_real_eigenvalues(...)
 
   template <bool is_common_matrix = XT::Common::is_matrix<MatrixType>::value, class T = MatrixType>
@@ -451,6 +446,102 @@ protected:
   template <class T>
   struct real_eigenvectors_helper<true, T>
   {
+    // Group the indices of equal real eigenvalues together (kept as a separate helper to limit nesting depth).
+    static std::pair<std::vector<std::vector<size_t>>, std::vector<size_t>>
+    compute_eigenvalue_groups(const ThisType& self, const size_t rows)
+    {
+      struct Cmp
+      {
+        bool operator()(const RealType& a, const RealType& b) const
+        {
+          return XT::Common::FloatCmp::lt(a, b);
+        }
+      };
+      std::vector<std::vector<size_t>> eigenvalue_groups;
+      std::vector<size_t> eigenvalue_multiplicity;
+      std::set<RealType, Cmp> eigenvalues_done;
+      for (size_t jj = 0; jj < rows; ++jj) {
+        const auto curr_eigenvalue = (*self.real_eigenvalues_)[jj];
+        if (eigenvalues_done.count(curr_eigenvalue))
+          continue;
+        std::vector<size_t> curr_group;
+        curr_group.push_back(jj);
+        eigenvalue_multiplicity.push_back(1);
+        for (size_t kk = jj + 1; kk < rows; ++kk) {
+          if (XT::Common::FloatCmp::eq(curr_eigenvalue, (*self.real_eigenvalues_)[kk])) {
+            curr_group.push_back(kk);
+            ++(eigenvalue_multiplicity.back());
+          }
+        } // kk
+        eigenvalue_groups.push_back(curr_group);
+        eigenvalues_done.insert(curr_eigenvalue);
+      } // jj
+      return {eigenvalue_groups, eigenvalue_multiplicity};
+    } // ... compute_eigenvalue_groups(...)
+
+    // For a single eigenvalue, calculate an orthogonal basis of the real eigenspace from the real and imaginary
+    // parts of the complex eigenvectors (kept as a separate helper to limit nesting depth).
+    static void process_eigenvalue_group(const ThisType& self,
+                                         const std::vector<size_t>& group,
+                                         const size_t multiplicity,
+                                         const size_t rows,
+                                         const size_t cols)
+    {
+      using RM = XT::Common::MatrixAbstraction<RealMatrixType>;
+      using CM = XT::Common::MatrixAbstraction<ComplexMatrixType>;
+      using RealVectorType = typename XT::LA::CommonDenseVector<RealType>;
+      std::vector<RealVectorType> input_vectors(2 * multiplicity, RealVectorType(rows, 0.));
+      size_t index = 0;
+      for (const auto& jj : group) {
+        for (size_t ll = 0; ll < cols; ++ll) {
+          input_vectors[index][ll] = CM::get_entry(*self.eigenvectors_, ll, jj).real();
+          input_vectors[index + 1][ll] = CM::get_entry(*self.eigenvectors_, ll, jj).imag();
+        }
+        index += 2;
+      } // jj
+
+      // orthonormalize
+      for (size_t ii = 0; ii < input_vectors.size(); ++ii) {
+        auto& v_i = input_vectors[ii];
+        for (size_t jj = 0; jj < ii; ++jj) {
+          const auto& v_j = input_vectors[jj];
+          const auto vj_vj = v_j.dot(v_j);
+          if (XT::Common::FloatCmp::eq(vj_vj, 0.))
+            continue;
+          const auto vj_vi = v_j.dot(v_i);
+          for (size_t rr = 0; rr < rows; ++rr)
+            v_i[rr] -= vj_vi / vj_vj * v_j[rr];
+        } // jj
+        RealType l2_norm = std::sqrt(
+            Common::reduce(v_i.begin(), v_i.end(), 0., [](const RealType& a, const RealType& b) { return a + b * b; }));
+        if (XT::Common::FloatCmp::ne(l2_norm, 0.))
+          v_i *= 1. / l2_norm;
+      } // ii
+      // copy eigenvectors back to eigenvectors matrix
+      index = 0;
+      for (size_t ii = 0; ii < input_vectors.size(); ++ii) {
+        if (XT::Common::FloatCmp::eq(input_vectors[ii], RealVectorType(rows, 0.)))
+          continue;
+        if (index >= multiplicity)
+          DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
+                     "Eigenvectors are complex and calculating real eigenvectors failed!"
+                         << "These were the given options:\n\n"
+                         << *self.options_ << "\n\nThis was the given matrix: " << std::setprecision(17) << self.matrix_
+                         << "\nThese are the computed eigenvectors:\n\n"
+                         << std::setprecision(17) << *self.eigenvectors_);
+        for (size_t rr = 0; rr < rows; ++rr)
+          RM::set_entry(*self.real_eigenvectors_, rr, group[index], input_vectors[ii].get_entry(rr));
+        index++;
+      } // ii
+      if (index < multiplicity)
+        DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
+                   "Eigenvectors are complex and calculating real eigenvectors failed!"
+                       << "These were the given options:\n\n"
+                       << *self.options_ << "\n\nThis was the given matrix: " << std::setprecision(17) << self.matrix_
+                       << "\nThese are the computed eigenvectors:\n\n"
+                       << std::setprecision(17) << *self.eigenvectors_);
+    } // ... process_eigenvalue_group(...)
+
     static void compute(const ThisType& self, const double& tolerance)
     {
       using RM = XT::Common::MatrixAbstraction<RealMatrixType>;
@@ -471,138 +562,58 @@ protected:
         } // jj
       } // ii
 
-      if (is_complex) {
-        // try to get real eigenvectors from the complex ones. If both the matrix and the eigenvalues are real, the
-        // eigenvectors can also be chosen real. If there is a imaginary eigenvector, both real and imaginary part are
-        // eigenvectors (if non-zero) to the same eigenvalue. So to get real eigenvectors, sort the eigenvectors by
-        // eigenvalues and, separately for each eigenvalue, perform a Gram-Schmidt process with all real and imaginary
-        // parts of the eigenvectors
-        self.compute_real_eigenvalues();
+      if (!is_complex)
+        return;
+      // try to get real eigenvectors from the complex ones. If both the matrix and the eigenvalues are real, the
+      // eigenvectors can also be chosen real. If there is a imaginary eigenvector, both real and imaginary part are
+      // eigenvectors (if non-zero) to the same eigenvalue. So to get real eigenvectors, sort the eigenvectors by
+      // eigenvalues and, separately for each eigenvalue, perform a Gram-Schmidt process with all real and imaginary
+      // parts of the eigenvectors
+      self.compute_real_eigenvalues();
 
-        // form groups of equal eigenvalues
-        struct Cmp
-        {
-          bool operator()(const RealType& a, const RealType& b) const
-          {
-            return XT::Common::FloatCmp::lt(a, b);
-          }
-        };
-        std::vector<std::vector<size_t>> eigenvalue_groups;
-        std::vector<size_t> eigenvalue_multiplicity;
-        std::set<RealType, Cmp> eigenvalues_done;
-        for (size_t jj = 0; jj < rows; ++jj) {
-          const auto curr_eigenvalue = (*self.real_eigenvalues_)[jj];
-          if (!eigenvalues_done.count(curr_eigenvalue)) {
-            std::vector<size_t> curr_group;
-            curr_group.push_back(jj);
-            eigenvalue_multiplicity.push_back(1);
-            for (size_t kk = jj + 1; kk < rows; ++kk) {
-              if (XT::Common::FloatCmp::eq(curr_eigenvalue, (*self.real_eigenvalues_)[kk])) {
-                curr_group.push_back(kk);
-                ++(eigenvalue_multiplicity.back());
-              }
-            } // kk
-            eigenvalue_groups.push_back(curr_group);
-            eigenvalues_done.insert(curr_eigenvalue);
-          }
-        } // jj
+      // form groups of equal eigenvalues
+      const auto groups_and_multiplicity = compute_eigenvalue_groups(self, rows);
+      const auto& eigenvalue_groups = groups_and_multiplicity.first;
+      const auto& eigenvalue_multiplicity = groups_and_multiplicity.second;
 
-        // For each eigenvalue, calculate a orthogonal basis of the n-dim real eigenspace from the 2n real
-        // and imaginary parts of the complex eigenvectors
-        for (size_t kk = 0; kk < eigenvalue_groups.size(); ++kk) {
-          const auto& group = eigenvalue_groups[kk];
-          using RealVectorType = typename XT::LA::CommonDenseVector<RealType>;
-          std::vector<RealVectorType> input_vectors(2 * eigenvalue_multiplicity[kk], RealVectorType(rows, 0.));
-          size_t index = 0;
-          for (const auto& jj : group) {
-            for (size_t ll = 0; ll < cols; ++ll) {
-              input_vectors[index][ll] = CM::get_entry(*self.eigenvectors_, ll, jj).real();
-              input_vectors[index + 1][ll] = CM::get_entry(*self.eigenvectors_, ll, jj).imag();
-            }
-            index += 2;
-          } // jj
-
-          // orthonormalize
-          for (size_t ii = 0; ii < input_vectors.size(); ++ii) {
-            auto& v_i = input_vectors[ii];
-            for (size_t jj = 0; jj < ii; ++jj) {
-              const auto& v_j = input_vectors[jj];
-              const auto vj_vj = v_j.dot(v_j);
-              if (XT::Common::FloatCmp::eq(vj_vj, 0.))
-                continue;
-              const auto vj_vi = v_j.dot(v_i);
-              for (size_t rr = 0; rr < rows; ++rr)
-                v_i[rr] -= vj_vi / vj_vj * v_j[rr];
-            } // jj
-            RealType l2_norm = std::sqrt(Common::reduce(
-                v_i.begin(), v_i.end(), 0., [](const RealType& a, const RealType& b) { return a + b * b; }));
-            if (XT::Common::FloatCmp::ne(l2_norm, 0.))
-              v_i *= 1. / l2_norm;
-          } // ii
-          // copy eigenvectors back to eigenvectors matrix
-          index = 0;
-          for (size_t ii = 0; ii < input_vectors.size(); ++ii) {
-            if (XT::Common::FloatCmp::ne(input_vectors[ii], RealVectorType(rows, 0.))) {
-              if (index >= eigenvalue_multiplicity[kk]) {
-                DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
-                           "Eigenvectors are complex and calculating real eigenvectors failed!"
-                               << "These were the given options:\n\n"
-                               << *self.options_ << "\n\nThis was the given matrix: " << std::setprecision(17)
-                               << self.matrix_ << "\nThese are the computed eigenvectors:\n\n"
-                               << std::setprecision(17) << *self.eigenvectors_);
-              }
-              for (size_t rr = 0; rr < rows; ++rr)
-                RM::set_entry(*self.real_eigenvectors_, rr, group[index], input_vectors[ii].get_entry(rr));
-              index++;
-            } // if (input_vectors[ii] != 0)
-          } // ii
-          if (index < eigenvalue_multiplicity[kk]) {
-            DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
-                       "Eigenvectors are complex and calculating real eigenvectors failed!"
-                           << "These were the given options:\n\n"
-                           << *self.options_ << "\n\nThis was the given matrix: " << std::setprecision(17)
-                           << self.matrix_ << "\nThese are the computed eigenvectors:\n\n"
-                           << std::setprecision(17) << *self.eigenvectors_);
-          }
-        } // kk
-      } // if(is_complex)
+      // For each eigenvalue, calculate a orthogonal basis of the n-dim real eigenspace from the 2n real
+      // and imaginary parts of the complex eigenvectors
+      for (size_t kk = 0; kk < eigenvalue_groups.size(); ++kk)
+        process_eigenvalue_group(self, eigenvalue_groups[kk], eigenvalue_multiplicity[kk], rows, cols);
     } // static void compute(...)
   }; // real_eigenvectors_helper<true, ...>
 
   template <class T>
   struct real_eigenvectors_helper<false, T>
   {
+    // Copy the real part of a single entry, throwing if it has a non-negligible imaginary part. Shared by both the
+    // sparse and dense branches to avoid duplication and to limit nesting depth.
+    static void set_real_entry(ThisType& self, const size_t ii, const size_t jj, const double& tolerance)
+    {
+      const auto complex_value = self.eigenvectors_->get_entry(ii, jj);
+      if (std::abs(complex_value.imag()) > tolerance)
+        DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
+                   "These were the given options:\n\n"
+                       << *self.options_ << "\nThese are the computed eigenvectors:\n\n"
+                       << std::setprecision(17) << *self.eigenvectors_);
+      self.real_eigenvectors_->set_entry(ii, jj, complex_value.real());
+    } // ... set_real_entry(...)
+
     static void compute(ThisType& self, const double& tolerance)
     {
+      const size_t rows = self.eigenvectors_->rows();
+      const size_t cols = self.eigenvectors_->cols();
       if (RealMatrixType::sparse) {
-        const size_t rows = self.eigenvectors_->rows();
-        const size_t cols = self.eigenvectors_->cols();
         const auto pattern = self.eigenvectors_->pattern();
         self.real_eigenvectors_ = std::make_unique<RealMatrixType>(rows, cols, pattern);
         for (size_t ii = 0; ii < rows; ++ii)
-          for (size_t jj : pattern.inner(ii)) {
-            const auto complex_value = self.eigenvectors_->get_entry(ii, jj);
-            if (std::abs(complex_value.imag()) > tolerance)
-              DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
-                         "These were the given options:\n\n"
-                             << *self.options_ << "\nThese are the computed eigenvectors:\n\n"
-                             << std::setprecision(17) << *self.eigenvectors_);
-            self.real_eigenvectors_->set_entry(ii, jj, complex_value.real());
-          }
+          for (size_t jj : pattern.inner(ii))
+            set_real_entry(self, ii, jj, tolerance);
       } else {
-        const size_t rows = self.eigenvectors_->rows();
-        const size_t cols = self.eigenvectors_->cols();
         self.real_eigenvectors_ = std::make_unique<RealMatrixType>(rows, cols);
         for (size_t ii = 0; ii < rows; ++ii)
-          for (size_t jj = 0; jj < cols; ++jj) {
-            const auto complex_value = self.eigenvectors_->get_entry(ii, jj);
-            if (std::abs(complex_value.imag()) > tolerance)
-              DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
-                         "These were the given options:\n\n"
-                             << *self.options_ << "\nThese are the computed eigenvectors:\n\n"
-                             << std::setprecision(17) << *self.eigenvectors_);
-            self.real_eigenvectors_->set_entry(ii, jj, complex_value.real());
-          }
+          for (size_t jj = 0; jj < cols; ++jj)
+            set_real_entry(self, ii, jj, tolerance);
       }
     }
   }; // real_eigenvectors_helper<false, ...>
