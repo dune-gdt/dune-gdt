@@ -12,6 +12,8 @@
 
 #include "config.h"
 
+#include <iostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 
@@ -94,9 +96,17 @@ Configuration::Configuration(int argc, char** argv, ConfigurationDefaults defaul
 
 Configuration::~Configuration()
 {
-  if (log_on_exit_ && !empty()) {
-    test_create_directory(directory_only(logfile_));
-    report(*make_ofstream(logfile_));
+  // A destructor must not let exceptions escape (it is implicitly noexcept, so an escaping exception would call
+  // std::terminate). Writing the configuration to the logfile on exit is best-effort.
+  try {
+    if (log_on_exit_ && !empty()) {
+      test_create_directory(directory_only(logfile_));
+      report(*make_ofstream(logfile_));
+    }
+  } catch (const std::exception& e) {
+    std::cerr << "Error while writing the configuration logfile (ignored): " << e.what() << std::endl;
+  } catch (...) {
+    std::cerr << "Unknown error while writing the configuration logfile (ignored)." << std::endl;
   }
 }
 
@@ -141,8 +151,7 @@ Configuration::sub(const std::string& sub_id, bool fail_if_missing, const Config
   if (!has_sub(sub_id))
     DUNE_THROW(Exceptions::configuration_error,
                "Subtree '" << sub_id << "' does not exist in this Configuration (see below), use has_sub(\"" << sub_id
-                           << "\") to check first!"
-                           << "\n======================\n"
+                           << "\") to check first!" << "\n======================\n"
                            << report_string());
   return Configuration(BaseType::sub(sub_id));
 } // ... sub(...)

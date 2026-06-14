@@ -327,6 +327,68 @@ struct is_complex<std::complex<T>> : public std::true_type
 {};
 
 
+/**
+ * \brief Trait whose value is true iff \a Args is a single argument that, ignoring cv- and reference-qualifiers, is \a
+ *        Self.
+ *
+ * This is used to constrain perfect-forwarding constructors of the form
+ * \code
+ *   template <class... Args>
+ *   explicit C(Args&&... args);
+ * \endcode
+ * Such a constructor is a better match than the copy/move constructor for non-const lvalues of type \a C and would
+ * therefore silently hijack copy construction. Guarding it with \ref require_not_self_t disables the forwarding
+ * constructor exactly in the copy/move case (see there for the recommended spelling).
+ */
+template <class Self, class... Args>
+struct is_self : std::false_type
+{};
+
+template <class Self, class Arg>
+struct is_self<Self, Arg> : std::is_same<Self, std::decay_t<Arg>>
+{};
+
+template <class Self, class... Args>
+inline constexpr bool is_self_v = is_self<Self, Args...>::value;
+
+namespace internal {
+
+// SFINAE helper: ::type only exists when \a condition is true. This is a hand-rolled, single-purpose substitute for
+// std::enable_if used by require_t / require_not_self_t below. It exists so the constraints below read as an intent
+// ("require ...") rather than as a generic std::enable_if expression (concepts would be the natural tool here, but the
+// code base targets C++17).
+template <bool condition>
+struct require_impl
+{};
+
+template <>
+struct require_impl<true>
+{
+  using type = void;
+};
+
+} // namespace internal
+
+//! Alias that is well-formed (and equal to void) iff \a condition holds, and ill-formed (SFINAE) otherwise.
+template <bool condition>
+using require_t = typename internal::require_impl<condition>::type;
+
+/**
+ * \brief SFINAE alias to constrain a perfect-forwarding constructor of \a Self so that it does not hijack copy/move
+ *        construction (see \ref is_self).
+ *
+ * Use it as the defaulted template argument of the constructor:
+ * \code
+ *   template <class... Args, typename = Common::require_not_self_t<C, Args...>>
+ *   explicit C(Args&&... args);
+ * \endcode
+ * The alias is well-formed (and equal to void) unless \a Args is a single argument that, ignoring cv-ref qualifiers, is
+ * \a Self, in which case substitution fails and the forwarding constructor is removed from overload resolution.
+ */
+template <class Self, class... Args>
+using require_not_self_t = require_t<!is_self_v<Self, Args...>>;
+
+
 //! like std::is_arithmetic, but additionally treats Dune::bigunsignedint as arithmetic
 template <class T>
 struct is_arithmetic : public std::is_arithmetic<T>

@@ -18,6 +18,7 @@
 
 #include <dune/xt/functions/interfaces/function.hh>
 #include <dune/xt/functions/type_traits.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "combined.hh"
 
@@ -170,7 +171,7 @@ class DifferenceFunction : public CombinedFunction<MinuendType, SubtrahendType, 
   using BaseType = CombinedFunction<MinuendType, SubtrahendType, CombinationType::difference>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<DifferenceFunction, Args...>>
   explicit DifferenceFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -189,7 +190,7 @@ class SumFunction : public CombinedFunction<LeftSummandType, RightSummandType, C
   using BaseType = CombinedFunction<LeftSummandType, RightSummandType, CombinationType::sum>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<SumFunction, Args...>>
   explicit SumFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -208,7 +209,7 @@ class FractionFunction : public CombinedFunction<NominatorType, DenominatorType,
   using BaseType = CombinedFunction<NominatorType, DenominatorType, CombinationType::fraction>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<FractionFunction, Args...>>
   explicit FractionFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -227,7 +228,7 @@ class ProductFunction : public CombinedFunction<LeftFactorType, RightFactorType,
   using BaseType = CombinedFunction<LeftFactorType, RightFactorType, CombinationType::product>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<ProductFunction, Args...>>
   explicit ProductFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

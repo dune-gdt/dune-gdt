@@ -18,6 +18,7 @@
 #include <dune/xt/la/algorithms/qr.hh>
 #include <dune/xt/la/exceptions.hh>
 #include <dune/xt/la/matrix-inverter.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "internal/base.hh"
 
@@ -54,7 +55,7 @@ class MatrixInverter<MatrixImp, true> : public internal::MatrixInverterBase<Matr
 public:
   using MatrixType = typename BaseType::MatrixType;
 
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<MatrixInverter, Args...>>
   explicit MatrixInverter(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

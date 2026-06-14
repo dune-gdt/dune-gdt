@@ -16,6 +16,7 @@
 #define DUNE_GDT_LOCAL_NUMERICAL_FLUXES_UPWIND_HH
 
 #include "interface.hh"
+#include <dune/xt/common/type_traits.hh>
 
 namespace Dune {
 namespace GDT {
@@ -28,7 +29,7 @@ template <class I, size_t d, size_t m = 1, class R = double>
 class NumericalUpwindFlux : public internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>
 {
 public:
-  template <class... Args>
+  template <class... Args, typename = XT::Common::require_not_self_t<NumericalUpwindFlux, Args...>>
   explicit NumericalUpwindFlux(Args&&... /*args*/)
     : internal::ThisNumericalFluxIsNotAvailableForTheseDimensions<I, d, m, R>()
   {
