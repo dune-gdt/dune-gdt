@@ -28,6 +28,29 @@
 namespace Dune::XT::Grid::bindings {
 
 
+namespace internal {
+
+
+template <class Jac, class Result>
+void copy_matrix_to_result(const Jac& jac, Result& access_to_result, const size_t d)
+{
+  for (size_t ii = 0; ii < d; ++ii)
+    for (size_t jj = 0; jj < d; ++jj)
+      access_to_result(ii, jj) = jac[ii][jj];
+}
+
+template <class Jac, class Result>
+void copy_matrix_to_result(const Jac& jac, Result& access_to_result, const size_t pp, const size_t d)
+{
+  for (size_t ii = 0; ii < d; ++ii)
+    for (size_t jj = 0; jj < d; ++jj)
+      access_to_result(pp, ii, jj) = jac[ii][jj];
+}
+
+
+} // namespace internal
+
+
 template <class GV>
 class Element
 {
@@ -241,9 +264,7 @@ public:
             const auto jac = self.geometry().jacobianTransposed(x_local_dune);
             result = py::array_t<double>(/*shape=*/{d, d});
             auto access_to_result = result.mutable_unchecked<2>();
-            for (size_t ii = 0; ii < d; ++ii)
-              for (size_t jj = 0; jj < d; ++jj)
-                access_to_result(ii, jj) = jac[ii][jj];
+            internal::copy_matrix_to_result(jac, access_to_result, d);
           } else if (x_local.ndim() == 2) {
             // a list of points
             DUNE_THROW_IF(x_local.shape(1) != d,
@@ -258,9 +279,7 @@ public:
               for (size_t dd = 0; dd < d; ++dd)
                 x_local_dune[dd] = access_to_x_local(pp, dd);
               const auto jac = self.geometry().jacobianTransposed(x_local_dune);
-              for (size_t ii = 0; ii < d; ++ii)
-                for (size_t jj = 0; jj < d; ++jj)
-                  access_to_result(pp, ii, jj) = jac[ii][jj];
+              internal::copy_matrix_to_result(jac, access_to_result, pp, d);
             }
           } else
             DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
@@ -285,9 +304,7 @@ public:
             const auto jac_inv = self.geometry().jacobianInverseTransposed(x_local_dune);
             result = py::array_t<double>(/*shape=*/{d, d});
             auto access_to_result = result.mutable_unchecked<2>();
-            for (size_t ii = 0; ii < d; ++ii)
-              for (size_t jj = 0; jj < d; ++jj)
-                access_to_result(ii, jj) = jac_inv[ii][jj];
+            internal::copy_matrix_to_result(jac_inv, access_to_result, d);
           } else if (x_local.ndim() == 2) {
             // a list of points
             DUNE_THROW_IF(x_local.shape(1) != d,
@@ -302,9 +319,7 @@ public:
               for (size_t dd = 0; dd < d; ++dd)
                 x_local_dune[dd] = access_to_x_local(pp, dd);
               const auto jac_inv = self.geometry().jacobianInverseTransposed(x_local_dune);
-              for (size_t ii = 0; ii < d; ++ii)
-                for (size_t jj = 0; jj < d; ++jj)
-                  access_to_result(pp, ii, jj) = jac_inv[ii][jj];
+              internal::copy_matrix_to_result(jac_inv, access_to_result, pp, d);
             }
           } else
             DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
