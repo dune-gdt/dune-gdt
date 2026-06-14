@@ -41,3 +41,14 @@ packages = ["dune"]
 # interpreter's platform tag, e.g. cp313-cp313-linux_x86_64). Required because the package ships pre-built .so
 # extensions and is passed through `auditwheel repair`, which rejects pure py3-none-any wheels.
 [tool.hatch.build.targets.wheel.hooks.custom]
+
+# Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: some test modules are named e.g.
+# test/segfault_laplace_integrand.py (not test_*.py), so without this pattern pytest would not collect them. The
+# `make gdt_test_python` target runs pytest from the binary dir, where this pyproject.toml is the assembly-point config.
+# (The obsolete pytest-pep8 options and the setuptools `[aliases] test = pytest` from setup.cfg are intentionally
+# dropped.)
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = ["test/*.py"]
+junit_family = "xunit2"
+addopts = "-p no:warnings"

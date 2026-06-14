@@ -29,8 +29,13 @@ from hatchling.metadata.plugin.interface import MetadataHookInterface
 
 class CustomMetadataHook(MetadataHookInterface):
     def update(self, metadata):
-        _version = {}
-        exec((Path(self.root) / "dune" / "xt" / "_version.py").read_text(), _version)
+        _version = {"__builtins__": {}}
+        exec(
+            (Path(self.root) / "dune" / "xt" / "_version.py").read_text(
+                encoding="utf-8"
+            ),
+            _version,
+        )
 
         dependencies = ["ipython", "numpy", "scipy"]
         if _version["__have_mpi__"]:
