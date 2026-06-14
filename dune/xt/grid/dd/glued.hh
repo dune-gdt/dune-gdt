@@ -538,8 +538,8 @@ private:
   // given macro entity.
   template <class LocalIntersectionGeometryType>
   bool local_intersection_lies_on_domain_boundary(const MacroEntityType& macro_entity,
-                                                   const LocalIntersectionGeometryType& local_intersection_geometry,
-                                                   const size_t num_corners) const
+                                                  const LocalIntersectionGeometryType& local_intersection_geometry,
+                                                  const size_t num_corners) const
   {
     // walk the intersections of the macro entity
     for (auto&& macro_intersection : intersections(macro_leaf_view_, macro_entity)) {
@@ -898,8 +898,7 @@ private:
                                    const int local_neighbor_level,
                                    const bool allow_for_broken_orientation_of_coupling_intersections)
   {
-    auto glue =
-        create_glue(macro_entity, macro_neighbor, macro_intersection, local_entity_level, local_neighbor_level);
+    auto glue = create_glue(macro_entity, macro_neighbor, macro_intersection, local_entity_level, local_neighbor_level);
     if (!allow_for_broken_orientation_of_coupling_intersections) {
       const size_t brocken_intersections = check_for_broken_coupling_intersections(*glue);
       if (brocken_intersections > 0)
