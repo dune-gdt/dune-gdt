@@ -1,20 +1,43 @@
 [build-system]
-requires = ['setuptools>=61', 'wheel', 'packaging']
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "dune.gdt"
 description = "Python bindings for dune-gdt"
 readme = "README.md"
-# LICENSE.txt is bundled into the wheel via setup.cfg ([metadata] license_file); we intentionally do not set a [project]
-# license field, as the dual BSD-2-Clause / GPL-2.0+ license is not a single SPDX expression.
+# LICENSE.txt is bundled into the wheel via [project] license-files (hatchling copies it into the .dist-info); we
+# intentionally do not set a [project] license field, as the dual BSD-2-Clause / GPL-2.0+ license is not a single SPDX
+# expression.
+license-files = ["LICENSE.txt"]
 authors = [{ name = "The dune-gdt devs", email = "felix.schindler@uni-muenster.de" }]
-# version, dependencies and the optional-dependencies are supplied by setup.py: they all pin dune.xt to the exact same
-# version, which is read from the CMake-generated dune/gdt/_version.py.
+# version, dependencies and the optional-dependencies are build-time-dynamic: the version is read by
+# [tool.hatch.version] from the CMake-generated dune/gdt/_version.py, and the custom metadata hook in hatch_build.py
+# pins dune.xt to that exact same version for both the dependencies and the optional-dependencies.
 dynamic = ["version", "dependencies", "optional-dependencies"]
 
 [project.urls]
 Homepage = "https://github.com/dune-gdt/dune-gdt"
 
-# Package discovery, the `dune` namespace package and the .so package data are configured in setup.py, alongside the
-# BinaryDistribution wheel forcing.
+# The version is extracted (without importing the package, which would pull in the compiled extensions) from the
+# CMake-generated dune/gdt/_version.py.
+[tool.hatch.version]
+path = "dune/gdt/_version.py"
+pattern = '__git_revision__ = "(?P<version>[^"]+)"'
+
+# Computes `dependencies` and `optional-dependencies` (see hatch_build.py); reads the version from the same generated
+# _version.py to build the exact dune.xt== pins.
+[tool.hatch.metadata.hooks.custom]
+
+[tool.hatch.build.targets.wheel]
+# The .so modules are compiled build outputs (dropped into the binary dir by CMake); force-include them as artifacts so
+# they always ship, even if a VCS-ignore rule would otherwise exclude them.
+artifacts = ["**/*.so"]
+# Package the whole `dune` namespace tree (dune/__init__.py declares the namespace so dune.xt and dune.gdt coexist).
+packages = ["dune"]
+
+# Force a platform (non-pure) wheel via the build hook in hatch_build.py (CustomBuildHook): hatchling has no declarative
+# option for this, so the hook sets pure_python=False (Root-Is-Purelib: false) and infer_tag=True (stamp the building
+# interpreter's platform tag, e.g. cp313-cp313-linux_x86_64). Required because the package ships pre-built .so
+# extensions and is passed through `auditwheel repair`, which rejects pure py3-none-any wheels.
+[tool.hatch.build.targets.wheel.hooks.custom]

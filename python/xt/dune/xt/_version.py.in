@@ -16,6 +16,6 @@
 __version__ = "${DUNE_GDT_GIT_VERSION_MAJOR}.${DUNE_GDT_GIT_VERSION_MINOR}.${DUNE_GDT_GIT_VERSION_REVISION}"
 # this is the full git describe
 __git_revision__ = "${DUNE_GDT_GIT_VERSION}"
-# whether the C++ bindings were built against MPI (consumed by setup.py to decide
-# on the mpi4py dependency; mirrors the CMake HAVE_MPI variable)
+# whether the C++ bindings were built against MPI (consumed by hatch_build.py to
+# decide on the mpi4py dependency; mirrors the CMake HAVE_MPI variable)
 __have_mpi__ = "${HAVE_MPI}".strip().upper() in ("1", "ON", "TRUE", "YES")
