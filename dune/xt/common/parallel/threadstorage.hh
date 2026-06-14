@@ -306,7 +306,7 @@ template <class Imp, typename Result, class Reduction = std::plus<Result>>
 class ThreadResultPropagator
 {
 public:
-  ThreadResultPropagator(Imp* imp)
+  explicit ThreadResultPropagator(Imp* imp)
     : imp_(imp)
     , base_(imp)
   {

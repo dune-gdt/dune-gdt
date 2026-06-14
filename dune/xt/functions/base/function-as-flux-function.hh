@@ -37,12 +37,12 @@ public:
   using typename BaseType::LocalFunctionType;
   using FunctionType = FunctionInterface<s, r, rC, R>;
 
-  StateFunctionAsFluxFunctionWrapper(const FunctionType& function)
+  explicit StateFunctionAsFluxFunctionWrapper(const FunctionType& function)
     : function_storage_(function)
   {
   }
 
-  StateFunctionAsFluxFunctionWrapper(std::unique_ptr<const FunctionType>&& function_ptr)
+  explicit StateFunctionAsFluxFunctionWrapper(std::unique_ptr<const FunctionType>&& function_ptr)
     : function_storage_(std::move(function_ptr))
   {
   }
@@ -88,7 +88,7 @@ private:
     using typename BaseType::RangeReturnType;
     using typename BaseType::StateType;
 
-    LocalFunction(const FunctionType& function)
+    explicit LocalFunction(const FunctionType& function)
       : BaseType()
       , function_(function)
     {

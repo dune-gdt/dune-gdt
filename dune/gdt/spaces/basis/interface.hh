@@ -48,8 +48,9 @@ public:
 
   using LocalFiniteElementType = LocalFiniteElementInterface<D, d, R, r, rC>;
 
-  LocalizedGlobalFiniteElementInterface(const std::string& logging_prefix = "",
-                                        const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+  explicit LocalizedGlobalFiniteElementInterface(
+      const std::string& logging_prefix = "",
+      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : Logger(logging_prefix.empty() ? "LocalizedGlobalBasis" : logging_prefix, logging_state)
   {
     LOG_(info) << "LocalizedGlobalBasis()" << std::endl;
@@ -155,8 +156,8 @@ public:
   using ElementType = E;
   using LocalizedType = LocalizedGlobalFiniteElementInterface<E, r, rC, R>;
 
-  GlobalBasisInterface(const std::string& logging_prefix = "",
-                       const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+  explicit GlobalBasisInterface(const std::string& logging_prefix = "",
+                                const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : Logger(logging_prefix.empty() ? "GlobalBasis" : logging_prefix, logging_state)
   {
     LOG_(debug) << "GlobalBasis()" << std::endl;

@@ -58,7 +58,7 @@ public:
   using typename BaseType::ElementType;
   using typename BaseType::GridViewType;
 
-  FiniteVolumeSkeletonMapper(const GridViewType& grd_vw)
+  explicit FiniteVolumeSkeletonMapper(const GridViewType& grd_vw)
     : grid_view_(grd_vw)
     , local_finite_elements_()
     , element_indices_(grid_view_)

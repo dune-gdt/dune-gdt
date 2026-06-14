@@ -60,7 +60,7 @@ private:
   using GlobalBasisImplementation = FiniteVolumeGlobalBasis<GridViewType, 1, R>;
 
 public:
-  FiniteVolumeSkeletonSpace(GridViewType grd_vw)
+  explicit FiniteVolumeSkeletonSpace(GridViewType grd_vw)
     : BaseType()
     , grid_view_(grd_vw)
     , local_finite_elements_(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, 1>>())

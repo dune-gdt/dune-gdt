@@ -105,7 +105,7 @@ class VectorPrinter : public internal::DefaultPrinter<T, use_repr>
 public:
   const std::string class_name;
 
-  VectorPrinter(const T& val, const Configuration& cfg = {}, std::string clss_nm = Typename<T>::value())
+  explicit VectorPrinter(const T& val, const Configuration& cfg = {}, std::string clss_nm = Typename<T>::value())
     : internal::DefaultPrinter<T, use_repr>(val, cfg)
     , class_name(std::move(clss_nm))
   {
@@ -156,7 +156,7 @@ class MatrixPrinter : public internal::DefaultPrinter<T, use_repr>
 public:
   const std::string class_name;
 
-  MatrixPrinter(const T& val, const Configuration& cfg = {}, std::string clss_nm = Typename<T>::value())
+  explicit MatrixPrinter(const T& val, const Configuration& cfg = {}, std::string clss_nm = Typename<T>::value())
     : internal::DefaultPrinter<T, use_repr>(val, cfg)
     , class_name(std::move(clss_nm))
   {
@@ -247,7 +247,7 @@ template <class T, bool use_repr, typename anything>
 class Printer : public internal::DefaultPrinter<T, use_repr>
 {
 public:
-  Printer(const T& val, const Configuration& param = {})
+  explicit Printer(const T& val, const Configuration& param = {})
     : internal::DefaultPrinter<T, use_repr>(val, param)
   {
   }
@@ -271,7 +271,7 @@ template <class M, bool use_repr>
 class Printer<M, use_repr, std::enable_if_t<is_matrix<M>::value>> : public internal::MatrixPrinter<M, use_repr>
 {
 public:
-  Printer(const M& val, const Configuration& param = {{"oneline", "false"}})
+  explicit Printer(const M& val, const Configuration& param = {{"oneline", "false"}})
     : internal::MatrixPrinter<M, use_repr>(val, param)
   {
   }
@@ -282,7 +282,7 @@ template <bool use_repr, typename anything>
 class Printer<Configuration, use_repr, anything> : public internal::DefaultPrinter<Configuration, use_repr>
 {
 public:
-  Printer(const Configuration& val, const Configuration& param = {{"oneline", "false"}})
+  explicit Printer(const Configuration& val, const Configuration& param = {{"oneline", "false"}})
     : internal::DefaultPrinter<Configuration, use_repr>(val, param)
   {
   }
@@ -318,7 +318,7 @@ template <bool use_repr, typename anything>
 class Printer<ParameterType, use_repr, anything> : public internal::DefaultPrinter<ParameterType, use_repr>
 {
 public:
-  Printer(const ParameterType& val, const Configuration& param = {})
+  explicit Printer(const ParameterType& val, const Configuration& param = {})
     : internal::DefaultPrinter<ParameterType, use_repr>(val, param)
   {
   }
@@ -354,7 +354,7 @@ template <bool use_repr, typename anything>
 class Printer<Parameter, use_repr, anything> : public internal::DefaultPrinter<Parameter, use_repr>
 {
 public:
-  Printer(const Parameter& val, const Configuration& param = {})
+  explicit Printer(const Parameter& val, const Configuration& param = {})
     : internal::DefaultPrinter<Parameter, use_repr>(val, param)
   {
   }
@@ -494,7 +494,7 @@ public:
   using reference = T;
   using iterator_category = std::output_iterator_tag;
 
-  PrefixOutputIterator(std::ostream& o, std::string p = "")
+  explicit PrefixOutputIterator(std::ostream& o, std::string p = "")
     : ostream(o)
     , prefix(std::move(p))
     , first(true)

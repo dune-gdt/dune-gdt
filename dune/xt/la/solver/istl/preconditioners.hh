@@ -36,7 +36,7 @@ public:
   using field_type = typename range_type::field_type;
   using InverseOperator = O;
 
-  IdentityPreconditioner(const SolverCategory::Category cat)
+  explicit IdentityPreconditioner(const SolverCategory::Category cat)
     : category_(cat)
   {
   }

@@ -233,7 +233,7 @@ public:
       const std::array<size_t, d>&, const DomainType&, const Common::Parameter&)>;
   using GenericPostBindFunctionType = std::function<void(const ElementType&)>;
 
-  GenericElementFunction(
+  explicit GenericElementFunction(
       GenericOrderFunctionType order_func,
       GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
       const Common::ParameterType& param_type = {},
@@ -249,7 +249,7 @@ public:
   {
   }
 
-  GenericElementFunction(
+  explicit GenericElementFunction(
       const int ord,
       GenericEvaluateFunctionType evaluate_lambda = default_evaluate_function(),
       const Common::ParameterType& param_type = {},

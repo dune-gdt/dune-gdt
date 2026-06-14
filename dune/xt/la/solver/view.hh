@@ -59,7 +59,7 @@ public:
   using R = typename MatrixType::RealType;
   using ActualSolver = Solver<MatrixImp, CommunicatorType>;
 
-  Solver(const MatrixType& matrix_view)
+  explicit Solver(const MatrixType& matrix_view)
     : matrix_view_(matrix_view)
     , matrix_(matrix_view_.rows(), matrix_view_.cols(), matrix_view_.pattern())
     , actual_solver_(matrix_)

@@ -135,7 +135,7 @@ public:
   /// \}
 
 
-  ElementFunctionSetInterface(const XT::Common::ParameterType& param_type = {})
+  explicit ElementFunctionSetInterface(const XT::Common::ParameterType& param_type = {})
     : Common::ParametricInterface(param_type)
   {
   }
@@ -493,7 +493,7 @@ public:
 
   /// \}
 
-  ElementFunctionInterface(const XT::Common::ParameterType& param_type = {})
+  explicit ElementFunctionInterface(const XT::Common::ParameterType& param_type = {})
     : BaseType(param_type)
   {
   }

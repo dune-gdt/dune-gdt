@@ -153,7 +153,7 @@ private:
   // copy from dune/common/densematrix.hh, we have to copy it as it is a private member of Dune::DenseMatrix
   struct ElimPivot
   {
-    ElimPivot(std::vector<size_type>& pivot)
+    explicit ElimPivot(std::vector<size_type>& pivot)
       : pivot_(pivot)
     {
       using size_type = typename std::vector<size_type>::size_type;
@@ -177,7 +177,7 @@ private:
   template <typename V>
   struct Elim
   {
-    Elim(V& rhs)
+    explicit Elim(V& rhs)
       : rhs_(&rhs)
     {
     }
@@ -197,7 +197,7 @@ private:
 
   struct ElimDet
   {
-    ElimDet(field_type& sign)
+    explicit ElimDet(field_type& sign)
       : sign_(sign)
     {
       sign_ = 1;
