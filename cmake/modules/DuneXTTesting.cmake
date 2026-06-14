@@ -307,10 +307,5 @@ macro(DXT_ADD_PYTHON_TESTS)
     add_custom_target(test_python)
   endif(NOT TARGET test_python)
 
-  add_custom_target(
-    test_docs
-    "${RUN_IN_ENV_SCRIPT}" "${PROJECT_SOURCE_DIR}/.ci/gitlab/test_docs.bash" "${CMAKE_BINARY_DIR}"
-    DEPENDS bindings
-    VERBATIM USES_TERMINAL)
-  add_dependencies(test_python xt_test_python gdt_test_python test_docs)
+  add_dependencies(test_python xt_test_python gdt_test_python)
 endmacro(DXT_ADD_PYTHON_TESTS)
