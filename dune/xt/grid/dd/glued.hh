@@ -471,21 +471,21 @@ public:
       }
       // find the corresponding macro intersection ...
       for (auto&& macro_intersection : intersections(macro_leaf_view_, macro_entity)) {
-        if (macro_intersection.neighbor() && !macro_intersection.boundary()) {
-          const auto real_neighbor_ptr = macro_intersection.outside();
+        if (!macro_intersection.neighbor() || macro_intersection.boundary())
+          continue;
+        const auto real_neighbor_ptr = macro_intersection.outside();
 #  if DUNE_VERSION_GTE(DUNE_GRID, 2, 4)
-          const auto& real_neighbor = real_neighbor_ptr;
+        const auto& real_neighbor = real_neighbor_ptr;
 #  else
-          const auto& real_neighbor = *real_neighbor_ptr;
+        const auto& real_neighbor = *real_neighbor_ptr;
 #  endif
-          if (macro_index_set.index(real_neighbor) == neighbor_index)
-            glues_for_this_entity_neighbor[local_entity_grid_level][local_neighbor_grid_level] =
-                create_glue(macro_entity,
-                            macro_neighbor,
-                            macro_intersection,
-                            (layer == Layers::level) ? local_entity_grid_level : -1,
-                            (layer == Layers::level) ? local_neighbor_grid_level : -1);
-        }
+        if (macro_index_set.index(real_neighbor) == neighbor_index)
+          glues_for_this_entity_neighbor[local_entity_grid_level][local_neighbor_grid_level] =
+              create_glue(macro_entity,
+                          macro_neighbor,
+                          macro_intersection,
+                          (layer == Layers::level) ? local_entity_grid_level : -1,
+                          (layer == Layers::level) ? local_neighbor_grid_level : -1);
       } // ... find the corresponding macro intersection
     }
 
@@ -533,6 +533,53 @@ public:
     return local_grid(macro_entity_index).grid().maxLevel();
   }
 
+private:
+  // Returns true if all corners of the given local intersection geometry lie on a domain boundary intersection of the
+  // given macro entity.
+  template <class LocalIntersectionGeometryType>
+  bool local_intersection_lies_on_domain_boundary(const MacroEntityType& macro_entity,
+                                                   const LocalIntersectionGeometryType& local_intersection_geometry,
+                                                   const size_t num_corners) const
+  {
+    // walk the intersections of the macro entity
+    for (auto&& macro_intersection : intersections(macro_leaf_view_, macro_entity)) {
+      if (!macro_intersection.boundary() || macro_intersection.neighbor())
+        continue;
+      // This macro intersection lies on the domain boundary, check if the local intersection is contained.
+      size_t corners_lie_on_boundary = 0;
+      for (size_t ii = 0; ii < num_corners; ++ii) {
+        if (XT::Grid::contains(macro_intersection, local_intersection_geometry.corner(boost::numeric_cast<int>(ii))))
+          ++corners_lie_on_boundary;
+      }
+      if (corners_lie_on_boundary == num_corners)
+        return true;
+    }
+    return false;
+  } // ... local_intersection_lies_on_domain_boundary(...)
+
+  // Returns the indices (indexInInside) of all local boundary intersections of the given local entity which lie on the
+  // domain boundary of the given macro entity.
+  template <class LocalLeafViewType, class LocalEntityType>
+  std::vector<int> collect_local_domain_boundary_intersections(const LocalLeafViewType& local_leaf_view,
+                                                               const LocalEntityType& local_entity,
+                                                               const MacroEntityType& macro_entity) const
+  {
+    std::vector<int> local_boundary_intersections;
+    // walk the intersections
+    for (auto&& local_intersection : intersections(local_leaf_view, local_entity)) {
+      if (!local_intersection.boundary() || local_intersection.neighbor())
+        continue;
+      const auto local_intersection_geometry = local_intersection.geometry();
+      const auto num_corners = boost::numeric_cast<size_t>(local_intersection_geometry.corners());
+      // Check if all corners of the intersection lie on the domain boundary (aka the boundary intersection of the macro
+      // entity this local grid belongs to).
+      if (local_intersection_lies_on_domain_boundary(macro_entity, local_intersection_geometry, num_corners))
+        local_boundary_intersections.push_back(local_intersection.indexInInside());
+    } // walk the intersections
+    return local_boundary_intersections;
+  } // ... collect_local_domain_boundary_intersections(...)
+
+public:
   const std::vector<std::pair<MicroEntityType, std::vector<int>>>&
   local_boundary_entities(const MacroEntityType& macro_entity, const int local_level)
   {
@@ -555,45 +602,17 @@ public:
       // * walk the local grid (manually, to have access to the entity pointer)
       for (auto&& local_entity : elements(local_leaf_view)) {
         //        logger.debug() << "local_entity: " << local_leaf_view.indexSet().index(local_entity) << " ";
-        if (local_entity.hasBoundaryIntersections()) {
-          //          logger.debug() << "(boundary entity)" << std::endl;
-          std::vector<int> local_boundary_intersections;
-          // This entity has intersections on the local grid boundary, those could either be the domain boundary (which
-          // we are looking for) or a boundary to another local grid (which we are not looking for). To find out
-          // * walk the intersections
-          for (auto&& local_intersection : intersections(local_leaf_view, local_entity)) {
-            if (local_intersection.boundary() && !local_intersection.neighbor()) {
-              //              logger.debug() << "local_intersection: " << local_intersection.indexInInside() << ":" <<
-              //              std::endl;
-              const auto local_intersection_geometry = local_intersection.geometry();
-              const auto num_corners = boost::numeric_cast<size_t>(local_intersection_geometry.corners());
-              // ** Check if all corners of the intersection lie on the domain boundary (aka the boundary intersection
-              // of
-              //    the macro entity this local grid belongs to. Therefore
-              //    *** walk the intersections of the macro entity
-              for (auto&& macro_intersection : intersections(macro_leaf_view_, macro_entity)) {
-                if (macro_intersection.boundary() && !macro_intersection.neighbor()) {
-                  // This macro intersection lies on the domain boundary, check if the local intersection is contained.
-                  size_t corners_lie_on_boundary = 0;
-                  for (size_t ii = 0; ii < num_corners; ++ii) {
-                    if (XT::Grid::contains(macro_intersection,
-                                           local_intersection_geometry.corner(boost::numeric_cast<int>(ii))))
-                      ++corners_lie_on_boundary;
-                  }
-                  if (corners_lie_on_boundary == num_corners) {
-                    // add the information to the container
-                    local_boundary_intersections.push_back(local_intersection.indexInInside());
-                  } // add the information to the container
-                }
-              } //    *** walk the intersections of the macro entity
-            }
-          } // * walk the intersections
-          if (!local_boundary_intersections.empty()) {
-            // add this local entity and its local intersections to the container
-            boundary_entity_ptrs_with_local_intersections.emplace_back(local_entity, local_boundary_intersections);
-          }
-        } /*else
-          logger.debug() << "(inner entity)" << std::endl;*/
+        if (!local_entity.hasBoundaryIntersections())
+          continue;
+        //          logger.debug() << "(boundary entity)" << std::endl;
+        // This entity has intersections on the local grid boundary, those could either be the domain boundary (which
+        // we are looking for) or a boundary to another local grid (which we are not looking for).
+        const auto local_boundary_intersections =
+            collect_local_domain_boundary_intersections(local_leaf_view, local_entity, macro_entity);
+        if (!local_boundary_intersections.empty()) {
+          // add this local entity and its local intersections to the container
+          boundary_entity_ptrs_with_local_intersections.emplace_back(local_entity, local_boundary_intersections);
+        }
       } // * walk the local grid
     } // create the container
     return boundary_entity_ptrs_with_local_intersections;
@@ -635,84 +654,84 @@ public:
         for (const auto& element : boundary_entities_with_local_intersections) {
           const auto& local_entity = element.first;
           const auto& local_intersections = element.second;
-          if (!local_intersections.empty()) {
-            const size_t local_entity_index = local_grid_view.indexSet().index(local_entity);
-            boundary_visualization[macro_entity_index][local_entity_index] = static_cast<double>(macro_entity_index);
-          }
+          if (local_intersections.empty())
+            continue;
+          const size_t local_entity_index = local_grid_view.indexSet().index(local_entity);
+          boundary_visualization[macro_entity_index][local_entity_index] = static_cast<double>(macro_entity_index);
         }
       } else
         logger.debug() << "(inner entity)" << std::endl;
       for (auto&& macro_intersection : intersections(macro_leaf_view_, macro_entity)) {
-        if (!macro_intersection.boundary() && macro_intersection.neighbor()) {
-          const auto macro_neighbor_ptr = macro_intersection.outside();
+        if (macro_intersection.boundary() || !macro_intersection.neighbor())
+          continue;
+        const auto macro_neighbor_ptr = macro_intersection.outside();
 #  if DUNE_VERSION_GTE(DUNE_GRID, 2, 4)
-          const auto& macro_neighbor = macro_neighbor_ptr;
+        const auto& macro_neighbor = macro_neighbor_ptr;
 #  else
-          const auto& macro_neighbor = *macro_neighbor_ptr;
+        const auto& macro_neighbor = *macro_neighbor_ptr;
 #  endif
-          const size_t macro_neighbor_index = macro_leaf_view_.indexSet().index(macro_neighbor);
-          const auto local_neighbor_level = max_local_level(macro_neighbor);
-          const auto local_neighbor_grid_view =
-              extract_local_view<layer>()(*local_grids_[macro_neighbor_index], local_neighbor_level);
-          if (inside_outside_coupling_visualization[macro_neighbor_index].empty())
-            inside_outside_coupling_visualization[macro_neighbor_index] =
-                std::vector<double>(local_neighbor_grid_view.indexSet().size(0), -1);
-          if (outside_inside_coupling_visualization[macro_neighbor_index].empty())
-            outside_inside_coupling_visualization[macro_neighbor_index] =
-                std::vector<double>(local_neighbor_grid_view.indexSet().size(0), -1);
-          // walk the coupling, where this is the inside
-          size_t num_coupling_intersections = 0;
-          const auto& in_out_coupling_glue = coupling(macro_entity,
-                                                      local_level,
-                                                      macro_neighbor,
-                                                      local_neighbor_level,
-                                                      /*allow_for_broken_orientation_of_coupling_intersections=*/true);
-          const auto in_out_coupling_intersection_it_end = in_out_coupling_glue.template iend<0>();
-          for (auto in_out_coupling_intersection_it = in_out_coupling_glue.template ibegin<0>();
-               in_out_coupling_intersection_it != in_out_coupling_intersection_it_end;
-               ++in_out_coupling_intersection_it) {
-            ++num_coupling_intersections;
-            const auto& coupling_intersection = *in_out_coupling_intersection_it;
-            const auto local_entity = coupling_intersection.inside();
-            const size_t local_entity_index = local_grid_view.indexSet().index(local_entity);
-            inside_outside_coupling_visualization[macro_entity_index][local_entity_index] =
-                static_cast<double>(macro_entity_index);
-            const auto local_neighbor = coupling_intersection.outside();
-            const size_t local_neighbor_index = local_neighbor_grid_view.indexSet().index(local_neighbor);
-            inside_outside_coupling_visualization[macro_neighbor_index][local_neighbor_index] =
-                static_cast<double>(macro_neighbor_index);
-          }
-          // walk the coupling, where this is the outside
-          size_t out_in_num_coupling_intersections = 0;
-          const auto& out_in_coupling_glue = coupling(macro_neighbor,
-                                                      local_neighbor_level,
-                                                      macro_entity,
-                                                      local_level,
-                                                      /*allow_for_broken_orientation_of_coupling_intersections=*/true);
-          const auto out_in_coupling_intersection_it_end = out_in_coupling_glue.template iend<0>();
-          for (auto out_in_coupling_intersection_it = out_in_coupling_glue.template ibegin<0>();
-               out_in_coupling_intersection_it != out_in_coupling_intersection_it_end;
-               ++out_in_coupling_intersection_it) {
-            ++out_in_num_coupling_intersections;
-            const auto& coupling_intersection = *out_in_coupling_intersection_it;
-            const auto local_entity = coupling_intersection.inside();
-            const size_t local_entity_index = local_grid_view.indexSet().index(local_entity);
-            outside_inside_coupling_visualization[macro_neighbor_index][local_entity_index] =
-                static_cast<double>(macro_neighbor_index);
-            const auto local_neighbor = coupling_intersection.outside();
-            const size_t local_neighbor_index = local_neighbor_grid_view.indexSet().index(local_neighbor);
-            outside_inside_coupling_visualization[macro_entity_index][local_neighbor_index] =
-                static_cast<double>(macro_entity_index);
-          }
-          if (num_coupling_intersections != out_in_num_coupling_intersections)
-            DUNE_THROW(XT::Common::Exceptions::internal_error,
-                       "The coupling glue is broken!\n"
-                           << "macro entity (local level):   " << macro_entity_index << " (" << local_level << ")\n"
-                           << "macro neighbor (local level): " << macro_neighbor_index << " (" << local_neighbor_level
-                           << ")");
-          logger.debug() << "  " << num_coupling_intersections << " coupling intersections with neighbor "
-                         << macro_neighbor_index << std::endl;
+        const size_t macro_neighbor_index = macro_leaf_view_.indexSet().index(macro_neighbor);
+        const auto local_neighbor_level = max_local_level(macro_neighbor);
+        const auto local_neighbor_grid_view =
+            extract_local_view<layer>()(*local_grids_[macro_neighbor_index], local_neighbor_level);
+        if (inside_outside_coupling_visualization[macro_neighbor_index].empty())
+          inside_outside_coupling_visualization[macro_neighbor_index] =
+              std::vector<double>(local_neighbor_grid_view.indexSet().size(0), -1);
+        if (outside_inside_coupling_visualization[macro_neighbor_index].empty())
+          outside_inside_coupling_visualization[macro_neighbor_index] =
+              std::vector<double>(local_neighbor_grid_view.indexSet().size(0), -1);
+        // walk the coupling, where this is the inside
+        size_t num_coupling_intersections = 0;
+        const auto& in_out_coupling_glue = coupling(macro_entity,
+                                                    local_level,
+                                                    macro_neighbor,
+                                                    local_neighbor_level,
+                                                    /*allow_for_broken_orientation_of_coupling_intersections=*/true);
+        const auto in_out_coupling_intersection_it_end = in_out_coupling_glue.template iend<0>();
+        for (auto in_out_coupling_intersection_it = in_out_coupling_glue.template ibegin<0>();
+             in_out_coupling_intersection_it != in_out_coupling_intersection_it_end;
+             ++in_out_coupling_intersection_it) {
+          ++num_coupling_intersections;
+          const auto& coupling_intersection = *in_out_coupling_intersection_it;
+          const auto local_entity = coupling_intersection.inside();
+          const size_t local_entity_index = local_grid_view.indexSet().index(local_entity);
+          inside_outside_coupling_visualization[macro_entity_index][local_entity_index] =
+              static_cast<double>(macro_entity_index);
+          const auto local_neighbor = coupling_intersection.outside();
+          const size_t local_neighbor_index = local_neighbor_grid_view.indexSet().index(local_neighbor);
+          inside_outside_coupling_visualization[macro_neighbor_index][local_neighbor_index] =
+              static_cast<double>(macro_neighbor_index);
         }
+        // walk the coupling, where this is the outside
+        size_t out_in_num_coupling_intersections = 0;
+        const auto& out_in_coupling_glue = coupling(macro_neighbor,
+                                                    local_neighbor_level,
+                                                    macro_entity,
+                                                    local_level,
+                                                    /*allow_for_broken_orientation_of_coupling_intersections=*/true);
+        const auto out_in_coupling_intersection_it_end = out_in_coupling_glue.template iend<0>();
+        for (auto out_in_coupling_intersection_it = out_in_coupling_glue.template ibegin<0>();
+             out_in_coupling_intersection_it != out_in_coupling_intersection_it_end;
+             ++out_in_coupling_intersection_it) {
+          ++out_in_num_coupling_intersections;
+          const auto& coupling_intersection = *out_in_coupling_intersection_it;
+          const auto local_entity = coupling_intersection.inside();
+          const size_t local_entity_index = local_grid_view.indexSet().index(local_entity);
+          outside_inside_coupling_visualization[macro_neighbor_index][local_entity_index] =
+              static_cast<double>(macro_neighbor_index);
+          const auto local_neighbor = coupling_intersection.outside();
+          const size_t local_neighbor_index = local_neighbor_grid_view.indexSet().index(local_neighbor);
+          outside_inside_coupling_visualization[macro_entity_index][local_neighbor_index] =
+              static_cast<double>(macro_entity_index);
+        }
+        if (num_coupling_intersections != out_in_num_coupling_intersections)
+          DUNE_THROW(XT::Common::Exceptions::internal_error,
+                     "The coupling glue is broken!\n"
+                         << "macro entity (local level):   " << macro_entity_index << " (" << local_level << ")\n"
+                         << "macro neighbor (local level): " << macro_neighbor_index << " (" << local_neighbor_level
+                         << ")");
+        logger.debug() << "  " << num_coupling_intersections << " coupling intersections with neighbor "
+                       << macro_neighbor_index << std::endl;
       }
     } // walk the macro grid
     vtk_writer.addCellData(subdomain_visualization, "subdomains");
@@ -868,6 +887,58 @@ private:
     return glue;
   } // ... create_glue(...)
 
+  // Creates the glue between the given local levels of a single macro entity/neighbor pair and stores it.
+  template <class EntityGluesType, class MacroNeighborIndexType, class MacroIntersectionType>
+  void setup_glue_for_local_levels(EntityGluesType& entity_glues,
+                                   const MacroEntityType& macro_entity,
+                                   const MacroEntityType& macro_neighbor,
+                                   const MacroNeighborIndexType macro_neighbor_index,
+                                   const MacroIntersectionType& macro_intersection,
+                                   const int local_entity_level,
+                                   const int local_neighbor_level,
+                                   const bool allow_for_broken_orientation_of_coupling_intersections)
+  {
+    auto glue =
+        create_glue(macro_entity, macro_neighbor, macro_intersection, local_entity_level, local_neighbor_level);
+    if (!allow_for_broken_orientation_of_coupling_intersections) {
+      const size_t brocken_intersections = check_for_broken_coupling_intersections(*glue);
+      if (brocken_intersections > 0)
+        DUNE_THROW(Exceptions::intersection_orientation_is_broken,
+                   "The coupling glue between the grid views of\n"
+                       << "  level " << local_entity_level << " on macro entity   "
+                       << macro_leaf_view_.indexSet().index(macro_entity) << " and\n"
+                       << "  level " << local_neighbor_level << " on macro neighbor "
+                       << macro_leaf_view_.indexSet().index(macro_neighbor) << "\n"
+                       << "contains\n"
+                       << "  " << brocken_intersections << "/" << glue->size() << " intersections with wrong"
+                       << "orientation!");
+    }
+    entity_glues[macro_neighbor_index][local_entity_level][local_neighbor_level] = glue;
+  } // ... setup_glue_for_local_levels(...)
+
+  // Creates the glues between all local levels of a single macro entity/neighbor pair and stores them.
+  template <class EntityGluesType, class MacroNeighborIndexType, class MacroIntersectionType>
+  void setup_glues_for_macro_pair(EntityGluesType& entity_glues,
+                                  const MacroEntityType& macro_entity,
+                                  const size_t macro_entity_index,
+                                  const MacroEntityType& macro_neighbor,
+                                  const MacroNeighborIndexType macro_neighbor_index,
+                                  const MacroIntersectionType& macro_intersection,
+                                  const bool allow_for_broken_orientation_of_coupling_intersections)
+  {
+    for (auto local_entity_level : XT::Common::value_range(local_grids_[macro_entity_index]->grid().maxLevel() + 1))
+      for (auto local_neighbor_level :
+           XT::Common::value_range(local_grids_[macro_neighbor_index]->grid().maxLevel() + 1))
+        setup_glue_for_local_levels(entity_glues,
+                                    macro_entity,
+                                    macro_neighbor,
+                                    macro_neighbor_index,
+                                    macro_intersection,
+                                    local_entity_level,
+                                    local_neighbor_level,
+                                    allow_for_broken_orientation_of_coupling_intersections);
+  } // ... setup_glues_for_macro_pair(...)
+
   void setup_glues(const bool allow_for_broken_orientation_of_coupling_intersections = false)
   {
     const auto& macro_index_set = macro_leaf_view_.indexSet();
@@ -876,36 +947,22 @@ private:
       auto& entity_glues = glues_[macro_entity_index];
       // walk the neighbors ...
       for (auto&& macro_intersection : intersections(macro_leaf_view_, macro_entity)) {
-        if (macro_intersection.neighbor() && !macro_intersection.boundary()) {
-          const auto macro_neighbor_ptr = macro_intersection.outside();
+        if (!macro_intersection.neighbor() || macro_intersection.boundary())
+          continue;
+        const auto macro_neighbor_ptr = macro_intersection.outside();
 #  if DUNE_VERSION_GTE(DUNE_GRID, 2, 4)
-          const auto& macro_neighbor = macro_neighbor_ptr;
+        const auto& macro_neighbor = macro_neighbor_ptr;
 #  else
-          const auto& macro_neighbor = *macro_neighbor_ptr;
+        const auto& macro_neighbor = *macro_neighbor_ptr;
 #  endif
-          const auto macro_neighbor_index = macro_index_set.index(macro_neighbor);
-          for (auto local_entity_level :
-               XT::Common::value_range(local_grids_[macro_entity_index]->grid().maxLevel() + 1))
-            for (auto local_neighbor_level :
-                 XT::Common::value_range(local_grids_[macro_neighbor_index]->grid().maxLevel() + 1)) {
-              auto glue = create_glue(
-                  macro_entity, macro_neighbor, macro_intersection, local_entity_level, local_neighbor_level);
-              if (!allow_for_broken_orientation_of_coupling_intersections) {
-                const size_t brocken_intersections = check_for_broken_coupling_intersections(*glue);
-                if (brocken_intersections > 0)
-                  DUNE_THROW(Exceptions::intersection_orientation_is_broken,
-                             "The coupling glue between the grid views of\n"
-                                 << "  level " << local_entity_level << " on macro entity   "
-                                 << macro_leaf_view_.indexSet().index(macro_entity) << " and\n"
-                                 << "  level " << local_neighbor_level << " on macro neighbor "
-                                 << macro_leaf_view_.indexSet().index(macro_neighbor) << "\n"
-                                 << "contains\n"
-                                 << "  " << brocken_intersections << "/" << glue->size() << " intersections with wrong"
-                                 << "orientation!");
-              }
-              entity_glues[macro_neighbor_index][local_entity_level][local_neighbor_level] = glue;
-            }
-        }
+        const auto macro_neighbor_index = macro_index_set.index(macro_neighbor);
+        setup_glues_for_macro_pair(entity_glues,
+                                   macro_entity,
+                                   macro_entity_index,
+                                   macro_neighbor,
+                                   macro_neighbor_index,
+                                   macro_intersection,
+                                   allow_for_broken_orientation_of_coupling_intersections);
       } // ... walk the neighbors
     }
   } // ... setup_glues(...)
