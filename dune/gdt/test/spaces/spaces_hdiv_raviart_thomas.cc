@@ -28,6 +28,28 @@
 #include <dune/gdt/spaces/hdiv/raviart-thomas.hh>
 
 
+namespace {
+
+
+template <class BasisValuesType, class NormalType, class DoFIndexType>
+void check_rt_basis_on_intersection(const size_t basis_size,
+                                    const BasisValuesType& basis_values,
+                                    const NormalType& normal,
+                                    const DoFIndexType& DoF_index,
+                                    const double switch_)
+{
+  for (size_t ii = 0; ii < basis_size; ++ii)
+    EXPECT_TRUE(
+        Dune::XT::Common::FloatCmp::eq((ii == DoF_index ? 1. : 0.) * switch_, basis_values[ii] * normal, 1e-14, 1e-14))
+        << "ii = " << ii << "\nDoF_index = " << DoF_index << "\nii == DoF_index ? 1. : 0. "
+        << (ii == DoF_index ? 1. : 0.) << "\nswitch_ = " << switch_
+        << "\nbasis_values[ii] * normal = " << basis_values[ii] * normal;
+} // ... check_rt_basis_on_intersection(...)
+
+
+} // namespace
+
+
 template <class GridViewType, int p>
 struct RtSpace : public ::testing::Test
 {
@@ -117,23 +139,23 @@ struct RtSpace : public ::testing::Test
       const auto global_element_index = entity_indices.global_index(element, 0);
       for (auto&& intersection : intersections(*grid_view(), element)) {
         const auto element_local_intersection_index = intersection.indexInInside();
-        if (!intersection.neighbor()
-            || (entity_indices.global_index(element, 0) < entity_indices.global_index(intersection.outside(), 0))) {
-          // this is the place to handle this intersection
-          const auto global_intersection_index = tmp_counter;
-          ++tmp_counter;
-          // store the global intersection index for this element
-          element_and_local_intersection_index_to_global_intersection_index[global_element_index]
-                                                                           [element_local_intersection_index] =
+        if (!(!intersection.neighbor()
+              || (entity_indices.global_index(element, 0) < entity_indices.global_index(intersection.outside(), 0))))
+          continue;
+        // this is the place to handle this intersection
+        const auto global_intersection_index = tmp_counter;
+        ++tmp_counter;
+        // store the global intersection index for this element
+        element_and_local_intersection_index_to_global_intersection_index[global_element_index]
+                                                                         [element_local_intersection_index] =
+                                                                             global_intersection_index;
+        if (intersection.neighbor()) {
+          // as well as for the neighbor
+          const auto global_neighbor_index = entity_indices.global_index(intersection.outside(), 0);
+          const auto neighbor_local_intersection_index = intersection.indexInOutside();
+          element_and_local_intersection_index_to_global_intersection_index[global_neighbor_index]
+                                                                           [neighbor_local_intersection_index] =
                                                                                global_intersection_index;
-          if (intersection.neighbor()) {
-            // as well as for the neighbor
-            const auto global_neighbor_index = entity_indices.global_index(intersection.outside(), 0);
-            const auto neighbor_local_intersection_index = intersection.indexInOutside();
-            element_and_local_intersection_index_to_global_intersection_index[global_neighbor_index]
-                                                                             [neighbor_local_intersection_index] =
-                                                                                 global_intersection_index;
-          }
         }
       }
     }
@@ -206,18 +228,12 @@ struct RtSpace : public ::testing::Test
         const auto normal = intersection.integrationOuterNormal(xx_in_reference_intersection_coordinates);
         const auto basis_values = basis->evaluate_set(xx_in_reference_element_coordinates);
         const auto intersection_index = intersection.indexInInside();
-        for (const auto& DoF_index : intersection_to_local_DoF_indices_map[intersection_index]) {
-          double switch_ = 1;
-          if (intersection.neighbor()
-              && entity_indices.global_index(element, 0) < entity_indices.global_index(intersection.outside(), 0))
-            switch_ *= -1.;
-          for (size_t ii = 0; ii < basis->size(); ++ii)
-            EXPECT_TRUE(Dune::XT::Common::FloatCmp::eq(
-                (ii == DoF_index ? 1. : 0.) * switch_, basis_values[ii] * normal, 1e-14, 1e-14))
-                << "ii = " << ii << "\nDoF_index = " << DoF_index << "\nii == DoF_index ? 1. : 0. "
-                << (ii == DoF_index ? 1. : 0.) << "\nswitch_ = " << switch_
-                << "\nbasis_values[ii] * normal = " << basis_values[ii] * normal;
-        }
+        double switch_ = 1;
+        if (intersection.neighbor()
+            && entity_indices.global_index(element, 0) < entity_indices.global_index(intersection.outside(), 0))
+          switch_ *= -1.;
+        for (const auto& DoF_index : intersection_to_local_DoF_indices_map[intersection_index])
+          check_rt_basis_on_intersection(basis->size(), basis_values, normal, DoF_index, switch_);
       }
     }
   } // ... basis_is_rt_basis(...)
