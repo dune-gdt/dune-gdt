@@ -28,7 +28,6 @@ from hatchling.metadata.plugin.interface import MetadataHookInterface
 
 
 class CustomMetadataHook(MetadataHookInterface):
-
     def update(self, metadata):
         _version = {}
         exec((Path(self.root) / "dune" / "gdt" / "_version.py").read_text(), _version)
@@ -43,12 +42,13 @@ class CustomMetadataHook(MetadataHookInterface):
             "infrastructure": [f"dune-xt[infrastructure]=={version}"],
             "parallel": [f"dune-xt[parallel]=={version}"],
         }
-        optional_dependencies["all"] = [p for plist in optional_dependencies.values() for p in plist]
+        optional_dependencies["all"] = [
+            p for plist in optional_dependencies.values() for p in plist
+        ]
         metadata["optional-dependencies"] = optional_dependencies
 
 
 class CustomBuildHook(BuildHookInterface):
-
     def initialize(self, version, build_data):
         build_data["pure_python"] = False
         build_data["infer_tag"] = True
