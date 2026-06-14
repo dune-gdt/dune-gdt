@@ -12,6 +12,8 @@
 
 #include "config.h"
 
+#include <iostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 
@@ -101,8 +103,10 @@ Configuration::~Configuration()
       test_create_directory(directory_only(logfile_));
       report(*make_ofstream(logfile_));
     }
+  } catch (const std::exception& e) {
+    std::cerr << "Error while writing the configuration logfile (ignored): " << e.what() << std::endl;
   } catch (...) {
-    // Intentionally swallowed: a destructor must not propagate exceptions.
+    std::cerr << "Unknown error while writing the configuration logfile (ignored)." << std::endl;
   }
 }
 

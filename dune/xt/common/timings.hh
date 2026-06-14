@@ -164,8 +164,10 @@ public:
     // A destructor must not let exceptions escape (it is implicitly noexcept); stopping the timing is best-effort here.
     try {
       timings().stop(section_name_);
+    } catch (const std::exception& e) {
+      std::cerr << "Error while stopping timing section " << section_name_ << " (ignored): " << e.what() << std::endl;
     } catch (...) {
-      // Intentionally swallowed: a destructor must not propagate exceptions.
+      std::cerr << "Unknown error while stopping timing section " << section_name_ << " (ignored)." << std::endl;
     }
   }
 };

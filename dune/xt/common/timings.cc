@@ -243,8 +243,10 @@ OutputScopedTiming::~OutputScopedTiming()
     const auto duration = timings().stop(section_name_);
     const double millis_per_s{1000.f};
     out_ << "Executing " << section_name_ << " took " << duration / millis_per_s << "s\n";
+  } catch (const std::exception& e) {
+    std::cerr << "Error in OutputScopedTiming for section " << section_name_ << " (ignored): " << e.what() << std::endl;
   } catch (...) {
-    // Intentionally swallowed: a destructor must not propagate exceptions.
+    std::cerr << "Unknown error in OutputScopedTiming for section " << section_name_ << " (ignored)." << std::endl;
   }
 }
 
