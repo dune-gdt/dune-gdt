@@ -28,7 +28,6 @@ from hatchling.metadata.plugin.interface import MetadataHookInterface
 
 
 class CustomMetadataHook(MetadataHookInterface):
-
     def update(self, metadata):
         _version = {}
         exec((Path(self.root) / "dune" / "xt" / "_version.py").read_text(), _version)
@@ -40,7 +39,6 @@ class CustomMetadataHook(MetadataHookInterface):
 
 
 class CustomBuildHook(BuildHookInterface):
-
     def initialize(self, version, build_data):
         build_data["pure_python"] = False
         build_data["infer_tag"] = True
