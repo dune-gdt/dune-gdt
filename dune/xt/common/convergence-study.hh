@@ -15,6 +15,7 @@
 #ifndef DUNE_XT_COMMON_CONVERGENCE_STUDY_HH
 #define DUNE_XT_COMMON_CONVERGENCE_STUDY_HH
 
+#include <array>
 #include <vector>
 #include <map>
 #include <string>
@@ -140,6 +141,15 @@ protected:
                  const std::string& type,
                  const std::string& id,
                  const std::string& target_id) const;
+
+  std::array<std::string, 3> wrap_quantity_id(const std::string& id, const size_t column_width) const;
+
+  void print_norm_eocs(std::ostream& out,
+                       const size_t eoc_column_width,
+                       const std::map<size_t, std::map<std::string, std::map<std::string, double>>>& data,
+                       const size_t level,
+                       const std::string& id,
+                       const std::vector<std::string>& actual_targets) const;
 
 public:
   /**
