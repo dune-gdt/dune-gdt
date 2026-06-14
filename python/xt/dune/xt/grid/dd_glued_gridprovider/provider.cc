@@ -144,12 +144,12 @@ public:
                         "ss = " << ss << "\n   self.num_subdomains() = " << self.num_subdomains());
           std::vector<size_t> neighboring_subdomains;
           for (auto&& macro_element : elements(self.macro_grid_view())) {
-            if (self.subdomain(macro_element) == ss) {
-              for (auto&& macro_intersection : intersections(self.macro_grid_view(), macro_element))
-                if (macro_intersection.neighbor())
-                  neighboring_subdomains.push_back(self.subdomain(macro_intersection.outside()));
-              break;
-            }
+            if (self.subdomain(macro_element) != ss)
+              continue;
+            for (auto&& macro_intersection : intersections(self.macro_grid_view(), macro_element))
+              if (macro_intersection.neighbor())
+                neighboring_subdomains.push_back(self.subdomain(macro_intersection.outside()));
+            break;
           }
           return neighboring_subdomains;
         },
@@ -158,25 +158,25 @@ public:
         "coupling_grid",
         [](type& self, const size_t ss, const size_t nn) {
           for (auto&& inside_macro_element : elements(self.macro_grid_view())) {
-            if (self.subdomain(inside_macro_element) == ss) {
-              // this is the subdomain we are interested in
-              bool found_correct_macro_intersection = false;
-              for (auto&& macro_intersection : intersections(self.macro_grid_view(), inside_macro_element)) {
-                if (macro_intersection.neighbor()) {
-                  const auto outside_macro_element = macro_intersection.outside();
-                  if (self.subdomain(outside_macro_element) == nn) {
-                    found_correct_macro_intersection = true;
-                    // these are the subdomains we are interested in
-                    auto cgv = Dune::XT::Grid::make_coupling_grid_view<type, ElementType, IntersectionType>(
-                        inside_macro_element, outside_macro_element, self, macro_intersection);
-                    return std::make_unique<Dune::XT::Grid::CouplingGridProvider<CouplingGridViewType>>(cgv);
-                  }
-                }
+            if (self.subdomain(inside_macro_element) != ss)
+              continue;
+            // this is the subdomain we are interested in
+            bool found_correct_macro_intersection = false;
+            for (auto&& macro_intersection : intersections(self.macro_grid_view(), inside_macro_element)) {
+              if (!macro_intersection.neighbor())
+                continue;
+              const auto outside_macro_element = macro_intersection.outside();
+              if (self.subdomain(outside_macro_element) == nn) {
+                found_correct_macro_intersection = true;
+                // these are the subdomains we are interested in
+                auto cgv = Dune::XT::Grid::make_coupling_grid_view<type, ElementType, IntersectionType>(
+                    inside_macro_element, outside_macro_element, self, macro_intersection);
+                return std::make_unique<Dune::XT::Grid::CouplingGridProvider<CouplingGridViewType>>(cgv);
               }
-              DUNE_THROW_IF(!found_correct_macro_intersection,
-                            XT::Common::Exceptions::index_out_of_range,
-                            "ss = " << ss << "\n   nn = " << nn);
             }
+            DUNE_THROW_IF(!found_correct_macro_intersection,
+                          XT::Common::Exceptions::index_out_of_range,
+                          "ss = " << ss << "\n   nn = " << nn);
           }
           DUNE_THROW(XT::Common::Exceptions::index_out_of_range,
                      "Did not find correct inside macro element!" << "\n   ss = " << ss << "\n   nn = " << nn);

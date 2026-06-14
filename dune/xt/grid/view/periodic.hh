@@ -96,22 +96,27 @@ public:
       // codim, we thus walk over the respective subentities of the elements. As we are visiting each codim entity
       // several times this way, we have to remember the entities which we already visited and skip these when
       // encountering them again.
-      for (const auto& element : elements(base_grid_view_)) {
-        for (IndexType local_index = 0; local_index < element.subEntities(codim); ++local_index) {
-          const auto& entity = element.template subEntity<codim>(local_index);
-          const auto index_in_base = base_grid_view_.indexSet().index(entity);
-          const auto type_index = GlobalGeometryTypeIndex::index(entity.type());
-          if (!visited_entities_[type_index].count(index_in_base)) {
-            this->loop_body(entity, type_index, index_in_base);
-            visited_entities_[type_index].insert(index_in_base);
-          } // if (entity has not been visited before)
-        } // walk subentities in a given codimension
-      } // walk codim0 elements
+      this->create_index_map_via_subentities();
     }
     this->after_loop();
   } // ... create_index_map(...)
 
 private:
+  void create_index_map_via_subentities()
+  {
+    for (const auto& element : elements(base_grid_view_)) {
+      for (IndexType local_index = 0; local_index < element.subEntities(codim); ++local_index) {
+        const auto& entity = element.template subEntity<codim>(local_index);
+        const auto index_in_base = base_grid_view_.indexSet().index(entity);
+        const auto type_index = GlobalGeometryTypeIndex::index(entity.type());
+        if (visited_entities_[type_index].count(index_in_base))
+          continue;
+        this->loop_body(entity, type_index, index_in_base);
+        visited_entities_[type_index].insert(index_in_base);
+      } // walk subentities in a given codimension
+    } // walk codim0 elements
+  } // ... create_index_map_via_subentities(...)
+
   void loop_body(const EntityType& entity, const std::size_t& type_index, const IndexType& index_in_base)
   {
     if constexpr (codim == 0) {
@@ -155,11 +160,9 @@ private:
       auto periodic_coords = entity.geometry().center();
       std::size_t num_upper_right_coords = 0;
       for (std::size_t ii = 0; ii < dimDomain; ++ii) {
-        if (periodic_directions_[ii]) {
-          if (XT::Common::FloatCmp::eq(periodic_coords[ii], upper_right_[ii])) {
-            ++num_upper_right_coords;
-            periodic_coords[ii] = lower_left_[ii];
-          }
+        if (periodic_directions_[ii] && XT::Common::FloatCmp::eq(periodic_coords[ii], upper_right_[ii])) {
+          ++num_upper_right_coords;
+          periodic_coords[ii] = lower_left_[ii];
         }
       }
 
