@@ -20,6 +20,15 @@ if(NOT CARGO_EXECUTABLE)
                       "before building this port.")
 endif()
 
+find_program(
+  RUSTC_EXECUTABLE
+  NAMES rustc
+  PATHS "$ENV{HOME}/.cargo/bin" "$ENV{USERPROFILE}/.cargo/bin")
+if(NOT RUSTC_EXECUTABLE)
+  message(FATAL_ERROR "uv: could not find 'rustc'. Install a Rust toolchain (https://rustup.rs) "
+                      "before building this port.")
+endif()
+
 # Keep cargo's output out of the (read-only-ish) source tree so AUTO_CLEAN can reclaim it after the tool is copied.
 set(CARGO_TARGET_DIR "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rust")
 
