@@ -285,24 +285,35 @@ macro(DXT_EXCLUDE_FROM_HEADERCHECK)
 endmacro(DXT_EXCLUDE_FROM_HEADERCHECK)
 
 macro(DXT_ADD_PYTHON_TESTS)
+  # The Python test suites run through `uv run`: uv assembles an ephemeral
+  # environment (no manually-created/activated virtualenv) pinned to the very
+  # interpreter the bindings were compiled against (${Python_EXECUTABLE}, so the
+  # cpython ABI of the built .so modules matches), installs the freshly built
+  # packages editable from the build tree plus the pytest tooling, and runs
+  # pytest. dune.gdt depends on the exact-version dune.xt, so the gdt suite
+  # installs both editable packages.
   add_custom_target(
     xt_test_python
     COMMAND
-      ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-xt "${RUN_IN_ENV_SCRIPT}" "python" "-m"
-      "pytest" "${CMAKE_BINARY_DIR}/python/xt" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
-      "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml"
+      ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-xt "uv" "run" "--no-project" "--python"
+      "${Python_EXECUTABLE}" "--with-editable" "${CMAKE_BINARY_DIR}/python/xt" "--with" "pytest" "--with" "pytest-cov"
+      "--with" "pytest-regressions" "--with" "hypothesis" "python" "-m" "pytest" "${CMAKE_BINARY_DIR}/python/xt" "--cov"
+      "${CMAKE_CURRENT_SOURCE_DIR}/" "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/xt"
     DEPENDS bindings
     VERBATIM USES_TERMINAL)
   add_custom_target(
     gdt_test_python
     COMMAND
-      ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt "${RUN_IN_ENV_SCRIPT}" "python" "-m"
-      "pytest" "${CMAKE_BINARY_DIR}/python/gdt" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
+      ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt "uv" "run" "--no-project" "--python"
+      "${Python_EXECUTABLE}" "--with-editable" "${CMAKE_BINARY_DIR}/python/xt" "--with-editable"
+      "${CMAKE_BINARY_DIR}/python/gdt" "--with" "pytest" "--with" "pytest-cov" "--with" "pytest-regressions" "--with"
+      "hypothesis" "python" "-m" "pytest" "${CMAKE_BINARY_DIR}/python/gdt" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
       "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/gdt"
     DEPENDS bindings
     VERBATIM USES_TERMINAL)
+
   if(NOT TARGET test_python)
     add_custom_target(test_python)
   endif(NOT TARGET test_python)
