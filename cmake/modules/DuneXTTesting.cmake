@@ -315,8 +315,8 @@ macro(DXT_ADD_PYTHON_TESTS)
 
   # Coverage-processing targets (moved here from the CI workflow). Run them after `ctest`: the pytest tests above write
   # the coverage.py data files (coverage-xt, coverage-gdt) into the build dir, and the instrumented C++ tests (the
-  # release_coverage preset) write the gcov .gcda/.gcno files under the build tree. Both gcovr and coverage.py are pulled
-  # on the fly by uv (no manually-managed venv); they are also listed in the `infrastructure` dev group in
+  # release_coverage preset) write the gcov .gcda/.gcno files under the build tree. Both gcovr and coverage.py are
+  # pulled on the fly by uv (no manually-managed venv); they are also listed in the `infrastructure` dev group in
   # python/xt/pyproject.toml.
   if(NOT TARGET coverage_cpp)
     # gcov data under the build tree -> Cobertura XML codecov understands, filtered to our own dune/ sources.

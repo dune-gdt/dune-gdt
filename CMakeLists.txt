@@ -74,8 +74,12 @@ execute_process(
 if(NOT _uv_python_result EQUAL 0)
   message(FATAL_ERROR "`uv python find` failed (exit ${_uv_python_result}); cannot resolve the Python interpreter")
 endif()
-set(Python_EXECUTABLE "${_uv_python_executable}" CACHE FILEPATH "Python interpreter provided by uv" FORCE)
-set(Python3_EXECUTABLE "${_uv_python_executable}" CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+set(Python_EXECUTABLE
+    "${_uv_python_executable}"
+    CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+set(Python3_EXECUTABLE
+    "${_uv_python_executable}"
+    CACHE FILEPATH "Python interpreter provided by uv" FORCE)
 message(STATUS "Using uv-provided Python interpreter: ${_uv_python_executable}")
 
 find_package(Python COMPONENTS Interpreter Development)
