@@ -154,6 +154,10 @@ jobs:
 
   build_wheels:
     name: Build wheels
+    # Only run on trusted contexts: pushes/tags, the merge queue, and same-repo
+    # PRs. Fork PRs must never execute on the self-hosted RunsOn/AWS fleet
+    # (arbitrary code execution risk) — same fork-trust gate used by build_docs.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     # Trial running on RunsOn self-hosted runners (https://runs-on.com). The label
     # list selects an 8-vCPU c7i EC2 instance with the ubuntu24-full image; the
     # extras=s3-cache label enables the RunsOn S3-backed Magic Cache, which the
@@ -185,14 +189,16 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
 
-    - name: Cache wheel-build ccache
+    - name: Restore wheel-build ccache
       # build-wheels.sh sets CCACHE_DIR to build/wheelhouse/cache (on the host
       # bind-mount), so the compiler cache survives between runs. Routed to RunsOn
-      # S3 via extras=s3-cache + the runs-on/action step above.
-      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      # S3 via extras=s3-cache + the runs-on/action step above. Split into
+      # restore/save (rather than the unified action) so the write can be gated to
+      # trusted contexts, matching build-linux and avoiding cache poisoning.
+      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: build/wheelhouse/cache
-        # Unique per-run key so the post-step always writes a fresh cache; the
+        # Unique per-run key so the save below always writes a fresh cache; the
         # restore-key falls back to the most recent cache for this Python version.
         key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
         restore-keys: |
@@ -206,6 +212,17 @@ jobs:
         # provide a unique build number so every upload gets a distinct version
         CI: "true"
         GITHUB_RUN_NUMBER: ${{ github.run_number }}
+
+    - name: Save wheel-build ccache
+      # Persist the compiler cache even when the build fails so the next run stays
+      # warm. The job-level `if` already blocks fork PRs; the same trust gate is
+      # repeated here as defence-in-depth (and to satisfy the cache-poisoning lint
+      # on a standalone save step).
+      if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: build/wheelhouse/cache
+        key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
