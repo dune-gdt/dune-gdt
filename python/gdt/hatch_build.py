@@ -41,11 +41,11 @@ class CustomMetadataHook(MetadataHookInterface):
         metadata["dependencies"] = [f"dune.xt=={version}"]
 
         optional_dependencies = {
-            "visualisation": [f"dune-xt[visualisation]=={version}"],
-            "docs": [f"dune-xt[docs]=={version}"],
-            "examples": [f"dune-xt[examples]=={version}"],
-            "infrastructure": [f"dune-xt[infrastructure]=={version}"],
-            "parallel": [f"dune-xt[parallel]=={version}"],
+            "visualisation": [f"dune.xt[visualisation]=={version}"],
+            "docs": [f"dune.xt[docs]=={version}"],
+            "examples": [f"dune.xt[examples]=={version}"],
+            "infrastructure": [f"dune.xt[infrastructure]=={version}"],
+            "parallel": [f"dune.xt[parallel]=={version}"],
         }
         optional_dependencies["all"] = [
             p for plist in optional_dependencies.values() for p in plist
