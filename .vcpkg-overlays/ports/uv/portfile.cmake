@@ -43,10 +43,20 @@ endif()
 # (which mandates a SHA-512 that the release does not publish and that we cannot mint offline) so we can validate with
 # the upstream-provided SHA-256 directly.
 set(UV_ARCHIVE_PATH "${CURRENT_BUILDTREES_DIR}/${UV_ARCHIVE}")
+# INACTIVITY_TIMEOUT aborts a stalled connection so a network hiccup cannot hang
+# the build indefinitely; EXPECTED_HASH already rejects a truncated/corrupt
+# archive, and STATUS lets us surface any other transport failure clearly.
 file(
   DOWNLOAD "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_ARCHIVE}" "${UV_ARCHIVE_PATH}"
   EXPECTED_HASH SHA256=${UV_SHA256}
+  INACTIVITY_TIMEOUT 60
+  STATUS UV_DOWNLOAD_STATUS
   SHOW_PROGRESS)
+list(GET UV_DOWNLOAD_STATUS 0 UV_DOWNLOAD_CODE)
+if(NOT UV_DOWNLOAD_CODE EQUAL 0)
+  list(GET UV_DOWNLOAD_STATUS 1 UV_DOWNLOAD_ERROR)
+  message(FATAL_ERROR "uv: failed to download ${UV_ARCHIVE}: ${UV_DOWNLOAD_ERROR}")
+endif()
 
 vcpkg_extract_source_archive(UV_TOOL_DIR ARCHIVE "${UV_ARCHIVE_PATH}" SOURCE_BASE "uv-${UV_VERSION}")
 
