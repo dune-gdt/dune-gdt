@@ -154,7 +154,16 @@ jobs:
 
   build_wheels:
     name: Build wheels
-    runs-on: ubuntu-24.04
+    # Trial running on RunsOn self-hosted runners (https://runs-on.com). The label
+    # list selects an 8-vCPU c7i EC2 instance with the ubuntu24-full image; the
+    # extras=s3-cache label enables the RunsOn S3-backed Magic Cache, which the
+    # runs-on/action step below wires into actions/cache.
+    runs-on:
+      - runs-on=${{ github.run_id }}
+      - cpu=8
+      - family=c7i
+      - image=ubuntu24-full-x64
+      - extras=s3-cache
     timeout-minutes: 120
     permissions:
       contents: read
@@ -163,6 +172,11 @@ jobs:
         python-version: ["3.13"] #, "3.9", "3.10", "3.11", "3.12"]
 
     steps:
+    # Configures the RunsOn Magic Cache sidecar so the actions/cache step below
+    # transparently uses S3. No-op on GitHub-hosted runners, so it stays safe if
+    # this job ever falls back to ubuntu-24.04.
+    - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
+
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         # this checkout's token is not used for any later git push/API call
@@ -170,6 +184,19 @@ jobs:
         submodules: recursive
         fetch-tags: true
         fetch-depth: 0
+
+    - name: Cache wheel-build ccache
+      # build-wheels.sh sets CCACHE_DIR to build/wheelhouse/cache (on the host
+      # bind-mount), so the compiler cache survives between runs. Routed to RunsOn
+      # S3 via extras=s3-cache + the runs-on/action step above.
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: build/wheelhouse/cache
+        # Unique per-run key so the post-step always writes a fresh cache; the
+        # restore-key falls back to the most recent cache for this Python version.
+        key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
+        restore-keys: |
+          ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-
 
     - run: |
         ./.ci/make_docker_wheels.bash
