@@ -159,11 +159,11 @@ jobs:
     # extras=s3-cache label enables the RunsOn S3-backed Magic Cache, which the
     # runs-on/action step below wires into actions/cache.
     runs-on:
-      - runs-on=${{ github.run_id }}
-      - cpu=8
-      - family=c7i
-      - image=ubuntu24-full-x64
-      - extras=s3-cache
+    - runs-on=${{ github.run_id }}
+    - cpu=8
+    - family=c7i
+    - image=ubuntu24-full-x64
+    - extras=s3-cache
     timeout-minutes: 120
     permissions:
       contents: read
