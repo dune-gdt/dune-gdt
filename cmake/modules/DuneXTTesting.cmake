@@ -285,13 +285,11 @@ macro(DXT_EXCLUDE_FROM_HEADERCHECK)
 endmacro(DXT_EXCLUDE_FROM_HEADERCHECK)
 
 macro(DXT_ADD_PYTHON_TESTS)
-  # The Python test suites run through `uv run`: uv assembles an ephemeral
-  # environment (no manually-created/activated virtualenv) pinned to the very
-  # interpreter the bindings were compiled against (${Python_EXECUTABLE}, so the
-  # cpython ABI of the built .so modules matches), installs the freshly built
-  # packages editable from the build tree plus the pytest tooling, and runs
-  # pytest. dune.gdt depends on the exact-version dune.xt, so the gdt suite
-  # installs both editable packages.
+  # The Python test suites run through `uv run`: uv assembles an ephemeral environment (no manually-created/activated
+  # virtualenv) pinned to the very interpreter the bindings were compiled against (${Python_EXECUTABLE}, so the cpython
+  # ABI of the built .so modules matches), installs the freshly built packages editable from the build tree plus the
+  # pytest tooling, and runs pytest. dune.gdt depends on the exact-version dune.xt, so the gdt suite installs both
+  # editable packages.
   add_custom_target(
     xt_test_python
     COMMAND
