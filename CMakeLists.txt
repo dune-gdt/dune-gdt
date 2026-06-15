@@ -59,6 +59,25 @@ foreach(module IN LISTS FEATURE_MODULES DUNE_SUBMODULES)
   list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
 endforeach()
 
+# Use the interpreter uv provides (pinned by the repo-root .python-version) as the single source of truth for "which
+# Python". This guarantees the compiled bindings' ABI matches the interpreter the Python test suites run under (they
+# also go through `uv run`, see DuneXTTesting.cmake). The hint below is consumed by find_package(Python) immediately
+# afterwards, by pybind11 (its vcpkg overlay is built with PYBIND11_NOPYTHON=ON, so it reuses these find_package(Python)
+# results rather than searching on its own), and by dune-common's Python3 detection in include(DuneMacros) further down.
+find_program(UV_EXECUTABLE uv REQUIRED)
+execute_process(
+  COMMAND ${UV_EXECUTABLE} python find
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE _uv_python_executable
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  RESULT_VARIABLE _uv_python_result)
+if(NOT _uv_python_result EQUAL 0)
+  message(FATAL_ERROR "`uv python find` failed (exit ${_uv_python_result}); cannot resolve the Python interpreter")
+endif()
+set(Python_EXECUTABLE "${_uv_python_executable}" CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+set(Python3_EXECUTABLE "${_uv_python_executable}" CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+message(STATUS "Using uv-provided Python interpreter: ${_uv_python_executable}")
+
 find_package(Python COMPONENTS Interpreter Development)
 find_package(pybind11 CONFIG REQUIRED)
 
