@@ -1,56 +1,78 @@
-# There is no uv port in upstream vcpkg, and astral-sh does not publish SHA-512 checksums for the prebuilt release
-# artifacts (only SHA-256), so this overlay builds uv from source with cargo. We fetch the pinned release tag with
-# vcpkg_from_git -- the same hash-free mechanism the dune-* overlay ports use -- rather than vcpkg_from_github, which
-# would require a SHA-512 we cannot mint offline. A working Rust toolchain (cargo + rustc, see uv's rust-version in
-# Cargo.toml) must be available on PATH for this port to build.
+# There is no uv port in upstream vcpkg. Rather than build the large uv Rust
+# workspace from source, this overlay downloads the official prebuilt release
+# binary from GitHub and verifies it against the SHA-256 published in the
+# release's sha256.sum. uv is a standalone CLI, so only the uv/uvx executables
+# are installed, as vcpkg tools under tools/uv/.
 
 set(VCPKG_BUILD_TYPE release)
 
-vcpkg_from_git(
-  OUT_SOURCE_PATH SOURCE_PATH URL "https://github.com/astral-sh/uv.git" REF
-  5aa65dd7ad0067a6b702bf490c8c2ffe25c50f39 # 0.11.21
-)
+set(UV_VERSION "0.11.21")
 
-find_program(
-  CARGO_EXECUTABLE
-  NAMES cargo
-  PATHS "$ENV{HOME}/.cargo/bin" "$ENV{USERPROFILE}/.cargo/bin")
-if(NOT CARGO_EXECUTABLE)
-  message(FATAL_ERROR "uv: could not find 'cargo'. Install a Rust toolchain (https://rustup.rs) "
-                      "before building this port.")
+# Map the vcpkg triplet to the matching cargo-dist release artifact and its
+# published SHA-256 (see
+# https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/sha256.sum).
+if(VCPKG_TARGET_IS_WINDOWS)
+  if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(UV_ARCHIVE "uv-x86_64-pc-windows-msvc.zip")
+    set(UV_SHA256 "ace861f360c6de2babedc1607d0f454b6b09a820dbc8182dc15af927e4df9589")
+  elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+    set(UV_ARCHIVE "uv-aarch64-pc-windows-msvc.zip")
+    set(UV_SHA256 "74e443f8004022dde57a1bd0d10c097830f9ea8feb4ec927db52cd5d805c2f48")
+  endif()
+elseif(VCPKG_TARGET_IS_OSX)
+  if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(UV_ARCHIVE "uv-x86_64-apple-darwin.tar.gz")
+    set(UV_SHA256 "f3c8e5708a84b920c18b691214d54d2b0da6b984789caae95d47c95120cb7765")
+  elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+    set(UV_ARCHIVE "uv-aarch64-apple-darwin.tar.gz")
+    set(UV_SHA256 "1f921d491ba5ffeea774eb04d6681ecee379101341cbb1500394993b541bf3f4")
+  endif()
+elseif(VCPKG_TARGET_IS_LINUX)
+  if(VCPKG_TARGET_ARCHITECTURE STREQUAL "x64")
+    set(UV_ARCHIVE "uv-x86_64-unknown-linux-gnu.tar.gz")
+    set(UV_SHA256 "8c88519b0ef0af9801fcdee419bbb12116bd9e6b18e162ae093c932d8b264050")
+  elseif(VCPKG_TARGET_ARCHITECTURE STREQUAL "arm64")
+    set(UV_ARCHIVE "uv-aarch64-unknown-linux-gnu.tar.gz")
+    set(UV_SHA256 "88e800834007cc5efd4675f166eb2a51e7e3ad19876d85fa8805a6fb5c922397")
+  endif()
 endif()
 
-find_program(
-  RUSTC_EXECUTABLE
-  NAMES rustc
-  PATHS "$ENV{HOME}/.cargo/bin" "$ENV{USERPROFILE}/.cargo/bin")
-if(NOT RUSTC_EXECUTABLE)
-  message(FATAL_ERROR "uv: could not find 'rustc'. Install a Rust toolchain (https://rustup.rs) "
-                      "before building this port.")
+if(NOT DEFINED UV_ARCHIVE)
+  message(
+    FATAL_ERROR
+    "uv: no prebuilt release artifact is mapped for triplet '${TARGET_TRIPLET}'.")
 endif()
 
-# Keep cargo's output out of the (read-only-ish) source tree so AUTO_CLEAN can reclaim it after the tool is copied.
-set(CARGO_TARGET_DIR "${CURRENT_BUILDTREES_DIR}/${TARGET_TRIPLET}-rust")
+# Download and integrity-check against the official SHA-256. We use file(DOWNLOAD)
+# rather than vcpkg_download_distfile (which mandates a SHA-512 that the release
+# does not publish and that we cannot mint offline) so we can validate with the
+# upstream-provided SHA-256 directly.
+set(UV_ARCHIVE_PATH "${CURRENT_BUILDTREES_DIR}/${UV_ARCHIVE}")
+file(
+  DOWNLOAD
+  "https://github.com/astral-sh/uv/releases/download/${UV_VERSION}/${UV_ARCHIVE}"
+  "${UV_ARCHIVE_PATH}"
+  EXPECTED_HASH SHA256=${UV_SHA256}
+  SHOW_PROGRESS)
 
-vcpkg_execute_required_process(
-  COMMAND
-  "${CARGO_EXECUTABLE}"
-  build
-  --release
-  --locked
-  --bin
-  uv
-  --target-dir
-  "${CARGO_TARGET_DIR}"
-  WORKING_DIRECTORY
-  "${SOURCE_PATH}"
-  LOGNAME
-  "cargo-build-${TARGET_TRIPLET}")
+vcpkg_extract_source_archive(
+  UV_TOOL_DIR
+  ARCHIVE "${UV_ARCHIVE_PATH}"
+  SOURCE_BASE "uv-${UV_VERSION}")
 
-# uv is a standalone CLI: install only the executable as a vcpkg tool.
-vcpkg_copy_tools(TOOL_NAMES uv SEARCH_DIR "${CARGO_TARGET_DIR}/release" AUTO_CLEAN)
+# cargo-dist archives wrap the binaries in a single top-level directory, which
+# vcpkg_extract_source_archive strips, leaving uv/uvx directly in UV_TOOL_DIR.
+vcpkg_copy_tools(
+  TOOL_NAMES uv uvx
+  SEARCH_DIR "${UV_TOOL_DIR}"
+  AUTO_CLEAN)
 
-# It ships no headers or libraries, so the usual include/ tree is absent.
+# uv ships no headers/libraries, and the release archive carries no license
+# files, so record the dual license by hand.
 set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
-
-vcpkg_install_copyright(FILE_LIST "${SOURCE_PATH}/LICENSE-APACHE" "${SOURCE_PATH}/LICENSE-MIT")
+file(
+  WRITE "${CURRENT_PACKAGES_DIR}/share/${PORT}/copyright"
+  "uv is distributed under the terms of either the Apache License 2.0 or the MIT "
+  "license, at your option. See "
+  "https://github.com/astral-sh/uv/blob/${UV_VERSION}/LICENSE-APACHE and "
+  "LICENSE-MIT for the full texts.\n")

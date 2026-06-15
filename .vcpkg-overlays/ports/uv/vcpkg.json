@@ -5,5 +5,5 @@
     "An extremely fast Python package and project manager, written in Rust",
   "homepage": "https://github.com/astral-sh/uv",
   "license": "Apache-2.0 OR MIT",
-  "supports": "!uwp & !xbox"
+  "supports": "(windows | linux | osx) & (x64 | arm64)"
 }
