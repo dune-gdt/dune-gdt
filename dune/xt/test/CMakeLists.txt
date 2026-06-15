@@ -16,20 +16,11 @@ enable_testing()
 dependencycheck(${xtcommon})
 
 # GoogleTest is provided by vcpkg (see vcpkg.json, find_package(GTest) in the top-level CMakeLists.txt). gtest_dune_xt
-# bundles our test helpers (common.cxx) and exposes the GoogleTest headers to every test binary linking gtest_dune_xt.
+# bundles our test helpers (common.cxx) and links GTest publicly so that all test binaries linking gtest_dune_xt pick up
+# the GoogleTest headers and libraries. The presets that build the dune libraries shared (debug/release) use a dynamic
+# vcpkg triplet, so GTest is a shared library too and is not duplicated across libgtest_dune_xt and the test binaries.
 dune_library_add_sources(gtest_dune_xt SOURCES common.cxx)
-if(BUILD_SHARED_LIBS)
-  # vcpkg builds GoogleTest as a static archive. With shared dune libraries, linking it PUBLIC would pull the archive
-  # into both libgtest_dune_xt and every consuming test binary, so GoogleTest's vague-linkage globals (the
-  # testing::UnitTest singleton, flag registrations) get registered for destruction twice -> "double free" at exit.
-  # Instead pull the whole archive into libgtest_dune_xt (so all GoogleTest symbols are exported from the single shared
-  # library) and link it PRIVATE so test binaries resolve those symbols from that one copy. Headers are still
-  # propagated.
-  target_link_libraries(gtest_dune_xt PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,GTest::gtest>")
-  target_include_directories(gtest_dune_xt SYSTEM PUBLIC $<TARGET_PROPERTY:GTest::gtest,INTERFACE_INCLUDE_DIRECTORIES>)
-else()
-  target_link_libraries(gtest_dune_xt PUBLIC GTest::gtest)
-endif()
+target_link_libraries(gtest_dune_xt PUBLIC GTest::gtest)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/main.hxx DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/xt/test/)
 
