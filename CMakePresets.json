@@ -100,6 +100,19 @@
       }
     },
     {
+      "name": "release_coverage",
+      "displayName": "Release Config with gcov coverage (Ninja)",
+      "inherits": [
+        "release"
+      ],
+      "cacheVariables": {
+        "CMAKE_C_FLAGS": "-Wall -Wextra -Wpedantic --coverage -fprofile-update=atomic",
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic --coverage -fprofile-update=atomic",
+        "CMAKE_EXE_LINKER_FLAGS": "--coverage",
+        "CMAKE_SHARED_LINKER_FLAGS": "--coverage"
+      }
+    },
+    {
       "name": "windows-debug",
       "displayName": "Windows Debug Config (VS 2022)",
       "inherits": [
@@ -162,6 +175,10 @@
       "configurePreset": "release"
     },
     {
+      "name": "release_coverage",
+      "configurePreset": "release_coverage"
+    },
+    {
       "name": "windows-debug",
       "configurePreset": "windows-debug",
       "configuration": "Debug"
@@ -210,6 +227,14 @@
       "name": "release",
       "displayName": "Release Tests",
       "configurePreset": "release",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "release_coverage",
+      "displayName": "Release Coverage Tests",
+      "configurePreset": "release_coverage",
       "inherits": [
         "test-base"
       ]
