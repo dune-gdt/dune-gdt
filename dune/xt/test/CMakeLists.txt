@@ -23,10 +23,10 @@ if(BUILD_SHARED_LIBS)
   # into both libgtest_dune_xt and every consuming test binary, so GoogleTest's vague-linkage globals (the
   # testing::UnitTest singleton, flag registrations) get registered for destruction twice -> "double free" at exit.
   # Instead pull the whole archive into libgtest_dune_xt (so all GoogleTest symbols are exported from the single shared
-  # library) and link it PRIVATE so test binaries resolve those symbols from that one copy. Headers are still propagated.
+  # library) and link it PRIVATE so test binaries resolve those symbols from that one copy. Headers are still
+  # propagated.
   target_link_libraries(gtest_dune_xt PRIVATE "$<LINK_LIBRARY:WHOLE_ARCHIVE,GTest::gtest>")
-  target_include_directories(gtest_dune_xt SYSTEM PUBLIC
-                             $<TARGET_PROPERTY:GTest::gtest,INTERFACE_INCLUDE_DIRECTORIES>)
+  target_include_directories(gtest_dune_xt SYSTEM PUBLIC $<TARGET_PROPERTY:GTest::gtest,INTERFACE_INCLUDE_DIRECTORIES>)
 else()
   target_link_libraries(gtest_dune_xt PUBLIC GTest::gtest)
 endif()
