@@ -74,9 +74,14 @@ execute_process(
 if(NOT _uv_python_result EQUAL 0)
   message(FATAL_ERROR "`uv python find` failed (exit ${_uv_python_result}); cannot resolve the Python interpreter")
 endif()
+# Python_EXECUTABLE / Python3_EXECUTABLE are the CMake-mandated FindPython hint names, so the C0103 cache-name
+# convention does not apply to them.
+
+# cmake-lint: disable=C0103
 set(Python_EXECUTABLE
     "${_uv_python_executable}"
     CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+# cmake-lint: disable=C0103
 set(Python3_EXECUTABLE
     "${_uv_python_executable}"
     CACHE FILEPATH "Python interpreter provided by uv" FORCE)
