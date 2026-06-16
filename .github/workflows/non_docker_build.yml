@@ -165,7 +165,9 @@ jobs:
     runs-on:
     - runs-on=${{ github.run_id }}
     - cpu=8
-    - family=c7i
+    # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). c7i is compute-optimized
+    # at 2 GB/vCPU = only 16 GB, which OOMs the -j7 compile in build-wheels.sh.
+    - family=m7i
     - image=ubuntu24-full-x64
     - extras=s3-cache
     timeout-minutes: 120

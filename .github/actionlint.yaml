@@ -7,6 +7,6 @@
 self-hosted-runner:
   labels:
   - cpu=8
-  - family=c7i
+  - family=m7i
   - image=ubuntu24-full-x64
   - extras=s3-cache
