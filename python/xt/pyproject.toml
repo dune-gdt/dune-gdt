@@ -33,7 +33,7 @@ docs = [
     "furo",
     "myst-nb>=0.16",
     "pymor",
-    "clangquill>=0.3.0",
+    "clangquill>=0.5.1",
     "plotly",
     "meshio>=4.4",
 ]
