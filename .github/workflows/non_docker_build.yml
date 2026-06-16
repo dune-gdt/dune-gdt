@@ -370,7 +370,7 @@ jobs:
         # --no-project: ignore the repo-root pyproject stub; run in the venv built above
         xvfb-run -a uv run --no-project \
           --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
-          python -m sphinx --keep-going -j 1 -b html \
+          python -m sphinx --keep-going -j auto -b html \
           "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
           echo "::error::one or more executed documentation notebooks failed (see dumped reports below)"
