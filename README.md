@@ -15,3 +15,12 @@ dune-gdt is a [DUNE](http://www.dune-project.org/) module which provides a gener
 discretization toolbox for grid-based numerical methods. It contains building blocks - like
 local operators, local evaluations, local assemblers - for discretization methods and suitable
 discrete function spaces.
+
+---
+
+## Continuous integration
+
+CI for this project (Linux build & test, Python wheels, and documentation) runs on
+self-hosted GitHub Actions runners provided by [RunsOn](https://runs-on.com).
+
+[![CI powered by RunsOn](https://img.shields.io/badge/CI%20powered%20by-RunsOn-7B68EE?logo=githubactions&logoColor=white)](https://runs-on.com)
