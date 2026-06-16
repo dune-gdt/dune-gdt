@@ -9,4 +9,5 @@ self-hosted-runner:
   - cpu=8
   - family=m7i
   - image=ubuntu24-full-x64
+  - volume=150gb
   - extras=s3-cache

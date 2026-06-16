@@ -169,6 +169,13 @@ jobs:
     # at 2 GB/vCPU = only 16 GB, which OOMs the -j7 compile in build-wheels.sh.
     - family=m7i
     - image=ubuntu24-full-x64
+    # Enlarge the root EBS volume. The release build links with LTO, and at -j7 it
+    # runs several LTO links in parallel, each spilling many large *.ltrans.o
+    # intermediates into /tmp. On the default disk this overruns the volume and the
+    # link dies with "No space left on device"; 150 GB gp3 leaves ample headroom
+    # for the LTO scratch plus the manylinux image, ccache, and build tree. The
+    # volume is on a short-lived spot runner, so the extra storage is negligible.
+    - volume=150gb
     - extras=s3-cache
     timeout-minutes: 120
     permissions:
