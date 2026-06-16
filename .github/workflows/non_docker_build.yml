@@ -284,16 +284,16 @@ jobs:
     - name: Dump vcpkg build error logs
       # On failure, surface vcpkg's per-port logs (e.g. dune-geometry's
       # git-fetch-*-err.log) directly in the job log so the actual error is
-      # visible without downloading an artifact. They live under .vcpkg-root and
-      # build/wheelbuilder-release on the bind-mounted source tree: written by the
-      # container as root but world-readable, so this host-side step can cat them.
+      # visible without downloading an artifact. The container writes these as
+      # root, so buildtree dirs created this run are not traversable by the
+      # unprivileged runner user -> read them via sudo and a recursive find so
+      # none are missed.
       if: failure()
       run: |
-        shopt -s nullglob
-        for f in .vcpkg-root/buildtrees/*/*.log \
-                 build/wheelbuilder-release/vcpkg-*.log; do
+        sudo find .vcpkg-root/buildtrees build/wheelbuilder-release \
+          -name '*.log' -type f 2>/dev/null | sort | while read -r f; do
           echo "::group::${f}"
-          cat "${f}"
+          sudo cat "${f}" || true
           echo "::endgroup::"
         done
 
