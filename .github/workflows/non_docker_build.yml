@@ -281,6 +281,34 @@ jobs:
         CI: "true"
         GITHUB_RUN_NUMBER: ${{ github.run_number }}
 
+    - name: Dump vcpkg build error logs
+      # On failure, surface vcpkg's per-port logs (e.g. dune-geometry's
+      # git-fetch-*-err.log) directly in the job log so the actual error is
+      # visible without downloading an artifact. They live under .vcpkg-root and
+      # build/wheelbuilder-release on the bind-mounted source tree: written by the
+      # container as root but world-readable, so this host-side step can cat them.
+      if: failure()
+      run: |
+        shopt -s nullglob
+        for f in .vcpkg-root/buildtrees/*/*.log \
+                 build/wheelbuilder-release/vcpkg-*.log; do
+          echo "::group::${f}"
+          cat "${f}"
+          echo "::endgroup::"
+        done
+
+    - name: Upload vcpkg error logs (in case of failure)
+      # Companion downloadable artifact, mirroring the build-linux job's
+      # "Upload error logs" step.
+      if: failure()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: wheels_vcpkg_error-log_${{ matrix.python-version }}
+        path: |
+          .vcpkg-root/buildtrees/*/*.log
+          build/wheelbuilder-release/vcpkg-*.log
+        if-no-files-found: warn
+
     - name: Save wheel-build ccache
       # Persist the compiler cache even when the build fails so the next run stays
       # warm. The job-level `if` already blocks fork PRs; the same trust gate is
