@@ -20,8 +20,45 @@ concurrency:
 # extra scopes they require (pages / id-token write for Trusted Publishing).
 
 jobs:
+  config:
+    # Single source of truth for instance sizing. Everything downstream (the
+    # runs-on cpu labels, the build -j, the ctest --parallel level) derives from
+    # the vCPU counts set here, so changing instance size is a one-line edit and
+    # the rest auto-adjusts. This indirection exists because GitHub Actions does
+    # not expose the env: context inside runs-on:; job outputs (needs.*) are the
+    # only workflow-local values usable there.
+    name: CI sizing constants
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    outputs:
+      linux_cpu: ${{ steps.sizing.outputs.linux_cpu }}
+      linux_build_jobs: ${{ steps.sizing.outputs.linux_build_jobs }}
+      ctest_parallel: ${{ steps.sizing.outputs.ctest_parallel }}
+      wheels_cpu: ${{ steps.sizing.outputs.wheels_cpu }}
+      docs_cpu: ${{ steps.sizing.outputs.docs_cpu }}
+    steps:
+    - id: sizing
+      run: |
+        # ---- change instance size here ----
+        linux_cpu=8
+        wheels_cpu=8
+        docs_cpu=4
+        # -----------------------------------
+        {
+          echo "linux_cpu=$linux_cpu"
+          echo "wheels_cpu=$wheels_cpu"
+          echo "docs_cpu=$docs_cpu"
+          # Cap compile concurrency by RAM: m7i = 4 GB/vCPU, template-heavy TUs
+          # peak ~2 GB each, so cpu-1 keeps peak RAM well under the box.
+          echo "linux_build_jobs=$((linux_cpu - 1))"
+          # Tests are ~400 short, IO-light executables: oversubscribe at 2x vCPU.
+          echo "ctest_parallel=$((linux_cpu * 2))"
+        } >> "$GITHUB_OUTPUT"
+
   build-linux:
     name: Build on Linux
+    needs: config
     # Same fork-trust gate as build_wheels: only run on the self-hosted RunsOn/AWS
     # fleet for trusted contexts (pushes/tags, the merge queue, same-repo PRs).
     # External fork PRs are skipped — fork code must never execute on the fleet
@@ -31,10 +68,10 @@ jobs:
     # Trial running on RunsOn self-hosted runners (https://runs-on.com).
     runs-on:
     - runs-on=${{ github.run_id }}
-    - cpu=8
+    - cpu=${{ needs.config.outputs.linux_cpu }}
     # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). The debug build uses no
     # LTO, so there is no /tmp ltrans explosion like build_wheels; the 32 GB also
-    # lets the test_binaries build run at -j7 (see below).
+    # lets the test_binaries build run at -j cpu-1 (see below).
     - family=m7i
     - image=ubuntu24-full-x64
     # Debug build/ tree + .vcpkg-root + 2 GB ccache fit easily; 80 GB gp3 leaves
@@ -138,15 +175,18 @@ jobs:
         # test_binaries is ~400 separate executables, several of which are
         # template-heavy TUs that peak around ~2 GB RAM each. The old "-l 2"
         # load cap effectively serialised the build (~6 s/file, ~40 min). Cap
-        # concurrency by memory instead: -j 7 keeps peak RAM (~14 GB) well under
-        # the 32 GB m7i RunsOn runner while using 7 of its 8 vCPUs. With a warm
-        # ccache most of these are cache hits and cost almost nothing.
-        cmake --build --preset=debug --target test_binaries --parallel -- -j 7
+        # concurrency by memory instead: -j cpu-1 (linux_build_jobs from the
+        # config job) keeps peak RAM (~2 GB * (cpu-1)) well under the m7i runner
+        # (4 GB/vCPU) while using all but one of its vCPUs. With a warm ccache
+        # most of these are cache hits and cost almost nothing.
+        cmake --build --preset=debug --target test_binaries --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
         ccache --show-stats
 
     - name: Test with CTest
       run: |
-        ctest --preset=debug
+        # Run the ~400 test executables concurrently. ctest_parallel (2x vCPU,
+        # from the config job) oversubscribes since the tests are short/IO-light.
+        ctest --preset=debug --parallel ${{ needs.config.outputs.ctest_parallel }}
 
     - name: Save build cache
       # The fork-trust gate is repeated here (defence-in-depth + to satisfy the
@@ -182,6 +222,7 @@ jobs:
 
   build_wheels:
     name: Build wheels
+    needs: config
     # Only run on trusted contexts: pushes/tags, the merge queue, and same-repo
     # PRs. Fork PRs must never execute on the self-hosted RunsOn/AWS fleet
     # (arbitrary code execution risk) — same fork-trust gate used by build_docs.
@@ -192,9 +233,11 @@ jobs:
     # runs-on/action step below wires into actions/cache.
     runs-on:
     - runs-on=${{ github.run_id }}
-    - cpu=8
+    - cpu=${{ needs.config.outputs.wheels_cpu }}
     # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). c7i is compute-optimized
     # at 2 GB/vCPU = only 16 GB, which OOMs the -j7 compile in build-wheels.sh.
+    # build-wheels.sh builds at -j "$(nproc --ignore 1)", so its compile
+    # parallelism auto-scales with whatever cpu the config job provisions.
     - family=m7i
     - image=ubuntu24-full-x64
     # Enlarge the root EBS volume. The release build links with LTO, and at -j7 it
@@ -270,7 +313,7 @@ jobs:
 
   build_docs:
     name: Build docs (executes notebooks via myst-nb)
-    needs: build_wheels
+    needs: [config, build_wheels]
     # Same fork-trust gate as build_wheels (defence-in-depth: this job already skips
     # on fork PRs via `needs: build_wheels`, but the explicit gate keeps it
     # consistent and satisfies the cache-poisoning lint on the uv cache below).
@@ -281,7 +324,7 @@ jobs:
     # HTML). extras=s3-cache + the runs-on/action step route setup-uv's cache to S3.
     runs-on:
     - runs-on=${{ github.run_id }}
-    - cpu=4
+    - cpu=${{ needs.config.outputs.docs_cpu }}
     - family=m7i
     - image=ubuntu24-full-x64
     - extras=s3-cache
