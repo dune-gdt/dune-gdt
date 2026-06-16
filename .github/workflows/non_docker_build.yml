@@ -22,7 +22,26 @@ concurrency:
 jobs:
   build-linux:
     name: Build on Linux
-    runs-on: ubuntu-24.04
+    # Same fork-trust gate as build_wheels: only run on the self-hosted RunsOn/AWS
+    # fleet for trusted contexts (pushes/tags, the merge queue, same-repo PRs).
+    # External fork PRs are skipped — fork code must never execute on the fleet
+    # (arbitrary code execution risk). Routing fork PRs to a GitHub-hosted
+    # ubuntu-24.04 fallback is tracked as a follow-up issue.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Trial running on RunsOn self-hosted runners (https://runs-on.com).
+    runs-on:
+    - runs-on=${{ github.run_id }}
+    - cpu=8
+    # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). The debug build uses no
+    # LTO, so there is no /tmp ltrans explosion like build_wheels; the 32 GB also
+    # lets the test_binaries build run at -j7 (see below).
+    - family=m7i
+    - image=ubuntu24-full-x64
+    # Debug build/ tree + .vcpkg-root + 2 GB ccache fit easily; 80 GB gp3 leaves
+    # ample headroom and the runner is a short-lived spot instance, so the extra
+    # storage is negligible.
+    - volume=80gb
+    - extras=s3-cache
     timeout-minutes: 120
     permissions:
       contents: read
@@ -34,6 +53,11 @@ jobs:
       CCACHE_MAXSIZE: "2G"
 
     steps:
+    # Configures the RunsOn Magic Cache sidecar so the actions/cache steps below
+    # transparently use S3 (extras=s3-cache). No-op on GitHub-hosted runners, so it
+    # stays safe if this job ever falls back to ubuntu-24.04.
+    - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
+
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         # this checkout's token is not used for any later git push/API call
@@ -114,10 +138,10 @@ jobs:
         # test_binaries is ~400 separate executables, several of which are
         # template-heavy TUs that peak around ~2 GB RAM each. The old "-l 2"
         # load cap effectively serialised the build (~6 s/file, ~40 min). Cap
-        # concurrency by memory instead: -j 3 keeps peak RAM well under the
-        # 16 GB runner while using 3 of the 4 vCPUs. With a warm ccache most of
-        # these are cache hits and cost almost nothing.
-        cmake --build --preset=debug --target test_binaries --parallel -- -j 3
+        # concurrency by memory instead: -j 7 keeps peak RAM (~14 GB) well under
+        # the 32 GB m7i RunsOn runner while using 7 of its 8 vCPUs. With a warm
+        # ccache most of these are cache hits and cost almost nothing.
+        cmake --build --preset=debug --target test_binaries --parallel -- -j 7
         ccache --show-stats
 
     - name: Test with CTest
@@ -125,7 +149,10 @@ jobs:
         ctest --preset=debug
 
     - name: Save build cache
-      if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
+      # The fork-trust gate is repeated here (defence-in-depth + to satisfy the
+      # cache-poisoning lint on a standalone save step); the job-level `if` already
+      # blocks fork PRs.
+      if: ${{ success() && steps.configure_cmake.outcome == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: |
@@ -136,8 +163,9 @@ jobs:
     - name: Save ccache
       # Always persist the compiler cache (even when the build or tests fail) so
       # the next run starts warm. Only requires that configure succeeded, since
-      # that is what populates the cache directory.
-      if: always() && steps.configure_cmake.outcome == 'success'
+      # that is what populates the cache directory. The fork-trust gate is repeated
+      # here (defence-in-depth + cache-poisoning lint) as on the build cache above.
+      if: always() && steps.configure_cmake.outcome == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: ${{ github.workspace }}/.ccache
@@ -242,8 +270,21 @@ jobs:
 
   build_docs:
     name: Build docs (executes notebooks via myst-nb)
-    runs-on: ubuntu-24.04
     needs: build_wheels
+    # Same fork-trust gate as build_wheels (defence-in-depth: this job already skips
+    # on fork PRs via `needs: build_wheels`, but the explicit gate keeps it
+    # consistent and satisfies the cache-poisoning lint on the uv cache below).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Trial running on RunsOn self-hosted runners (https://runs-on.com). The docs
+    # build is single-threaded (sphinx -j 1), so 4 vCPU / 16 GB (m7i) is plenty and
+    # no volume bump is needed (it only downloads the wheels artifact and renders
+    # HTML). extras=s3-cache + the runs-on/action step route setup-uv's cache to S3.
+    runs-on:
+    - runs-on=${{ github.run_id }}
+    - cpu=4
+    - family=m7i
+    - image=ubuntu24-full-x64
+    - extras=s3-cache
     timeout-minutes: 60
     permissions:
       contents: read
@@ -253,6 +294,10 @@ jobs:
       PYTHON_VERSION: "3.13"
 
     steps:
+    # Configures the RunsOn Magic Cache sidecar so setup-uv's cache (gated below)
+    # transparently uses S3 (extras=s3-cache). No-op on GitHub-hosted runners.
+    - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
+
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
         # this checkout's token is not used for any later git push/API call
