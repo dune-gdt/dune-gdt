@@ -6,6 +6,13 @@ WHEEL_DIR="${DUNE_SRC_DIR}/${WHEELDIR_RELATIVE}"
 PYTHON_BIN="python${PYTHON_VERSION//\"/}"
 
 export CCACHE_DIR="${WHEEL_DIR}/cache"
+# Hash compiler contents rather than mtime/path so the cache stays valid even
+# when the pinned manylinux image is refreshed (a fresh pull changes file
+# timestamps but not the compiler binary).
+export CCACHE_COMPILERCHECK=content
+# The release bindings are template- and LTO-heavy; their object cache outgrows
+# ccache's 5 GB default. The runner volume has ample headroom (volume=150gb).
+export CCACHE_MAXSIZE=10G
 # Create final wheel dir, but not tmp here
 mkdir -p "${WHEEL_DIR}/final" || true
 
@@ -21,9 +28,6 @@ trap cleanup EXIT
 git config --global --add safe.directory "${DUNE_SRC_DIR}"
 
 yum install -y curl zip unzip tar ccache
-pushd /usr/local/bin/
-for ii in cc c++ cpp g++ gcc mpicc mpic++ mpicxx ; do ln -s "$(which ccache)" "$ii"; done
-popd
 
 # some of our vcpkg deps don't build with cmake 4 yet
 # the container's cmake is managed with pipx already
@@ -35,7 +39,13 @@ pipx install --force "cmake<4"
 "${PYTHON_BIN}" -m pip install auditwheel wheel build
 cd "${DUNE_SRC_DIR}"
 
-cmake --preset wheelbuilder-release -DDXT_DONT_LINK_PYTHON_LIB=1
+# Route every compile through ccache via the compiler launcher rather than
+# PATH symlinks: the manylinux container puts gcc-toolset ahead of /usr/local/bin
+# in PATH, so ccache symlinks there are never reached. Passing the launcher as a
+# cache variable (-D) also forces CMake to regenerate the Ninja rules when a
+# cached build/wheelbuilder-release tree is restored. Mirrors the build-linux job.
+cmake --preset wheelbuilder-release -DDXT_DONT_LINK_PYTHON_LIB=1 \
+  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 cmake --build --preset wheelbuilder-release --target bindings -- -j "$(nproc --ignore 1)" -l "$(nproc --ignore 1)"
 
 DUNE_BUILD_DIR="${DUNE_SRC_DIR}/build/wheelbuilder-release"
