@@ -295,9 +295,12 @@ jobs:
     - name: Save wheel build tree (vcpkg toolchain + deps)
       # Persist the vcpkg toolchain + dependency build keyed on the manifest hash
       # so the next run with an unchanged vcpkg.json/preset/bootstrap skips the
-      # dependency rebuild. Same fork-trust gate as the ccache save above
-      # (defence-in-depth + cache-poisoning lint on a standalone save step).
-      if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      # dependency rebuild. Gated on success() (unlike the ccache save above):
+      # the key is deterministic and actions/cache keys are immutable, so saving a
+      # partial/corrupt tree from a failed run would poison the cache permanently
+      # (a later good run could not overwrite the same key). Matches build-linux's
+      # "Save build cache". The repeated fork-trust gate is defence-in-depth.
+      if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: |
