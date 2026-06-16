@@ -45,6 +45,15 @@ jobs:
         wheels_cpu=8
         docs_cpu=4
         # -----------------------------------
+        # Fail fast on nonsensical sizes so a bad edit surfaces here (a cheap
+        # GitHub-hosted job) instead of as a confusing "-j 0"/"--parallel 0" or an
+        # invalid RunsOn cpu label deep in a self-hosted build. linux_cpu must be
+        # >= 2 so linux_build_jobs (cpu-1) stays >= 1.
+        for v in "$linux_cpu" "$wheels_cpu" "$docs_cpu"; do
+          [[ "$v" =~ ^[0-9]+$ ]] || { echo "::error::cpu values must be positive integers (got '$v')"; exit 1; }
+        done
+        (( linux_cpu >= 2 )) || { echo "::error::linux_cpu must be >= 2 (got $linux_cpu)"; exit 1; }
+        (( wheels_cpu >= 1 && docs_cpu >= 1 )) || { echo "::error::wheels_cpu/docs_cpu must be >= 1"; exit 1; }
         {
           echo "linux_cpu=$linux_cpu"
           echo "wheels_cpu=$wheels_cpu"
