@@ -50,9 +50,9 @@ struct IntegralsTest : public ::testing::Test
     const double c = 2.5;
     for (auto&& element : Dune::elements(gv)) {
       volume += element_integral(
-          element, std::function<double(const FieldVector<double, d>&)>([](const auto&) { return 1.; }), 0);
+          element, std::function<double(const Dune::FieldVector<double, d>&)>([](const auto&) { return 1.; }), 0);
       weighted += element_integral(
-          element, std::function<double(const FieldVector<double, d>&)>([c](const auto&) { return c; }), 0);
+          element, std::function<double(const Dune::FieldVector<double, d>&)>([c](const auto&) { return c; }), 0);
     }
     EXPECT_TRUE(Common::FloatCmp::eq(volume, 1.));
     EXPECT_TRUE(Common::FloatCmp::eq(weighted, c));
@@ -69,7 +69,7 @@ struct IntegralsTest : public ::testing::Test
         if (intersection.boundary() && !intersection.neighbor())
           surface += intersection_integral(
               intersection,
-              std::function<double(const FieldVector<double, int(d) - 1>&)>([](const auto&) { return 1.; }),
+              std::function<double(const Dune::FieldVector<double, int(d) - 1>&)>([](const auto&) { return 1.; }),
               0);
       }
     }
