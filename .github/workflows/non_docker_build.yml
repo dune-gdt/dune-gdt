@@ -66,7 +66,7 @@ jobs:
         } >> "$GITHUB_OUTPUT"
 
   build-linux:
-    name: Build on Linux
+    name: Build on Linux (${{ matrix.preset }})
     needs: config
     # Same fork-trust gate as build_wheels: only run on the self-hosted RunsOn/AWS
     # fleet for trusted contexts (pushes/tags, the merge queue, same-repo PRs).
@@ -74,23 +74,47 @@ jobs:
     # (arbitrary code execution risk). Routing fork PRs to a GitHub-hosted
     # ubuntu-24.04 fallback is tracked as a follow-up issue.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    # Trial running on RunsOn self-hosted runners (https://runs-on.com).
+    # Trial running on RunsOn self-hosted runners (https://runs-on.com). The
+    # run_id routing label is suffixed with the matrix preset so each leg
+    # provisions its own ephemeral instance instead of competing for one.
     runs-on:
-    - runs-on=${{ github.run_id }}
+    - runs-on=${{ github.run_id }}-${{ matrix.preset }}
     - cpu=${{ needs.config.outputs.linux_cpu }}
-    # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). The debug build uses no
-    # LTO, so there is no /tmp ltrans explosion like build_wheels; the 32 GB also
-    # lets the test_binaries build run at -j cpu-1 (see below).
+    # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). Neither preset uses LTO,
+    # so there is no /tmp ltrans explosion like build_wheels; the 32 GB also lets
+    # the test_binaries build run at -j cpu-1 (see below).
     - family=m7i
     - image=ubuntu24-full-x64
-    # Debug build/ tree + .vcpkg-root + 2 GB ccache fit easily; 80 GB gp3 leaves
-    # ample headroom and the runner is a short-lived spot instance, so the extra
-    # storage is negligible.
+    # build/ tree + .vcpkg-root + 2 GB ccache fit easily; 80 GB gp3 leaves ample
+    # headroom and the runner is a short-lived spot instance, so the extra storage
+    # is negligible.
     - volume=80gb
     - extras=s3-cache
-    timeout-minutes: 120
+    # A fully cold leg (no build cache) compiles every vcpkg dependency as a shared
+    # library, the project, the ~400 test binaries and the Python bindings from
+    # scratch; on the m7i fleet that fits well under 3h. Warm runs restore the
+    # build/ + ccache and finish in well under an hour.
+    timeout-minutes: 180
     permissions:
       contents: read
+      # codecov's GitHub Action authenticates to codecov.io via OpenID Connect
+      # (use_oidc below) instead of an upload token. Only the coverage matrix leg
+      # actually exchanges this token, but job-level permissions are shared by the
+      # whole matrix, so the scope is declared once here.
+      id-token: write
+    strategy:
+      # one leg's failure must not cancel the other: a broken debug build should
+      # still let the release+coverage leg report, and vice versa.
+      fail-fast: false
+      matrix:
+        include:
+        # the stock debug build (no instrumentation)
+        - preset: debug
+          coverage: false
+        # the release build compiled with gcov instrumentation (release_coverage
+        # preset) so it can report C++ (and, via the bindings, Python) coverage
+        - preset: release_coverage
+          coverage: true
     env:
       # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
       # hash), the ccache survives manifest changes and partial rebuilds, so the
@@ -123,14 +147,16 @@ jobs:
           build
           .vcpkg-root
         # Key on the inputs that determine the toolchain/manifest so the cache is
-        # rebuilt when they change. The trailing-dash restore-key only matches
-        # caches written by this (consistent) scheme, never the legacy build-only one.
+        # rebuilt when they change. The matrix preset is part of the key so the two
+        # legs never clobber each other's build/ (they instrument differently and
+        # live in build/<preset>). The trailing-dash restore-key only matches caches
+        # written by this (consistent) scheme, never the legacy build-only one.
         # Note the cached dune-env virtualenv is never reused: it is deleted right
         # after restore (see "Discard cached dune-env virtualenv" below), so a stale
         # or corrupted venv in the cache cannot break configure.
-        key: ${{ runner.os }}-build-v2-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+        key: ${{ runner.os }}-build-v2-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
         restore-keys: |
-          ${{ runner.os }}-build-v2-
+          ${{ runner.os }}-build-v2-${{ matrix.preset }}-
 
     - name: Drop stale build cache if vcpkg toolchain is missing
       run: |
@@ -155,7 +181,25 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build ccache
+        # xvfb gives the Python binding tests a headless display; both legs run
+        # those tests. gcovr is pulled separately (coverage leg only) via pipx.
+        sudo apt-get install -y ninja-build ccache xvfb
+
+    - name: Install coverage tooling
+      # gcovr turns the gcov .gcda/.gcno files produced by the instrumented build
+      # into a Cobertura XML report codecov understands. Only needed on the
+      # coverage leg, which alone compiles with instrumentation.
+      if: ${{ matrix.coverage }}
+      run: pipx install gcovr
+
+    - name: Set up uv
+      # Both legs run the Python test suite, which the CMake xt_test_python /
+      # gdt_test_python targets execute via `uv run` (no manually-managed venv).
+      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      with:
+        # gate the uv cache to trusted runs (pushes/merge queue and same-repo
+        # PRs); disable it for external-fork PRs so a fork cannot poison the cache
+        enable-cache: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     - name: Restore ccache
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -163,51 +207,123 @@ jobs:
         path: ${{ github.workspace }}/.ccache
         # run_id makes every save a unique (always-miss) key so each run writes a
         # fresh cache; the prefix restore-key then pulls the most recent ccache
-        # from any previous run.
-        key: ${{ runner.os }}-ccache-${{ github.run_id }}
+        # from any previous run. Keyed per preset because the instrumented release
+        # objects must not pollute the debug leg's cache (different compile flags).
+        key: ${{ runner.os }}-ccache-${{ matrix.preset }}-${{ github.run_id }}
         restore-keys: |
-          ${{ runner.os }}-ccache-
+          ${{ runner.os }}-ccache-${{ matrix.preset }}-
 
     - name: Configure CMake
       id: configure_cmake
       # Route every compile through ccache. Passing the launcher as a cache
       # variable (not just an env var) forces CMake to regenerate the Ninja
-      # rules even when a stale build/ tree is restored from cache.
+      # rules even when a stale build/ tree is restored from cache. The gcov
+      # instrumentation lives in the release_coverage preset (see
+      # CMakePresets.json), so nothing extra is injected here.
       run: >
-        cmake --preset=debug -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
     - name: Build
-      run: cmake --build --preset=debug --parallel
+      run: cmake --build --preset=${{ matrix.preset }} --parallel
 
     - name: Build test binaries
       run: |
         # test_binaries is ~400 separate executables, several of which are
-        # template-heavy TUs that peak around ~2 GB RAM each. The old "-l 2"
-        # load cap effectively serialised the build (~6 s/file, ~40 min). Cap
-        # concurrency by memory instead: -j cpu-1 (linux_build_jobs from the
-        # config job) keeps peak RAM (~2 GB * (cpu-1)) well under the m7i runner
-        # (4 GB/vCPU) while using all but one of its vCPUs. With a warm ccache
-        # most of these are cache hits and cost almost nothing.
-        cmake --build --preset=debug --target test_binaries --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
+        # template-heavy TUs that peak around ~2 GB RAM each. Cap concurrency by
+        # memory: -j cpu-1 (linux_build_jobs from the config job) keeps peak RAM
+        # (~2 GB * (cpu-1)) well under the m7i runner (4 GB/vCPU) while using all
+        # but one of its vCPUs. With a warm ccache most of these are cache hits.
+        cmake --build --preset=${{ matrix.preset }} --target test_binaries --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
         ccache --show-stats
 
     - name: Test with CTest
       run: |
         # Run the ~400 test executables concurrently. ctest_parallel (2x vCPU,
         # from the config job) oversubscribes since the tests are short/IO-light.
-        ctest --preset=debug --parallel ${{ needs.config.outputs.ctest_parallel }}
+        ctest --preset=${{ matrix.preset }} --parallel ${{ needs.config.outputs.ctest_parallel }}
+
+    - name: Build Python bindings
+      # Both legs run the Python test suite, so both build the .so bindings.
+      run: cmake --build --preset=${{ matrix.preset }} --target bindings --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
+
+    - name: Run Python tests (with coverage)
+      # The xt_test_python / gdt_test_python targets run pytest with --cov and
+      # write coverage.py data files (coverage-xt, coverage-gdt) into the build
+      # dir. xvfb-run wraps the whole invocation so any visualisation-backed test
+      # has a display. We intentionally skip the test_docs target (notebook
+      # execution) here — that is covered by the build_docs job. The coverage.py
+      # data is only converted and uploaded on the coverage leg below.
+      run: |
+        xvfb-run -a cmake --build --preset=${{ matrix.preset }} \
+          --target xt_test_python gdt_test_python
+
+    - name: Collect C++ coverage (gcovr -> Cobertura XML)
+      if: ${{ matrix.coverage }}
+      run: |
+        gcovr \
+          --root "${GITHUB_WORKSPACE}" \
+          --filter "${GITHUB_WORKSPACE}/dune/" \
+          --gcov-ignore-parse-errors \
+          --exclude-unreachable-branches \
+          --exclude-throw-branches \
+          --print-summary \
+          --xml-pretty -o "${GITHUB_WORKSPACE}/coverage-cpp.xml" \
+          "${GITHUB_WORKSPACE}/build/${{ matrix.preset }}"
+
+    - name: Collect Python coverage (coverage.py -> XML)
+      if: ${{ matrix.coverage }}
+      run: |
+        # the pytest run wrote two coverage.py data files (coverage-xt,
+        # coverage-gdt) into the build dir; combine them into one XML. coverage is
+        # pulled on the fly by uv (no manually-managed venv), matching the rest of
+        # the Python tooling in this job.
+        cd "${GITHUB_WORKSPACE}/build/${{ matrix.preset }}"
+        uv run --no-project --with coverage python -m coverage combine coverage-xt coverage-gdt
+        uv run --no-project --with coverage python -m coverage xml -o "${GITHUB_WORKSPACE}/coverage-python.xml"
+
+    - name: Upload C++ coverage to Codecov
+      if: ${{ matrix.coverage }}
+      uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
+      with:
+        # OIDC (id-token) auth instead of an upload token; see job permissions.
+        use_oidc: true
+        files: ${{ github.workspace }}/coverage-cpp.xml
+        flags: cpp
+        # We already produced the Cobertura XML with gcovr above; stop the action
+        # from searching the tree and from running its own coverage plugins (the
+        # gcov plugin would otherwise re-run gcov over the whole build tree).
+        disable_search: true
+        plugins: noop
+        # fail the job if the upload fails, so coverage reporting cannot silently
+        # break (requires the repo to be activated on codecov.io).
+        fail_ci_if_error: true
+
+    - name: Upload Python coverage to Codecov
+      if: ${{ matrix.coverage }}
+      uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
+      with:
+        use_oidc: true
+        files: ${{ github.workspace }}/coverage-python.xml
+        flags: python
+        disable_search: true
+        plugins: noop
+        fail_ci_if_error: true
 
     - name: Save build cache
-      # The fork-trust gate is repeated here (defence-in-depth + to satisfy the
-      # cache-poisoning lint on a standalone save step); the job-level `if` already
-      # blocks fork PRs.
-      if: ${{ success() && steps.configure_cmake.outcome == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+      # Save when configure succeeded even if a later step (build/test/coverage
+      # upload) failed: a fully cold run rebuilds every vcpkg dependency as a
+      # shared library and the whole project, which is far too expensive to redo
+      # on every retry. Persisting build/ here lets the next run start warm and
+      # converge, mirroring the always() ccache save below. The fork-trust gate is
+      # repeated here (defence-in-depth + cache-poisoning lint on a standalone save
+      # step); the job-level `if` already blocks fork PRs.
+      if: always() && steps.configure_cmake.outcome == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: |
           build
           .vcpkg-root
-        key: ${{ runner.os }}-build-v2-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+        key: ${{ runner.os }}-build-v2-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
 
     - name: Save ccache
       # Always persist the compiler cache (even when the build or tests fail) so
@@ -218,13 +334,13 @@ jobs:
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: ${{ github.workspace }}/.ccache
-        key: ${{ runner.os }}-ccache-${{ github.run_id }}
+        key: ${{ runner.os }}-ccache-${{ matrix.preset }}-${{ github.run_id }}
 
     - name: Upload error logs (in case of failure)
       if: always() && (steps.configure_cmake.conclusion == 'failure')
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: linux_vcpkg_error-log
+        name: linux_vcpkg_error-log_${{ matrix.preset }}
         path: |
           ${{ github.workspace }}/build/*/vcpkg-*.log
           ${{ github.workspace }}/.vcpkg-root/buildtrees/*/*.log
