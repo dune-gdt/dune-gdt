@@ -42,11 +42,9 @@ pipx install --force "cmake<4"
 "${PYTHON_BIN}" -m venv "${WHEEL_DIR}/venv"
 # shellcheck disable=SC1091
 . "${WHEEL_DIR}/venv/bin/activate"
-# ninja is installed explicitly: CMake records CMAKE_MAKE_PROGRAM as this venv's
-# bin/ninja, and that path is baked into the cached build/wheelbuilder-release
-# CMakeCache.txt. The venv is recreated fresh every run, so without an explicit
-# install a warm cache hit reconfigures against a missing ninja and fails the
-# project() call ("venv/bin/ninja --version ... no such file or directory").
+# ninja is installed explicitly so CMake's Ninja generator has a make program in
+# this (freshly recreated) venv; without it the project() call fails with
+# "ninja --version ... no such file or directory".
 "${PYTHON_BIN}" -m pip install auditwheel wheel build ninja
 cd "${DUNE_SRC_DIR}"
 

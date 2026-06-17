@@ -241,35 +241,37 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-
 
-    - name: Restore wheel build tree (vcpkg toolchain + deps)
+    - name: Restore vcpkg deps (toolchain + installed packages)
       # ccache only covers the dune-xt/dune-gdt translation units; the vcpkg
       # dependency ports build with vcpkg's own toolchain and are not cached by
-      # ccache. Persisting .vcpkg-root (the toolchain VcpkgBootStrap.cmake bakes
-      # into the CMake config) together with build/wheelbuilder-release skips the
-      # from-scratch rebuild of boost/dune-*/suitesparse/etc on every run. Both
-      # paths live under the source dir that make_docker_wheels.bash bind-mounts
-      # into the container, so the container's writes land on the host. Keyed on
-      # the inputs that determine the toolchain/manifest, mirroring build-linux.
+      # ccache. Cache ONLY the relocatable, expensive artifacts -- the vcpkg
+      # toolchain (.vcpkg-root) and the installed packages (vcpkg_installed) -- not
+      # the whole configured build/wheelbuilder-release tree: its CMakeCache and
+      # generated rules embed state tied to the per-run venv (ninja path, the dune
+      # python package), so reusing it makes a warm reconfigure skip the dune
+      # install and then fail ("No module named dune"). Reconfiguring fresh each
+      # run (vcpkg sees vcpkg_installed and skips the dep rebuild) avoids that whole
+      # class of staleness while still skipping the ~35 min dependency build. Both
+      # paths live under the source dir bind-mounted into the container. Keyed on
+      # the inputs that determine the toolchain/manifest.
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: |
-          build/wheelbuilder-release
+          build/wheelbuilder-release/vcpkg_installed
           .vcpkg-root
-        key: ${{ runner.os }}-wheels-build-${{ matrix.python-version }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+        key: ${{ runner.os }}-wheels-vcpkg-${{ matrix.python-version }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
         restore-keys: |
-          ${{ runner.os }}-wheels-build-${{ matrix.python-version }}-
+          ${{ runner.os }}-wheels-vcpkg-${{ matrix.python-version }}-
 
-    - name: Drop stale wheel build tree if vcpkg toolchain is missing
-      # If build/wheelbuilder-release was restored but the .vcpkg-root toolchain it
-      # references is absent (a restore-key matched an older, differently-keyed
-      # cache), the baked toolchain path no longer exists and configure fails
-      # immediately. Clear the stale tree so CMake re-bootstraps vcpkg. Mirrors the
-      # build-linux guard.
+    - name: Drop stale vcpkg_installed if toolchain is missing
+      # If vcpkg_installed was restored (via the trailing-dash restore-key) but the
+      # .vcpkg-root toolchain it was built against is absent, clear it so vcpkg
+      # reinstalls cleanly instead of configure failing on a missing toolchain.
       run: |
-        if [ -d build/wheelbuilder-release ] && [ ! -f .vcpkg-root/scripts/buildsystems/vcpkg.cmake ]; then
-          echo "Restored build/wheelbuilder-release but .vcpkg-root toolchain is" \
-               "missing; clearing stale build tree so CMake re-bootstraps vcpkg."
-          rm -rf build/wheelbuilder-release
+        if [ -d build/wheelbuilder-release/vcpkg_installed ] && [ ! -f .vcpkg-root/scripts/buildsystems/vcpkg.cmake ]; then
+          echo "Restored vcpkg_installed but .vcpkg-root toolchain is missing;" \
+               "clearing it so vcpkg reinstalls from scratch."
+          rm -rf build/wheelbuilder-release/vcpkg_installed
         fi
 
     - run: |
@@ -322,21 +324,21 @@ jobs:
         path: build/wheelhouse/cache
         key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
 
-    - name: Save wheel build tree (vcpkg toolchain + deps)
-      # Persist the vcpkg toolchain + dependency build keyed on the manifest hash
+    - name: Save vcpkg deps (toolchain + installed packages)
+      # Persist the vcpkg toolchain + installed packages keyed on the manifest hash
       # so the next run with an unchanged vcpkg.json/preset/bootstrap skips the
       # dependency rebuild. Gated on success() (unlike the ccache save above):
       # the key is deterministic and actions/cache keys are immutable, so saving a
-      # partial/corrupt tree from a failed run would poison the cache permanently
-      # (a later good run could not overwrite the same key). Matches build-linux's
-      # "Save build cache". The repeated fork-trust gate is defence-in-depth.
+      # partial/corrupt set from a failed run would poison the cache permanently
+      # (a later good run could not overwrite the same key). The repeated fork-trust
+      # gate is defence-in-depth.
       if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: |
-          build/wheelbuilder-release
+          build/wheelbuilder-release/vcpkg_installed
           .vcpkg-root
-        key: ${{ runner.os }}-wheels-build-${{ matrix.python-version }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+        key: ${{ runner.os }}-wheels-vcpkg-${{ matrix.python-version }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
