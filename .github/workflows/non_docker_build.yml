@@ -294,15 +294,17 @@ jobs:
       # none are missed.
       if: failure()
       run: |
-        # The in-container github-fetch probe (build-wheels.sh) tee's here; print
-        # it first since it carries the real reachability/auth result.
+        # Keep this dump small so it stays within the retrievable log tail: only
+        # the github-fetch probe (the real reachability/auth result) and the
+        # failing ports' git-fetch logs -- NOT the 900+ restored-cache buildtree
+        # logs, which are irrelevant noise that pushes everything else off-tail.
         if [ -f build/wheelhouse/github-probe.log ]; then
           echo "::group::github-probe.log"
           sudo cat build/wheelhouse/github-probe.log || true
           echo "::endgroup::"
         fi
-        sudo find .vcpkg-root/buildtrees build/wheelbuilder-release \
-          -name '*.log' -type f 2>/dev/null | sort | while read -r f; do
+        sudo find .vcpkg-root/buildtrees -name 'git-fetch-*' -type f 2>/dev/null \
+          | sort | while read -r f; do
           echo "::group::${f}"
           sudo cat "${f}" || true
           echo "::endgroup::"
