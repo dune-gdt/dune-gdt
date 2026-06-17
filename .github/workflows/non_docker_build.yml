@@ -280,6 +280,10 @@ jobs:
         # provide a unique build number so every upload gets a distinct version
         CI: "true"
         GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        # forwarded into the manylinux container so vcpkg's `git fetch` of the
+        # dune-* deps is authenticated (avoids GitHub's unauthenticated rate
+        # limit, which throttles git from the RunsOn/AWS fleet -> fetch exit 128)
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Dump vcpkg build error logs
       # On failure, surface vcpkg's per-port logs (e.g. dune-geometry's

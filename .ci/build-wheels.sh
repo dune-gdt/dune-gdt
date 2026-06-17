@@ -39,6 +39,29 @@ pipx install --force "cmake<4"
 "${PYTHON_BIN}" -m pip install auditwheel wheel build
 cd "${DUNE_SRC_DIR}"
 
+# --- vcpkg github fetch: diagnose + authenticate -----------------------------
+# vcpkg pulls several dune-* deps via `git fetch` from github.com during configure.
+# On the RunsOn/AWS fleet these fail (exit 128) on the first real network fetch
+# while succeeding from developer machines -- consistent with GitHub throttling
+# unauthenticated git from cloud IPs. First a non-fatal probe so the real
+# reachability/error is visible in the job log (vcpkg cleans its buildtrees on
+# failure, hiding git-fetch-*-err.log otherwise):
+echo "=== github fetch probe (unauthenticated): dune-mirrors/dune-geometry ==="
+git ls-remote https://github.com/dune-mirrors/dune-geometry.git 2>&1 | head -3 || true
+curl -sS -o /dev/null -w 'info/refs http=%{http_code}\n' \
+  "https://github.com/dune-mirrors/dune-geometry.git/info/refs?service=git-upload-pack" || true
+echo "======================================================================="
+# Then authenticate github fetches when a token is available, so vcpkg uses the
+# (much higher) authenticated rate limit. set +x so the token is never echoed.
+set +x
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+  git config --global \
+    url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf \
+    "https://github.com/"
+  echo "Configured authenticated github.com fetches for vcpkg."
+fi
+set -x
+
 # Route every compile through ccache via the compiler launcher rather than
 # PATH symlinks: the manylinux container puts gcc-toolset ahead of /usr/local/bin
 # in PATH, so ccache symlinks there are never reached. Passing the launcher as a

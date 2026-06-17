@@ -55,7 +55,7 @@ done
 DOCKER_RUN="docker run ${DT} --env-file=${ENV_FILE} -e DUNE_SRC_DIR=/home/dxt/src -v ${THISDIR}/../:/home/dxt/src \
   -e LOCAL_USER=${LOCAL_USER} -e LOCAL_GID=${LOCAL_GID} -e LOCAL_UID=${LOCAL_UID} \
   -e WHEELDIR_RELATIVE=${WHEELDIR_RELATIVE} -e PYTHON_VERSION=${PYTHON_VERSION} -e PLATFORM=${PLATFORM} \
-  -e CI -e GITHUB_RUN_NUMBER \
+  -e CI -e GITHUB_RUN_NUMBER -e GITHUB_TOKEN \
   -i ${IMAGE}"
 
 ${DOCKER_RUN} /home/dxt/src/.ci/build-wheels.sh
