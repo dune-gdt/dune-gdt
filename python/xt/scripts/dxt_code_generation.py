@@ -37,7 +37,12 @@ def generate(config_fn, tpl_fn, cmake_binary_dir, out_fn, backup_bindir, logger=
     dir_base = os.path.dirname(out_fn)
     if dir_base and not os.path.isdir(dir_base):
         os.makedirs(dir_base)
-    with open(tpl_fn) as tpl:
+    # Validate the (CLI-provided) template path before reading it, so a faulty
+    # argument cannot be used to read an unexpected file (SonarQube S8707).
+    tpl_path = os.path.realpath(tpl_fn)
+    if not os.path.isfile(tpl_path):
+        raise FileNotFoundError(f"template file not found: {tpl_fn}")
+    with open(tpl_path) as tpl:
         template = Template(tpl.read())
 
     try:

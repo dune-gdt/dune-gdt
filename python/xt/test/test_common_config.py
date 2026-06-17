@@ -55,11 +55,13 @@ def test_version_attr_consistent_with_have():
 
 def test_unknown_attribute_raises():
     cfg = Config()
+    invalid_attr = "NOT_A_VALID_ATTR"
     with pytest.raises(AttributeError):
-        getattr(cfg, "NOT_A_VALID_ATTR")
+        getattr(cfg, invalid_attr)
     # right shape, but not a known package
+    missing_pkg_attr = "HAVE_NOSUCHPACKAGE"
     with pytest.raises(AttributeError):
-        getattr(cfg, "HAVE_NOSUCHPACKAGE")
+        getattr(cfg, missing_pkg_attr)
 
 
 def test_dir_exposes_package_keys():
