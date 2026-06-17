@@ -56,6 +56,17 @@ exclude = [
 # extensions and is passed through `auditwheel repair`, which rejects pure py3-none-any wheels.
 [tool.hatch.build.targets.wheel.hooks.custom]
 
+# PEP 735 dependency group with the test tooling for the dune.gdt suite. The `gdt_test_python` CMake target
+# (cmake/modules/DuneXTTesting.cmake) runs `uv run --group test ...` from the binary dir, so the deps are declared here
+# rather than as individual `--with` flags on the uv command line.
+[dependency-groups]
+test = [
+  "pytest",
+  "pytest-cov",
+  "pytest-regressions",
+  "hypothesis",
+]
+
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: some test modules are named e.g.
 # test/segfault_laplace_integrand.py (not test_*.py), so without this pattern pytest would not collect them. The
 # `make gdt_test_python` target runs pytest from the binary dir, where this pyproject.toml is the assembly-point config.

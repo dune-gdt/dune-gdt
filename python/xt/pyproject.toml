@@ -106,6 +106,25 @@ exclude = [
 "scripts/generate_compare_functions.py" = "generate_compare_functions.py"
 "wrapper/dune_xt_execute.py" = "dune_xt_execute.py"
 
+# PEP 735 dependency group with the full set of dependencies the test suite needs. The `xt_test_python` CMake target
+# (cmake/modules/DuneXTTesting.cmake) runs `uv run --group test ...` from the binary dir (this pyproject is the
+# assembly-point config), so the deps are declared here in one place rather than spelled out as individual `--with`
+# flags on the uv command line. Besides the pytest tooling this includes the runtime deps exercised by the pure-Python
+# unit tests: pyparsing (dune.xt.cmake.parse_cache, dxt_code_generation), jinja2 (dxt_code_generation) and the VTK
+# reader stack (vtk/lxml/xmljson).
+[dependency-groups]
+test = [
+  "pytest",
+  "pytest-cov",
+  "pytest-regressions",
+  "hypothesis",
+  "pyparsing",
+  "jinja2",
+  "vtk",
+  "lxml",
+  "xmljson",
+]
+
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.
 # test/base.py (not test_*.py), so without this pattern pytest would collect nothing. The `make xt_test_python` target
 # runs pytest from the binary dir, where this pyproject.toml is the assembly-point config. (The obsolete pytest-pep8

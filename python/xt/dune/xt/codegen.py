@@ -38,6 +38,6 @@ def la_backends(cache):
     ret = []
     if have_eigen(cache):
         ret.append("eigen_sparse")
-    if have_istl:
+    if have_istl(cache):
         ret.append("istl_sparse")
     return ret
