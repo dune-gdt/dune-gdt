@@ -95,7 +95,9 @@ struct FilterTest : public ::testing::Test
     const auto gv = grid_prv.grid().leafGridView();
 
     // count expected values by hand
-    size_t total = 0, boundary = 0, inner = 0;
+    size_t total = 0;
+    size_t boundary = 0;
+    size_t inner = 0;
     for (auto&& element : Dune::elements(gv)) {
       for (auto&& intersection : Dune::intersections(gv, element)) {
         ++total;
@@ -121,7 +123,7 @@ struct FilterTest : public ::testing::Test
 
     // CustomBoundaryIntersections combined with an all-Dirichlet boundary info selects every boundary intersection
     const auto info = make_alldirichlet_boundaryinfo(gv);
-    ApplyOn::CustomBoundaryIntersections<GridViewType> custom(*info, new DirichletBoundary());
+    ApplyOn::CustomBoundaryIntersections<GridViewType> custom(*info, std::make_shared<DirichletBoundary>());
     EXPECT_EQ(boundary, count_intersections(custom, gv));
 
     // copy() must yield an equivalent filter
