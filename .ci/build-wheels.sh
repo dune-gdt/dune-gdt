@@ -85,8 +85,15 @@ fi
 # in PATH, so ccache symlinks there are never reached. Passing the launcher as a
 # cache variable (-D) also forces CMake to regenerate the Ninja rules when a
 # cached build/wheelbuilder-release tree is restored. Mirrors the build-linux job.
+# CMAKE_CXX_SCAN_FOR_MODULES=OFF: the manylinux image only ships ccache 3.7.7
+# (EPEL), which predates C++20 module scanning and corrupts the P1689 scan
+# command (-fmodules-ts -fdeps-format=p1689r5 -MD) -> "cc1plus: error: to
+# generate dependencies you must specify either '-M' or '-MM'". dune-gdt does
+# not use C++20 modules, so disabling the scan is safe and also drops a
+# redundant build step. (build-linux keeps scanning on; its apt ccache is 4.x.)
 cmake --preset wheelbuilder-release -DDXT_DONT_LINK_PYTHON_LIB=1 \
-  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+  -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+  -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
 cmake --build --preset wheelbuilder-release --target bindings -- -j "$(nproc --ignore 1)" -l "$(nproc --ignore 1)"
 
 DUNE_BUILD_DIR="${DUNE_SRC_DIR}/build/wheelbuilder-release"
