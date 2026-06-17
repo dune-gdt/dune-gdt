@@ -143,16 +143,19 @@ set(DUNE_GRID_EXPERIMENTAL_GRID_EXTENSIONS TRUE)
 
 include(DunePybindxiUtils)
 
-# TODO there's no real way to require packages present at configure time? - jinja2,pyparsing is needed for test
-# templating can't use the run-in-env script here, because it will try to use dune.common which we're trying to install
-dune_execute_process(
-  COMMAND
-  ${CMAKE_BINARY_DIR}/dune-env/bin/python
-  -m
-  pip
-  install
-  jinja2
-  pyparsing)
+# Resolve dune-common's actual virtualenv interpreter. dune-common adopts an already-active virtualenv (e.g. the
+# manylinux wheel build activates build/wheelhouse/venv before configuring) instead of creating
+# ${CMAKE_BINARY_DIR}/dune-env, and RUN_IN_ENV_SCRIPT then wraps that adopted venv. The installs below must therefore
+# target DUNE_PYTHON_VIRTUALENV_EXECUTABLE -- hardcoding ${CMAKE_BINARY_DIR}/dune-env made the EXISTS guard false in
+# that case, so the dune wheels were never installed and a later run-in-env step failed with "No module named dune". For
+# a normal build DUNE_PYTHON_VIRTUALENV_EXECUTABLE is exactly ${CMAKE_BINARY_DIR}/dune-env/bin/python, so behaviour is
+# unchanged there. The fallback keeps the previous path for the early include pass, before dune-common has set the
+# variable (the EXISTS guard then skips the installs, as before).
+set(_dune_venv_python "${DUNE_PYTHON_VIRTUALENV_EXECUTABLE}")
+if(NOT _dune_venv_python)
+  set(_dune_venv_python "${CMAKE_BINARY_DIR}/dune-env/bin/python")
+endif()
+
 # Install the dune wheels from the vcpkg wheelhouse into the virtualenv. This file runs twice during configure: once
 # when included from the top-level CMakeLists.txt — possibly before dune-common's cmake has created the virtualenv, in
 # which case the installs are skipped — and once as dune-gdt's module-test macros after the virtualenv exists, which is
@@ -165,7 +168,17 @@ dune_execute_process(
 # an abstract requirement (and won't upgrade an already-satisfied one), so it cannot pull a mismatching release from
 # PyPI. --no-index would pin even harder but breaks the install: the wheels' third-party dependencies (portalocker,
 # numpy, ...) are not in the wheelhouse and must come from PyPI.
-if(EXISTS ${CMAKE_BINARY_DIR}/dune-env/bin/python)
+if(EXISTS ${_dune_venv_python})
+  # jinja2,pyparsing is needed for test templating; install directly into the venv (not via the run-in-env script, which
+  # would try to import dune.common — exactly what we are about to install).
+  dune_execute_process(
+    COMMAND
+    ${_dune_venv_python}
+    -m
+    pip
+    install
+    jinja2
+    pyparsing)
   if(NOT VCPKG_TARGET_TRIPLET)
     set(VCPKG_TARGET_TRIPLET x64-linux)
   endif()
@@ -178,7 +191,7 @@ if(EXISTS ${CMAKE_BINARY_DIR}/dune-env/bin/python)
         FATAL_ERROR "Expected exactly one ${dune_wheel_pkg} wheel in ${_dune_wheelhouse}, found: '${_dune_wheel}'")
     endif()
     execute_process(
-      COMMAND ${CMAKE_BINARY_DIR}/dune-env/bin/python -m pip install --find-links=${_dune_wheelhouse} ${_dune_wheel}
+      COMMAND ${_dune_venv_python} -m pip install --find-links=${_dune_wheelhouse} ${_dune_wheel}
       RESULT_VARIABLE _pip_install_result
       OUTPUT_VARIABLE pip_install_log ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
       ERROR_VARIABLE pip_install_log
@@ -194,3 +207,4 @@ if(EXISTS ${CMAKE_BINARY_DIR}/dune-env/bin/python)
 else()
   message(STATUS "Skipping dune wheel installs, the virtualenv does not exist yet")
 endif()
+unset(_dune_venv_python)
