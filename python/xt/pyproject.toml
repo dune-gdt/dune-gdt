@@ -33,7 +33,10 @@ docs = [
     "furo",
     "myst-nb>=0.16",
     "pymor",
-    "clangquill>=0.5.1",
+    # clangquill only supports Python >=3.13. Mark it so that resolving the project's extras (which `uv run --group test`
+    # does in project mode, see cmake/modules/DuneXTTesting.cmake) stays satisfiable on the Python 3.12 test builds; the
+    # docs themselves are built on 3.13. Without the marker the test resolution fails with an unsatisfiable requirement.
+    'clangquill>=0.5.1; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
 ]
