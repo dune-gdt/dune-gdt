@@ -646,8 +646,11 @@ jobs:
           core.setOutput('run_id', String(runs.data.workflow_runs[0].id));
 
     - name: Download wheels from last successful main build
-      # docs-only change: pull the wheel artifact produced by the run resolved above
-      if: needs.build_wheels.result == 'skipped'
+      # docs-only change: pull the wheel artifact produced by the run resolved above.
+      # Gate on last_main success too: a custom if: drops the implicit success()
+      # check, so without it a failed resolve (no main build found) would still run
+      # this with an empty run-id and mask the real error.
+      if: needs.build_wheels.result == 'skipped' && steps.last_main.outcome == 'success'
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: wheels_${{ env.PYTHON_VERSION }}
