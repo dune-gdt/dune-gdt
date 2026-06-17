@@ -52,8 +52,7 @@ static bool has_diagonal(const XT::LA::SparsityPatternDefault& pattern)
 
 
 // returns true if every column of lhs's row also appears in rhs's row, for all rows
-static bool is_row_wise_subset(const XT::LA::SparsityPatternDefault& lhs,
-                               const XT::LA::SparsityPatternDefault& rhs)
+static bool is_row_wise_subset(const XT::LA::SparsityPatternDefault& lhs, const XT::LA::SparsityPatternDefault& rhs)
 {
   if (lhs.size() != rhs.size())
     return false;
