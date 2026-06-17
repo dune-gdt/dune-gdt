@@ -14,6 +14,7 @@
 #include <dune/xt/test/main.hxx> // <- this one has to come first (includes the config.h)!
 
 #include <algorithm>
+#include <vector>
 
 #include <dune/xt/grid/grids.hh>
 #include <dune/xt/grid/gridprovider/cube.hh>
@@ -50,6 +51,22 @@ static bool has_diagonal(const XT::LA::SparsityPatternDefault& pattern)
 }
 
 
+// returns true if every column of lhs's row also appears in rhs's row, for all rows
+static bool is_row_wise_subset(const XT::LA::SparsityPatternDefault& lhs,
+                               const XT::LA::SparsityPatternDefault& rhs)
+{
+  if (lhs.size() != rhs.size())
+    return false;
+  for (size_t ii = 0; ii < lhs.size(); ++ii) {
+    const auto& rhs_row = rhs.inner(ii);
+    for (const size_t jj : lhs.inner(ii))
+      if (std::find(rhs_row.begin(), rhs_row.end(), jj) == rhs_row.end())
+        return false;
+  }
+  return true;
+}
+
+
 GTEST_TEST(sparsity_pattern, element_pattern_continuous_lagrange)
 {
   auto grid = XT::Grid::make_cube_grid<G>();
@@ -74,7 +91,9 @@ GTEST_TEST(sparsity_pattern, element_and_intersection_is_superset_of_element)
   const auto element_and_intersection = make_element_and_intersection_sparsity_pattern(space);
   EXPECT_EQ(space.mapper().size(), element.size());
   EXPECT_EQ(space.mapper().size(), element_and_intersection.size());
-  // adding the coupling stencil can only introduce additional entries
+  // adding the coupling stencil can only introduce additional entries, so the element pattern has to
+  // be contained row-wise in the element-and-intersection pattern
+  EXPECT_TRUE(is_row_wise_subset(element, element_and_intersection));
   EXPECT_GE(count_entries(element_and_intersection), count_entries(element));
 }
 
@@ -88,11 +107,15 @@ GTEST_TEST(sparsity_pattern, automatic_stencil_dispatch)
 
   // continuous spaces use the element stencil ...
   const auto cg_auto = make_sparsity_pattern(cg, Stencil::automatic);
-  EXPECT_EQ(count_entries(make_element_sparsity_pattern(cg)), count_entries(cg_auto));
+  const auto cg_element = make_element_sparsity_pattern(cg);
+  EXPECT_TRUE(is_row_wise_subset(cg_element, cg_auto));
+  EXPECT_TRUE(is_row_wise_subset(cg_auto, cg_element));
 
   // ... discontinuous spaces use the element-and-intersection stencil
   const auto dg_auto = make_sparsity_pattern(dg, Stencil::automatic);
-  EXPECT_EQ(count_entries(make_element_and_intersection_sparsity_pattern(dg)), count_entries(dg_auto));
+  const auto dg_element_and_intersection = make_element_and_intersection_sparsity_pattern(dg);
+  EXPECT_TRUE(is_row_wise_subset(dg_element_and_intersection, dg_auto));
+  EXPECT_TRUE(is_row_wise_subset(dg_auto, dg_element_and_intersection));
 
   // explicit stencil selection is also exercised
   EXPECT_EQ(count_entries(make_element_sparsity_pattern(cg)),

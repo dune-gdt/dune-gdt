@@ -46,6 +46,8 @@ GTEST_TEST(type_traits, space_type_streaming)
   EXPECT_EQ("finite_volume", streamed(SpaceType::finite_volume));
   EXPECT_EQ("finite_volume_skeleton", streamed(SpaceType::finite_volume_skeleton));
   EXPECT_EQ("raviart_thomas", streamed(SpaceType::raviart_thomas));
+  // unknown values fall back to a generic representation
+  EXPECT_EQ("SpaceType(-1)", streamed(static_cast<SpaceType>(-1)));
 }
 
 
@@ -55,6 +57,8 @@ GTEST_TEST(type_traits, stencil_streaming)
   EXPECT_EQ("intersection", streamed(Stencil::intersection));
   EXPECT_EQ("element_and_intersection", streamed(Stencil::element_and_intersection));
   EXPECT_EQ("automatic", streamed(Stencil::automatic));
+  // unknown values fall back to a generic representation
+  EXPECT_EQ("Stencil(-1)", streamed(static_cast<Stencil>(-1)));
 }
 
 
