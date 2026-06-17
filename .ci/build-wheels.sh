@@ -26,6 +26,12 @@ trap cleanup EXIT
 
 # otherwise versioneer fails on mounted source directories in CI
 git config --global --add safe.directory "${DUNE_SRC_DIR}"
+# vcpkg runs `git fetch` as root inside .vcpkg-root/downloads/git-tmp, but when
+# .vcpkg-root is restored from the actions/cache build-tree cache it is owned by
+# the runner user -> git aborts with "fatal: detected dubious ownership" (exit
+# 128) on the first dependency fetch. Trust all repo dirs; the container is
+# ephemeral and single-purpose, so disabling the owner check here is safe.
+git config --global --add safe.directory '*'
 
 yum install -y curl zip unzip tar ccache
 
