@@ -288,8 +288,11 @@ jobs:
       # dirs are not traversable by the unprivileged runner -> read them via sudo.
       if: failure()
       run: |
-        sudo find .vcpkg-root/buildtrees build/wheelbuilder-release -type f \
-          \( -name '*-err.log' -o -name 'git-fetch-*' -o -name 'vcpkg-*.log' \) \
+        # Only the per-port error logs (not the multi-MB vcpkg-manifest-install.log,
+        # which would bury the real error in the retrievable log tail); the full
+        # set is still captured by the artifact upload below.
+        sudo find .vcpkg-root/buildtrees -type f \
+          \( -name '*-err.log' -o -name 'git-fetch-*' \) \
           2>/dev/null | sort | while read -r f; do
           echo "::group::${f}"
           sudo cat "${f}" || true
