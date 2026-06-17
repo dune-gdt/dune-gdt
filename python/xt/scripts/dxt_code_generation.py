@@ -37,7 +37,8 @@ def generate(config_fn, tpl_fn, cmake_binary_dir, out_fn, backup_bindir, logger=
     dir_base = os.path.dirname(out_fn)
     if dir_base and not os.path.isdir(dir_base):
         os.makedirs(dir_base)
-    template = Template(open(tpl_fn).read())
+    with open(tpl_fn) as tpl:
+        template = Template(tpl.read())
 
     try:
         for postfix, cfg in config["multi_out"].items():
