@@ -280,31 +280,17 @@ jobs:
         # provide a unique build number so every upload gets a distinct version
         CI: "true"
         GITHUB_RUN_NUMBER: ${{ github.run_number }}
-        # forwarded into the manylinux container so vcpkg's `git fetch` of the
-        # dune-* deps is authenticated (avoids GitHub's unauthenticated rate
-        # limit, which throttles git from the RunsOn/AWS fleet -> fetch exit 128)
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Dump vcpkg build error logs
-      # On failure, surface vcpkg's per-port logs (e.g. dune-geometry's
-      # git-fetch-*-err.log) directly in the job log so the actual error is
-      # visible without downloading an artifact. The container writes these as
-      # root, so buildtree dirs created this run are not traversable by the
-      # unprivileged runner user -> read them via sudo and a recursive find so
-      # none are missed.
+      # On failure, surface vcpkg's per-port error logs directly in the job log
+      # so the cause is visible without downloading the artifact below. vcpkg
+      # writes these inside the container as root, so freshly created buildtree
+      # dirs are not traversable by the unprivileged runner -> read them via sudo.
       if: failure()
       run: |
-        # Keep this dump small so it stays within the retrievable log tail: only
-        # the github-fetch probe (the real reachability/auth result) and the
-        # failing ports' git-fetch logs -- NOT the 900+ restored-cache buildtree
-        # logs, which are irrelevant noise that pushes everything else off-tail.
-        if [ -f build/wheelhouse/github-probe.log ]; then
-          echo "::group::github-probe.log"
-          sudo cat build/wheelhouse/github-probe.log || true
-          echo "::endgroup::"
-        fi
-        sudo find .vcpkg-root/buildtrees -name 'git-fetch-*' -type f 2>/dev/null \
-          | sort | while read -r f; do
+        sudo find .vcpkg-root/buildtrees build/wheelbuilder-release -type f \
+          \( -name '*-err.log' -o -name 'git-fetch-*' -o -name 'vcpkg-*.log' \) \
+          2>/dev/null | sort | while read -r f; do
           echo "::group::${f}"
           sudo cat "${f}" || true
           echo "::endgroup::"
