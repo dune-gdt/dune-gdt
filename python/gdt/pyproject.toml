@@ -32,9 +32,23 @@ pattern = '__git_revision__ = "(?P<version>[^"]+)"'
 [tool.hatch.build.targets.wheel]
 # The .so modules are compiled build outputs (dropped into the binary dir by CMake); force-include them as artifacts so
 # they always ship, even if a VCS-ignore rule would otherwise exclude them.
-artifacts = ["**/*.so"]
+artifacts = ["dune/**/*.so"]
 # Package the whole `dune` namespace tree (dune/__init__.py declares the namespace so dune.xt and dune.gdt coexist).
 packages = ["dune"]
+# The wheel is assembled in the in-source CMake build dir, so the `dune` tree above is interleaved with build artifacts:
+# CMakeFiles/*.cc.o object files, CMake metadata, the binding .cc/.hh sources and configured templates. packages=["dune"]
+# would otherwise ship all of it -- the unstripped *.cc.o objects alone added ~900 MB and blew the wheel ~8x past Test
+# PyPI's 100 MB per-file limit. Ship only the Python sources and the compiled .so modules, matching the behaviour of the
+# former setuptools find_packages() + package_data={"": ["*.so"]}.
+exclude = [
+  "**/CMakeFiles/**",
+  "**/*.o",
+  "**/*.cc",
+  "**/*.hh",
+  "**/*.cmake",
+  "**/CMakeLists.txt",
+  "**/*.in",
+]
 
 # Force a platform (non-pure) wheel via the build hook in hatch_build.py (CustomBuildHook): hatchling has no declarative
 # option for this, so the hook sets pure_python=False (Root-Is-Purelib: false) and infer_tag=True (stamp the building
