@@ -65,12 +65,32 @@ endforeach()
 # afterwards, by pybind11 (its vcpkg overlay is built with PYBIND11_NOPYTHON=ON, so it reuses these find_package(Python)
 # results rather than searching on its own), and by dune-common's Python3 detection in include(DuneMacros) further down.
 find_program(UV_EXECUTABLE uv REQUIRED)
+# `uv python find` only locates an already-available interpreter; it does not download one. On a host/runner without the
+# pinned (.python-version) interpreter -- e.g. ubuntu-24.04 ships 3.12, not 3.13 -- resolve it in two steps: try to find
+# it, and if that fails install it with `uv python install` (uv downloads a managed CPython) and find it again.
 execute_process(
   COMMAND ${UV_EXECUTABLE} python find
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   OUTPUT_VARIABLE _uv_python_executable
   OUTPUT_STRIP_TRAILING_WHITESPACE
   RESULT_VARIABLE _uv_python_result)
+if(NOT _uv_python_result EQUAL 0)
+  message(STATUS "uv has no matching interpreter yet; installing the pinned one via `uv python install`")
+  execute_process(
+    COMMAND ${UV_EXECUTABLE} python install
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    RESULT_VARIABLE _uv_install_result)
+  if(NOT _uv_install_result EQUAL 0)
+    message(
+      FATAL_ERROR "`uv python install` failed (exit ${_uv_install_result}); cannot provide the Python interpreter")
+  endif()
+  execute_process(
+    COMMAND ${UV_EXECUTABLE} python find
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE _uv_python_executable
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE _uv_python_result)
+endif()
 if(NOT _uv_python_result EQUAL 0)
   message(FATAL_ERROR "`uv python find` failed (exit ${_uv_python_result}); cannot resolve the Python interpreter")
 endif()
