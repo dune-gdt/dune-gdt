@@ -43,24 +43,36 @@ cd "${DUNE_SRC_DIR}"
 # vcpkg pulls several dune-* deps via `git fetch` from github.com during configure.
 # On the RunsOn/AWS fleet these fail (exit 128) on the first real network fetch
 # while succeeding from developer machines -- consistent with GitHub throttling
-# unauthenticated git from cloud IPs. First a non-fatal probe so the real
-# reachability/error is visible in the job log (vcpkg cleans its buildtrees on
-# failure, hiding git-fetch-*-err.log otherwise):
-echo "=== github fetch probe (unauthenticated): dune-mirrors/dune-geometry ==="
-git ls-remote https://github.com/dune-mirrors/dune-geometry.git 2>&1 | head -3 || true
-curl -sS -o /dev/null -w 'info/refs http=%{http_code}\n' \
-  "https://github.com/dune-mirrors/dune-geometry.git/info/refs?service=git-upload-pack" || true
-echo "======================================================================="
-# Then authenticate github fetches when a token is available, so vcpkg uses the
-# (much higher) authenticated rate limit. set +x so the token is never echoed.
+# unauthenticated git from cloud IPs. Probe reachability before vcpkg runs. The
+# output is tee'd to a host-visible file because the job log is only retrievable
+# as a tail, and vcpkg's verbose bootstrap pushes this early output out of that
+# window; the workflow "Dump" step cats this file on failure.
+PROBE_LOG="${WHEEL_DIR}/github-probe.log"
+{
+  echo "=== github fetch probe: dune-mirrors/dune-geometry (in-container) ==="
+  echo "git: $(git --version 2>&1)"
+  echo "GITHUB_TOKEN present: $([ -n "${GITHUB_TOKEN:-}" ] && echo yes || echo no)"
+  echo "--- unauthenticated git ls-remote (first refs) ---"
+  git ls-remote https://github.com/dune-mirrors/dune-geometry.git 2>&1 | head -3 || true
+  curl -sS -o /dev/null -w 'curl info/refs http=%{http_code}\n' \
+    "https://github.com/dune-mirrors/dune-geometry.git/info/refs?service=git-upload-pack" 2>&1 || true
+  echo "===================================================================="
+} 2>&1 | tee "${PROBE_LOG}"
+# Authenticate github fetches when a token is available so vcpkg uses the (much
+# higher) authenticated rate limit. set +x so the token is never echoed; then
+# re-probe through the authenticated path to confirm it took effect.
 set +x
 if [ -n "${GITHUB_TOKEN:-}" ]; then
   git config --global \
     url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf \
     "https://github.com/"
-  echo "Configured authenticated github.com fetches for vcpkg."
+  set -x
+  { echo "--- authenticated git ls-remote (first refs) ---"
+    git ls-remote https://github.com/dune-mirrors/dune-geometry.git 2>&1 | head -3 || true
+    echo "====================================================================" ; } 2>&1 | tee -a "${PROBE_LOG}"
+else
+  set -x
 fi
-set -x
 
 # Route every compile through ccache via the compiler launcher rather than
 # PATH symlinks: the manylinux container puts gcc-toolset ahead of /usr/local/bin

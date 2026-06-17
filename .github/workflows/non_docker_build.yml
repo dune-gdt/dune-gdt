@@ -294,6 +294,13 @@ jobs:
       # none are missed.
       if: failure()
       run: |
+        # The in-container github-fetch probe (build-wheels.sh) tee's here; print
+        # it first since it carries the real reachability/auth result.
+        if [ -f build/wheelhouse/github-probe.log ]; then
+          echo "::group::github-probe.log"
+          sudo cat build/wheelhouse/github-probe.log || true
+          echo "::endgroup::"
+        fi
         sudo find .vcpkg-root/buildtrees build/wheelbuilder-release \
           -name '*.log' -type f 2>/dev/null | sort | while read -r f; do
           echo "::group::${f}"
