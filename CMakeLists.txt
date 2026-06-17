@@ -64,9 +64,16 @@ endforeach()
 # also go through `uv run`, see DuneXTTesting.cmake). The hint set below is consumed by find_package(Python) immediately
 # afterwards, by pybind11 (its vcpkg overlay is built with PYBIND11_NOPYTHON=ON, so it reuses these find_package(Python)
 # results rather than searching on its own), and by dune-common's Python3 detection in include(DuneMacros) further down.
-# When uv is unavailable -- notably the manylinux wheel-build container (.ci/build-wheels.sh), which must build against
-# its own CPython for a valid platform tag / auditwheel -- fall back to CMake's default FindPython discovery below.
-find_program(UV_EXECUTABLE uv)
+#
+# DXT_USE_UV_PYTHON must be turned OFF for builds that have to use a specific pre-existing interpreter: the manylinux
+# wheel build (.ci/build-wheels.sh) compiles against the container's CPython inside an already-activated venv into which
+# dune-common installs the `dune` package; forcing a uv interpreter there desyncs dune-common's virtualenv handling from
+# that active venv and breaks the configure-time system-test extraction (`dune_extract_static.py: No module named
+# dune`).
+option(DXT_USE_UV_PYTHON "Resolve the Python interpreter via uv (pinned by .python-version)" ON)
+if(DXT_USE_UV_PYTHON)
+  find_program(UV_EXECUTABLE uv)
+endif()
 if(UV_EXECUTABLE)
   # `uv python find` only locates an already-available interpreter; it does not download one. On a host/runner without
   # the pinned (.python-version) interpreter -- e.g. ubuntu-24.04 ships 3.12, not 3.13 -- resolve it in two steps: try
@@ -111,7 +118,7 @@ if(UV_EXECUTABLE)
       CACHE FILEPATH "Python interpreter provided by uv" FORCE)
   message(STATUS "Using uv-provided Python interpreter: ${_uv_python_executable}")
 else()
-  message(STATUS "uv not found; falling back to default FindPython discovery (expected in the manylinux wheel build)")
+  message(STATUS "uv disabled or unavailable (DXT_USE_UV_PYTHON=${DXT_USE_UV_PYTHON}); using default FindPython")
 endif()
 
 find_package(Python COMPONENTS Interpreter Development)
