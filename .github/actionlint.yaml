@@ -9,6 +9,9 @@ self-hosted-runner:
   - cpu=8
   - cpu=4
   - family=m7i
+  # r7i (memory-optimized) is used by build-linux so the -j7 Python-bindings
+  # compile fits in RAM; m7i stays for the wheel/docs jobs.
+  - family=r7i
   - image=ubuntu24-full-x64
   - volume=150gb
   - volume=80gb

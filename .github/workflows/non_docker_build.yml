@@ -9,10 +9,11 @@ on:
   merge_group:
   workflow_dispatch:
 
-# Add concurrency to cancel in-progress jobs
+# Cancel superseded in-progress PR runs, but never cancel a queued merge_group
+# build or a push to main (each of those must run to completion).
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Permissions are declared per job (least privilege) rather than at workflow level,
 # as recommended by SonarCloud rule githubactions:S8264. The build jobs only need
@@ -20,6 +21,44 @@ concurrency:
 # extra scopes they require (pages / id-token write for Trusted Publishing).
 
 jobs:
+  # Path filter that drives the per-job `if:` conditions below. Lets a docs-only
+  # change skip the heavy C++ matrix and the wheel build (the docs job then pulls
+  # the last good wheels from main), while any code change still runs the full
+  # pipeline. `push`/`workflow_dispatch` ignore the outputs and always run full.
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      # paths-filter reads the PR file list via the API on pull_request events
+      pull-requests: read
+    outputs:
+      docs: ${{ steps.filter.outputs.docs }}
+      non_docs: ${{ steps.filter.outputs.non_docs }}
+    steps:
+    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      with:
+        persist-credentials: false
+        # full history so the action can diff against the base for push/merge_group
+        # (pull_request uses the API and needs no local history); no submodules/tags
+        # are required just to enumerate changed paths.
+        fetch-depth: 0
+    - name: Filter paths
+      id: filter
+      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      with:
+        # pull_request: base auto-detected from the PR (omit). merge_group: diff
+        # against the queue base. push: empty base lets the action use the before-sha.
+        base: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_ref || '' }}
+        ref: ${{ github.event_name == 'merge_group' && github.event.merge_group.head_ref || github.ref }}
+        filters: |
+          docs:
+            - 'docs/**'
+          non_docs:
+            - '**'
+            - '!docs/**'
+            - '!**/*.md'
+
   config:
     # Single source of truth for instance sizing. Everything downstream (the
     # runs-on cpu labels, the build -j, the ctest --parallel level) derives from
@@ -67,23 +106,29 @@ jobs:
 
   build-linux:
     name: Build on Linux (${{ matrix.preset }})
-    needs: config
-    # Same fork-trust gate as build_wheels: only run on the self-hosted RunsOn/AWS
-    # fleet for trusted contexts (pushes/tags, the merge queue, same-repo PRs).
-    # External fork PRs are skipped — fork code must never execute on the fleet
-    # (arbitrary code execution risk). Routing fork PRs to a GitHub-hosted
-    # ubuntu-24.04 fallback is tracked as a follow-up issue.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: [config, changes]
+    # Two ANDed gates: (1) fork-trust — only run on the self-hosted RunsOn/AWS
+    # fleet for trusted contexts (pushes/tags, the merge queue, same-repo PRs);
+    # external fork PRs are skipped because fork code must never execute on the
+    # fleet (arbitrary code execution risk; a GitHub-hosted fallback is a
+    # follow-up). (2) path filter — skip the C++ matrix on docs-only/markdown-only
+    # changes (push/dispatch always run full).
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
     # Trial running on RunsOn self-hosted runners (https://runs-on.com). The
     # run_id routing label is suffixed with the matrix preset so each leg
     # provisions its own ephemeral instance instead of competing for one.
     runs-on:
     - runs-on=${{ github.run_id }}-${{ matrix.preset }}
     - cpu=${{ needs.config.outputs.linux_cpu }}
-    # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). Neither preset uses LTO,
-    # so there is no /tmp ltrans explosion like build_wheels; the 32 GB also lets
-    # the test_binaries build run at -j cpu-1 (see below).
-    - family=m7i
+    # r7i (memory-optimized, 8 GB/vCPU -> 64 GB at cpu=8). The Python bindings are
+    # the memory driver: their pybind11 TUs instantiate deeply-nested Dune templates
+    # and peak well above the ~2 GB/TU of the test binaries, so building them at the
+    # shared -j cpu-1 (see below) OOM-killed the 32 GB m7i mid-step on a cold ccache
+    # (the runner vanished, leaving the step stuck in-progress). The 64 GB here keeps
+    # the -j7 bindings compile (~7 * ~8 GB) under memory. Neither preset uses LTO, so
+    # there is no /tmp ltrans explosion like build_wheels.
+    - family=r7i
     - image=ubuntu24-full-x64
     # build/ tree + .vcpkg-root + 2 GB ccache fit easily; 80 GB gp3 leaves ample
     # headroom and the runner is a short-lived spot instance, so the extra storage
@@ -136,48 +181,10 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
 
-    - name: Restore build cache
-      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      with:
-        # .vcpkg-root holds the vcpkg toolchain that VcpkgBootStrap.cmake bakes
-        # into build/.../CMakeSystem.cmake. It must be cached together with build/,
-        # otherwise the restored CMake config points at a toolchain that does not
-        # exist on a fresh checkout and configure fails immediately.
-        path: |
-          build
-          .vcpkg-root
-        # Key on the inputs that determine the toolchain/manifest so the cache is
-        # rebuilt when they change. The matrix preset is part of the key so the two
-        # legs never clobber each other's build/ (they instrument differently and
-        # live in build/<preset>). The trailing-dash restore-key only matches caches
-        # written by this (consistent) scheme, never the legacy build-only one.
-        # Note the cached dune-env virtualenv is never reused: it is deleted right
-        # after restore (see "Discard cached dune-env virtualenv" below), so a stale
-        # or corrupted venv in the cache cannot break configure.
-        key: ${{ runner.os }}-build-v2-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
-        restore-keys: |
-          ${{ runner.os }}-build-v2-${{ matrix.preset }}-
-
-    - name: Drop stale build cache if vcpkg toolchain is missing
-      run: |
-        if [ -d build ] && [ ! -f .vcpkg-root/scripts/buildsystems/vcpkg.cmake ]; then
-          echo "Restored build/ but .vcpkg-root toolchain is missing; clearing stale" \
-               "build/ so CMake re-bootstraps vcpkg from scratch."
-          rm -rf build
-        fi
-
-    - name: Discard cached dune-env virtualenv
-      # The dune-env virtualenv inside build/ must not be reused across runs: a
-      # cached venv can hold a dune-common Python package whose version differs
-      # from the current vcpkg wheelhouse, and the in-configure pip downgrade that
-      # follows is fragile (an interrupted uninstall leaves a half-removed
-      # "~une-common" distribution and a dune package without __main__, failing
-      # configure with "Dune python package could not be found"). Deleting the
-      # venv here makes dune-common's CMake recreate it during configure and
-      # install the wheels from the current wheelhouse — a few seconds of work
-      # that removes this whole class of random merge-queue failures.
-      run: rm -rf build/*/dune-env
-
+    # The build/ tree and .vcpkg-root toolchain are intentionally NOT cached: a
+    # corrupted restore was repeatedly failing the build (vcpkg configure dying
+    # early on a half-written toolchain/installed tree). Each run bootstraps vcpkg
+    # and configures from scratch; the compiler ccache below keeps recompiles cheap.
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -216,10 +223,10 @@ jobs:
     - name: Configure CMake
       id: configure_cmake
       # Route every compile through ccache. Passing the launcher as a cache
-      # variable (not just an env var) forces CMake to regenerate the Ninja
-      # rules even when a stale build/ tree is restored from cache. The gcov
-      # instrumentation lives in the release_coverage preset (see
-      # CMakePresets.json), so nothing extra is injected here.
+      # variable (not just an env var) is harmless on the fresh build/ tree here
+      # (build/ is no longer cached). The gcov instrumentation lives in the
+      # release_coverage preset (see CMakePresets.json), so nothing extra is
+      # injected here.
       run: >
         cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
@@ -309,27 +316,12 @@ jobs:
         plugins: noop
         fail_ci_if_error: true
 
-    - name: Save build cache
-      # Save when configure succeeded even if a later step (build/test/coverage
-      # upload) failed: a fully cold run rebuilds every vcpkg dependency as a
-      # shared library and the whole project, which is far too expensive to redo
-      # on every retry. Persisting build/ here lets the next run start warm and
-      # converge, mirroring the always() ccache save below. The fork-trust gate is
-      # repeated here (defence-in-depth + cache-poisoning lint on a standalone save
-      # step); the job-level `if` already blocks fork PRs.
-      if: always() && steps.configure_cmake.outcome == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      with:
-        path: |
-          build
-          .vcpkg-root
-        key: ${{ runner.os }}-build-v2-${{ matrix.preset }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
-
     - name: Save ccache
       # Always persist the compiler cache (even when the build or tests fail) so
       # the next run starts warm. Only requires that configure succeeded, since
       # that is what populates the cache directory. The fork-trust gate is repeated
-      # here (defence-in-depth + cache-poisoning lint) as on the build cache above.
+      # here as defence-in-depth + to satisfy the cache-poisoning lint on a
+      # standalone save step; the job-level `if` already blocks fork PRs.
       if: always() && steps.configure_cmake.outcome == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
       uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
@@ -347,11 +339,14 @@ jobs:
 
   build_wheels:
     name: Build wheels
-    needs: config
-    # Only run on trusted contexts: pushes/tags, the merge queue, and same-repo
-    # PRs. Fork PRs must never execute on the self-hosted RunsOn/AWS fleet
-    # (arbitrary code execution risk) — same fork-trust gate used by build_docs.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: [config, changes]
+    # Two ANDed gates: (1) fork-trust — only run on trusted contexts (pushes/tags,
+    # the merge queue, same-repo PRs); fork PRs must never execute on the
+    # self-hosted RunsOn/AWS fleet (arbitrary code execution risk). (2) path
+    # filter — skip on docs-only/markdown-only changes; build_docs then sources the
+    # wheels from the last successful main build instead of rebuilding them here.
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
     # Trial running on RunsOn self-hosted runners (https://runs-on.com). The label
     # list selects an 8-vCPU c7i EC2 instance with the ubuntu24-full image; the
     # extras=s3-cache label enables the RunsOn S3-backed Magic Cache, which the
@@ -409,39 +404,12 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-
 
-    - name: Restore vcpkg deps (toolchain + installed packages)
-      # ccache only covers the dune-xt/dune-gdt translation units; the vcpkg
-      # dependency ports build with vcpkg's own toolchain and are not cached by
-      # ccache. Cache ONLY the relocatable, expensive artifacts -- the vcpkg
-      # toolchain (.vcpkg-root) and the installed packages (vcpkg_installed) -- not
-      # the whole configured build/wheelbuilder-release tree: its CMakeCache and
-      # generated rules embed state tied to the per-run venv (ninja path, the dune
-      # python package), so reusing it makes a warm reconfigure skip the dune
-      # install and then fail ("No module named dune"). Reconfiguring fresh each
-      # run (vcpkg sees vcpkg_installed and skips the dep rebuild) avoids that whole
-      # class of staleness while still skipping the ~35 min dependency build. Both
-      # paths live under the source dir bind-mounted into the container. Keyed on
-      # the inputs that determine the toolchain/manifest.
-      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      with:
-        path: |
-          build/wheelbuilder-release/vcpkg_installed
-          .vcpkg-root
-        key: ${{ runner.os }}-wheels-vcpkg-${{ matrix.python-version }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
-        restore-keys: |
-          ${{ runner.os }}-wheels-vcpkg-${{ matrix.python-version }}-
-
-    - name: Drop stale vcpkg_installed if toolchain is missing
-      # If vcpkg_installed was restored (via the trailing-dash restore-key) but the
-      # .vcpkg-root toolchain it was built against is absent, clear it so vcpkg
-      # reinstalls cleanly instead of configure failing on a missing toolchain.
-      run: |
-        if [ -d build/wheelbuilder-release/vcpkg_installed ] && [ ! -f .vcpkg-root/scripts/buildsystems/vcpkg.cmake ]; then
-          echo "Restored vcpkg_installed but .vcpkg-root toolchain is missing;" \
-               "clearing it so vcpkg reinstalls from scratch."
-          rm -rf build/wheelbuilder-release/vcpkg_installed
-        fi
-
+    # The vcpkg toolchain (.vcpkg-root) and installed packages
+    # (build/wheelbuilder-release/vcpkg_installed) are intentionally NOT cached: a
+    # corrupted restore was repeatedly failing the wheel build early (vcpkg
+    # configure dying on a half-written toolchain/installed tree). vcpkg rebuilds
+    # the dependencies from scratch each run; the wheel ccache above still keeps
+    # the dune-xt/dune-gdt recompiles cheap.
     - run: |
         ./.ci/make_docker_wheels.bash
       env:
@@ -492,22 +460,6 @@ jobs:
         path: build/wheelhouse/cache
         key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
 
-    - name: Save vcpkg deps (toolchain + installed packages)
-      # Persist the vcpkg toolchain + installed packages keyed on the manifest hash
-      # so the next run with an unchanged vcpkg.json/preset/bootstrap skips the
-      # dependency rebuild. Gated on success() (unlike the ccache save above):
-      # the key is deterministic and actions/cache keys are immutable, so saving a
-      # partial/corrupt set from a failed run would poison the cache permanently
-      # (a later good run could not overwrite the same key). The repeated fork-trust
-      # gate is defence-in-depth.
-      if: success() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      with:
-        path: |
-          build/wheelbuilder-release/vcpkg_installed
-          .vcpkg-root
-        key: ${{ runner.os }}-wheels-vcpkg-${{ matrix.python-version }}-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
-
     - name: Upload wheels
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
@@ -517,11 +469,17 @@ jobs:
 
   build_docs:
     name: Build docs (executes notebooks via myst-nb)
-    needs: [config, build_wheels]
-    # Same fork-trust gate as build_wheels (defence-in-depth: this job already skips
-    # on fork PRs via `needs: build_wheels`, but the explicit gate keeps it
-    # consistent and satisfies the cache-poisoning lint on the uv cache below).
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: [config, build_wheels, changes]
+    # Gates (all ANDed): (1) fork-trust, same as build_wheels (also satisfies the
+    # cache-poisoning lint on the uv cache below). (2) build_wheels reached a valid
+    # terminal state — success (use its artifact) or skipped/docs-only (pull the
+    # wheels from the last main build below); a failed/cancelled build_wheels leaves
+    # no usable wheel, so docs is skipped and ci-gate reports the upstream failure.
+    # (3) path filter — rebuild docs on any code or docs change (notebook execution
+    # doubles as a bindings smoke test); only markdown-outside-docs changes skip it.
+    if: >-
+      !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (needs.build_wheels.result == 'success' || needs.build_wheels.result == 'skipped') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+       needs.changes.outputs.non_docs == 'true' || needs.changes.outputs.docs == 'true')
     # Trial running on RunsOn self-hosted runners (https://runs-on.com). The docs
     # build is single-threaded (sphinx -j 1), so 4 vCPU / 16 GB (m7i) is plenty and
     # no volume bump is needed (it only downloads the wheels artifact and renders
@@ -535,6 +493,9 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
+      # needed to look up and download the wheel artifact from another run on
+      # docs-only PRs (see "Resolve last successful main build" below)
+      actions: read
     env:
       # the documentation notebooks are executed against the freshly built wheels
       # (current, git-derived version), not the stale dune-gdt release on PyPI
@@ -562,10 +523,48 @@ jobs:
         enable-cache: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     - name: Download freshly built wheels
+      # the normal path: build_wheels ran in this same workflow run (code change,
+      # push or merge queue) and uploaded the artifact
+      if: needs.build_wheels.result == 'success'
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: wheels_${{ env.PYTHON_VERSION }}
         path: wheelhouse/
+
+    - name: Resolve last successful main build
+      # docs-only change: build_wheels was skipped, so find the most recent
+      # successful run of this workflow on main to source the wheels from.
+      if: needs.build_wheels.result == 'skipped'
+      id: last_main
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+      with:
+        script: |
+          const runs = await github.rest.actions.listWorkflowRuns({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'non_docker_build.yml',
+            branch: 'main',
+            status: 'success',
+            per_page: 1,
+          });
+          if (runs.data.total_count === 0) {
+            core.setFailed('no successful main build found to source wheels from');
+            return;
+          }
+          core.setOutput('run_id', String(runs.data.workflow_runs[0].id));
+
+    - name: Download wheels from last successful main build
+      # docs-only change: pull the wheel artifact produced by the run resolved above.
+      # Gate on last_main success too: a custom if: drops the implicit success()
+      # check, so without it a failed resolve (no main build found) would still run
+      # this with an empty run-id and mask the real error.
+      if: needs.build_wheels.result == 'skipped' && steps.last_main.outcome == 'success'
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: wheels_${{ env.PYTHON_VERSION }}
+        path: wheelhouse/
+        run-id: ${{ steps.last_main.outputs.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install system dependencies
       run: |
@@ -739,3 +738,29 @@ jobs:
       with:
         packages-dir: wheels/
         verbose: true
+
+  # Single aggregating "control check". This is the ONLY status check that branch
+  # protection / the merge queue should require: it always runs (even when upstream
+  # jobs are skipped by the path filter or fail), and it resolves green when every
+  # needed job either succeeded or was skipped, red when any failed or was cancelled.
+  # That makes path-based skipping safe — a skipped job no longer leaves a required
+  # check pending forever. Matrix job results aggregate (any failed leg => failure).
+  ci-gate:
+    name: CI gate
+    runs-on: ubuntu-24.04
+    permissions: {}
+    if: always()
+    needs: [changes, config, build-linux, build_wheels, build_docs]
+    steps:
+    - name: Decide gate result
+      env:
+        RESULTS: ${{ join(needs.*.result, ' ') }}
+      run: |
+        echo "needed job results: ${RESULTS}"
+        for r in ${RESULTS}; do
+          if [ "${r}" = "failure" ] || [ "${r}" = "cancelled" ]; then
+            echo "::error::a required job ended with result '${r}'"
+            exit 1
+          fi
+        done
+        echo "all required jobs passed or were skipped"

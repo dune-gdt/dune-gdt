@@ -2,7 +2,16 @@
 # homepage: https://github.com/gaurav-nelson/github-action-markdown-link-check
 name: Check links in Markdown files
 
-on: [pull_request, merge_group]
+# PR-only and scoped to markdown changes. No longer a required status check (the
+# single "CI gate" job in non_docker_build.yml is), so it doesn't need the old
+# "skip the step in the merge queue" placeholder; a skipped workflow can no longer
+# stall the queue.
+on:
+  pull_request:
+    paths:
+    - '**/*.md'
+    - '.github/markdown_link_check_config.json'
+    - '.github/workflows/check_markdown_links.yml'
 
 jobs:
   markdown-link-check:
@@ -15,9 +24,6 @@ jobs:
         # the link check only reads local files/git history; no token needed
         persist-credentials: false
     - name: Check links in Markdown files
-      # The link check already ran on the PR; in the merge queue this step is
-      # skipped so the required "Markdown" check still resolves successfully.
-      if: github.event_name == 'pull_request'
       uses: renefritze/github-action-markdown-link-check@3ae27253639b22d1d6967db89f7c4da468f61763 # master
       with:
         use-verbose-mode: yes

@@ -1,5 +1,10 @@
 ---
-on: [pull_request, merge_group]
+# PR-hygiene checks. These run on pull_request only: they are no longer required
+# status checks (the single "CI gate" job in non_docker_build.yml is), so they no
+# longer need the old "always run + skip the step in the merge queue" placeholder
+# to resolve a required check. The merge queue operates on the already-merged
+# result, where these PR-time concerns (autosquash commits, conflicts) are moot.
+on: [pull_request]
 
 name: Sanity checks
 
@@ -9,9 +14,6 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Block Autosquash Commits
-      # Only meaningful on a PR; in the merge queue this step is skipped so the
-      # required "Block Autosquash Commits" check still resolves successfully.
-      if: github.event_name == 'pull_request'
       uses: xt0rted/block-autosquash-commits-action@79880c36b4811fe549cfffe20233df88876024e7 # v2.2.0
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
@@ -19,9 +21,6 @@ jobs:
   merge_conflict_job:
     runs-on: ubuntu-22.04
     name: Find merge conflicts
-    # Conflict detection is a PR-only concern; the merge queue already operates
-    # on the merged result.
-    if: github.event_name == 'pull_request'
     steps:
     - name: Checkout repository
       uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
