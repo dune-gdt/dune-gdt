@@ -43,6 +43,11 @@ infrastructure = [
     "pytest",
     "pytest-cov",
     "pytest-regressions",
+    # coverage processors driven by the CMake coverage_python / coverage_cpp targets:
+    # coverage.py combines the per-suite pytest data files into one XML, gcovr turns the
+    # C++ gcov data into Cobertura XML (see cmake/modules/DuneXTTesting.cmake).
+    "coverage",
+    "gcovr",
     "cmake_format==0.4.1",
     "codecov",
     "yapf==0.32",
