@@ -83,14 +83,16 @@ public:
                   const XT::Common::Parameter& param = {}) const override final
   {
     this->compute_entity_coords(x_in_intersection_coords);
+    // computes the oriented integral \int_0^{s} min_max(f'(u) n, 0) du, which carries a negative
+    // sign for s < 0 (the quadrature then runs over [s, 0], traversed in reverse direction)
     auto integrate_f = [&](const LocalFluxType& local_flux,
                            const auto& x,
                            const auto& s,
                            const std::function<double(const R&, const R&)>& min_max) {
-      if (!(s[0] > 0.))
+      if (s[0] == 0.)
         return 0.;
       double ret = 0.;
-      const OneDGrid state_grid(1, 0., s[0]);
+      const OneDGrid state_grid(1, std::min(s[0], 0.), std::max(s[0], 0.));
       const auto state_interval = *state_grid.leafGridView().template begin<0>();
       for (const auto& quadrature_point : QuadratureRules<R, 1>::rule(state_interval.type(), local_flux.order(param))) {
         const auto local_uu = quadrature_point.position();
@@ -99,7 +101,7 @@ public:
         ret +=
             state_interval.geometry().integrationElement(local_uu) * quadrature_point.weight() * min_max(n * df[0], 0.);
       }
-      return ret;
+      return (s[0] > 0.) ? ret : -ret;
     };
     return (local_flux_inside_->evaluate(x_in_inside_coords_, 0., param) * n)
            + integrate_f(*local_flux_inside_,
