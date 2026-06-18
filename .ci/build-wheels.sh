@@ -59,7 +59,11 @@ cd "${DUNE_SRC_DIR}"
 # generate dependencies you must specify either '-M' or '-MM'". dune-gdt does
 # not use C++20 modules, so disabling the scan is safe and also drops a
 # redundant build step. (build-linux keeps scanning on; its apt ccache is 4.x.)
-cmake --preset wheelbuilder-release -DDXT_DONT_LINK_PYTHON_LIB=1 \
+# DXT_USE_UV_PYTHON=OFF: build against this container's CPython (the venv activated above), not a uv-resolved
+# interpreter. The manylinux wheel must carry the container interpreter's platform tag for auditwheel, and dune-common
+# installs the `dune` package into this active venv; forcing a uv interpreter desyncs that and breaks configure
+# (dune_extract_static.py -> "No module named dune"). See the DXT_USE_UV_PYTHON option in the top-level CMakeLists.txt.
+cmake --preset wheelbuilder-release -DDXT_DONT_LINK_PYTHON_LIB=1 -DDXT_USE_UV_PYTHON=OFF \
   -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
   -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
 cmake --build --preset wheelbuilder-release --target bindings -- -j "$(nproc --ignore 1)" -l "$(nproc --ignore 1)"

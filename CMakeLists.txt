@@ -59,6 +59,68 @@ foreach(module IN LISTS FEATURE_MODULES DUNE_SUBMODULES)
   list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
 endforeach()
 
+# Prefer the interpreter uv provides (pinned by the repo-root .python-version) as the single source of truth for "which
+# Python". This guarantees the compiled bindings' ABI matches the interpreter the Python test suites run under (they
+# also go through `uv run`, see DuneXTTesting.cmake). The hint set below is consumed by find_package(Python) immediately
+# afterwards, by pybind11 (its vcpkg overlay is built with PYBIND11_NOPYTHON=ON, so it reuses these find_package(Python)
+# results rather than searching on its own), and by dune-common's Python3 detection in include(DuneMacros) further down.
+#
+# DXT_USE_UV_PYTHON must be turned OFF for builds that have to use a specific pre-existing interpreter: the manylinux
+# wheel build (.ci/build-wheels.sh) compiles against the container's CPython inside an already-activated venv into which
+# dune-common installs the `dune` package; forcing a uv interpreter there desyncs dune-common's virtualenv handling from
+# that active venv and breaks the configure-time system-test extraction (`dune_extract_static.py: No module named
+# dune`).
+option(DXT_USE_UV_PYTHON "Resolve the Python interpreter via uv (pinned by .python-version)" ON)
+if(DXT_USE_UV_PYTHON)
+  find_program(UV_EXECUTABLE uv)
+endif()
+if(UV_EXECUTABLE)
+  # `uv python find` only locates an already-available interpreter; it does not download one. On a host/runner without
+  # the pinned (.python-version) interpreter -- e.g. ubuntu-24.04 ships 3.12, not 3.13 -- resolve it in two steps: try
+  # to find it, and if that fails install it with `uv python install` (uv downloads a managed CPython) and find it
+  # again.
+  execute_process(
+    COMMAND ${UV_EXECUTABLE} python find
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE _uv_python_executable
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE _uv_python_result)
+  if(NOT _uv_python_result EQUAL 0)
+    message(STATUS "uv has no matching interpreter yet; installing the pinned one via `uv python install`")
+    execute_process(
+      COMMAND ${UV_EXECUTABLE} python install
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      RESULT_VARIABLE _uv_install_result)
+    if(NOT _uv_install_result EQUAL 0)
+      message(
+        FATAL_ERROR "`uv python install` failed (exit ${_uv_install_result}); cannot provide the Python interpreter")
+    endif()
+    execute_process(
+      COMMAND ${UV_EXECUTABLE} python find
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      OUTPUT_VARIABLE _uv_python_executable
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      RESULT_VARIABLE _uv_python_result)
+  endif()
+  if(NOT _uv_python_result EQUAL 0)
+    message(FATAL_ERROR "`uv python find` failed (exit ${_uv_python_result}); cannot resolve the Python interpreter")
+  endif()
+  # Python_EXECUTABLE / Python3_EXECUTABLE are the CMake-mandated FindPython hint names, so the C0103 cache-name
+  # convention does not apply to them.
+
+  # cmake-lint: disable=C0103
+  set(Python_EXECUTABLE
+      "${_uv_python_executable}"
+      CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+  # cmake-lint: disable=C0103
+  set(Python3_EXECUTABLE
+      "${_uv_python_executable}"
+      CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+  message(STATUS "Using uv-provided Python interpreter: ${_uv_python_executable}")
+else()
+  message(STATUS "uv disabled or unavailable (DXT_USE_UV_PYTHON=${DXT_USE_UV_PYTHON}); using default FindPython")
+endif()
+
 find_package(Python COMPONENTS Interpreter Development)
 find_package(pybind11 CONFIG REQUIRED)
 
