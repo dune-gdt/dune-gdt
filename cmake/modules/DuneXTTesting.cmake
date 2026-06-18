@@ -292,8 +292,8 @@ macro(DXT_ADD_PYTHON_TESTS)
   # dependencies is declared once as the PEP 735 `test` dependency group in each package's pyproject.toml and pulled in
   # with `--group test` (rather than spelled out as individual `--with` flags here). dune.gdt depends on the
   # exact-version dune.xt (and its extras re-export the same pin); python/gdt/pyproject.toml routes every dune.xt
-  # requirement to the freshly built editable in the sibling binary dir via [tool.uv.sources], so resolution is satisfied
-  # from the local build rather than an index without needing `--with-editable` on the command line.
+  # requirement to the freshly built editable in the sibling binary dir via [tool.uv.sources], so resolution is
+  # satisfied from the local build rather than an index without needing `--with-editable` on the command line.
   add_custom_target(
     xt_test_python
     COMMAND
@@ -307,9 +307,8 @@ macro(DXT_ADD_PYTHON_TESTS)
     gdt_test_python
     COMMAND
       ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt "uv" "run" "--python"
-      "${Python_EXECUTABLE}" "--group" "test" "python" "-m" "pytest"
-      "${CMAKE_BINARY_DIR}/python/gdt" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
-      "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
+      "${Python_EXECUTABLE}" "--group" "test" "python" "-m" "pytest" "${CMAKE_BINARY_DIR}/python/gdt" "--cov"
+      "${CMAKE_CURRENT_SOURCE_DIR}/" "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/gdt"
     DEPENDS bindings
     VERBATIM USES_TERMINAL)
