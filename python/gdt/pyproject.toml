@@ -67,6 +67,16 @@ test = [
   "hypothesis",
 ]
 
+# uv runs the gdt suite in project mode (cmake/modules/DuneXTTesting.cmake) and resolves the project's
+# optional-dependencies universally -- the same reason the xt `docs` extra needs a clangquill marker. dune.gdt's extras
+# re-export dune.xt[...] pinned to this build's exact version (see hatch_build.py), which exists only as the freshly
+# built editable in the sibling binary dir, never on an index. Point every dune.xt requirement -- the base dependency and
+# the extras' exact pins alike -- at that local build (../xt is the sibling assembly dir in the binary tree) so the
+# resolution stays solvable without `--with-editable` on the uv command line. This [tool.uv] table is ignored by the
+# hatchling wheel build, so the published wheel still depends on dune.xt from an index.
+[tool.uv.sources]
+"dune.xt" = { path = "../xt", editable = true }
+
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: some test modules are named e.g.
 # test/segfault_laplace_integrand.py (not test_*.py), so without this pattern pytest would not collect them. The
 # `make gdt_test_python` target runs pytest from the binary dir, where this pyproject.toml is the assembly-point config.
