@@ -9,10 +9,19 @@
 #   René Fritze (2024)
 # ~~~
 
+import pathlib
+import sys
+
 import pytest
 
 pytest.importorskip("jinja2")
 pytest.importorskip("pyparsing")
+
+# dxt_code_generation ships as a wheel script (installed to bin/, not importable as a module). In the build tree it sits
+# next to this test dir under scripts/; add that to sys.path so it can be imported. importorskip then runs the import and
+# skips cleanly when the module or its dune.xt dependency is unavailable (e.g. a bare source checkout without the build).
+_scripts_dir = pathlib.Path(__file__).resolve().parent.parent / "scripts"
+sys.path.insert(0, str(_scripts_dir))
 
 dxt = pytest.importorskip("dxt_code_generation")
 

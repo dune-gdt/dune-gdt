@@ -9,7 +9,23 @@
 #   René Fritze (2024)
 # ~~~
 
-import generate_compare_functions as g
+import pathlib
+import sys
+
+import pytest
+
+# generate_compare_functions ships as a wheel script (installed to bin/, not importable as a module), so it is not on
+# sys.path. In the build tree it sits next to this test dir under scripts/; add that to sys.path so the test can import
+# it, and skip cleanly when run outside a build tree (e.g. from a bare source checkout).
+_scripts_dir = pathlib.Path(__file__).resolve().parent.parent / "scripts"
+if not (_scripts_dir / "generate_compare_functions.py").is_file():
+    pytest.skip(
+        "generate_compare_functions.py unavailable (run from the build tree)",
+        allow_module_level=True,
+    )
+sys.path.insert(0, str(_scripts_dir))
+
+import generate_compare_functions as g  # noqa: E402
 
 
 def test_comparators_list():
