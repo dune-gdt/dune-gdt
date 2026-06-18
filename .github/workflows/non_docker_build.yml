@@ -121,10 +121,14 @@ jobs:
     runs-on:
     - runs-on=${{ github.run_id }}-${{ matrix.preset }}
     - cpu=${{ needs.config.outputs.linux_cpu }}
-    # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). Neither preset uses LTO,
-    # so there is no /tmp ltrans explosion like build_wheels; the 32 GB also lets
-    # the test_binaries build run at -j cpu-1 (see below).
-    - family=m7i
+    # r7i (memory-optimized, 8 GB/vCPU -> 64 GB at cpu=8). The Python bindings are
+    # the memory driver: their pybind11 TUs instantiate deeply-nested Dune templates
+    # and peak well above the ~2 GB/TU of the test binaries, so building them at the
+    # shared -j cpu-1 (see below) OOM-killed the 32 GB m7i mid-step on a cold ccache
+    # (the runner vanished, leaving the step stuck in-progress). The 64 GB here keeps
+    # the -j7 bindings compile (~7 * ~8 GB) under memory. Neither preset uses LTO, so
+    # there is no /tmp ltrans explosion like build_wheels.
+    - family=r7i
     - image=ubuntu24-full-x64
     # build/ tree + .vcpkg-root + 2 GB ccache fit easily; 80 GB gp3 leaves ample
     # headroom and the runner is a short-lived spot instance, so the extra storage
