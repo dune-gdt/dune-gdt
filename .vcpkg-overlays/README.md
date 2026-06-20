@@ -31,6 +31,43 @@ the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
 > case edit `deps/module_list.bash` and the affected `portfile.cmake` together by
 > hand, keeping them in sync.
 
+## Hand-maintained ports (not generated)
+
+A handful of ports in `ports/` are **not** produced by `update_ports.bash` and
+are edited by hand: `pybind11`, `uv`, `libtirpc`, `alberta`, and the GNU
+autotools host tools below. `update_ports.bash` only touches the DUNE modules
+listed in `deps/module_list.bash`, so it leaves these alone.
+
+### GNU autotools host tools
+
+`libtirpc` and `alberta` build with `vcpkg_configure_make`, which needs the GNU
+autotools. To avoid depending on whatever happens to be installed on the build
+machine, the following ports pin current upstream releases (downloaded from
+`ftp.gnu.org` and verified by SHA-512):
+
+| Port | Version | Notes |
+|------|---------|-------|
+| autoconf | 2.73 | `autoconf`, `autoreconf`, `autom4te`, ... under `tools/autoconf/bin` |
+| automake | 1.18.1 | `automake`/`aclocal`; depends on `autoconf` (host) |
+| libtool | 2.5.4 | `libtool`/`libtoolize` plus the `libltdl` loader library + `ltdl.h` |
+| autoconf-archive | 2024.10.16 | data-only: ~580 reusable m4 macros under `share/autoconf-archive/aclocal` |
+
+`vcpkg_configure_make` bakes the persistent `CURRENT_INSTALLED_DIR` into the
+installed scripts as their prefix and installs the executables under
+`tools/<port>/bin`, so the tools remain usable after the temporary build trees
+are gone. The aclocal macros for each port live in `share/<port>/aclocal`; a
+consumer that wires these tools onto `PATH` should also add those directories to
+`ACLOCAL_PATH` (for example `share/libtool/aclocal` and
+`share/autoconf-archive/aclocal`).
+
+To bump a version: update `version` in the port's `vcpkg.json`, the URL/SHA-512
+in its `portfile.cmake` (`sha512sum` of the new `.tar.xz`), and rebuild.
+
+> Note: the bare `libtool` entry in the repo's top-level `.gitignore` (an
+> autotools-generated script name) also matches `ports/libtool/`, so that path is
+> re-included there with a `!` negation. Keep that negation when editing
+> `.gitignore`.
+
 ## Current pins (DUNE 2.10)
 
 All core/staging modules currently track the **`releases/2.10` maintenance
