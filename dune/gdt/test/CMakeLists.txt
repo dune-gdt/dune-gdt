@@ -11,20 +11,20 @@
 #   Tobias Leibner  (2016 - 2018
 # ~~~
 
+# Only subdirs that contain test sources (*.cc/*.tpl) are listed here. The header-only eocstudies directories
+# (instationary-eocstudies, stationary-eocstudies) provide base.hh helpers included by tests in other subdirs, and
+# projections/prolongations currently hold no tests; listing any of them would trigger add_subdir_tests author warnings
+# about missing sources.
 set(GDT_TEST_SUBDIRS
     burgers
     discretefunction
-    instationary-eocstudies
     integrands
     interpolations
     inviscid-compressible-flow
     linear-transport
     misc
     operators
-    projections
-    prolongations
     spaces
-    stationary-eocstudies
     stationary-heat-equation
     stokes)
 

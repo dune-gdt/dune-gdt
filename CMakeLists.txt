@@ -202,7 +202,7 @@ add_pylicense()
 dxt_exclude_from_headercheck(${CMAKE_SOURCE_DIR}/.vcpkg-root)
 dxt_exclude_from_headercheck(${CMAKE_BINARY_DIR}/vcpkg_installed)
 
-finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
+finalize_dune_project()
 # patch config.h to remove warnings about unused HAVE_GRIDTYPE
 execute_process(
   COMMAND sed -i -e "s,^\\([ ]*\\)\#if HAVE_GRIDTYPE$,\\1\#if defined(HAVE_GRIDTYPE) \\&\\& HAVE_GRIDTYPE,g"
