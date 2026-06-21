@@ -13,7 +13,7 @@
 include(DuneXTHints)
 
 message("-- checking for cblas library")
-find_library(CBLAS_LIBRARY cblas HINTS ${lib_hints})
+find_library(CBLAS_LIBRARY cblas HINTS ${LIB_HINTS})
 if("${CBLAS_LIBRARY}" MATCHES "CBLAS_LIBRARY-NOTFOUND")
   message("--   CBLAS library not found, make sure you have CBLAS installed")
 else("${CBLAS_LIBRARY}" MATCHES "CBLAS_LIBRARY-NOTFOUND")
@@ -22,7 +22,7 @@ else("${CBLAS_LIBRARY}" MATCHES "CBLAS_LIBRARY-NOTFOUND")
 endif("${CBLAS_LIBRARY}" MATCHES "CBLAS_LIBRARY-NOTFOUND")
 
 message("-- checking for cblas.h header")
-find_path(CBLAS_INCLUDE_DIRS cblas.h HINTS ${include_hints})
+find_path(CBLAS_INCLUDE_DIRS cblas.h HINTS ${INCLUDE_HINTS})
 if("${CBLAS_INCLUDE_DIRS}" MATCHES "CBLAS_INCLUDE_DIRS-NOTFOUND")
   message("--   cblas.h header not found")
 else("${CBLAS_INCLUDE_DIRS}" MATCHES "CBLAS_INCLUDE_DIRS-NOTFOUND")
