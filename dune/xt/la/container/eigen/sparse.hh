@@ -114,30 +114,30 @@ public:
           std::make_shared<BackendType>(Common::numeric_cast<EIGEN_size_t>(rr), Common::numeric_cast<EIGEN_size_t>(cc)))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
   {
-    if (rr > 0 && cc > 0) {
-      if (size_t(pattern_in.size()) != rr)
-        DUNE_THROW(Common::Exceptions::shapes_do_not_match,
-                   "The size of the pattern (" << pattern_in.size() << ") does not match the number of rows of this ("
-                                               << rr << ")!");
-      for (size_t row = 0; row < size_t(pattern_in.size()); ++row) {
-        backend_->startVec(static_cast<EIGEN_size_t>(row));
-        const auto& columns = pattern_in.inner(row);
-        for (const auto& column : columns) {
+    if (!(rr > 0 && cc > 0))
+      return;
+    if (size_t(pattern_in.size()) != rr)
+      DUNE_THROW(Common::Exceptions::shapes_do_not_match,
+                 "The size of the pattern (" << pattern_in.size() << ") does not match the number of rows of this ("
+                                             << rr << ")!");
+    for (size_t row = 0; row < size_t(pattern_in.size()); ++row) {
+      backend_->startVec(static_cast<EIGEN_size_t>(row));
+      const auto& columns = pattern_in.inner(row);
+      for (const auto& column : columns) {
 #  ifndef NDEBUG
-          if (column >= cc)
-            DUNE_THROW(Common::Exceptions::shapes_do_not_match,
-                       "The size of row " << row << " of the pattern does not match the number of columns of this ("
-                                          << cc << ")!");
+        if (column >= cc)
+          DUNE_THROW(Common::Exceptions::shapes_do_not_match,
+                     "The size of row " << row << " of the pattern does not match the number of columns of this (" << cc
+                                        << ")!");
 #  endif // NDEBUG
-          backend_->insertBackByOuterInner(static_cast<EIGEN_size_t>(row), static_cast<EIGEN_size_t>(column));
-        }
-        // create entry (insertBackByOuterInner() can not handle empty rows)
-        if (columns.empty())
-          backend_->insertBackByOuterInner(static_cast<EIGEN_size_t>(row), 0);
+        backend_->insertBackByOuterInner(static_cast<EIGEN_size_t>(row), static_cast<EIGEN_size_t>(column));
       }
-      backend_->finalize();
-      backend_->makeCompressed();
+      // create entry (insertBackByOuterInner() can not handle empty rows)
+      if (columns.empty())
+        backend_->insertBackByOuterInner(static_cast<EIGEN_size_t>(row), 0);
     }
+    backend_->finalize();
+    backend_->makeCompressed();
   } // EigenRowMajorSparseMatrix(...)
 
   explicit EigenRowMajorSparseMatrix(const size_t rr = 0, const size_t cc = 0, const size_t num_mutexes = 1)
@@ -177,25 +177,26 @@ public:
                                      const size_t num_mutexes = 1)
     : mutexes_(std::make_unique<MutexesType>(num_mutexes))
   {
-    if (prune) {
-      // we do this here instead of using pattern(true), since we can build the triplets along the way which is more
-      // efficient
-      using TripletType = ::Eigen::Triplet<ScalarType>;
-      const ScalarType zero(0);
-      std::vector<TripletType> triplets;
-      triplets.reserve(mat.nonZeros());
-      for (EIGEN_size_t row = 0; row < mat.outerSize(); ++row) {
-        for (typename BackendType::InnerIterator row_it(mat, row); row_it; ++row_it) {
-          const EIGEN_size_t col = row_it.col();
-          const auto val = mat.coeff(row, col);
-          if (Common::FloatCmp::ne<Common::FloatCmp::Style::absolute>(val, zero, eps))
-            triplets.emplace_back(row, col, val);
-        }
-      }
-      backend_ = std::make_shared<BackendType>(mat.rows(), mat.cols());
-      backend_->setFromTriplets(triplets.begin(), triplets.end());
-    } else
+    if (!prune) {
       backend_ = std::make_shared<BackendType>(mat);
+      return;
+    }
+    // we do this here instead of using pattern(true), since we can build the triplets along the way which is more
+    // efficient
+    using TripletType = ::Eigen::Triplet<ScalarType>;
+    const ScalarType zero(0);
+    std::vector<TripletType> triplets;
+    triplets.reserve(mat.nonZeros());
+    for (EIGEN_size_t row = 0; row < mat.outerSize(); ++row) {
+      for (typename BackendType::InnerIterator row_it(mat, row); row_it; ++row_it) {
+        const EIGEN_size_t col = row_it.col();
+        const auto val = mat.coeff(row, col);
+        if (Common::FloatCmp::ne<Common::FloatCmp::Style::absolute>(val, zero, eps))
+          triplets.emplace_back(row, col, val);
+      }
+    }
+    backend_ = std::make_shared<BackendType>(mat.rows(), mat.cols());
+    backend_->setFromTriplets(triplets.begin(), triplets.end());
   } // EigenRowMajorSparseMatrix(...)
 
   /**
@@ -409,15 +410,15 @@ public:
     for (size_t row = 0; static_cast<EIGEN_size_t>(row) < backend().outerSize(); ++row) {
       for (typename BackendType::InnerIterator row_it(backend(), static_cast<EIGEN_size_t>(row)); row_it; ++row_it) {
         const size_t col = row_it.col();
-        if (col == jj) {
-          if (col == row)
-            backend().coeffRef(static_cast<EIGEN_size_t>(row), static_cast<EIGEN_size_t>(col)) = ScalarType(1);
-          else
-            backend().coeffRef(static_cast<EIGEN_size_t>(row), static_cast<EIGEN_size_t>(jj)) = ScalarType(0);
-          break;
-        }
         if (col > jj)
           break;
+        if (col != jj)
+          continue;
+        if (col == row)
+          backend().coeffRef(static_cast<EIGEN_size_t>(row), static_cast<EIGEN_size_t>(col)) = ScalarType(1);
+        else
+          backend().coeffRef(static_cast<EIGEN_size_t>(row), static_cast<EIGEN_size_t>(jj)) = ScalarType(0);
+        break;
       }
     }
   } // ... unit_col(...)
@@ -446,19 +447,20 @@ public:
   {
     SparsityPatternDefault ret(rows());
     const auto zero = typename Common::FloatCmp::DefaultEpsilon<ScalarType>::Type(0);
-    if (prune) {
-      for (EIGEN_size_t row = 0; row < backend().outerSize(); ++row) {
-        for (typename BackendType::InnerIterator row_it(backend(), row); row_it; ++row_it) {
-          const EIGEN_size_t col = row_it.col();
-          const auto val = backend().coeff(row, col);
-          if (Common::FloatCmp::ne(val, zero, eps))
-            ret.insert(static_cast<size_t>(row), static_cast<size_t>(col));
-        }
-      }
-    } else {
+    if (!prune) {
       for (EIGEN_size_t row = 0; row < backend().outerSize(); ++row) {
         for (typename BackendType::InnerIterator row_it(backend(), row); row_it; ++row_it)
           ret.insert(static_cast<size_t>(row), static_cast<size_t>(row_it.col()));
+      }
+      ret.sort();
+      return ret;
+    }
+    for (EIGEN_size_t row = 0; row < backend().outerSize(); ++row) {
+      for (typename BackendType::InnerIterator row_it(backend(), row); row_it; ++row_it) {
+        const EIGEN_size_t col = row_it.col();
+        const auto val = backend().coeff(row, col);
+        if (Common::FloatCmp::ne(val, zero, eps))
+          ret.insert(static_cast<size_t>(row), static_cast<size_t>(col));
       }
     }
     ret.sort();

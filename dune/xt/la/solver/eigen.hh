@@ -52,6 +52,59 @@ namespace Dune::XT::LA {
 
 #if HAVE_EIGEN
 
+// Helpers to keep the apply() implementations below within the allowed control-flow nesting depth.
+template <class MatrixType, class VectorType, class ConfigType>
+void eigen_solver_check_dense_matrix_for_inf_nan(const MatrixType& matrix,
+                                                 const VectorType& rhs,
+                                                 const ConfigType& opts)
+{
+  for (size_t ii = 0; ii < matrix.rows(); ++ii)
+    for (size_t jj = 0; jj < matrix.cols(); ++jj) {
+      const auto& val = matrix.backend()(ii, jj);
+      if (!(Common::isnan(val) || Common::isinf(val)))
+        continue;
+      std::stringstream msg;
+      msg << "Given matrix contains inf or nan and you requested checking (see options below)!\n"
+          << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
+          << "Those were the given options:\n\n"
+          << opts;
+      if (rhs.size() <= internal::max_size_to_print)
+        msg << "\nThis was the given matrix:\n\n" << matrix << "\n";
+      DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
+    }
+}
+
+template <class BackendType, class ConfigType>
+void eigen_solver_check_sparse_matrix_for_inf_nan(const BackendType& backend, const ConfigType& opts)
+{
+  using InnerIterator = typename BackendType::InnerIterator;
+  for (typename BackendType::Index ii = 0; ii < backend.outerSize(); ++ii)
+    for (InnerIterator it(backend, ii); it; ++it)
+      if (Common::isnan(std::real(it.value())) || Common::isnan(std::imag(it.value()))
+          || Common::isinf(std::abs(it.value())))
+        DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements,
+                   "Given matrix contains inf or nan and you requested checking (see options below)!\n"
+                       << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
+                       << "Those were the given options:\n\n"
+                       << opts);
+}
+
+template <class BackendType, class FieldType, class ConfigType>
+void eigen_solver_check_sparse_matrix_symmetry(const BackendType& colmajor_copy,
+                                               const FieldType& pre_check_symmetry_threshhold,
+                                               const ConfigType& opts)
+{
+  using InnerIterator = typename BackendType::InnerIterator;
+  for (typename BackendType::Index ii = 0; ii < colmajor_copy.outerSize(); ++ii)
+    for (InnerIterator it(colmajor_copy, ii); it; ++it)
+      if (std::max(std::abs(std::real(it.value())), std::abs(std::imag(it.value()))) > pre_check_symmetry_threshhold)
+        DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements,
+                   "Given matrix is not symmetric/hermitian and you requested checking (see options below)!\n"
+                       << "If you want to disable this check, set 'pre_check_symmetry = 0' in the options.\n\n"
+                       << "Those were the given options:\n\n"
+                       << opts);
+}
+
 /// \brief Available solver options for EigenDenseMatrix (direct LU, QR and Cholesky factorizations).
 template <class S, class CommunicatorType>
 class SolverOptions<EigenDenseMatrix<S>, CommunicatorType> : protected internal::SolverUtils
@@ -138,53 +191,37 @@ public:
     // check for inf or nan
     const bool check_for_inf_nan = opts.get("check_for_inf_nan", default_opts.get<bool>("check_for_inf_nan"));
     if (check_for_inf_nan) {
-      for (size_t ii = 0; ii < matrix_.rows(); ++ii) {
-        for (size_t jj = 0; jj < matrix_.cols(); ++jj) {
-          const S& val = matrix_.backend()(ii, jj);
-          if (Common::isnan(val) || Common::isinf(val)) {
-            std::stringstream msg;
-            msg << "Given matrix contains inf or nan and you requested checking (see options below)!\n"
-                << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
-                << "Those were the given options:\n\n"
-                << opts;
-            if (rhs.size() <= internal::max_size_to_print)
-              msg << "\nThis was the given matrix:\n\n" << matrix_ << "\n";
-            DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
-          }
-        }
-      }
+      eigen_solver_check_dense_matrix_for_inf_nan(matrix_, rhs, opts);
       for (size_t ii = 0; ii < rhs.size(); ++ii) {
         const S val = rhs.get_entry(ii);
-        if (Common::isnan(val) || Common::isinf(val)) {
-          std::stringstream msg;
-          msg << "Given rhs contains inf or nan and you requested checking (see options below)!\n"
-              << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
-              << "Those were the given options:\n\n"
-              << opts;
-          if (rhs.size() <= internal::max_size_to_print)
-            msg << "\nThis was the given right hand side:\n\n" << rhs << "\n";
-          DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
-        }
+        if (!(Common::isnan(val) || Common::isinf(val)))
+          continue;
+        std::stringstream msg;
+        msg << "Given rhs contains inf or nan and you requested checking (see options below)!\n"
+            << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
+            << "Those were the given options:\n\n"
+            << opts;
+        if (rhs.size() <= internal::max_size_to_print)
+          msg << "\nThis was the given right hand side:\n\n" << rhs << "\n";
+        DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
       }
     }
     // check for symmetry (if solver needs it)
-    if (type == "ldlt" || type == "llt") {
-      const R pre_check_symmetry_threshhold = opts.get("pre_check_symmetry", default_opts.get<R>("pre_check_symmetry"));
-      if (pre_check_symmetry_threshhold > 0) {
-        const MatrixType tmp(matrix_.backend() - matrix_.backend().adjoint());
-        // serialize difference to compute L^\infty error (no copy done here)
-        const R error = std::max(tmp.backend().cwiseAbs().minCoeff(), tmp.backend().cwiseAbs().maxCoeff());
-        if (error > pre_check_symmetry_threshhold) {
-          std::stringstream msg;
-          msg << "Given matrix is not symmetric and you requested checking (see options below)!\n"
-              << "If you want to disable this check, set 'pre_check_symmetry = 0' in the options.\n\n"
-              << "  (A - A').sup_norm() = " << error << "\n\n"
-              << "Those were the given options:\n\n"
-              << opts;
-          if (rhs.size() <= internal::max_size_to_print)
-            msg << "\nThis was the given matrix A:\n\n" << matrix_ << "\n";
-          DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
-        }
+    const R pre_check_symmetry_threshhold = opts.get("pre_check_symmetry", default_opts.get<R>("pre_check_symmetry"));
+    if ((type == "ldlt" || type == "llt") && pre_check_symmetry_threshhold > 0) {
+      const MatrixType tmp(matrix_.backend() - matrix_.backend().adjoint());
+      // serialize difference to compute L^\infty error (no copy done here)
+      const R error = std::max(tmp.backend().cwiseAbs().minCoeff(), tmp.backend().cwiseAbs().maxCoeff());
+      if (error > pre_check_symmetry_threshhold) {
+        std::stringstream msg;
+        msg << "Given matrix is not symmetric and you requested checking (see options below)!\n"
+            << "If you want to disable this check, set 'pre_check_symmetry = 0' in the options.\n\n"
+            << "  (A - A').sup_norm() = " << error << "\n\n"
+            << "Those were the given options:\n\n"
+            << opts;
+        if (rhs.size() <= internal::max_size_to_print)
+          msg << "\nThis was the given matrix A:\n\n" << matrix_ << "\n";
+        DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
       }
     }
     // solve
@@ -209,20 +246,19 @@ public:
     if (check_for_inf_nan)
       for (size_t ii = 0; ii < solution.size(); ++ii) {
         const S val = solution.get_entry(ii);
-        if (Common::isnan(val) || Common::isinf(val)) {
-          std::stringstream msg;
-          msg << "The computed solution contains inf or nan and you requested checking (see options "
-              << "below)!\n"
-              << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
-              << "Those were the given options:\n\n"
-              << opts;
-          if (rhs.size() <= internal::max_size_to_print)
-            msg << "\nThis was the given matrix A:\n\n"
-                << matrix_ << "\nThis was the given right hand side b:\n\n"
-                << rhs << "\nThis is the computed solution:\n\n"
-                << solution << "\n";
-          DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
-        }
+        if (!(Common::isnan(val) || Common::isinf(val)))
+          continue;
+        std::stringstream msg;
+        msg << "The computed solution contains inf or nan and you requested checking (see options " << "below)!\n"
+            << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
+            << "Those were the given options:\n\n"
+            << opts;
+        if (rhs.size() <= internal::max_size_to_print)
+          msg << "\nThis was the given matrix A:\n\n"
+              << matrix_ << "\nThis was the given right hand side b:\n\n"
+              << rhs << "\nThis is the computed solution:\n\n"
+              << solution << "\n";
+        DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
       }
     const R post_check_solves_system_threshold =
         opts.get("post_check_solves_system", default_opts.get<R>("post_check_solves_system"));
@@ -234,8 +270,7 @@ public:
         std::stringstream msg;
         msg << "The computed solution does not solve the system (although the eigen backend reported "
             << "'Success') and you requested checking (see options below)!\n"
-            << "If you want to disable this check, set 'post_check_solves_system = 0' in the options."
-            << "\n\n"
+            << "If you want to disable this check, set 'post_check_solves_system = 0' in the options." << "\n\n"
             << "  (A * x - b).sup_norm() = " << tmp.sup_norm() << "\n\n"
             << "Those were the given options:\n\n"
             << opts;
@@ -390,18 +425,7 @@ public:
     const bool check_for_inf_nan = opts.get("check_for_inf_nan", default_opts.get<bool>("check_for_inf_nan"));
     if (check_for_inf_nan) {
       // iterates over the non-zero entries of matrix_.backend() and checks them
-      using InnerIterator = typename MatrixType::BackendType::InnerIterator;
-      for (EIGEN_size_t ii = 0; ii < matrix_.backend().outerSize(); ++ii) {
-        for (InnerIterator it(matrix_.backend(), ii); it; ++it) {
-          if (Common::isnan(std::real(it.value())) || Common::isnan(std::imag(it.value()))
-              || Common::isinf(std::abs(it.value())))
-            DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements,
-                       "Given matrix contains inf or nan and you requested checking (see options below)!\n"
-                           << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
-                           << "Those were the given options:\n\n"
-                           << opts);
-        }
-      }
+      eigen_solver_check_sparse_matrix_for_inf_nan(matrix_.backend(), opts);
       for (size_t ii = 0; ii < rhs.size(); ++ii) {
         const S val = rhs.get_entry(ii);
         if (Common::isnan(val) || Common::isinf(val))
@@ -419,18 +443,7 @@ public:
         ColMajorBackendType colmajor_copy(matrix_.backend());
         colmajor_copy -= matrix_.backend().adjoint();
         // iterates over non-zero entries as above
-        using InnerIterator = typename ColMajorBackendType::InnerIterator;
-        for (EIGEN_size_t ii = 0; ii < colmajor_copy.outerSize(); ++ii) {
-          for (InnerIterator it(colmajor_copy, ii); it; ++it) {
-            if (std::max(std::abs(std::real(it.value())), std::abs(std::imag(it.value())))
-                > pre_check_symmetry_threshhold)
-              DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements,
-                         "Given matrix is not symmetric/hermitian and you requested checking (see options below)!\n"
-                             << "If you want to disable this check, set 'pre_check_symmetry = 0' in the options.\n\n"
-                             << "Those were the given options:\n\n"
-                             << opts);
-          }
-        }
+        eigen_solver_check_sparse_matrix_symmetry(colmajor_copy, pre_check_symmetry_threshhold, opts);
       }
     }
     ::Eigen::ComputationInfo info;
