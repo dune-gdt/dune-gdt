@@ -36,6 +36,9 @@ dependencies.m4
 *Doxyfile.in
 install-sh
 libtool
+# but keep the libtool vcpkg overlay port (the bare "libtool" rule above is for the
+# autotools-generated script, not this hand-maintained port directory)
+!/.vcpkg-overlays/ports/libtool/
 ltmain.sh
 missing
 stamp-h1
