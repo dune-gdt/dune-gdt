@@ -61,5 +61,12 @@
     "suitesparse",
     "lapack"
   ],
-  "builtin-baseline": "d015e31e90838a4c9dfa3eed45979bc70d9357fc"
+  "builtin-baseline": "d015e31e90838a4c9dfa3eed45979bc70d9357fc",
+  "overrides": [
+    {
+      "name": "eigen3",
+      "version": "3.4.0",
+      "port-version": 5
+    }
+  ]
 }
