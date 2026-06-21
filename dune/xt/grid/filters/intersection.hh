@@ -239,11 +239,11 @@ public:
       const auto inside_index = grid_view.indexSet().index(entity);
       outside_indices_to_ignore[inside_index] = std::set<size_t>();
       for (auto&& intersection : intersections(grid_view, entity)) {
-        if (intersection.neighbor() && entity_range.count(intersection.outside())) {
-          const auto outside_index = grid_view.indexSet().index(intersection.outside());
-          if (inside_index > outside_index)
-            outside_indices_to_ignore[inside_index].insert(outside_index);
-        }
+        if (!(intersection.neighbor() && entity_range.count(intersection.outside())))
+          continue;
+        const auto outside_index = grid_view.indexSet().index(intersection.outside());
+        if (inside_index > outside_index)
+          outside_indices_to_ignore[inside_index].insert(outside_index);
       }
     }
   }

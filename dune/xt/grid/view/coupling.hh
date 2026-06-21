@@ -257,6 +257,26 @@ public:
   ThisType& operator=(const ThisType& other) = default;
   ThisType& operator=(ThisType&& other) noexcept = default;
 
+  template <class CouplingType>
+  std::set<CorrectedCouplingIntersectionType, CompareType<CorrectedCouplingIntersectionType>>
+  collect_coupling_intersections_for_id(CouplingType& coupling, const size_t id) const
+  {
+    std::set<CorrectedCouplingIntersectionType, CompareType<CorrectedCouplingIntersectionType>>
+        coupling_intersection_set;
+    // now iteratate over all intersections to find all coupling intersections
+    for (auto coupling_intersection_it = coupling.template ibegin<0>();
+         coupling_intersection_it != coupling.template iend<0>();
+         ++coupling_intersection_it) {
+      auto inside = coupling_intersection_it->inside();
+      auto inside_id = local_inside_grid_.leaf_view().indexSet().index(inside);
+      if (inside_id != id)
+        continue;
+      CorrectedCouplingIntersectionType coupling_intersection(*coupling_intersection_it, macro_intersection_);
+      coupling_intersection_set.insert(coupling_intersection);
+    }
+    return coupling_intersection_set;
+  }
+
   // This is the only member function that actually changes the state of the CouplingGridView. The copy constructor and
   // copy assignment operators only do a shallow copy of the shared_ptrs, so we have to make sure that we reassign the
   // shared_ptrs in this function to avoid changing state of a copied-from CouplingGridView.
@@ -286,24 +306,11 @@ public:
 
     for (auto&& id : *inside_elements_ids_) {
       for (auto&& el : elements(local_inside_grid_.leaf_view())) {
-        if (local_inside_grid_.leaf_view().indexSet().index(el) == id) {
-          // This is the inside element we are searching for... add it to the vector
-          inside_elements_->push_back(el);
-          std::set<CorrectedCouplingIntersectionType, CompareType<CorrectedCouplingIntersectionType>>
-              coupling_intersection_set;
-          // now iteratate over all intersections to find all coupling intersections
-          for (auto coupling_intersection_it = coupling.template ibegin<0>();
-               coupling_intersection_it != coupling.template iend<0>();
-               ++coupling_intersection_it) {
-            auto inside = coupling_intersection_it->inside();
-            auto inside_id = local_inside_grid_.leaf_view().indexSet().index(inside);
-            if (inside_id == id) {
-              CorrectedCouplingIntersectionType coupling_intersection(*coupling_intersection_it, macro_intersection_);
-              coupling_intersection_set.insert(coupling_intersection);
-            }
-          }
-          coupling_intersections_->push_back(coupling_intersection_set);
-        }
+        if (local_inside_grid_.leaf_view().indexSet().index(el) != id)
+          continue;
+        // This is the inside element we are searching for... add it to the vector
+        inside_elements_->push_back(el);
+        coupling_intersections_->push_back(collect_coupling_intersections_for_id(coupling, id));
       }
     }
     // introduce a local to global map
