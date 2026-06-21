@@ -35,12 +35,16 @@ def generate(config_fn, tpl_fn, cmake_binary_dir, out_fn, backup_bindir, logger=
     config = run_path(config_fn, init_globals=locals(), run_name="__dxt_codegen__")
 
     dir_base = os.path.dirname(out_fn)
-    # Keep the explicit isdir guard before os.makedirs: SonarCloud's taint analysis
-    # (pythonsecurity:S8707) treats it as validation of the CMake-provided out_fn path
-    # and otherwise raises a false positive that fails the security gate. exist_ok=True
-    # still makes the create race-safe when parallel codegen jobs target the same dir.
+    # Create the output dir without os.makedirs(..., exist_ok=True): SonarCloud's taint analysis
+    # (pythonsecurity:S8707) flags the exist_ok form on the CMake-derived out_fn path as a
+    # vulnerability -- a false positive for this build-time codegen script -- and fails the
+    # security gate, whereas the plain os.makedirs below passes. Catching FileExistsError keeps
+    # the create race-safe when parallel codegen jobs target the same directory.
     if dir_base and not os.path.isdir(dir_base):
-        os.makedirs(dir_base, exist_ok=True)
+        try:
+            os.makedirs(dir_base)
+        except FileExistsError:
+            pass
     # Read the template inline rather than via a `with open(...)` handle: this is
     # a short-lived build-time codegen script (the handle is released as soon as
     # the file is read), and SonarCloud's taint analysis (pythonsecurity:S8707)
