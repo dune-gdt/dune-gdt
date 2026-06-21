@@ -182,6 +182,26 @@ SparsityPatternDefault diagonal_pattern(const size_t rows, const size_t cols, co
   return pattern;
 }
 
+namespace internal {
+
+
+// Returns true if column jj is reachable from row ii through any entry of lhs_pattern's row.
+static bool multiplication_pattern_has_entry(const SparsityPatternDefault& lhs_pattern,
+                                             const SparsityPatternDefault& rhs_pattern,
+                                             const size_t ii,
+                                             const size_t jj)
+{
+  for (const auto& index : lhs_pattern.inner(ii)) // entries in lhs_pattern in current row
+    if (std::find(rhs_pattern.inner(index).begin(), rhs_pattern.inner(index).end(), jj)
+        != rhs_pattern.inner(index).end())
+      return true;
+  return false;
+}
+
+
+} // namespace internal
+
+
 SparsityPatternDefault multiplication_pattern(const SparsityPatternDefault& lhs_pattern,
                                               const SparsityPatternDefault& rhs_pattern,
                                               const size_t rhs_cols)
@@ -190,13 +210,8 @@ SparsityPatternDefault multiplication_pattern(const SparsityPatternDefault& lhs_
   SparsityPatternDefault pattern(lhs_rows);
   for (size_t ii = 0; ii < lhs_rows; ++ii) // rows of new pattern
     for (size_t jj = 0; jj < rhs_cols; ++jj) // cols of new pattern
-      for (const auto& index : lhs_pattern.inner(ii)) { // entries in lhs_pattern in current row
-        if (std::find(rhs_pattern.inner(index).begin(), rhs_pattern.inner(index).end(), jj)
-            != rhs_pattern.inner(index).end()) {
-          pattern.insert(ii, jj);
-          break;
-        }
-      }
+      if (internal::multiplication_pattern_has_entry(lhs_pattern, rhs_pattern, ii, jj))
+        pattern.insert(ii, jj);
   return pattern;
 }
 
