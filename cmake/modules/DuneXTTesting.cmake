@@ -285,36 +285,65 @@ macro(DXT_EXCLUDE_FROM_HEADERCHECK)
 endmacro(DXT_EXCLUDE_FROM_HEADERCHECK)
 
 macro(DXT_ADD_PYTHON_TESTS)
-  # The Python test suites run through `uv run`: uv assembles an ephemeral environment (no manually-created/activated
-  # virtualenv) pinned to the very interpreter the bindings were compiled against (${Python_EXECUTABLE}, so the cpython
-  # ABI of the built .so modules matches), installs the freshly built packages editable from the build tree plus the
-  # pytest tooling, and runs pytest. dune.gdt depends on the exact-version dune.xt, so the gdt suite installs both
-  # editable packages.
-  add_custom_target(
-    xt_test_python
+  # The Python test suites are registered as CTest tests (run by `ctest`, never as standalone build targets) so a single
+  # `ctest --preset ...` exercises both the C++ and the Python suites. Each test runs through `uv run`: uv assembles an
+  # ephemeral environment (no manually-created/activated virtualenv) pinned to the very interpreter the bindings were
+  # compiled against (${Python_EXECUTABLE}, so the cpython ABI of the built .so modules matches), installs the freshly
+  # built packages editable from the build tree plus the pytest tooling, and runs pytest. dune.gdt depends on the
+  # exact-version dune.xt, so the gdt suite installs both editable packages. The bindings .so modules must be built
+  # before `ctest` runs (CTest does not build dependencies): build the `bindings` target first.
+  add_test(
+    NAME xt_test_python
     COMMAND
-      ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-xt "uv" "run" "--no-project" "--python"
-      "${Python_EXECUTABLE}" "--with-editable" "${CMAKE_BINARY_DIR}/python/xt" "--with" "pytest" "--with" "pytest-cov"
-      "--with" "pytest-regressions" "--with" "hypothesis" "python" "-m" "pytest" "${CMAKE_BINARY_DIR}/python/xt" "--cov"
-      "${CMAKE_CURRENT_SOURCE_DIR}/" "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/xt"
-    DEPENDS bindings
-    VERBATIM USES_TERMINAL)
-  add_custom_target(
-    gdt_test_python
+      uv run --no-project --python ${Python_EXECUTABLE} --with-editable ${CMAKE_BINARY_DIR}/python/xt --with pytest
+      --with pytest-cov --with pytest-regressions --with hypothesis python -m pytest ${CMAKE_BINARY_DIR}/python/xt
+      --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml)
+  set_tests_properties(
+    xt_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/xt ENVIRONMENT
+                              COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-xt LABELS "dune-gdt-test;python_test")
+  add_test(
+    NAME gdt_test_python
     COMMAND
-      ${CMAKE_COMMAND} -E env COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt "uv" "run" "--no-project" "--python"
-      "${Python_EXECUTABLE}" "--with-editable" "${CMAKE_BINARY_DIR}/python/xt" "--with-editable"
-      "${CMAKE_BINARY_DIR}/python/gdt" "--with" "pytest" "--with" "pytest-cov" "--with" "pytest-regressions" "--with"
-      "hypothesis" "python" "-m" "pytest" "${CMAKE_BINARY_DIR}/python/gdt" "--cov" "${CMAKE_CURRENT_SOURCE_DIR}/"
-      "--junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/python/gdt"
-    DEPENDS bindings
-    VERBATIM USES_TERMINAL)
+      uv run --no-project --python ${Python_EXECUTABLE} --with-editable ${CMAKE_BINARY_DIR}/python/xt --with-editable
+      ${CMAKE_BINARY_DIR}/python/gdt --with pytest --with pytest-cov --with pytest-regressions --with hypothesis python
+      -m pytest ${CMAKE_BINARY_DIR}/python/gdt --cov ${CMAKE_CURRENT_SOURCE_DIR}/
+      --junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml)
+  set_tests_properties(
+    gdt_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/gdt ENVIRONMENT
+                               COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt LABELS "dune-gdt-test;python_test")
 
+  # Coverage-processing targets (moved here from the CI workflow). Run them after `ctest`: the pytest tests above write
+  # the coverage.py data files (coverage-xt, coverage-gdt) into the build dir, and the instrumented C++ tests (the
+  # release_coverage preset) write the gcov .gcda/.gcno files under the build tree. Both gcovr and coverage.py are
+  # pulled on the fly by uv (no manually-managed venv); they are also listed in the `infrastructure` dev group in
+  # python/xt/pyproject.toml.
+  if(NOT TARGET coverage_cpp)
+    # gcov data under the build tree -> Cobertura XML codecov understands, filtered to our own dune/ sources.
+    add_custom_target(
+      coverage_cpp
+      COMMAND
+        uv run --no-project --with gcovr gcovr --root ${CMAKE_SOURCE_DIR} --filter ${CMAKE_SOURCE_DIR}/dune/
+        --gcov-ignore-parse-errors --exclude-unreachable-branches --exclude-throw-branches --print-summary --xml-pretty
+        -o ${CMAKE_BINARY_DIR}/coverage-cpp.xml ${CMAKE_BINARY_DIR}
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      VERBATIM USES_TERMINAL)
+  endif()
+  if(NOT TARGET coverage_python)
+    # combine the two coverage.py data files written by the pytest CTest runs and emit one XML.
+    add_custom_target(
+      coverage_python
+      COMMAND uv run --no-project --with coverage python -m coverage combine coverage-xt coverage-gdt
+      COMMAND uv run --no-project --with coverage python -m coverage xml -o ${CMAKE_BINARY_DIR}/coverage-python.xml
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      VERBATIM USES_TERMINAL)
+  endif()
+  if(NOT TARGET coverage)
+    add_custom_target(coverage DEPENDS coverage_cpp coverage_python)
+  endif()
+
+  # test_python is kept as a (now empty) aggregate build target for backwards compatibility: the xt/gdt Python suites it
+  # used to drive are registered as CTest tests above and are run via `ctest`, not as standalone build targets.
   if(NOT TARGET test_python)
     add_custom_target(test_python)
   endif(NOT TARGET test_python)
-
-  add_dependencies(test_python xt_test_python gdt_test_python)
 endmacro(DXT_ADD_PYTHON_TESTS)

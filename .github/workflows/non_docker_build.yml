@@ -189,19 +189,13 @@ jobs:
       run: |
         sudo apt-get update
         # xvfb gives the Python binding tests a headless display; both legs run
-        # those tests. gcovr is pulled separately (coverage leg only) via pipx.
+        # those tests. gcovr/coverage.py are pulled on the fly by uv inside the
+        # CMake coverage_cpp / coverage_python targets (coverage leg only).
         sudo apt-get install -y ninja-build ccache xvfb
 
-    - name: Install coverage tooling
-      # gcovr turns the gcov .gcda/.gcno files produced by the instrumented build
-      # into a Cobertura XML report codecov understands. Only needed on the
-      # coverage leg, which alone compiles with instrumentation.
-      if: ${{ matrix.coverage }}
-      run: pipx install gcovr
-
     - name: Set up uv
-      # Both legs run the Python test suite, which the CMake xt_test_python /
-      # gdt_test_python targets execute via `uv run` (no manually-managed venv).
+      # Both legs run the Python test suite, which the ctest xt_test_python /
+      # gdt_test_python tests execute via `uv run` (no manually-managed venv).
       uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
       with:
         # gate the uv cache to trusted runs (pushes/merge queue and same-repo
@@ -243,50 +237,34 @@ jobs:
         cmake --build --preset=${{ matrix.preset }} --target test_binaries --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
         ccache --show-stats
 
-    - name: Test with CTest
-      run: |
-        # Run the ~400 test executables concurrently. ctest_parallel (2x vCPU,
-        # from the config job) oversubscribes since the tests are short/IO-light.
-        ctest --preset=${{ matrix.preset }} --parallel ${{ needs.config.outputs.ctest_parallel }}
-
     - name: Build Python bindings
-      # Both legs run the Python test suite, so both build the .so bindings.
+      # Both legs run the Python test suite (now part of ctest), so both build the
+      # .so bindings first — CTest does not build dependencies, and the
+      # xt_test_python / gdt_test_python tests need the compiled modules present.
       run: cmake --build --preset=${{ matrix.preset }} --target bindings --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
 
-    - name: Run Python tests (with coverage)
-      # The xt_test_python / gdt_test_python targets run pytest with --cov and
-      # write coverage.py data files (coverage-xt, coverage-gdt) into the build
-      # dir. xvfb-run wraps the whole invocation so any visualisation-backed test
-      # has a display. We intentionally skip the test_docs target (notebook
-      # execution) here — that is covered by the build_docs job. The coverage.py
-      # data is only converted and uploaded on the coverage leg below.
+    - name: Test with CTest
+      # Runs both the C++ suite and the Python (pytest) suite — the latter is now
+      # registered as ctest tests (xt_test_python / gdt_test_python) rather than a
+      # standalone build target. xvfb-run wraps the whole invocation so any
+      # visualisation-backed binding test has a headless display. The pytest tests
+      # write coverage.py data files (coverage-xt, coverage-gdt) into the build dir
+      # for the coverage_python target below. ctest_parallel (2x vCPU, from the
+      # config job) oversubscribes the ~400 short/IO-light C++ executables.
       run: |
-        xvfb-run -a cmake --build --preset=${{ matrix.preset }} \
-          --target xt_test_python gdt_test_python
+        xvfb-run -a ctest --preset=${{ matrix.preset }} --parallel ${{ needs.config.outputs.ctest_parallel }}
 
-    - name: Collect C++ coverage (gcovr -> Cobertura XML)
+    - name: Collect C++ coverage (coverage_cpp target -> Cobertura XML)
+      # gcovr is run by the CMake coverage_cpp target (pulled on the fly via uv);
+      # it writes build/<preset>/coverage-cpp.xml.
       if: ${{ matrix.coverage }}
-      run: |
-        gcovr \
-          --root "${GITHUB_WORKSPACE}" \
-          --filter "${GITHUB_WORKSPACE}/dune/" \
-          --gcov-ignore-parse-errors \
-          --exclude-unreachable-branches \
-          --exclude-throw-branches \
-          --print-summary \
-          --xml-pretty -o "${GITHUB_WORKSPACE}/coverage-cpp.xml" \
-          "${GITHUB_WORKSPACE}/build/${{ matrix.preset }}"
+      run: cmake --build --preset=${{ matrix.preset }} --target coverage_cpp
 
-    - name: Collect Python coverage (coverage.py -> XML)
+    - name: Collect Python coverage (coverage_python target -> XML)
+      # the CMake coverage_python target combines the two coverage.py data files
+      # written by the pytest ctest runs and writes build/<preset>/coverage-python.xml.
       if: ${{ matrix.coverage }}
-      run: |
-        # the pytest run wrote two coverage.py data files (coverage-xt,
-        # coverage-gdt) into the build dir; combine them into one XML. coverage is
-        # pulled on the fly by uv (no manually-managed venv), matching the rest of
-        # the Python tooling in this job.
-        cd "${GITHUB_WORKSPACE}/build/${{ matrix.preset }}"
-        uv run --no-project --with coverage python -m coverage combine coverage-xt coverage-gdt
-        uv run --no-project --with coverage python -m coverage xml -o "${GITHUB_WORKSPACE}/coverage-python.xml"
+      run: cmake --build --preset=${{ matrix.preset }} --target coverage_python
 
     - name: Upload C++ coverage to Codecov
       if: ${{ matrix.coverage }}
@@ -294,7 +272,7 @@ jobs:
       with:
         # OIDC (id-token) auth instead of an upload token; see job permissions.
         use_oidc: true
-        files: ${{ github.workspace }}/coverage-cpp.xml
+        files: ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-cpp.xml
         flags: cpp
         # We already produced the Cobertura XML with gcovr above; stop the action
         # from searching the tree and from running its own coverage plugins (the
@@ -310,7 +288,7 @@ jobs:
       uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         use_oidc: true
-        files: ${{ github.workspace }}/coverage-python.xml
+        files: ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-python.xml
         flags: python
         disable_search: true
         plugins: noop
