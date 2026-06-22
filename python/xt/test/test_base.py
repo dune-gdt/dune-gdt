@@ -76,3 +76,25 @@ def test_runmodule_exits_with_pytest_return_code(monkeypatch):
         runmodule("some_file.py")
     assert excinfo.value.code == 0
     assert calls["argv"][-1] == "some_file.py"
+
+
+def test_runmodule_propagates_nonzero_return_code(monkeypatch):
+    monkeypatch.setattr("pytest.main", lambda argv: 3)
+    with pytest.raises(SystemExit) as excinfo:
+        runmodule("some_file.py")
+    assert excinfo.value.code == 3
+
+
+def test_runmodule_forwards_extra_argv(monkeypatch):
+    calls = {}
+
+    def fake_main(argv):
+        calls["argv"] = argv
+        return 0
+
+    monkeypatch.setattr("pytest.main", fake_main)
+    # everything after the program name is forwarded, with the module file appended last
+    monkeypatch.setattr("sys.argv", ["runner", "-k", "pattern", "-x"])
+    with pytest.raises(SystemExit):
+        runmodule("mod_file.py")
+    assert calls["argv"] == ["-k", "pattern", "-x", "mod_file.py"]
