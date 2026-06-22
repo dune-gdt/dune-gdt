@@ -15,6 +15,9 @@
 #ifndef DUNE_GDT_TOOLS_HYPERBOLIC_HH
 #define DUNE_GDT_TOOLS_HYPERBOLIC_HH
 
+#include <algorithm>
+#include <cmath>
+
 #include <dune/geometry/quadraturerules.hh>
 
 #include <dune/grid/common/gridview.hh>
@@ -64,10 +67,12 @@ double estimate_dt_for_hyperbolic_system(
       }
     }
   }
-  // ensure distinct minima/maxima (otherwise the grid creation below will fail)
+  // ensure distinct minima/maxima (otherwise the grid creation below will fail), in particular for components with
+  // constant zero or negative values (an additive perturbation of 1e-6 * data_minimum would stay zero for
+  // data_minimum == 0 and would yield an inverted interval for data_minimum < 0)
   for (size_t ii = 0; ii < m; ++ii)
     if (!(data_minimum[ii] < data_maximum[ii]))
-      data_maximum[ii] = data_minimum[ii] + 1e-6 * data_minimum[ii];
+      data_maximum[ii] = data_minimum[ii] + std::max(1e-6 * std::abs(data_minimum[ii]), 1e-6);
   // estimate flux derivative range
   R max_flux_derivative = std::numeric_limits<R>::min();
   const auto flux_range_grid = XT::Grid::make_cube_grid<YaspGrid<m, EquidistantOffsetCoordinates<double, m>>>(
