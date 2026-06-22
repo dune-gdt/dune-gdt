@@ -17,6 +17,7 @@
 #define DUNE_GDT_TIMESTEPPER_INTERFACE_HH
 
 #include <cstdio>
+#include <iterator>
 #include <utility>
 
 #include <dune/xt/common/memory.hh>
@@ -354,10 +355,16 @@ public:
    */
   virtual const typename DiscreteSolutionType::value_type& solution_closest_to_time(const RangeFieldType t) const
   {
-    if (solution().empty())
+    const auto& sol = solution();
+    if (sol.empty())
       DUNE_THROW(Dune::InvalidStateException, "Solution is empty!");
-    return solution().upper_bound(t)->first - t > t - solution().lower_bound(t)->first ? *solution().lower_bound(t)
-                                                                                       : *solution().upper_bound(t);
+    const auto upper = sol.lower_bound(t); // first stored time point >= t
+    if (upper == sol.end()) // t is larger than all stored time points
+      return *std::prev(upper);
+    if (upper == sol.begin()) // t is smaller than (or equal to) the first stored time point
+      return *upper;
+    const auto lower = std::prev(upper); // last stored time point < t
+    return (upper->first - t < t - lower->first) ? *upper : *lower;
   }
 
   virtual const DiscreteFunctionType& solution_at_time(const RangeFieldType t) const
