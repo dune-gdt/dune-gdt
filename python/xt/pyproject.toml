@@ -113,8 +113,8 @@ exclude = [
 # (cmake/modules/DuneXTTesting.cmake) runs `uv run --group test ...` from the binary dir (this pyproject is the
 # assembly-point config), so the deps are declared here in one place rather than spelled out as individual `--with`
 # flags on the uv command line. Besides the pytest tooling this includes the runtime deps exercised by the pure-Python
-# unit tests: pyparsing (dune.xt.cmake.parse_cache, dxt_code_generation), jinja2 (dxt_code_generation) and the VTK
-# reader stack (vtk/lxml/xmljson).
+# unit tests: pyparsing (dune.xt.cmake.parse_cache, dxt_code_generation), jinja2 (dxt_code_generation), the VTK
+# reader stack (vtk/lxml/xmljson) and hatchling (the hatch_build.py CustomMetadataHook/CustomBuildHook tests).
 [dependency-groups]
 test = [
   "pytest",
@@ -126,6 +126,7 @@ test = [
   "vtk",
   "lxml",
   "xmljson",
+  "hatchling",
 ]
 
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.

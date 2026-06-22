@@ -58,13 +58,15 @@ exclude = [
 
 # PEP 735 dependency group with the test tooling for the dune.gdt suite. The `gdt_test_python` CMake target
 # (cmake/modules/DuneXTTesting.cmake) runs `uv run --group test ...` from the binary dir, so the deps are declared here
-# rather than as individual `--with` flags on the uv command line.
+# rather than as individual `--with` flags on the uv command line. hatchling is needed by the hatch_build.py
+# CustomMetadataHook/CustomBuildHook tests.
 [dependency-groups]
 test = [
   "pytest",
   "pytest-cov",
   "pytest-regressions",
   "hypothesis",
+  "hatchling",
 ]
 
 # uv runs the gdt suite in project mode (cmake/modules/DuneXTTesting.cmake) and resolves the project's
