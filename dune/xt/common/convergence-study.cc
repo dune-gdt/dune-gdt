@@ -142,6 +142,81 @@ void ConvergenceStudy::print_eoc(std::ostream& out,
   }
 } // ... print_eoc(...)
 
+std::array<std::string, 3> ConvergenceStudy::wrap_quantity_id(const std::string& id, const size_t column_width) const
+{
+  std::string first_row;
+  std::string second_row;
+  std::string third_row;
+  auto words = tokenize(id, " ");
+  if (id.size() <= column_width) {
+    first_row = std::string(column_width, ' ');
+    second_row = lfill(id, column_width);
+    third_row = std::string(column_width, ' ');
+    return {first_row, second_row, third_row};
+  }
+  // lets see if we can fit all words in these rows somehow nicely
+  int last_row = 0;
+  for (auto word_it = words.begin(); word_it != words.end(); ++word_it) {
+    const auto& word = *word_it;
+    if (word.size() > column_width)
+      break;
+    if (last_row <= 1 && word.size() <= (column_width - first_row.size() - (first_row.empty() ? 0 : 1))) {
+      first_row += (first_row.empty() ? "" : " ") + word;
+      last_row = 1;
+      words.erase(word_it);
+    } else if (last_row <= 2 && word.size() <= (column_width - second_row.size() - (second_row.empty() ? 0 : 1))) {
+      second_row += (second_row.empty() ? "" : " ") + word;
+      last_row = 2;
+      words.erase(word_it);
+    } else if (last_row <= 3 && word.size() <= (column_width - third_row.size() - (third_row.empty() ? 0 : 1))) {
+      third_row += (third_row.empty() ? "" : " ") + word;
+      last_row = 3;
+      words.erase(word_it);
+    }
+  }
+  if (words.empty()) {
+    // this worked, align right
+    first_row = lfill(first_row, column_width);
+    second_row = lfill(second_row, column_width);
+    third_row = lfill(third_row, column_width);
+    return {first_row, second_row, third_row};
+  }
+  // the above did not work/cover all words, now brute force
+  if (id.size() <= column_width) {
+    first_row = lfill(id, column_width);
+    second_row = std::string(column_width, ' ');
+    third_row = std::string(column_width, ' ');
+  } else if (id.size() <= 2 * column_width) {
+    first_row = id.substr(0, column_width);
+    second_row = lfill(id.substr(column_width, column_width), column_width);
+    third_row = std::string(column_width, ' ');
+  } else {
+    first_row = id.substr(0, column_width);
+    second_row = id.substr(column_width, column_width);
+    third_row = lfill(id.substr(2 * column_width), column_width);
+  }
+  return {first_row, second_row, third_row};
+} // ... wrap_quantity_id(...)
+
+void ConvergenceStudy::print_norm_eocs(
+    std::ostream& out,
+    const size_t eoc_column_width,
+    const std::map<size_t, std::map<std::string, std::map<std::string, double>>>& data,
+    const size_t level,
+    const std::string& id,
+    const std::vector<std::string>& actual_targets) const
+{
+  for (const auto& target_id : actual_targets) {
+    if (level == 0)
+      out << "| " << lfill("----", eoc_column_width) << " " << std::flush;
+    else {
+      out << "| ";
+      print_eoc(out, eoc_column_width, data, level, "norm", id, target_id);
+      out << " " << std::flush;
+    }
+  }
+} // ... print_norm_eocs(...)
+
 std::map<std::string, std::map<std::string, std::map<size_t, double>>>
 ConvergenceStudy::run(const std::vector<std::string>& only_these, std::ostream& out)
 {
@@ -209,60 +284,10 @@ ConvergenceStudy::run(const std::vector<std::string>& only_these, std::ostream& 
 #endif // 0
   // - quantities
   for (const auto& id : actual_quantities) {
-    std::string first_row;
-    std::string second_row;
-    std::string third_row;
-    auto words = tokenize(id, " ");
-    if (id.size() <= column_width) {
-      first_row = std::string(column_width, ' ');
-      second_row = lfill(id, column_width);
-      third_row = std::string(column_width, ' ');
-    } else {
-      // lets see if we can fit all words in these rows somehow nicely
-      int last_row = 0;
-      for (auto word_it = words.begin(); word_it != words.end(); ++word_it) {
-        const auto& word = *word_it;
-        if (word.size() > column_width)
-          break;
-        if (last_row <= 1 && word.size() <= (column_width - first_row.size() - (first_row.empty() ? 0 : 1))) {
-          first_row += (first_row.empty() ? "" : " ") + word;
-          last_row = 1;
-          words.erase(word_it);
-        } else if (last_row <= 2 && word.size() <= (column_width - second_row.size() - (second_row.empty() ? 0 : 1))) {
-          second_row += (second_row.empty() ? "" : " ") + word;
-          last_row = 2;
-          words.erase(word_it);
-        } else if (last_row <= 3 && word.size() <= (column_width - third_row.size() - (third_row.empty() ? 0 : 1))) {
-          third_row += (third_row.empty() ? "" : " ") + word;
-          last_row = 3;
-          words.erase(word_it);
-        }
-      }
-      if (words.empty()) {
-        // this worked, align right
-        first_row = lfill(first_row, column_width);
-        second_row = lfill(second_row, column_width);
-        third_row = lfill(third_row, column_width);
-      } else {
-        // the above did not work/cover all words, now brute force
-        if (id.size() <= column_width) {
-          first_row = lfill(id, column_width);
-          second_row = std::string(column_width, ' ');
-          third_row = std::string(column_width, ' ');
-        } else if (id.size() <= 2 * column_width) {
-          first_row = id.substr(0, column_width);
-          second_row = lfill(id.substr(column_width, column_width), column_width);
-          third_row = std::string(column_width, ' ');
-        } else {
-          first_row = id.substr(0, column_width);
-          second_row = id.substr(column_width, column_width);
-          third_row = lfill(id.substr(2 * column_width), column_width);
-        }
-      }
-    }
-    h1 += "| " + first_row + " ";
-    d1 += "+ " + second_row + " ";
-    h2 += "| " + third_row + " ";
+    const auto rows = wrap_quantity_id(id, column_width);
+    h1 += "| " + rows[0] + " ";
+    d1 += "+ " + rows[1] + " ";
+    h2 += "| " + rows[2] + " ";
     delim += "+" + std::string(column_width + 2, '-');
   }
   // print header
@@ -290,15 +315,7 @@ ConvergenceStudy::run(const std::vector<std::string>& only_these, std::ostream& 
       std::stringstream ss;
       ss << std::setprecision(2) << std::scientific << extract(data, level, "norm", id);
       out << "| " << lfill(ss.str(), column_width) << " " << std::flush;
-      for (const auto& target_id : actual_targets) {
-        if (level == 0)
-          out << "| " << lfill("----", eoc_column_width) << " " << std::flush;
-        else {
-          out << "| ";
-          print_eoc(out, eoc_column_width, data, level, "norm", id, target_id);
-          out << " " << std::flush;
-        }
-      }
+      print_norm_eocs(out, eoc_column_width, data, level, id, actual_targets);
     }
 // - estimates
 #if 0
