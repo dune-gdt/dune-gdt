@@ -98,6 +98,7 @@ class ConstLocalDofVector
   using BaseType = XT::LA::VectorInterface<Traits>;
 
 public:
+  using typename BaseType::derived_type;
   using typename BaseType::ScalarType;
   using VectorType = Vector;
   using MapperType = MapperInterface<GridView>;
@@ -139,6 +140,25 @@ public:
   void resize(const size_t new_size)
   {
     DUNE_THROW_IF(this->size() != new_size, Exceptions::dof_vector_error, "this does not make sense!");
+  }
+
+  // The following container arithmetic is required by ContainerInterface, but does not make sense for a (local) view
+  // onto a global vector. We provide explicit overrides that throw (in line with add_to_entry/set_entry below): without
+  // them the CRTP forwarding in ContainerInterface would recurse infinitely in release (NDEBUG) builds.
+  derived_type copy() const
+  {
+    DUNE_THROW(Exceptions::dof_vector_error, "a (Const)LocalDofVector cannot be copied as a standalone container!");
+    return this->as_imp(); // unreachable, only here to satisfy the return type
+  }
+
+  void scal(const ScalarType& /*alpha*/)
+  {
+    DUNE_THROW(Exceptions::dof_vector_error, "a (Const)LocalDofVector is not mutable as a standalone container!");
+  }
+
+  void axpy(const ScalarType& /*alpha*/, const derived_type& /*xx*/)
+  {
+    DUNE_THROW(Exceptions::dof_vector_error, "a (Const)LocalDofVector is not mutable as a standalone container!");
   }
 
   void add_to_entry(const size_t /*ii*/, const ScalarType& /*value*/)

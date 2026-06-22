@@ -18,6 +18,7 @@
 #include <dune/xt/la/container/istl.hh>
 
 #include <dune/gdt/discretefunction/default.hh>
+#include <dune/gdt/exceptions.hh>
 #include <dune/gdt/norms.hh>
 #include <dune/gdt/spaces/h1/continuous-lagrange.hh>
 
@@ -74,6 +75,35 @@ GTEST_TEST(discrete_function, addition_of_dofs)
   u += u;
   for (size_t ii = 0; ii < n; ++ii)
     EXPECT_DOUBLE_EQ(2., u.dofs().vector().get_entry(ii));
+}
+
+
+GTEST_TEST(discrete_function, local_dof_vector_view_arithmetic_throws)
+{
+  auto grid = XT::Grid::make_cube_grid<G>();
+  auto grid_view = grid.leaf_view();
+  const auto space = make_continuous_lagrange_space(grid_view, 1);
+  const auto n = space.mapper().size();
+
+  auto u = make_discrete_function<V>(space);
+  for (size_t ii = 0; ii < n; ++ii)
+    u.dofs().vector().set_entry(ii, 1.);
+
+  auto local_dofs = u.dofs().localize();
+  const auto element = *grid_view.template begin<0>();
+  local_dofs.bind(element);
+
+  // localized read access works as expected
+  ASSERT_GT(local_dofs.size(), 0u);
+  for (size_t ii = 0; ii < local_dofs.size(); ++ii)
+    EXPECT_DOUBLE_EQ(1., local_dofs.get_entry(ii));
+
+  // The container arithmetic required by ContainerInterface does not make sense for a (local) view onto a global
+  // vector: it must throw instead of recursing infinitely (the latter happened in NDEBUG builds before the explicit
+  // copy/scal/axpy overrides were added to ConstLocalDofVector).
+  EXPECT_THROW(local_dofs.copy(), Exceptions::dof_vector_error);
+  EXPECT_THROW(local_dofs.scal(2.), Exceptions::dof_vector_error);
+  EXPECT_THROW(local_dofs.axpy(2., local_dofs), Exceptions::dof_vector_error);
 }
 
 
