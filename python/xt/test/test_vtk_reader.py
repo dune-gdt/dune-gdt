@@ -112,7 +112,7 @@ def test_read_vtkfile_single(tmp_path):
     # a single file is reported as one timestep at t=0.0
     assert len(result) == 1
     timestep, poly = result[0]
-    assert timestep == 0.0
+    assert timestep == pytest.approx(0.0)
     assert poly.GetNumberOfPoints() == 4
 
 
