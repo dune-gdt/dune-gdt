@@ -33,7 +33,10 @@ docs = [
     "furo",
     "myst-nb>=0.16",
     "pymor",
-    "clangquill>=0.5.1",
+    # clangquill only supports Python >=3.13. Mark it so that resolving the project's extras (which `uv run --group test`
+    # does in project mode, see cmake/modules/DuneXTTesting.cmake) stays satisfiable on the Python 3.12 test builds; the
+    # docs themselves are built on 3.13. Without the marker the test resolution fails with an unsatisfiable requirement.
+    'clangquill>=0.5.1; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
 ]
@@ -105,6 +108,25 @@ exclude = [
 "scripts/dxt_code_generation.py" = "dxt_code_generation.py"
 "scripts/generate_compare_functions.py" = "generate_compare_functions.py"
 "wrapper/dune_xt_execute.py" = "dune_xt_execute.py"
+
+# PEP 735 dependency group with the full set of dependencies the test suite needs. The `xt_test_python` CMake target
+# (cmake/modules/DuneXTTesting.cmake) runs `uv run --group test ...` from the binary dir (this pyproject is the
+# assembly-point config), so the deps are declared here in one place rather than spelled out as individual `--with`
+# flags on the uv command line. Besides the pytest tooling this includes the runtime deps exercised by the pure-Python
+# unit tests: pyparsing (dune.xt.cmake.parse_cache, dxt_code_generation), jinja2 (dxt_code_generation) and the VTK
+# reader stack (vtk/lxml/xmljson).
+[dependency-groups]
+test = [
+  "pytest",
+  "pytest-cov",
+  "pytest-regressions",
+  "hypothesis",
+  "pyparsing",
+  "jinja2",
+  "vtk",
+  "lxml",
+  "xmljson",
+]
 
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.
 # test/base.py (not test_*.py), so without this pattern pytest would collect nothing. The `make xt_test_python` target

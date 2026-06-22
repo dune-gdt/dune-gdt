@@ -286,28 +286,26 @@ endmacro(DXT_EXCLUDE_FROM_HEADERCHECK)
 
 macro(DXT_ADD_PYTHON_TESTS)
   # The Python test suites are registered as CTest tests (run by `ctest`, never as standalone build targets) so a single
-  # `ctest --preset ...` exercises both the C++ and the Python suites. Each test runs through `uv run`: uv assembles an
-  # ephemeral environment (no manually-created/activated virtualenv) pinned to the very interpreter the bindings were
-  # compiled against (${Python_EXECUTABLE}, so the cpython ABI of the built .so modules matches), installs the freshly
-  # built packages editable from the build tree plus the pytest tooling, and runs pytest. dune.gdt depends on the
-  # exact-version dune.xt, so the gdt suite installs both editable packages. The bindings .so modules must be built
-  # before `ctest` runs (CTest does not build dependencies): build the `bindings` target first.
-  add_test(
-    NAME xt_test_python
-    COMMAND
-      uv run --no-project --python ${Python_EXECUTABLE} --with-editable ${CMAKE_BINARY_DIR}/python/xt --with pytest
-      --with pytest-cov --with pytest-regressions --with hypothesis python -m pytest ${CMAKE_BINARY_DIR}/python/xt
-      --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml)
+  # `ctest --preset ...` exercises both the C++ and the Python suites. Each runs through `uv run`, pinned to the very
+  # interpreter the bindings were compiled against (${Python_EXECUTABLE}, so the cpython ABI of the built .so modules
+  # matches). uv runs in project mode: the test's WORKING_DIRECTORY is the binary-dir assembly point holding the
+  # symlinked pyproject.toml, the configured _version.py and the compiled .so modules, so it is a complete editable
+  # project from uv's point of view. The full set of test dependencies is declared once as the PEP 735 `test` dependency
+  # group in each package's pyproject.toml and pulled in with `--group test` (rather than individual `--with` flags).
+  # dune.gdt depends on the exact-version dune.xt (and its extras re-export the same pin); python/gdt/pyproject.toml
+  # routes every dune.xt requirement to the freshly built editable in the sibling binary dir via [tool.uv.sources], so
+  # resolution is satisfied from the local build rather than an index without needing `--with-editable`. The bindings
+  # .so modules must be built before `ctest` runs (CTest does not build dependencies): build the `bindings` target
+  # first.
+  add_test(NAME xt_test_python
+           COMMAND uv run --python ${Python_EXECUTABLE} --group test python -m pytest ${CMAKE_BINARY_DIR}/python/xt
+                   --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml)
   set_tests_properties(
     xt_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/xt ENVIRONMENT
                               COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-xt LABELS "dune-gdt-test;python_test")
-  add_test(
-    NAME gdt_test_python
-    COMMAND
-      uv run --no-project --python ${Python_EXECUTABLE} --with-editable ${CMAKE_BINARY_DIR}/python/xt --with-editable
-      ${CMAKE_BINARY_DIR}/python/gdt --with pytest --with pytest-cov --with pytest-regressions --with hypothesis python
-      -m pytest ${CMAKE_BINARY_DIR}/python/gdt --cov ${CMAKE_CURRENT_SOURCE_DIR}/
-      --junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml)
+  add_test(NAME gdt_test_python
+           COMMAND uv run --python ${Python_EXECUTABLE} --group test python -m pytest ${CMAKE_BINARY_DIR}/python/gdt
+                   --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml)
   set_tests_properties(
     gdt_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/gdt ENVIRONMENT
                                COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt LABELS "dune-gdt-test;python_test")

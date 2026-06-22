@@ -84,15 +84,32 @@ test_tpl = """
   }
 """  # noqa: E501
 
-bindir = os.path.dirname(os.path.abspath(__file__))
-fn_test = os.path.join(
-    bindir, "..", "dune", "xt", "common", "test", "float_cmp_generated.hxx"
-)
-fn_common = os.path.join(
-    bindir, "..", "dune", "xt", "common", "float_cmp_generated.hxx"
-)
 cmps = ["eq", "ne", "gt", "lt", "ge", "le"]
-with open(fn_test, "w") as test_header, open(fn_common, "w") as common_header:
-    for name in cmps:
-        common_header.write(Template(common_tpl).substitute(id=name))
-        test_header.write(Template(test_tpl).substitute(id=name, ID=name.upper()))
+
+
+def render_common(name):
+    """Render the common float-comparison overloads for a single comparator."""
+    return Template(common_tpl).substitute(id=name)
+
+
+def render_test(name):
+    """Render the DXTC_EXPECT_FLOAT_* test helpers for a single comparator."""
+    return Template(test_tpl).substitute(id=name, ID=name.upper())
+
+
+def main(bindir=None):
+    bindir = bindir or os.path.dirname(os.path.abspath(__file__))
+    fn_test = os.path.join(
+        bindir, "..", "dune", "xt", "common", "test", "float_cmp_generated.hxx"
+    )
+    fn_common = os.path.join(
+        bindir, "..", "dune", "xt", "common", "float_cmp_generated.hxx"
+    )
+    with open(fn_test, "w") as test_header, open(fn_common, "w") as common_header:
+        for name in cmps:
+            common_header.write(render_common(name))
+            test_header.write(render_test(name))
+
+
+if __name__ == "__main__":
+    main()
