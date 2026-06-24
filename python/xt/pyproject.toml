@@ -36,7 +36,8 @@ docs = [
     # clangquill only supports Python >=3.13. Mark it so that resolving the project's extras (which `uv run --group test`
     # does in project mode, see cmake/modules/DuneXTTesting.cmake) stays satisfiable on the Python 3.12 test builds; the
     # docs themselves are built on 3.13. Without the marker the test resolution fails with an unsatisfiable requirement.
-    'clangquill>=0.5.1; python_version >= "3.13"',
+    # >=0.6.0 for the hierarchical group_by="namespace" page layout (docs/source/conf.py).
+    'clangquill>=0.6.0; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
 ]
