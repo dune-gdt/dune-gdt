@@ -586,6 +586,11 @@ jobs:
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
       # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
       # inventory fetches emit network-dependent warnings unrelated to the docs build.
+      # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
+      # it (4 vCPU / 16 GB, see runs-on labels above), and the clangquill C++ API now
+      # emits one page per class/function (group_by="namespace"), a far larger document
+      # set whose per-worker environment copies under "-j auto" OOM-killed the 16 GB box
+      # mid-write. Single-threaded keeps peak RAM bounded; the 60 min timeout is ample.
       env:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
       run: |
@@ -594,7 +599,7 @@ jobs:
         # --no-project: ignore the repo-root pyproject stub; run in the venv built above
         xvfb-run -a uv run --no-project \
           --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
-          python -m sphinx --keep-going -j auto -b html \
+          python -m sphinx --keep-going -j 1 -b html \
           "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
           echo "::error::one or more executed documentation notebooks failed (see dumped reports below)"
