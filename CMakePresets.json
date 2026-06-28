@@ -335,7 +335,12 @@
       "configurePreset": "clang22-debug",
       "inherits": [
         "test-base"
-      ]
+      ],
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false,
+        "timeout": 2400
+      }
     },
     {
       "name": "clang22-release_coverage",
@@ -343,7 +348,12 @@
       "configurePreset": "clang22-release_coverage",
       "inherits": [
         "test-base"
-      ]
+      ],
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false,
+        "timeout": 2400
+      }
     }
   ]
 }
