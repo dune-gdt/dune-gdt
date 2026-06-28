@@ -111,8 +111,9 @@ public:
     const size_t integrand_order =
         integrand_->order(test_basis_inside, ansatz_basis_inside, test_basis_outside, ansatz_basis_outside)
         + over_integrate_;
-    for (const auto& quadrature_point :
-         QuadratureRules<D, d - 1>::rule(intersection.type(), XT::Common::numeric_cast<int>(integrand_order))) {
+    const auto& quadrature_rule =
+        QuadratureRules<D, d - 1>::rule(intersection.type(), XT::Common::numeric_cast<int>(integrand_order));
+    for (const auto& quadrature_point : quadrature_rule) {
       const auto point_in_reference_intersection = quadrature_point.position();
       if (filter_(intersection, point_in_reference_intersection)) {
         // integration factors
@@ -243,8 +244,9 @@ public:
     result *= 0;
     // loop over all quadrature points
     const size_t integrand_order = integrand_->order(test_basis, ansatz_basis) + over_integrate_;
-    for (const auto& quadrature_point : QuadratureRules<D, d - 1>::rule(
-             intersection.geometry().type(), XT::Common::numeric_cast<int>(integrand_order))) {
+    const auto& quadrature_rule = QuadratureRules<D, d - 1>::rule(
+        intersection.geometry().type(), XT::Common::numeric_cast<int>(integrand_order));
+    for (const auto& quadrature_point : quadrature_rule) {
       const auto point_in_reference_intersection = quadrature_point.position();
       if (filter_(intersection, point_in_reference_intersection)) {
         // integration factors
