@@ -64,15 +64,13 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
   {
     // InnerCoupling: (symmetry_prefactor, diffusion)
     [[maybe_unused]] InnerCouplingType inner_nipdg(-1., 1.); // NIPDG
-    [[maybe_unused]] InnerCouplingType inner_iipdg(0., 1.);  // IIPDG
-    [[maybe_unused]] InnerCouplingType inner_sipdg(1., 1.);  // SIPDG
+    [[maybe_unused]] InnerCouplingType inner_iipdg(0., 1.); // IIPDG
+    [[maybe_unused]] InnerCouplingType inner_sipdg(1., 1.); // SIPDG
     // InnerCoupling: with custom diffusion and weight
     const XT::Functions::GenericGridFunction<E, d, d> diffusion(
         0,
         [](const E&) {},
-        [](const DomainType&, const XT::Common::Parameter&) {
-          return VectorJacobianType{{2., 0.}, {0., 2.}};
-        });
+        [](const DomainType&, const XT::Common::Parameter&) { return VectorJacobianType{{2., 0.}, {0., 2.}}; });
     [[maybe_unused]] InnerCouplingType inner_with_diffusion(1., diffusion);
     [[maybe_unused]] InnerCouplingType inner_with_weight(1., diffusion, diffusion);
     // InnerCoupling: copy constructor
@@ -127,11 +125,9 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
     InnerCouplingType integrand(symmetry_prefactor, 1. /*diffusion=I*/, 1. /*weight=I*/);
     const auto& intersection = find_inner_intersection();
     integrand.bind(intersection);
-    const auto integrand_order =
-        integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
+    const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       integrand.evaluate(
           *scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_, x, rin_in, rin_out, rout_in, rout_out);
@@ -162,14 +158,11 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
           const double dphi_out_dot_n = grad_phi_out[jj][0] * n;
           const double dpsi_in_dot_n = grad_psi_in[ii][0] * n;
           const double dpsi_out_dot_n = grad_psi_out[ii][0] * n;
-          const double expected_in_in = -wm * dphi_in_dot_n * psi_in[ii][0]
-                                        - s * wm * phi_in[jj][0] * dpsi_in_dot_n;
-          const double expected_in_out = -wp * dphi_out_dot_n * psi_in[ii][0]
-                                         + s * wm * phi_out[jj][0] * dpsi_in_dot_n;
-          const double expected_out_in = wm * dphi_in_dot_n * psi_out[ii][0]
-                                         - s * wp * phi_in[jj][0] * dpsi_out_dot_n;
-          const double expected_out_out = wp * dphi_out_dot_n * psi_out[ii][0]
-                                          + s * wp * phi_out[jj][0] * dpsi_out_dot_n;
+          const double expected_in_in = -wm * dphi_in_dot_n * psi_in[ii][0] - s * wm * phi_in[jj][0] * dpsi_in_dot_n;
+          const double expected_in_out = -wp * dphi_out_dot_n * psi_in[ii][0] + s * wm * phi_out[jj][0] * dpsi_in_dot_n;
+          const double expected_out_in = wm * dphi_in_dot_n * psi_out[ii][0] - s * wp * phi_in[jj][0] * dpsi_out_dot_n;
+          const double expected_out_out =
+              wp * dphi_out_dot_n * psi_out[ii][0] + s * wp * phi_out[jj][0] * dpsi_out_dot_n;
           EXPECT_NEAR(expected_in_in, rin_in[ii][jj], 1e-13);
           EXPECT_NEAR(expected_in_out, rin_out[ii][jj], 1e-13);
           EXPECT_NEAR(expected_out_in, rout_in[ii][jj], 1e-13);
@@ -234,8 +227,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
     const auto& binary = static_cast<BinaryBaseType&>(integrand);
     const auto integrand_order = binary.order(*scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> result(2, 2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       binary.evaluate(*scalar_test_, *scalar_ansatz_, x, result);
       const auto x_in = intersection.geometryInInside().global(x);
@@ -282,8 +274,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
     const auto& unary = static_cast<UnaryBaseType&>(integrand);
     const auto integrand_order = unary.order(*scalar_test_);
     DynamicVector<D> result(2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       unary.evaluate(*scalar_test_, x, result);
       const auto x_in = intersection.geometryInInside().global(x);

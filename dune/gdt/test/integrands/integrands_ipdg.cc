@@ -67,9 +67,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     const XT::Functions::GenericGridFunction<E, d, d> weight_gf(
         0,
         [](const E&) {},
-        [](const DomainType&, const XT::Common::Parameter&) {
-          return VectorJacobianType{{2., 0.}, {0., 2.}};
-        });
+        [](const DomainType&, const XT::Common::Parameter&) { return VectorJacobianType{{2., 0.}, {0., 2.}}; });
     [[maybe_unused]] InnerPenaltyType inner3(3.0, weight_gf);
     // InnerPenalty: with custom intersection diameter
     [[maybe_unused]] InnerPenaltyType inner4(1.0, 1.0, [](const I& i) { return XT::Grid::diameter(i); });
@@ -135,11 +133,9 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     integrand.bind(intersection);
     const double h = XT::Grid::diameter(intersection);
     const double effective_penalty = sigma * 0.5 / h;
-    const auto integrand_order =
-        integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
+    const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       integrand.evaluate(
           *scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_, x, rin_in, rin_out, rout_in, rout_out);
@@ -189,11 +185,9 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     // delta = c * (n · I · n) = c * |n|^2 = c  (unit normal)
     // weight_harmonic = (c * c) / (c + c) = c/2
     const double effective_penalty = sigma * (c / 2.) / h;
-    const auto integrand_order =
-        integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
+    const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       integrand.evaluate(
           *scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_, x, rin_in, rin_out, rout_in, rout_out);
@@ -221,8 +215,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     InnerPenaltyType integrand(0.0);
     const auto& intersection = find_inner_intersection();
     integrand.bind(intersection);
-    const auto integrand_order =
-        integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
+    const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
     const auto center = FieldVector<D, d - 1>(0.5);
     integrand.evaluate(
@@ -259,8 +252,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     const double h = XT::Grid::diameter(intersection);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> result(2, 2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result);
       const auto x_in = intersection.geometryInInside().global(x);

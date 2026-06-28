@@ -65,8 +65,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     // Inner with default diameter function
     [[maybe_unused]] ScalarInnerIntegrandType inner1;
     // Inner with custom diameter function
-    [[maybe_unused]] ScalarInnerIntegrandType inner2(
-        [](const I& i) { return XT::Grid::diameter(i); });
+    [[maybe_unused]] ScalarInnerIntegrandType inner2([](const I& i) { return XT::Grid::diameter(i); });
     // Inner copy constructor
     ScalarInnerIntegrandType inner3;
     [[maybe_unused]] ScalarInnerIntegrandType inner4(inner3);
@@ -76,14 +75,12 @@ struct JumpIntegrandTest : public IntegrandTest<G>
 
     // Vector variant
     [[maybe_unused]] VectorInnerIntegrandType vec_inner1;
-    [[maybe_unused]] VectorInnerIntegrandType vec_inner2(
-        [](const I& i) { return XT::Grid::diameter(i); });
+    [[maybe_unused]] VectorInnerIntegrandType vec_inner2([](const I& i) { return XT::Grid::diameter(i); });
 
     // Boundary with default diameter function
     [[maybe_unused]] ScalarBoundaryIntegrandType boundary1;
     // Boundary with custom diameter function
-    [[maybe_unused]] ScalarBoundaryIntegrandType boundary2(
-        [](const I& i) { return XT::Grid::diameter(i); });
+    [[maybe_unused]] ScalarBoundaryIntegrandType boundary2([](const I& i) { return XT::Grid::diameter(i); });
     // Boundary copy constructor
     ScalarBoundaryIntegrandType boundary3;
     [[maybe_unused]] ScalarBoundaryIntegrandType boundary4(boundary3);
@@ -123,11 +120,9 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     const auto& intersection = find_inner_intersection();
     integrand.bind(intersection);
     const auto h = XT::Grid::diameter(intersection);
-    const auto integrand_order =
-        integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
+    const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       integrand.evaluate(
           *scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_, x, rin_in, rin_out, rout_in, rout_out);
@@ -166,11 +161,9 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     const auto& intersection = find_inner_intersection();
     integrand.bind(intersection);
     const auto h = XT::Grid::diameter(intersection);
-    const auto integrand_order =
-        integrand.order(*vector_test_, *vector_ansatz_, *vector_test_, *vector_ansatz_);
+    const auto integrand_order = integrand.order(*vector_test_, *vector_ansatz_, *vector_test_, *vector_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       integrand.evaluate(
           *vector_test_, *vector_ansatz_, *vector_test_, *vector_ansatz_, x, rin_in, rin_out, rout_in, rout_out);
@@ -221,8 +214,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     const auto h = XT::Grid::diameter(intersection);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> result(2, 2, 0.);
-    for (const auto& qp :
-         Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
+    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto& x = qp.position();
       integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result);
       const auto x_in = intersection.geometryInInside().global(x);
@@ -242,8 +234,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     ScalarInnerIntegrandType integrand([custom_h](const I&) { return custom_h; });
     const auto& intersection = find_inner_intersection();
     integrand.bind(intersection);
-    const auto integrand_order =
-        integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
+    const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     // Use a single quadrature point at the center of the intersection.
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
     const auto center = FieldVector<D, d - 1>(0.5);
