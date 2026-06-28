@@ -72,6 +72,7 @@ jobs:
       contents: read
     outputs:
       linux_build_jobs: ${{ steps.sizing.outputs.linux_build_jobs }}
+      bindings_jobs: ${{ steps.sizing.outputs.bindings_jobs }}
       ctest_parallel: ${{ steps.sizing.outputs.ctest_parallel }}
     steps:
     - id: sizing
@@ -89,10 +90,15 @@ jobs:
         [[ "$linux_cpu" =~ ^[0-9]+$ ]] || { echo "::error::linux_cpu must be a positive integer (got '$linux_cpu')"; exit 1; }
         (( linux_cpu >= 2 )) || { echo "::error::linux_cpu must be >= 2 (got $linux_cpu)"; exit 1; }
         {
-          # Cap compile concurrency by RAM: the GitHub-hosted runner has 16 GB and
-          # template-heavy TUs peak ~2 GB each, so cpu-1 keeps peak RAM well under
-          # the box while using all but one vCPU.
+          # Cap compile concurrency by RAM: the GitHub-hosted runner has only
+          # 16 GB. Ordinary TUs (the library and the ~400 test binaries) peak
+          # ~2 GB each, so cpu-1 keeps their peak RAM well under the box while
+          # using all but one vCPU.
           echo "linux_build_jobs=$((linux_cpu - 1))"
+          # The pybind11 binding TUs instantiate deeply-nested Dune templates and
+          # peak far higher (well above 4 GB each) -- building them at the shared
+          # cpu-1 OOM-killed the 16 GB runner -- so give them a tighter cap.
+          echo "bindings_jobs=$((linux_cpu / 2))"
           # Tests are ~400 short, IO-light executables: oversubscribe at 2x vCPU.
           echo "ctest_parallel=$((linux_cpu * 2))"
         } >> "$GITHUB_OUTPUT"
@@ -108,16 +114,18 @@ jobs:
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
     # GitHub-hosted standard runner (4 vCPU / 16 GB). The bindings compile is the
     # memory driver: its pybind11 TUs instantiate deeply-nested Dune templates and
-    # peak well above the ~2 GB/TU of the test binaries, so it is built at the
-    # shared -j cpu-1 (linux_build_jobs from the config job, = 3 on the standard
-    # 4-vCPU runner) to keep peak RAM well under 16 GB. Neither preset uses LTO, so
-    # there is no /tmp ltrans explosion like build_wheels.
+    # peak far above the ~2 GB/TU of the test binaries, so they get their own
+    # tighter cap (bindings_jobs = cpu/2 from the config job) -- the shared cpu-1
+    # level OOM-killed this 16 GB runner. Every compile step (incl. the main Build)
+    # is -j capped for the same reason. Neither preset uses LTO, so there is no
+    # /tmp ltrans explosion like build_wheels.
     runs-on: ubuntu-26.04
     # A fully cold leg (no build cache) compiles every vcpkg dependency as a shared
     # library, the project, the ~400 test binaries and the Python bindings from
-    # scratch; the 180 min timeout leaves ample headroom. Warm runs restore the
-    # ccache and finish much faster.
-    timeout-minutes: 180
+    # scratch; on the 4 vCPU hosted runner with the memory-bounded -j caps above
+    # that is slower than the old self-hosted fleet, so the timeout is generous.
+    # Warm runs restore the ccache and finish much faster.
+    timeout-minutes: 240
     permissions:
       contents: read
       # codecov's GitHub Action authenticates to codecov.io via OpenID Connect
@@ -198,7 +206,9 @@ jobs:
         cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
     - name: Build
-      run: cmake --build --preset=${{ matrix.preset }} --parallel
+      # Cap the library build at the memory-bounded -j too: ninja would otherwise
+      # default to nproc+2, and the heavy template TUs can exhaust the 16 GB runner.
+      run: cmake --build --preset=${{ matrix.preset }} --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
 
     - name: Build test binaries
       run: |
@@ -214,7 +224,9 @@ jobs:
       # Both legs run the Python test suite (now part of ctest), so both build the
       # .so bindings first — CTest does not build dependencies, and the
       # xt_test_python / gdt_test_python tests need the compiled modules present.
-      run: cmake --build --preset=${{ matrix.preset }} --target bindings --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
+      # bindings_jobs (cpu/2) caps these memory-heavy pybind11 TUs below the wider
+      # linux_build_jobs used elsewhere, to stay under the 16 GB runner.
+      run: cmake --build --preset=${{ matrix.preset }} --target bindings --parallel -- -j ${{ needs.config.outputs.bindings_jobs }}
 
     - name: Test with CTest
       # Runs both the C++ suite and the Python (pytest) suite — the latter is now
@@ -299,12 +311,17 @@ jobs:
     if: >-
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
     # GitHub-hosted standard runner (4 vCPU / 16 GB). build-wheels.sh builds at
-    # -j "$(nproc --ignore 1)" (= 3 on a standard 4-vCPU runner), so its compile parallelism auto-scales
-    # with the runner; at -j3 the parallel LTO links keep their *.ltrans.o scratch
-    # within /tmp and the build stays within memory (the much wider -j on the old
-    # self-hosted box needed an enlarged volume for the spill — moot at -j3).
+    # -j "$(nproc --ignore 1)" (= 3 on a standard 4-vCPU runner), so its compile
+    # parallelism auto-scales with the runner; at -j3 the parallel LTO links keep
+    # their *.ltrans.o scratch within /tmp and the build stays within memory (the
+    # much wider -j on the old self-hosted box needed an enlarged volume for the
+    # spill — moot at -j3).
     runs-on: ubuntu-26.04
-    timeout-minutes: 120
+    # A cold build compiles every vcpkg dependency plus the LTO release bindings
+    # from scratch. On the 4 vCPU hosted runner (half the cores of the old
+    # self-hosted box, and -j3 vs -j7) that is far slower, so the timeout is raised
+    # well above the old 120 min to leave headroom.
+    timeout-minutes: 300
     permissions:
       contents: read
     strategy:
