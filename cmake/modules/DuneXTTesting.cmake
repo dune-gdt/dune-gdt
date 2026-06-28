@@ -314,10 +314,11 @@ macro(DXT_ADD_PYTHON_TESTS)
   # the coverage.py data files (coverage-xt, coverage-gdt) into the build dir, and the instrumented C++ tests (the
   # release_coverage preset) write the gcov .gcda/.gcno files under the build tree. Both gcovr and coverage.py are
   # pulled on the fly by uv (no manually-managed venv); they are also listed in the `infrastructure` dev group in
-  # python/xt/pyproject.toml. Which tool gcovr shells out to read the per-object gcov data. Defaults to plain `gcov`
-  # (correct for the gcc-built presets); a clang-instrumented preset (e.g. clang22-release_coverage) sets this to
-  # `llvm-cov-22 gcov`, since clang's `--coverage` .gcno/.gcda files must be read by llvm-cov's gcov-compatible mode
-  # rather than GNU gcov.
+  # python/xt/pyproject.toml.
+
+  # Which tool gcovr shells out to read the per-object gcov data. Defaults to plain `gcov` (correct for the gcc-built
+  # presets); a clang-instrumented preset (e.g. clang22-release_coverage) sets this to `llvm-cov-22 gcov`, since clang's
+  # `--coverage` .gcno/.gcda files must be read by llvm-cov's gcov-compatible mode rather than GNU gcov.
   if(NOT DXT_GCOVR_GCOV_EXECUTABLE)
     set(DXT_GCOVR_GCOV_EXECUTABLE "gcov")
   endif()
