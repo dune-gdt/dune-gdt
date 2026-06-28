@@ -157,9 +157,11 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
         found = true;
         integrand.bind(intersection);
         // direction order 0, simple_test_ order 1, simple_ansatz_ order 2
-        EXPECT_EQ(0 + 1 + std::max(2, 2), integrand.order(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_));
+        EXPECT_EQ(0 + 1 + std::max(2, 2),
+                  integrand.order(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_));
         // with fixture bases: direction 0, test 4, ansatz 3
-        EXPECT_EQ(0 + 4 + std::max(3, 3), integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_));
+        EXPECT_EQ(0 + 4 + std::max(3, 3),
+                  integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_));
         break;
       }
       if (found)
@@ -317,9 +319,15 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
         integrand.bind(intersection);
         const auto order = integrand.order(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_);
         for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), std::max(order, 2))) {
-          integrand.evaluate(
-              *simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, qp.position(), res_ii, res_io, res_oi,
-              res_oo);
+          integrand.evaluate(*simple_test_,
+                             *simple_ansatz_,
+                             *simple_test_,
+                             *simple_ansatz_,
+                             qp.position(),
+                             res_ii,
+                             res_io,
+                             res_oi,
+                             res_oo);
           for (size_t ii = 0; ii < 2; ++ii)
             for (size_t jj = 0; jj < 2; ++jj) {
               EXPECT_DOUBLE_EQ(0., res_ii[ii][jj]);
@@ -360,9 +368,12 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
 
         for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), std::max(order, 2))) {
           const auto& x_ref = qp.position();
-          original.evaluate(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, x_ref, r_ii_o, r_io_o, r_oi_o, r_oo_o);
-          copy_ctor.evaluate(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, x_ref, r_ii_c, r_io_c, r_oi_c, r_oo_c);
-          cloned->evaluate(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, x_ref, r_ii_l, r_io_l, r_oi_l, r_oo_l);
+          original.evaluate(
+              *simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, x_ref, r_ii_o, r_io_o, r_oi_o, r_oo_o);
+          copy_ctor.evaluate(
+              *simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, x_ref, r_ii_c, r_io_c, r_oi_c, r_oo_c);
+          cloned->evaluate(
+              *simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, x_ref, r_ii_l, r_io_l, r_oi_l, r_oo_l);
 
           for (size_t ii = 0; ii < 2; ++ii)
             for (size_t jj = 0; jj < 2; ++jj) {
@@ -527,9 +538,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
         [](const E&) {},
         [](const DomainType& x, const XT::Common::Parameter&) { return FieldVector<D, d>{{x[0], x[1]}}; });
     const XT::Functions::GenericGridFunction<E, 1> dirichlet_gf(
-        1,
-        [](const E&) {},
-        [](const DomainType& x, const XT::Common::Parameter&) -> D { return x[0] + x[1]; });
+        1, [](const E&) {}, [](const DomainType& x, const XT::Common::Parameter&) -> D { return x[0] + x[1]; });
     DirichletCouplingType original(velocity, dirichlet_gf);
     DirichletCouplingType copy_ctor(original);
     auto cloned_unary = original.copy_as_unary_intersection_integrand();
