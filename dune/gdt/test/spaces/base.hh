@@ -134,7 +134,7 @@ struct SpaceTestBase : public ::testing::Test
       const auto& reference_element = ReferenceElements<D, d>::general(element.type());
       const auto basis = space->basis().localize(element);
       const double h = 1e-6;
-      const auto& quadrature_rule = QuadratureRules<D, d>::rule(element.type(), basis->order());
+      const auto quadrature_rule = QuadratureRules<D, d>::rule(element.type(), basis->order());
       for (auto [xx, quadrature_weight] : quadrature_rule) {
         const auto& J_inv_T = element.geometry().jacobianInverseTransposed(xx);
         const auto jacobians = basis->jacobians_of_set(xx);
