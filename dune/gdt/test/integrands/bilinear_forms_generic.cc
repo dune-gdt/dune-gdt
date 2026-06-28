@@ -179,8 +179,8 @@ struct GenericElementBilinearFormTest : public IntegrandTest<G>
         [](const auto& test, const auto& ansatz, DynamicMatrix<double>& result, const XT::Common::Parameter& param) {
           const size_t rows = test.size(param);
           const size_t cols = ansatz.size(param);
-          // Evaluate bases at the reference element origin (0, 0) ...
-          const FieldVector<double, G::dimension> origin(0.0);
+          // Evaluate at a non-zero interior point so the result is not trivially all-zero.
+          const FieldVector<double, G::dimension> origin(1.0 / 3.0);
           std::vector<FieldVector<double, 1>> test_vals(rows), ansatz_vals(cols);
           test.evaluate(origin, test_vals, param);
           ansatz.evaluate(origin, ansatz_vals, param);
@@ -196,10 +196,13 @@ struct GenericElementBilinearFormTest : public IntegrandTest<G>
     DynamicMatrix<double> result(2, 2, 0.);
     generic_form.apply2(*scalar_test_, *scalar_ansatz_, result);
 
-    // scalar_test_ evaluates at (0,0) as {0, 0} and scalar_ansatz_ as {0, 0},
-    // so all products are 0.  Just verify the matrix has the right shape.
+    // At (1/3,1/3): test={1/3, 1/81}, ansatz={1/3, 1/27}; result[i][j] = test[i]*ansatz[j].
     ASSERT_EQ(result.rows(), 2u);
     ASSERT_EQ(result.cols(), 2u);
+    EXPECT_NEAR(result[0][0], 1.0 / 9.0, 1e-13);
+    EXPECT_NEAR(result[0][1], 1.0 / 81.0, 1e-13);
+    EXPECT_NEAR(result[1][0], 1.0 / 243.0, 1e-13);
+    EXPECT_NEAR(result[1][1], 1.0 / 2187.0, 1e-13);
   }
 }; // struct GenericElementBilinearFormTest
 
@@ -405,15 +408,14 @@ struct ElementIntegralBilinearFormTest : public IntegrandTest<G>
     scalar_test_->bind(element);
     scalar_ansatz_->bind(element);
 
-    DynamicMatrix<double> result(2, 2, 99.0);
-    form.apply2(*scalar_test_, *scalar_ansatz_, result);
+    DynamicMatrix<double> prefilled(2, 2, 99.0), expected(2, 2, 0.0);
+    form.apply2(*scalar_test_, *scalar_ansatz_, prefilled);
+    form.apply2(*scalar_test_, *scalar_ansatz_, expected);
 
-    bool all_still_99 = true;
     for (size_t ii = 0; ii < 2; ++ii)
       for (size_t jj = 0; jj < 2; ++jj)
-        if (result[ii][jj] != 99.0)
-          all_still_99 = false;
-    EXPECT_FALSE(all_still_99) << "result must be cleared and recomputed by apply2()";
+        EXPECT_DOUBLE_EQ(expected[ii][jj], prefilled[ii][jj])
+            << "apply2() must not depend on the caller's initial matrix contents";
   }
 
   // L2 product matrix must be symmetric when test == ansatz basis.
