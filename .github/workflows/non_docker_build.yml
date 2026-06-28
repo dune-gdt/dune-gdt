@@ -76,10 +76,14 @@ jobs:
     steps:
     - id: sizing
       run: |
-        # ---- GitHub-hosted runner vCPU count (ubuntu-26.04 standard = 4) ----
-        linux_cpu=4
-        # --------------------------------------------------------------------
-        # Fail fast on a nonsensical size so a bad edit surfaces here (a cheap
+        # ---- GitHub-hosted runner vCPU count ----
+        # Detect the runner's core count instead of hard-coding it, so the derived
+        # -j / --parallel levels stay correct if the runner class ever changes. The
+        # config job shares build-linux's ubuntu-26.04 label, so its nproc matches
+        # that job's core count; standard GitHub-hosted runners report 4.
+        linux_cpu="$(nproc)"
+        # -----------------------------------------
+        # Fail fast on a nonsensical size so a bad value surfaces here (a cheap
         # job) instead of as a confusing "-j 0"/"--parallel 0" deep in a build.
         # linux_cpu must be >= 2 so linux_build_jobs (cpu-1) stays >= 1.
         [[ "$linux_cpu" =~ ^[0-9]+$ ]] || { echo "::error::linux_cpu must be a positive integer (got '$linux_cpu')"; exit 1; }
@@ -105,9 +109,9 @@ jobs:
     # GitHub-hosted standard runner (4 vCPU / 16 GB). The bindings compile is the
     # memory driver: its pybind11 TUs instantiate deeply-nested Dune templates and
     # peak well above the ~2 GB/TU of the test binaries, so it is built at the
-    # shared -j cpu-1 (linux_build_jobs from the config job, = 3 here) to keep peak
-    # RAM well under 16 GB. Neither preset uses LTO, so there is no /tmp ltrans
-    # explosion like build_wheels.
+    # shared -j cpu-1 (linux_build_jobs from the config job, = 3 on the standard
+    # 4-vCPU runner) to keep peak RAM well under 16 GB. Neither preset uses LTO, so
+    # there is no /tmp ltrans explosion like build_wheels.
     runs-on: ubuntu-26.04
     # A fully cold leg (no build cache) compiles every vcpkg dependency as a shared
     # library, the project, the ~400 test binaries and the Python bindings from
@@ -295,7 +299,7 @@ jobs:
     if: >-
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
     # GitHub-hosted standard runner (4 vCPU / 16 GB). build-wheels.sh builds at
-    # -j "$(nproc --ignore 1)" (= 3 here), so its compile parallelism auto-scales
+    # -j "$(nproc --ignore 1)" (= 3 on a standard 4-vCPU runner), so its compile parallelism auto-scales
     # with the runner; at -j3 the parallel LTO links keep their *.ltrans.o scratch
     # within /tmp and the build stays within memory (the much wider -j on the old
     # self-hosted box needed an enlarged volume for the spill — moot at -j3).
