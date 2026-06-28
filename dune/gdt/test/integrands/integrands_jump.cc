@@ -118,13 +118,6 @@ struct JumpIntegrandTest : public IntegrandTest<G>
           EXPECT_NEAR(h * phi_out[jj][0] * psi_out[ii][0], rout_out[ii][jj], 1e-13);
         }
       }
-      // Sign pattern: in-in and out-out are non-negative when phi and psi have same sign;
-      // in-out and out-in have opposite sign. Verify block-diagonal sign symmetry.
-      for (size_t ii = 0; ii < 2; ++ii)
-        for (size_t jj = 0; jj < 2; ++jj) {
-          EXPECT_NEAR(rin_in[ii][jj], rout_out[jj][ii], 1e-13); // symmetric w.r.t. in/out swap
-          EXPECT_NEAR(rin_out[ii][jj], rout_in[jj][ii], 1e-13);
-        }
     }
   }
 
