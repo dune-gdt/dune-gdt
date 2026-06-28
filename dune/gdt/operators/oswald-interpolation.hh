@@ -16,6 +16,7 @@
 
 #include <map>
 #include <set>
+#include <type_traits>
 #include <vector>
 
 #include <dune/grid/common/rangegenerators.hh>
@@ -248,7 +249,18 @@ auto make_oswald_interpolation_operator(
 /**
  * \brief Creates an OswaldInterpolationOperator using the default ISTL dense vector type.
  */
-template <class AssemblyGridView, class RGV, size_t r, size_t rC, class F>
+// The is_layer guard keeps this overload out of the candidate set when the (manually specifiable) vector-type overload
+// above is selected via an explicit template argument, e.g. make_oswald_interpolation_operator<V>(...). Without it that
+// explicit argument binds AssemblyGridView = V here, so the boundary_info parameter becomes
+// BoundaryInfo<extract_intersection_t<V>> = BoundaryInfo<std::false_type>, whose hard static_assert (not in the
+// immediate SFINAE context) fires while clang checks argument conversion. gcc never forms that candidate; constraining
+// AssemblyGridView to an actual grid layer removes it cleanly for both.
+template <class AssemblyGridView,
+          class RGV,
+          size_t r,
+          size_t rC,
+          class F,
+          typename = std::enable_if_t<XT::Grid::is_layer<AssemblyGridView>::value>>
 auto make_oswald_interpolation_operator(
     const AssemblyGridView& assembly_grid_view,
     const SpaceInterface<RGV, r, rC, F>& range_space,
