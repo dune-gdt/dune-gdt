@@ -181,9 +181,8 @@ find_file(
 # silence most warnings we are not responsible for
 make_dependent_modules_sys_included()
 
-# GCC 12 added -Wdangling-reference (enabled by -Wall) but incorrectly fires on
-# QuadratureRules::rule(), which returns a static cache reference (GCC bug #106372).
-# Suppress this false positive globally for GCC >= 12.
+# GCC 12 added -Wdangling-reference (enabled by -Wall) but incorrectly fires on QuadratureRules::rule(), which returns a
+# static cache reference (GCC bug #106372). Suppress this false positive globally for GCC >= 12.
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "12")
   add_compile_options(-Wno-dangling-reference)
 endif()
