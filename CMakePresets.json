@@ -163,6 +163,46 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++"
       }
+    },
+    {
+      "name": "clang22-base",
+      "hidden": true,
+      "inherits": [
+        "ninja-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-22",
+        "CMAKE_CXX_COMPILER": "clang++-22"
+      }
+    },
+    {
+      "name": "clang22-debug",
+      "displayName": "Debug Config (Clang 22)",
+      "inherits": [
+        "clang22-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_SHARED_LIBS": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-linux-shared"
+      }
+    },
+    {
+      "name": "clang22-release_coverage",
+      "displayName": "Release Config with llvm-cov coverage (Clang 22)",
+      "inherits": [
+        "clang22-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_SHARED_LIBS": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-linux-shared",
+        "CMAKE_C_FLAGS": "-Wall -Wextra -Wpedantic --coverage",
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic --coverage",
+        "CMAKE_EXE_LINKER_FLAGS": "--coverage",
+        "CMAKE_SHARED_LINKER_FLAGS": "--coverage",
+        "DXT_GCOVR_GCOV_EXECUTABLE": "llvm-cov-22 gcov"
+      }
     }
   ],
   "buildPresets": [
@@ -203,6 +243,14 @@
     {
       "name": "clang-release",
       "configurePreset": "clang-release"
+    },
+    {
+      "name": "clang22-debug",
+      "configurePreset": "clang22-debug"
+    },
+    {
+      "name": "clang22-release_coverage",
+      "configurePreset": "clang22-release_coverage"
     }
   ],
   "testPresets": [
@@ -277,6 +325,22 @@
       "name": "clang-release",
       "displayName": "Clang Release Tests",
       "configurePreset": "clang-release",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "clang22-debug",
+      "displayName": "Clang 22 Debug Tests",
+      "configurePreset": "clang22-debug",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "clang22-release_coverage",
+      "displayName": "Clang 22 Release Coverage Tests",
+      "configurePreset": "clang22-release_coverage",
       "inherits": [
         "test-base"
       ]

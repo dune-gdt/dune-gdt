@@ -139,12 +139,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        # the stock debug build (no instrumentation)
-        - preset: debug
+        # the stock debug build (no instrumentation), compiled with clang-22
+        - preset: clang22-debug
           coverage: false
-        # the release build compiled with gcov instrumentation (release_coverage
-        # preset) so it can report C++ (and, via the bindings, Python) coverage
-        - preset: release_coverage
+        # the release build compiled with clang-22 + gcov-style instrumentation
+        # (clang22-release_coverage preset) so it can report C++ (and, via the
+        # bindings, Python) coverage. The preset points gcovr at `llvm-cov-22 gcov`
+        # to read clang's .gcno/.gcda data.
+        - preset: clang22-release_coverage
           coverage: true
     env:
       # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
@@ -174,6 +176,21 @@ jobs:
         # CMake coverage_cpp / coverage_python targets (coverage leg only).
         sudo apt-get install -y ninja-build ccache xvfb
 
+    - name: Install Clang 22
+      # The clang22-* presets compile with clang-22/clang++-22 (the project only;
+      # the vcpkg dependencies still build with the runner's default gcc, exactly
+      # as the existing clang-* presets do). clang-22 is not in the stock
+      # ubuntu-26.04 apt repositories yet, so add the official LLVM apt repo via the
+      # upstream llvm.sh helper, which pins and installs the requested major version.
+      # llvm-22 provides llvm-cov-22, used by the coverage leg's gcovr
+      # (the clang22-release_coverage preset passes --gcov-executable "llvm-cov-22 gcov").
+      run: |
+        wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+        chmod +x /tmp/llvm.sh
+        sudo /tmp/llvm.sh 22
+        sudo apt-get install -y clang-22 llvm-22
+        clang-22 --version
+
     - name: Set up uv
       # Both legs run the Python test suite, which the ctest xt_test_python /
       # gdt_test_python tests execute via `uv run` (no manually-managed venv).
@@ -199,9 +216,9 @@ jobs:
       id: configure_cmake
       # Route every compile through ccache. Passing the launcher as a cache
       # variable (not just an env var) is harmless on the fresh build/ tree here
-      # (build/ is no longer cached). The gcov instrumentation lives in the
-      # release_coverage preset (see CMakePresets.json), so nothing extra is
-      # injected here.
+      # (build/ is no longer cached). The gcov-style instrumentation lives in the
+      # clang22-release_coverage preset (see CMakePresets.json), so nothing extra
+      # is injected here.
       run: >
         cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
