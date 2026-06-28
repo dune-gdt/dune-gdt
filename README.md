@@ -21,4 +21,4 @@ discrete function spaces.
 ## Continuous integration
 
 CI for this project (Linux build & test, Python wheels, and documentation) runs on
-GitHub-hosted Actions runners (`ubuntu-26.04`).
+GitHub-hosted Actions runners (`ubuntu-24.04`).
