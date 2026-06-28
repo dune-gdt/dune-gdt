@@ -27,7 +27,7 @@ jobs:
   # pipeline. `push`/`workflow_dispatch` ignore the outputs and always run full.
   changes:
     name: Detect changed paths
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       # paths-filter reads the PR file list via the API on pull_request events
@@ -60,45 +60,34 @@ jobs:
             - '!**/*.md'
 
   config:
-    # Single source of truth for instance sizing. Everything downstream (the
-    # runs-on cpu labels, the build -j, the ctest --parallel level) derives from
-    # the vCPU counts set here, so changing instance size is a one-line edit and
-    # the rest auto-adjusts. This indirection exists because GitHub Actions does
-    # not expose the env: context inside runs-on:; job outputs (needs.*) are the
-    # only workflow-local values usable there.
+    # Single source of truth for build parallelism. The test_binaries/bindings
+    # build -j and the ctest --parallel level both derive from the vCPU count set
+    # here, so the sizing lives in one place. This indirection exists because
+    # GitHub Actions does not expose the env: context inside run: steps as a
+    # workflow-wide constant; a job output (needs.config.outputs.*) is the
+    # simplest shared value.
     name: CI sizing constants
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     outputs:
-      linux_cpu: ${{ steps.sizing.outputs.linux_cpu }}
       linux_build_jobs: ${{ steps.sizing.outputs.linux_build_jobs }}
       ctest_parallel: ${{ steps.sizing.outputs.ctest_parallel }}
-      wheels_cpu: ${{ steps.sizing.outputs.wheels_cpu }}
-      docs_cpu: ${{ steps.sizing.outputs.docs_cpu }}
     steps:
     - id: sizing
       run: |
-        # ---- change instance size here ----
-        linux_cpu=8
-        wheels_cpu=8
-        docs_cpu=4
-        # -----------------------------------
-        # Fail fast on nonsensical sizes so a bad edit surfaces here (a cheap
-        # GitHub-hosted job) instead of as a confusing "-j 0"/"--parallel 0" or an
-        # invalid RunsOn cpu label deep in a self-hosted build. linux_cpu must be
-        # >= 2 so linux_build_jobs (cpu-1) stays >= 1.
-        for v in "$linux_cpu" "$wheels_cpu" "$docs_cpu"; do
-          [[ "$v" =~ ^[0-9]+$ ]] || { echo "::error::cpu values must be positive integers (got '$v')"; exit 1; }
-        done
+        # ---- GitHub-hosted runner vCPU count (ubuntu-26.04 standard = 4) ----
+        linux_cpu=4
+        # --------------------------------------------------------------------
+        # Fail fast on a nonsensical size so a bad edit surfaces here (a cheap
+        # job) instead of as a confusing "-j 0"/"--parallel 0" deep in a build.
+        # linux_cpu must be >= 2 so linux_build_jobs (cpu-1) stays >= 1.
+        [[ "$linux_cpu" =~ ^[0-9]+$ ]] || { echo "::error::linux_cpu must be a positive integer (got '$linux_cpu')"; exit 1; }
         (( linux_cpu >= 2 )) || { echo "::error::linux_cpu must be >= 2 (got $linux_cpu)"; exit 1; }
-        (( wheels_cpu >= 1 && docs_cpu >= 1 )) || { echo "::error::wheels_cpu/docs_cpu must be >= 1"; exit 1; }
         {
-          echo "linux_cpu=$linux_cpu"
-          echo "wheels_cpu=$wheels_cpu"
-          echo "docs_cpu=$docs_cpu"
-          # Cap compile concurrency by RAM: m7i = 4 GB/vCPU, template-heavy TUs
-          # peak ~2 GB each, so cpu-1 keeps peak RAM well under the box.
+          # Cap compile concurrency by RAM: the GitHub-hosted runner has 16 GB and
+          # template-heavy TUs peak ~2 GB each, so cpu-1 keeps peak RAM well under
+          # the box while using all but one vCPU.
           echo "linux_build_jobs=$((linux_cpu - 1))"
           # Tests are ~400 short, IO-light executables: oversubscribe at 2x vCPU.
           echo "ctest_parallel=$((linux_cpu * 2))"
@@ -107,38 +96,23 @@ jobs:
   build-linux:
     name: Build on Linux (${{ matrix.preset }})
     needs: [config, changes]
-    # Two ANDed gates: (1) fork-trust — only run on the self-hosted RunsOn/AWS
-    # fleet for trusted contexts (pushes/tags, the merge queue, same-repo PRs);
-    # external fork PRs are skipped because fork code must never execute on the
-    # fleet (arbitrary code execution risk; a GitHub-hosted fallback is a
-    # follow-up). (2) path filter — skip the C++ matrix on docs-only/markdown-only
-    # changes (push/dispatch always run full).
+    # Two ANDed gates: (1) fork-trust — skip the heavy build for external fork PRs
+    # (pushes/tags, the merge queue and same-repo PRs still run); this also keeps a
+    # fork from writing the shared Actions cache. (2) path filter — skip the C++
+    # matrix on docs-only/markdown-only changes (push/dispatch always run full).
     if: >-
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
-    # Trial running on RunsOn self-hosted runners (https://runs-on.com). The
-    # run_id routing label is suffixed with the matrix preset so each leg
-    # provisions its own ephemeral instance instead of competing for one.
-    runs-on:
-    - runs-on=${{ github.run_id }}-${{ matrix.preset }}
-    - cpu=${{ needs.config.outputs.linux_cpu }}
-    # r7i (memory-optimized, 8 GB/vCPU -> 64 GB at cpu=8). The Python bindings are
-    # the memory driver: their pybind11 TUs instantiate deeply-nested Dune templates
-    # and peak well above the ~2 GB/TU of the test binaries, so building them at the
-    # shared -j cpu-1 (see below) OOM-killed the 32 GB m7i mid-step on a cold ccache
-    # (the runner vanished, leaving the step stuck in-progress). The 64 GB here keeps
-    # the -j7 bindings compile (~7 * ~8 GB) under memory. Neither preset uses LTO, so
-    # there is no /tmp ltrans explosion like build_wheels.
-    - family=r7i
-    - image=ubuntu24-full-x64
-    # build/ tree + .vcpkg-root + 2 GB ccache fit easily; 80 GB gp3 leaves ample
-    # headroom and the runner is a short-lived spot instance, so the extra storage
-    # is negligible.
-    - volume=80gb
-    - extras=s3-cache
+    # GitHub-hosted standard runner (4 vCPU / 16 GB). The bindings compile is the
+    # memory driver: its pybind11 TUs instantiate deeply-nested Dune templates and
+    # peak well above the ~2 GB/TU of the test binaries, so it is built at the
+    # shared -j cpu-1 (linux_build_jobs from the config job, = 3 here) to keep peak
+    # RAM well under 16 GB. Neither preset uses LTO, so there is no /tmp ltrans
+    # explosion like build_wheels.
+    runs-on: ubuntu-26.04
     # A fully cold leg (no build cache) compiles every vcpkg dependency as a shared
     # library, the project, the ~400 test binaries and the Python bindings from
-    # scratch; on the m7i fleet that fits well under 3h. Warm runs restore the
-    # build/ + ccache and finish in well under an hour.
+    # scratch; the 180 min timeout leaves ample headroom. Warm runs restore the
+    # ccache and finish much faster.
     timeout-minutes: 180
     permissions:
       contents: read
@@ -168,11 +142,6 @@ jobs:
       CCACHE_MAXSIZE: "2G"
 
     steps:
-    # Configures the RunsOn Magic Cache sidecar so the actions/cache steps below
-    # transparently use S3 (extras=s3-cache). No-op on GitHub-hosted runners, so it
-    # stays safe if this job ever falls back to ubuntu-24.04.
-    - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
-
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         # this checkout's token is not used for any later git push/API call
@@ -232,8 +201,8 @@ jobs:
         # test_binaries is ~400 separate executables, several of which are
         # template-heavy TUs that peak around ~2 GB RAM each. Cap concurrency by
         # memory: -j cpu-1 (linux_build_jobs from the config job) keeps peak RAM
-        # (~2 GB * (cpu-1)) well under the m7i runner (4 GB/vCPU) while using all
-        # but one of its vCPUs. With a warm ccache most of these are cache hits.
+        # (~2 GB * (cpu-1)) well under the GitHub-hosted runner (16 GB) while using
+        # all but one of its vCPUs. With a warm ccache most of these are cache hits.
         cmake --build --preset=${{ matrix.preset }} --target test_binaries --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
         ccache --show-stats
 
@@ -317,35 +286,20 @@ jobs:
 
   build_wheels:
     name: Build wheels
-    needs: [config, changes]
-    # Two ANDed gates: (1) fork-trust — only run on trusted contexts (pushes/tags,
-    # the merge queue, same-repo PRs); fork PRs must never execute on the
-    # self-hosted RunsOn/AWS fleet (arbitrary code execution risk). (2) path
-    # filter — skip on docs-only/markdown-only changes; build_docs then sources the
-    # wheels from the last successful main build instead of rebuilding them here.
+    needs: [changes]
+    # Two ANDed gates: (1) fork-trust — skip the wheel build for external fork PRs
+    # (pushes/tags, the merge queue and same-repo PRs still run); this also keeps a
+    # fork from writing the shared Actions cache. (2) path filter — skip on
+    # docs-only/markdown-only changes; build_docs then sources the wheels from the
+    # last successful main build instead of rebuilding them here.
     if: >-
       (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
-    # Trial running on RunsOn self-hosted runners (https://runs-on.com). The label
-    # list selects an 8-vCPU c7i EC2 instance with the ubuntu24-full image; the
-    # extras=s3-cache label enables the RunsOn S3-backed Magic Cache, which the
-    # runs-on/action step below wires into actions/cache.
-    runs-on:
-    - runs-on=${{ github.run_id }}
-    - cpu=${{ needs.config.outputs.wheels_cpu }}
-    # m7i (general-purpose, 4 GB/vCPU -> 32 GB at cpu=8). c7i is compute-optimized
-    # at 2 GB/vCPU = only 16 GB, which OOMs the -j7 compile in build-wheels.sh.
-    # build-wheels.sh builds at -j "$(nproc --ignore 1)", so its compile
-    # parallelism auto-scales with whatever cpu the config job provisions.
-    - family=m7i
-    - image=ubuntu24-full-x64
-    # Enlarge the root EBS volume. The release build links with LTO, and at -j7 it
-    # runs several LTO links in parallel, each spilling many large *.ltrans.o
-    # intermediates into /tmp. On the default disk this overruns the volume and the
-    # link dies with "No space left on device"; 150 GB gp3 leaves ample headroom
-    # for the LTO scratch plus the manylinux image, ccache, and build tree. The
-    # volume is on a short-lived spot runner, so the extra storage is negligible.
-    - volume=150gb
-    - extras=s3-cache
+    # GitHub-hosted standard runner (4 vCPU / 16 GB). build-wheels.sh builds at
+    # -j "$(nproc --ignore 1)" (= 3 here), so its compile parallelism auto-scales
+    # with the runner; at -j3 the parallel LTO links keep their *.ltrans.o scratch
+    # within /tmp and the build stays within memory (the much wider -j on the old
+    # self-hosted box needed an enlarged volume for the spill — moot at -j3).
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
     permissions:
       contents: read
@@ -354,11 +308,6 @@ jobs:
         python-version: ["3.13"] #, "3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    # Configures the RunsOn Magic Cache sidecar so the actions/cache step below
-    # transparently uses S3. No-op on GitHub-hosted runners, so it stays safe if
-    # this job ever falls back to ubuntu-24.04.
-    - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
-
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         # this checkout's token is not used for any later git push/API call
@@ -369,8 +318,7 @@ jobs:
 
     - name: Restore wheel-build ccache
       # build-wheels.sh sets CCACHE_DIR to build/wheelhouse/cache (on the host
-      # bind-mount), so the compiler cache survives between runs. Routed to RunsOn
-      # S3 via extras=s3-cache + the runs-on/action step above. Split into
+      # bind-mount), so the compiler cache survives between runs. Split into
       # restore/save (rather than the unified action) so the write can be gated to
       # trusted contexts, matching build-linux and avoiding cache poisoning.
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
@@ -447,7 +395,7 @@ jobs:
 
   build_docs:
     name: Build docs (executes notebooks via myst-nb)
-    needs: [config, build_wheels, changes]
+    needs: [build_wheels, changes]
     # Gates (all ANDed): (1) fork-trust, same as build_wheels (also satisfies the
     # cache-poisoning lint on the uv cache below). (2) build_wheels reached a valid
     # terminal state — success (use its artifact) or skipped/docs-only (pull the
@@ -458,16 +406,10 @@ jobs:
     if: >-
       !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (needs.build_wheels.result == 'success' || needs.build_wheels.result == 'skipped') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
        needs.changes.outputs.non_docs == 'true' || needs.changes.outputs.docs == 'true')
-    # Trial running on RunsOn self-hosted runners (https://runs-on.com). The docs
-    # build is single-threaded (sphinx -j 1), so 4 vCPU / 16 GB (m7i) is plenty and
-    # no volume bump is needed (it only downloads the wheels artifact and renders
-    # HTML). extras=s3-cache + the runs-on/action step route setup-uv's cache to S3.
-    runs-on:
-    - runs-on=${{ github.run_id }}
-    - cpu=${{ needs.config.outputs.docs_cpu }}
-    - family=m7i
-    - image=ubuntu24-full-x64
-    - extras=s3-cache
+    # GitHub-hosted standard runner (4 vCPU / 16 GB). The docs build is
+    # single-threaded (sphinx -j 1), so the standard runner is plenty (it only
+    # downloads the wheels artifact and renders HTML).
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     permissions:
       contents: read
@@ -480,10 +422,6 @@ jobs:
       PYTHON_VERSION: "3.13"
 
     steps:
-    # Configures the RunsOn Magic Cache sidecar so setup-uv's cache (gated below)
-    # transparently uses S3 (extras=s3-cache). No-op on GitHub-hosted runners.
-    - uses: runs-on/action@d141ef83eb66d096ce8afc767e09115a65c63b60 # v2.1.2
-
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       with:
         # this checkout's token is not used for any later git push/API call
@@ -587,7 +525,7 @@ jobs:
       # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
       # inventory fetches emit network-dependent warnings unrelated to the docs build.
       # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
-      # it (4 vCPU / 16 GB, see runs-on labels above), and the clangquill C++ API now
+      # it (4 vCPU / 16 GB GitHub-hosted runner), and the clangquill C++ API now
       # emits one page per class/function (group_by="namespace"), a far larger document
       # set whose per-worker environment copies under "-j auto" OOM-killed the 16 GB box
       # mid-write. Single-threaded keeps peak RAM bounded; the 60 min timeout is ample.
@@ -629,7 +567,7 @@ jobs:
 
   deploy_docs:
     name: Deploy docs to GitHub Pages
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_docs
     # publish only on pushes to main; PRs and the merge queue build (above) but
     # never deploy. build_docs must have succeeded, so broken docs are not
@@ -666,7 +604,7 @@ jobs:
 
   test_publish:
     name: Publish to Test PyPI
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_wheels
     # only publish to Test PyPI on pushes to main, never on PRs, the merge
     # queue, or manual runs
@@ -697,7 +635,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_wheels
     if: startsWith(github.ref, 'refs/tags/')
     timeout-minutes: 120
@@ -730,7 +668,7 @@ jobs:
   # check pending forever. Matrix job results aggregate (any failed leg => failure).
   ci-gate:
     name: CI gate
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions: {}
     if: always()
     needs: [changes, config, build-linux, build_wheels, build_docs]
