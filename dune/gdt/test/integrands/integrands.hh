@@ -173,6 +173,16 @@ struct IntegrandTest : public ::testing::Test
     return false;
   }
 
+  // Execute callable(gv, el, is) for every intersection of the first grid element.
+  template <class Callable>
+  void for_each_intersection_of_first_element(Callable&& callable) const
+  {
+    const auto& gv = grid_provider_->leaf_view();
+    const auto& el = *(gv.template begin<0>());
+    for (auto&& is : intersections(gv, el))
+      callable(gv, el, is);
+  }
+
   virtual void is_constructable() = 0;
 }; // struct IntegrandTest
 
