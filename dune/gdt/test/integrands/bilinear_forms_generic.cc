@@ -222,6 +222,7 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
 
   using GenericForm = GenericLocalCouplingIntersectionBilinearForm<I, 1>;
   using BaseType::make_const_basis;
+  using BaseType::with_first_coupling_intersection;
   using BaseType::with_first_interior_intersection;
 
   void is_constructable() final
@@ -255,16 +256,9 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
           ++call_count;
         });
 
-    auto basis_in = make_const_basis();
-    auto basis_out = make_const_basis();
-
-    bool found = with_first_interior_intersection([&](const GV& gv, const E& el_in, const I& is) {
-      auto el_out = is.outside();
-      basis_in->bind(el_in);
-      basis_out->bind(el_out);
-
-      DynamicMatrix<double> r(1, 1, 0.);
-      form.apply2(is, *basis_in, *basis_in, *basis_out, *basis_out, r, r, r, r);
+    DynamicMatrix<double> r(1, 1, 0.);
+    bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
+      form.apply2(is, basis_in, basis_in, basis_out, basis_out, r, r, r, r);
       EXPECT_EQ(1, call_count) << "lambda must be called exactly once";
     });
 
@@ -291,17 +285,10 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
       seen_oo = roo[0][0];
     });
 
-    auto basis_in = make_const_basis();
-    auto basis_out = make_const_basis();
-
-    bool found = with_first_interior_intersection([&](const GV& gv, const E& el_in, const I& is) {
-      auto el_out = is.outside();
-      basis_in->bind(el_in);
-      basis_out->bind(el_out);
-
+    bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
       // Pre-fill with non-zero values.
       DynamicMatrix<double> r_ii(1, 1, 7.), r_io(1, 1, 7.), r_oi(1, 1, 7.), r_oo(1, 1, 7.);
-      form.apply2(is, *basis_in, *basis_in, *basis_out, *basis_out, r_ii, r_io, r_oi, r_oo);
+      form.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
 
       EXPECT_DOUBLE_EQ(0.0, seen_ii) << "result_in_in must be zero when lambda is entered";
       EXPECT_DOUBLE_EQ(0.0, seen_io) << "result_in_out must be zero when lambda is entered";
@@ -319,16 +306,9 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
         [](const auto&, const auto&, const auto&, const auto&, const auto&, auto&, auto&, auto&, auto&, const auto&) {
         });
 
-    auto basis_in = make_const_basis();
-    auto basis_out = make_const_basis();
-
-    bool found = with_first_interior_intersection([&](const GV& gv, const E& el_in, const I& is) {
-      auto el_out = is.outside();
-      basis_in->bind(el_in);
-      basis_out->bind(el_out);
-
+    bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
       DynamicMatrix<double> r_ii(1, 1, 99.), r_io(1, 1, 99.), r_oi(1, 1, 99.), r_oo(1, 1, 99.);
-      form.apply2(is, *basis_in, *basis_in, *basis_out, *basis_out, r_ii, r_io, r_oi, r_oo);
+      form.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
 
       EXPECT_DOUBLE_EQ(0.0, r_ii[0][0]);
       EXPECT_DOUBLE_EQ(0.0, r_io[0][0]);
@@ -342,55 +322,26 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   // All four result matrices must be resized if they are too small.
   void result_matrices_are_resized_if_too_small()
   {
-    GenericForm form([](const auto& ti,
-                        const auto& ai,
-                        const auto& to,
-                        const auto& ao,
-                        const auto& /*is*/,
+    GenericForm form([](const auto& /*is*/,
+                        const auto& /*ti*/,
+                        const auto& /*ai*/,
+                        const auto& /*to*/,
+                        const auto& /*ao*/,
                         DynamicMatrix<double>& rii,
                         DynamicMatrix<double>& rio,
                         DynamicMatrix<double>& roi,
                         DynamicMatrix<double>& roo,
                         const auto& /*p*/) {
-      // Write sentinel values so we can verify correct sizing.
-      (void)ti;
-      (void)ai;
-      (void)to;
-      (void)ao;
       rii[0][0] = 1.;
       rio[0][0] = 2.;
       roi[0][0] = 3.;
       roo[0][0] = 4.;
     });
 
-    // Wrap the lambda to match the expected GenericFunctionType signature.
-    GenericForm form2([](const auto& /*is*/,
-                         const auto& /*ti*/,
-                         const auto& /*ai*/,
-                         const auto& /*to*/,
-                         const auto& /*ao*/,
-                         DynamicMatrix<double>& rii,
-                         DynamicMatrix<double>& rio,
-                         DynamicMatrix<double>& roi,
-                         DynamicMatrix<double>& roo,
-                         const auto& /*p*/) {
-      rii[0][0] = 1.;
-      rio[0][0] = 2.;
-      roi[0][0] = 3.;
-      roo[0][0] = 4.;
-    });
-
-    auto basis_in = make_const_basis();
-    auto basis_out = make_const_basis();
-
-    bool found = with_first_interior_intersection([&](const GV& gv, const E& el_in, const I& is) {
-      auto el_out = is.outside();
-      basis_in->bind(el_in);
-      basis_out->bind(el_out);
-
+    bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
       // Start with undersized matrices.
       DynamicMatrix<double> r_ii(0, 0), r_io(0, 0), r_oi(0, 0), r_oo(0, 0);
-      form2.apply2(is, *basis_in, *basis_in, *basis_out, *basis_out, r_ii, r_io, r_oi, r_oo);
+      form.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
 
       ASSERT_GE(r_ii.rows(), 1u);
       ASSERT_GE(r_ii.cols(), 1u);

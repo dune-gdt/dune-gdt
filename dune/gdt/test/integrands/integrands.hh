@@ -183,6 +183,22 @@ struct IntegrandTest : public ::testing::Test
       callable(gv, el, is);
   }
 
+  // Find the first interior intersection, construct two const-1 bases bound to the inside/outside
+  // elements, and invoke callable(is, basis_in, basis_out).  Returns true if such an intersection
+  // was found.  Avoids repeating the el_out / basis setup boilerplate in coupling tests.
+  template <class Callable>
+  bool with_first_coupling_intersection(Callable&& callable) const
+  {
+    return with_first_interior_intersection([&](const GV& /*gv*/, const E& el_in, const I& is) {
+      auto el_out = is.outside();
+      auto basis_in = make_const_basis();
+      auto basis_out = make_const_basis();
+      basis_in->bind(el_in);
+      basis_out->bind(el_out);
+      callable(is, *basis_in, *basis_out);
+    });
+  }
+
   virtual void is_constructable() = 0;
 }; // struct IntegrandTest
 
