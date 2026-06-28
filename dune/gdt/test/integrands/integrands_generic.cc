@@ -110,7 +110,8 @@ struct GenericIntegrandTest : public IntegrandTest<G>
     integrand.bind(element);
     const auto integrand_order = integrand.order(*scalar_test_);
     DynamicVector<double> result(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), integrand_order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), integrand_order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       integrand.evaluate(*scalar_test_, x, result);
       EXPECT_DOUBLE_EQ(x[0] + x[1], result[0]);
@@ -137,7 +138,8 @@ struct GenericIntegrandTest : public IntegrandTest<G>
     integrand.bind(element);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_);
     DynamicMatrix<double> result(2, 2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), integrand_order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), integrand_order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result);
       EXPECT_DOUBLE_EQ(1. * x[0], result[0][0]);
@@ -177,7 +179,7 @@ struct GenericIntegrandTest : public IntegrandTest<G>
                                          for (size_t ii = 0; ii < basis.size(); ++ii)
                                            result[ii] = x[0] * x[1];
                                        });
-    check_unary_clone_matches(unary_integrand, *scalar_test_);
+    this->check_unary_clone_matches(unary_integrand, *scalar_test_);
 
     BinaryIntegrandType binary_integrand([](const typename BinaryIntegrandType::LocalTestBasisType& test,
                                             const typename BinaryIntegrandType::LocalAnsatzBasisType& ansatz,
@@ -191,7 +193,7 @@ struct GenericIntegrandTest : public IntegrandTest<G>
                                              for (size_t jj = 0; jj < ansatz.size(); ++jj)
                                                result[ii][jj] = x[0] * x[1];
                                          });
-    check_binary_clone_matches(binary_integrand);
+    this->check_binary_clone_matches(binary_integrand);
   }
 
   using BaseType::grid_provider_;
