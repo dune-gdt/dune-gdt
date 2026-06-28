@@ -1,18 +1,5 @@
 ---
-# Register the custom runner labels used by the build_wheels job so actionlint
-# does not flag them as unknown. These are RunsOn (https://runs-on.com) labels
-# that select the EC2 instance shape, image and cache extras at job-launch time;
-# the runs-on=<id> routing label carries a ${{ }} expression and is skipped by
-# actionlint automatically.
-self-hosted-runner:
-  labels:
-  - cpu=8
-  - cpu=4
-  - family=m7i
-  # r7i (memory-optimized) is used by build-linux so the -j7 Python-bindings
-  # compile fits in RAM; m7i stays for the wheel/docs jobs.
-  - family=r7i
-  - image=ubuntu24-full-x64
-  - volume=150gb
-  - volume=80gb
-  - extras=s3-cache
+# actionlint configuration.
+#
+# All jobs run on GitHub-hosted runners (ubuntu-24.04), so there are no custom
+# self-hosted runner labels to register here.
