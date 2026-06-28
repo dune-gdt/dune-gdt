@@ -64,13 +64,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
   using UnrestrictedBF = LocalIntersectionIntegralBilinearForm<I, 1>;
   using RestrictedBF = LocalIntersectionRestrictedIntegralBilinearForm<I, 1>;
   using FilterType = typename RestrictedBF::FilterType;
-  using ScalarBasis = XT::Functions::GenericElementFunctionSet<E, 1, 1>;
-
-  std::shared_ptr<ScalarBasis> make_const_basis() const
-  {
-    return std::make_shared<ScalarBasis>(
-        1, 0, [](const auto& /*x*/, std::vector<FieldVector<double, 1>>& ret, const auto&) { ret = {{1.0}}; });
-  }
+  using BaseType::make_const_basis;
 
   void is_constructable() final
   {
@@ -302,30 +296,8 @@ struct CouplingRestrictedBilinearFormTest : public IntegrandTest<G>
   using UnrestrictedBF = LocalCouplingIntersectionIntegralBilinearForm<I, 1>;
   using RestrictedBF = LocalCouplingIntersectionRestrictedIntegralBilinearForm<I, 1>;
   using FilterType = typename RestrictedBF::FilterType;
-  using ScalarBasis = XT::Functions::GenericElementFunctionSet<E, 1, 1>;
-
-  std::shared_ptr<ScalarBasis> make_const_basis() const
-  {
-    return std::make_shared<ScalarBasis>(
-        1, 0, [](const auto& /*x*/, std::vector<FieldVector<double, 1>>& ret, const auto&) { ret = {{1.0}}; });
-  }
-
-  // Execute a callable on the first interior intersection found in the grid.
-  // Returns false if no interior intersection exists.
-  template <class Callable>
-  bool with_first_interior_intersection(Callable&& callable) const
-  {
-    const auto& gv = grid_provider_->leaf_view();
-    for (auto&& el : elements(gv)) {
-      for (auto&& is : intersections(gv, el)) {
-        if (is.neighbor()) {
-          callable(gv, el, is);
-          return true;
-        }
-      }
-    }
-    return false;
-  }
+  using BaseType::make_const_basis;
+  using BaseType::with_first_interior_intersection;
 
   void is_constructable() final
   {

@@ -221,29 +221,8 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   using typename BaseType::I;
 
   using GenericForm = GenericLocalCouplingIntersectionBilinearForm<I, 1>;
-  using ScalarBasis = XT::Functions::GenericElementFunctionSet<E, 1, 1>;
-
-  std::shared_ptr<ScalarBasis> make_const_basis() const
-  {
-    return std::make_shared<ScalarBasis>(
-        1, 0, [](const auto& /*x*/, std::vector<FieldVector<double, 1>>& ret, const auto&) { ret = {{1.0}}; });
-  }
-
-  // Execute callable on first interior intersection; returns false if none found.
-  template <class Callable>
-  bool with_first_interior_intersection(Callable&& callable) const
-  {
-    const auto& gv = grid_provider_->leaf_view();
-    for (auto&& el : elements(gv)) {
-      for (auto&& is : intersections(gv, el)) {
-        if (is.neighbor()) {
-          callable(gv, el, is);
-          return true;
-        }
-      }
-    }
-    return false;
-  }
+  using BaseType::make_const_basis;
+  using BaseType::with_first_interior_intersection;
 
   void is_constructable() final
   {

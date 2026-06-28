@@ -14,6 +14,7 @@
 
 #include <dune/geometry/quadraturerules.hh>
 #include <dune/geometry/type.hh>
+#include <dune/grid/common/rangegenerators.hh>
 
 #include <gtest/gtest.h>
 #include <dune/xt/common/fvector.hh>
@@ -143,6 +144,34 @@ struct IntegrandTest : public ::testing::Test
           ret[1][1] = {1., 1.};
         });
   } // ... SetUp(...)
+
+  // Returns a constant-1 scalar basis function set (size=1, order=0) for use in tests.
+  std::shared_ptr<LocalScalarBasisType> make_const_basis() const
+  {
+    return std::make_shared<LocalScalarBasisType>(
+        /*fixed_size=*/1,
+        /*ord=*/0,
+        [](const DomainType& /*x*/, std::vector<ScalarRangeType>& ret, const XT::Common::Parameter&) {
+          ret = {{1.0}};
+        });
+  }
+
+  // Execute callable(gv, el, is) on the first interior (neighbor) intersection found in the
+  // grid.  Returns true if such an intersection was found, false if the grid has none.
+  template <class Callable>
+  bool with_first_interior_intersection(Callable&& callable) const
+  {
+    const auto& gv = grid_provider_->leaf_view();
+    for (auto&& el : elements(gv)) {
+      for (auto&& is : intersections(gv, el)) {
+        if (is.neighbor()) {
+          callable(gv, el, is);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
   virtual void is_constructable() = 0;
 }; // struct IntegrandTest

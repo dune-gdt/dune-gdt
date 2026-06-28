@@ -39,16 +39,7 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   using UnrestrictedFunctional = LocalIntersectionIntegralFunctional<I, 1>;
   using RestrictedFunctional = LocalIntersectionRestrictedIntegralFunctional<I, 1>;
   using FilterType = typename RestrictedFunctional::FilterType;
-
-  using ScalarBasis = XT::Functions::GenericElementFunctionSet<E, 1, 1>;
-
-  std::shared_ptr<ScalarBasis> make_const_basis() const
-  {
-    return std::make_shared<ScalarBasis>(
-        /*fixed_size=*/1,
-        /*ord=*/0,
-        [](const auto& /*x*/, std::vector<FieldVector<double, 1>>& ret, const auto&) { ret = {{1.0}}; });
-  }
+  using BaseType::make_const_basis;
 
   // A trivial constant unary intersection integrand: evaluates to 1.0 for every basis function.
   auto make_constant_unary_integrand() const
