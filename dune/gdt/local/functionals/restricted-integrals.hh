@@ -92,8 +92,7 @@ public:
     result *= 0;
     // loop over all quadrature points
     const auto integrand_order = integrand_->order(test_basis, param) + over_integrate_;
-    const auto& quadrature_rule = QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order);
-    for (const auto& quadrature_point : quadrature_rule) {
+    for (const auto& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
       const auto point_in_reference_intersection = quadrature_point.position();
       if (filter_(intersection, point_in_reference_intersection)) {
         // integration factors
