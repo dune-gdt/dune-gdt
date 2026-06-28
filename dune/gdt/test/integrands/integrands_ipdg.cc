@@ -94,23 +94,13 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     EXPECT_EQ(7, integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_));
   }
 
-  void inner_penalty_evaluates_correctly_unit_weight()
+  // Shared helper: run the quadrature loop for a bound InnerPenalty integrand and verify
+  // result[i][j] = ±effective_penalty * phi_j_{in,out} * psi_i_{in,out}.
+  void check_inner_penalty_evaluate(InnerPenaltyType& integrand,
+                                    const I& intersection,
+                                    const double effective_penalty,
+                                    const double tol = 1e-13)
   {
-    // Formula with weight = I (identity):
-    //   delta_plus = delta_minus = n · n = 1
-    //   weight_harmonic = (1 * 1)/(1 + 1) = 0.5
-    //   h = diameter(intersection)
-    //   effective_penalty = sigma * 0.5 / h
-    //   result_in_in[i][j]  = effective_penalty * phi_j_in * psi_i_in
-    //   result_in_out[i][j] = -effective_penalty * phi_j_out * psi_i_in
-    //   result_out_in[i][j] = -effective_penalty * phi_j_in * psi_i_out
-    //   result_out_out[i][j] = effective_penalty * phi_j_out * psi_i_out
-    const double sigma = 8.0;
-    InnerPenaltyType integrand(sigma);
-    const auto& intersection = find_inner_intersection();
-    integrand.bind(intersection);
-    const double h = XT::Grid::diameter(intersection);
-    const double effective_penalty = sigma * 0.5 / h;
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
     for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
@@ -124,29 +114,34 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
       scalar_ansatz_->evaluate(x_out, phi_out);
       scalar_test_->evaluate(x_in, psi_in);
       scalar_test_->evaluate(x_out, psi_out);
-      for (size_t ii = 0; ii < 2; ++ii) {
+      for (size_t ii = 0; ii < 2; ++ii)
         for (size_t jj = 0; jj < 2; ++jj) {
-          EXPECT_NEAR(effective_penalty * phi_in[jj][0] * psi_in[ii][0], rin_in[ii][jj], 1e-13);
-          EXPECT_NEAR(-effective_penalty * phi_out[jj][0] * psi_in[ii][0], rin_out[ii][jj], 1e-13);
-          EXPECT_NEAR(-effective_penalty * phi_in[jj][0] * psi_out[ii][0], rout_in[ii][jj], 1e-13);
-          EXPECT_NEAR(effective_penalty * phi_out[jj][0] * psi_out[ii][0], rout_out[ii][jj], 1e-13);
+          EXPECT_NEAR(effective_penalty * phi_in[jj][0] * psi_in[ii][0], rin_in[ii][jj], tol);
+          EXPECT_NEAR(-effective_penalty * phi_out[jj][0] * psi_in[ii][0], rin_out[ii][jj], tol);
+          EXPECT_NEAR(-effective_penalty * phi_in[jj][0] * psi_out[ii][0], rout_in[ii][jj], tol);
+          EXPECT_NEAR(effective_penalty * phi_out[jj][0] * psi_out[ii][0], rout_out[ii][jj], tol);
         }
-      }
     }
+  }
+
+  void inner_penalty_evaluates_correctly_unit_weight()
+  {
+    // Formula with weight = I (identity):
+    //   delta_plus = delta_minus = n · n = 1  →  weight_harmonic = 0.5
+    //   effective_penalty = sigma * 0.5 / h
+    const double sigma = 8.0;
+    InnerPenaltyType integrand(sigma);
+    const auto& intersection = find_inner_intersection();
+    integrand.bind(intersection);
+    check_inner_penalty_evaluate(integrand, intersection, sigma * 0.5 / XT::Grid::diameter(intersection));
   }
 
   void inner_penalty_evaluates_correctly_with_constant_weight()
   {
-    // With weight = c * I (c > 0, constant scalar * identity):
-    //   delta_plus = delta_minus = c * n · n = c
-    //   weight_harmonic = (c * c) / (c + c) = c/2
+    // With weight = c * I:  delta = c  →  weight_harmonic = c/2
     //   effective_penalty = sigma * c/2 / h
-    // So effective_penalty changes proportionally to c.
-    // We verify that using weight = 2 * I gives effective_penalty = sigma * 1 / h
-    // (i.e., weight harmonic mean doubles from 0.5 to 1).
     const double sigma = 8.0;
     const double c = 2.0;
-    // Create 2*I weight function
     const XT::Functions::GenericGridFunction<E, d, d> weight_2I(
         0,
         [](const E&) {},
@@ -159,32 +154,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     InnerPenaltyType integrand(sigma, weight_2I);
     const auto& intersection = find_inner_intersection();
     integrand.bind(intersection);
-    const double h = XT::Grid::diameter(intersection);
-    // delta = c * (n · I · n) = c * |n|^2 = c  (unit normal)
-    // weight_harmonic = (c * c) / (c + c) = c/2
-    const double effective_penalty = sigma * (c / 2.) / h;
-    const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
-    DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), integrand_order)) {
-      const auto& x = qp.position();
-      integrand.evaluate(
-          *scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_, x, rin_in, rin_out, rout_in, rout_out);
-      const auto x_in = intersection.geometryInInside().global(x);
-      const auto x_out = intersection.geometryInOutside().global(x);
-      std::vector<ScalarRangeType> phi_in, phi_out, psi_in, psi_out;
-      scalar_ansatz_->evaluate(x_in, phi_in);
-      scalar_ansatz_->evaluate(x_out, phi_out);
-      scalar_test_->evaluate(x_in, psi_in);
-      scalar_test_->evaluate(x_out, psi_out);
-      for (size_t ii = 0; ii < 2; ++ii) {
-        for (size_t jj = 0; jj < 2; ++jj) {
-          EXPECT_NEAR(effective_penalty * phi_in[jj][0] * psi_in[ii][0], rin_in[ii][jj], 1e-12);
-          EXPECT_NEAR(-effective_penalty * phi_out[jj][0] * psi_in[ii][0], rin_out[ii][jj], 1e-12);
-          EXPECT_NEAR(-effective_penalty * phi_in[jj][0] * psi_out[ii][0], rout_in[ii][jj], 1e-12);
-          EXPECT_NEAR(effective_penalty * phi_out[jj][0] * psi_out[ii][0], rout_out[ii][jj], 1e-12);
-        }
-      }
-    }
+    check_inner_penalty_evaluate(integrand, intersection, sigma * (c / 2.) / XT::Grid::diameter(intersection), 1e-12);
   }
 
   void inner_penalty_zero_penalty_gives_zero_result()
