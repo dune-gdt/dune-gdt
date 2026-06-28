@@ -7,8 +7,6 @@
 
 #include <dune/xt/test/main.hxx> // <- this one has to come first (includes the config.h)!
 
-#include <dune/grid/common/rangegenerators.hh>
-
 #include <dune/xt/functions/generic/grid-function.hh>
 #include <dune/xt/grid/intersection.hh>
 
@@ -39,26 +37,6 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
   using DirichletCouplingType = LocalLaplaceIPDGIntegrands::DirichletCoupling<I>;
   using UnaryBaseType = LocalUnaryIntersectionIntegrandInterface<I>;
   using BinaryBaseType = LocalBinaryIntersectionIntegrandInterface<I>;
-
-  I find_inner_intersection() const
-  {
-    const auto& gv = grid_provider_->leaf_view();
-    for (const auto& element : Dune::elements(gv))
-      for (const auto& intersection : Dune::intersections(gv, element))
-        if (intersection.neighbor())
-          return intersection;
-    DUNE_THROW(Dune::InvalidStateException, "No inner intersection found in grid!");
-  }
-
-  I find_boundary_intersection() const
-  {
-    const auto& gv = grid_provider_->leaf_view();
-    for (const auto& element : Dune::elements(gv))
-      for (const auto& intersection : Dune::intersections(gv, element))
-        if (!intersection.neighbor())
-          return intersection;
-    DUNE_THROW(Dune::InvalidStateException, "No boundary intersection found in grid!");
-  }
 
   void is_constructable() final
   {

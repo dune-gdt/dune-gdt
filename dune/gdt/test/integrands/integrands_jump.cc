@@ -7,8 +7,6 @@
 
 #include <dune/xt/test/main.hxx> // <- this one has to come first (includes the config.h)!
 
-#include <dune/grid/common/rangegenerators.hh>
-
 #include <dune/xt/grid/intersection.hh>
 
 #include <dune/gdt/local/integrands/jump.hh>
@@ -37,28 +35,6 @@ struct JumpIntegrandTest : public IntegrandTest<G>
   using ScalarInnerIntegrandType = LocalJumpIntegrands::Inner<I, 1>;
   using VectorInnerIntegrandType = LocalJumpIntegrands::Inner<I, d>;
   using ScalarBoundaryIntegrandType = LocalJumpIntegrands::Boundary<I, 1>;
-
-  // Helper: return first inner intersection found, or throw if none exists.
-  I find_inner_intersection() const
-  {
-    const auto& gv = grid_provider_->leaf_view();
-    for (const auto& element : Dune::elements(gv))
-      for (const auto& intersection : Dune::intersections(gv, element))
-        if (intersection.neighbor())
-          return intersection;
-    DUNE_THROW(Dune::InvalidStateException, "No inner intersection found in grid!");
-  }
-
-  // Helper: return first boundary intersection found, or throw if none exists.
-  I find_boundary_intersection() const
-  {
-    const auto& gv = grid_provider_->leaf_view();
-    for (const auto& element : Dune::elements(gv))
-      for (const auto& intersection : Dune::intersections(gv, element))
-        if (!intersection.neighbor())
-          return intersection;
-    DUNE_THROW(Dune::InvalidStateException, "No boundary intersection found in grid!");
-  }
 
   void is_constructable() final
   {
