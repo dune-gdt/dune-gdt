@@ -248,20 +248,21 @@ auto make_oswald_interpolation_operator(
 /**
  * \brief Creates an OswaldInterpolationOperator using the default ISTL dense vector type.
  */
-// The is_layer constraint keeps this overload out of the candidate set when the (manually specifiable) vector-type
-// overload above is selected via an explicit template argument, e.g. make_oswald_interpolation_operator<V>(...).
-// Without it that explicit argument binds AssemblyGridView = V here, so the boundary_info parameter becomes
-// BoundaryInfo<extract_intersection_t<V>> = BoundaryInfo<std::false_type>, whose hard static_assert (not in the
-// immediate SFINAE context) fires while clang checks argument conversion. gcc never forms that candidate; constraining
-// AssemblyGridView to an actual grid layer removes it cleanly for both.
-template <class AssemblyGridView, class RGV, size_t r, size_t rC, class F>
-  requires XT::Grid::is_layer<AssemblyGridView>::value
-auto make_oswald_interpolation_operator(
-    const AssemblyGridView& assembly_grid_view,
-    const SpaceInterface<RGV, r, rC, F>& range_space,
-    const XT::Grid::BoundaryInfo<XT::Grid::extract_intersection_t<AssemblyGridView>>& boundary_info,
-    const std::string& logging_prefix = "",
-    const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+// The boundary-info intersection type is a deduced template parameter (IntersectionType) rather than the spelled-out
+// BoundaryInfo<extract_intersection_t<AssemblyGridView>>. This matters for clang: an explicit-argument call selecting
+// the manual vector-type overload above, e.g. make_oswald_interpolation_operator<V>(...), also makes this overload a
+// candidate with AssemblyGridView = V. Spelling the parameter as BoundaryInfo<extract_intersection_t<V>> =
+// BoundaryInfo<std::false_type> completes that class while substituting the deduced arguments during overload
+// resolution, firing its hard static_assert(is_intersection<...>) (which is not in the immediate SFINAE context, so a
+// requires-clause cannot prevent it -- deduction substitutes the parameter types first). Deducing IntersectionType from
+// the actual argument keeps the parameter a valid BoundaryInfo, so this spurious candidate is instead rejected cleanly
+// because grid_view does not convert to const V&. gcc never formed the candidate to begin with.
+template <class AssemblyGridView, class RGV, size_t r, size_t rC, class F, class IntersectionType>
+auto make_oswald_interpolation_operator(const AssemblyGridView& assembly_grid_view,
+                                        const SpaceInterface<RGV, r, rC, F>& range_space,
+                                        const XT::Grid::BoundaryInfo<IntersectionType>& boundary_info,
+                                        const std::string& logging_prefix = "",
+                                        const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
 {
   using V = XT::LA::IstlDenseVector<F>;
   return make_oswald_interpolation_operator<V>(
