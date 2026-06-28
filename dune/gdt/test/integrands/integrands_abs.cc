@@ -129,20 +129,38 @@ struct AbsIntegrandTest : public IntegrandTest<G>
 
   void copy_gives_same_results()
   {
-    ScalarAbsIntegrand integrand;
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
-    integrand.bind(element);
-    auto clone = integrand.copy_as_unary_element_integrand();
-    clone->bind(element);
-
-    const auto order = integrand.order(*scalar_test_);
-    DynamicVector<double> result_orig(2, 0.), result_clone(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
-      const auto& x = qp.position();
-      integrand.evaluate(*scalar_test_, x, result_orig);
-      clone->evaluate(*scalar_test_, x, result_clone);
-      for (size_t ii = 0; ii < 2; ++ii)
-        EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
+    // scalar path (r=1)
+    {
+      ScalarAbsIntegrand integrand;
+      integrand.bind(element);
+      auto clone = integrand.copy_as_unary_element_integrand();
+      clone->bind(element);
+      const auto order = integrand.order(*scalar_test_);
+      DynamicVector<double> result_orig(2, 0.), result_clone(2, 0.);
+      for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+        const auto& x = qp.position();
+        integrand.evaluate(*scalar_test_, x, result_orig);
+        clone->evaluate(*scalar_test_, x, result_clone);
+        for (size_t ii = 0; ii < 2; ++ii)
+          EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
+      }
+    }
+    // vector path (r=2)
+    {
+      VectorAbsIntegrand integrand;
+      integrand.bind(element);
+      auto clone = integrand.copy_as_unary_element_integrand();
+      clone->bind(element);
+      const auto order = integrand.order(*vector_test_);
+      DynamicVector<double> result_orig(2, 0.), result_clone(2, 0.);
+      for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+        const auto& x = qp.position();
+        integrand.evaluate(*vector_test_, x, result_orig);
+        clone->evaluate(*vector_test_, x, result_clone);
+        for (size_t ii = 0; ii < 2; ++ii)
+          EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
+      }
     }
   }
 
