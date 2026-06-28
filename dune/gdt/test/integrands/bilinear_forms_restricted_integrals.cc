@@ -67,6 +67,22 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
   using BaseType::for_each_intersection_of_first_element;
   using BaseType::make_const_basis;
 
+  template <class Form1, class Form2>
+  void check_apply2_equal(Form1& f1, Form2& f2) const
+  {
+    auto test_basis = make_const_basis();
+    auto ansatz_basis = make_const_basis();
+    DynamicMatrix<double> r1(1, 1, 0.);
+    DynamicMatrix<double> r2(1, 1, 0.);
+    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+      test_basis->bind(el);
+      ansatz_basis->bind(el);
+      f1.apply2(is, *test_basis, *ansatz_basis, r1);
+      f2.apply2(is, *test_basis, *ansatz_basis, r2);
+      EXPECT_DOUBLE_EQ(r1[0][0], r2[0][0]);
+    });
+  }
+
   void is_constructable() final
   {
     auto integrand = make_constant_binary_intersection_integrand<I>();
@@ -88,20 +104,9 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
   {
     auto integrand = make_constant_binary_intersection_integrand<I>();
     FilterType accept_all = [](const I&, const auto&) { return true; };
-
     UnrestrictedBF unrestricted(integrand);
     RestrictedBF restricted(accept_all, integrand);
-    auto test_basis = make_const_basis();
-    auto ansatz_basis = make_const_basis();
-    DynamicMatrix<double> result_u(1, 1, 0.), result_r(1, 1, 0.);
-
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
-      test_basis->bind(el);
-      ansatz_basis->bind(el);
-      unrestricted.apply2(is, *test_basis, *ansatz_basis, result_u);
-      restricted.apply2(is, *test_basis, *ansatz_basis, result_r);
-      EXPECT_DOUBLE_EQ(result_u[0][0], result_r[0][0]) << "accept-all restricted form must equal unrestricted form";
-    });
+    check_apply2_equal(unrestricted, restricted);
   }
 
   void reject_all_filter_gives_zero()
@@ -165,21 +170,9 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
   {
     auto integrand = make_constant_binary_intersection_integrand<I>();
     FilterType accept_all = [](const I&, const auto&) { return true; };
-
     RestrictedBF form0(accept_all, integrand, /*over_integrate=*/0);
     RestrictedBF form2(accept_all, integrand, /*over_integrate=*/2);
-    auto test_basis = make_const_basis();
-    auto ansatz_basis = make_const_basis();
-    DynamicMatrix<double> result0(1, 1, 0.), result2(1, 1, 0.);
-
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
-      test_basis->bind(el);
-      ansatz_basis->bind(el);
-      form0.apply2(is, *test_basis, *ansatz_basis, result0);
-      form2.apply2(is, *test_basis, *ansatz_basis, result2);
-      EXPECT_DOUBLE_EQ(result0[0][0], result2[0][0])
-          << "over_integrate must not change the result for a constant integrand";
-    });
+    check_apply2_equal(form0, form2);
   }
 
   // Result must equal intersection measure for constant-1 integrand with accept-all filter.
@@ -229,20 +222,9 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
   {
     LocalJumpIntegrands::Boundary<I, 1> integrand;
     FilterType accept_all = [](const I&, const auto&) { return true; };
-
     UnrestrictedBF unrestricted(integrand);
     RestrictedBF restricted(accept_all, integrand);
-    auto test_basis = make_const_basis();
-    auto ansatz_basis = make_const_basis();
-    DynamicMatrix<double> result_u(1, 1, 0.), result_r(1, 1, 0.);
-
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
-      test_basis->bind(el);
-      ansatz_basis->bind(el);
-      unrestricted.apply2(is, *test_basis, *ansatz_basis, result_u);
-      restricted.apply2(is, *test_basis, *ansatz_basis, result_r);
-      EXPECT_DOUBLE_EQ(result_u[0][0], result_r[0][0]);
-    });
+    check_apply2_equal(unrestricted, restricted);
   }
 }; // struct SingleSidedRestrictedBilinearFormTest
 
@@ -296,10 +278,9 @@ struct CouplingRestrictedBilinearFormTest : public IntegrandTest<G>
     UnrestrictedBF unrestricted(integrand);
     RestrictedBF restricted(accept_all, integrand);
 
+    DynamicMatrix<double> u_ii(1, 1), u_io(1, 1), u_oi(1, 1), u_oo(1, 1);
+    DynamicMatrix<double> r_ii(1, 1), r_io(1, 1), r_oi(1, 1), r_oo(1, 1);
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
-      DynamicMatrix<double> u_ii(1, 1), u_io(1, 1), u_oi(1, 1), u_oo(1, 1);
-      DynamicMatrix<double> r_ii(1, 1), r_io(1, 1), r_oi(1, 1), r_oo(1, 1);
-
       unrestricted.apply2(is, basis_in, basis_in, basis_out, basis_out, u_ii, u_io, u_oi, u_oo);
       restricted.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
 
