@@ -34,25 +34,23 @@ template <class G>
 struct GenericElementBilinearFormTest : public IntegrandTest<G>
 {
   using BaseType = IntegrandTest<G>;
-  using typename BaseType::D;
-  using typename BaseType::E;
-  using typename BaseType::GV;
   using BaseType::grid_provider_;
   using BaseType::scalar_ansatz_;
   using BaseType::scalar_test_;
+  using typename BaseType::D;
+  using typename BaseType::E;
+  using typename BaseType::GV;
 
   using GenericForm = GenericLocalElementBilinearForm<E, 1>;
 
   void is_constructable() final
   {
     // Minimal: do-nothing lambda.
-    [[maybe_unused]] GenericForm form1(
-        [](const auto& /*t*/, const auto& /*a*/, auto& /*r*/, const auto& /*p*/) {});
+    [[maybe_unused]] GenericForm form1([](const auto& /*t*/, const auto& /*a*/, auto& /*r*/, const auto& /*p*/) {});
 
     // With explicit ParameterType.
-    [[maybe_unused]] GenericForm form2(
-        [](const auto& /*t*/, const auto& /*a*/, auto& /*r*/, const auto& /*p*/) {},
-        XT::Common::ParameterType{});
+    [[maybe_unused]] GenericForm form2([](const auto& /*t*/, const auto& /*a*/, auto& /*r*/, const auto& /*p*/) {},
+                                       XT::Common::ParameterType{});
 
     GenericForm orig([](const auto& /*t*/, const auto& /*a*/, auto& /*r*/, const auto& /*p*/) {});
     auto ptr = orig.copy();
@@ -63,9 +61,8 @@ struct GenericElementBilinearFormTest : public IntegrandTest<G>
   void lambda_is_called()
   {
     int call_count = 0;
-    GenericForm form([&call_count](const auto& /*t*/, const auto& /*a*/, auto& /*r*/, const auto& /*p*/) {
-      ++call_count;
-    });
+    GenericForm form(
+        [&call_count](const auto& /*t*/, const auto& /*a*/, auto& /*r*/, const auto& /*p*/) { ++call_count; });
 
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
     scalar_test_->bind(element);
@@ -82,9 +79,9 @@ struct GenericElementBilinearFormTest : public IntegrandTest<G>
     DynamicMatrix<double> seen_on_entry;
 
     GenericForm form([&seen_on_entry](const auto& test,
-                                     const auto& ansatz,
-                                     DynamicMatrix<double>& result,
-                                     const XT::Common::Parameter& /*param*/) {
+                                      const auto& ansatz,
+                                      DynamicMatrix<double>& result,
+                                      const XT::Common::Parameter& /*param*/) {
       seen_on_entry = result; // capture what the matrix looks like at lambda entry
       // Write something so we can verify it reaches the caller.
       for (size_t ii = 0; ii < test.size(); ++ii)
@@ -215,13 +212,13 @@ template <class G>
 struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
 {
   using BaseType = IntegrandTest<G>;
+  using BaseType::grid_provider_;
+  using BaseType::scalar_ansatz_;
+  using BaseType::scalar_test_;
   using typename BaseType::D;
   using typename BaseType::E;
   using typename BaseType::GV;
   using typename BaseType::I;
-  using BaseType::grid_provider_;
-  using BaseType::scalar_ansatz_;
-  using BaseType::scalar_test_;
 
   using GenericForm = GenericLocalCouplingIntersectionBilinearForm<I, 1>;
   using ScalarBasis = XT::Functions::GenericElementFunctionSet<E, 1, 1>;
@@ -251,16 +248,20 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   void is_constructable() final
   {
     // Do-nothing lambda.
-    [[maybe_unused]] GenericForm form1(
-        [](const auto& /*is*/,
-           const auto& /*ti*/, const auto& /*ai*/,
-           const auto& /*to*/, const auto& /*ao*/,
-           auto& /*rii*/, auto& /*rio*/, auto& /*roi*/, auto& /*roo*/,
-           const auto& /*p*/) {});
+    [[maybe_unused]] GenericForm form1([](const auto& /*is*/,
+                                          const auto& /*ti*/,
+                                          const auto& /*ai*/,
+                                          const auto& /*to*/,
+                                          const auto& /*ao*/,
+                                          auto& /*rii*/,
+                                          auto& /*rio*/,
+                                          auto& /*roi*/,
+                                          auto& /*roo*/,
+                                          const auto& /*p*/) {});
 
     GenericForm orig(
-        [](const auto&, const auto&, const auto&, const auto&, const auto&,
-           auto&, auto&, auto&, auto&, const auto&) {});
+        [](const auto&, const auto&, const auto&, const auto&, const auto&, auto&, auto&, auto&, auto&, const auto&) {
+        });
     auto ptr = orig.copy();
     ASSERT_NE(ptr, nullptr);
   }
@@ -270,8 +271,10 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   {
     int call_count = 0;
     GenericForm form(
-        [&call_count](const auto&, const auto&, const auto&, const auto&, const auto&,
-                      auto&, auto&, auto&, auto&, const auto&) { ++call_count; });
+        [&call_count](
+            const auto&, const auto&, const auto&, const auto&, const auto&, auto&, auto&, auto&, auto&, const auto&) {
+          ++call_count;
+        });
 
     auto basis_in = make_const_basis();
     auto basis_out = make_const_basis();
@@ -293,17 +296,21 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   void all_four_result_matrices_are_cleared_before_lambda()
   {
     double seen_ii = -1., seen_io = -1., seen_oi = -1., seen_oo = -1.;
-    GenericForm form(
-        [&seen_ii, &seen_io, &seen_oi, &seen_oo](
-            const auto&, const auto&, const auto&, const auto&, const auto&,
-            DynamicMatrix<double>& rii, DynamicMatrix<double>& rio,
-            DynamicMatrix<double>& roi, DynamicMatrix<double>& roo,
-            const auto&) {
-          seen_ii = rii[0][0];
-          seen_io = rio[0][0];
-          seen_oi = roi[0][0];
-          seen_oo = roo[0][0];
-        });
+    GenericForm form([&seen_ii, &seen_io, &seen_oi, &seen_oo](const auto&,
+                                                              const auto&,
+                                                              const auto&,
+                                                              const auto&,
+                                                              const auto&,
+                                                              DynamicMatrix<double>& rii,
+                                                              DynamicMatrix<double>& rio,
+                                                              DynamicMatrix<double>& roi,
+                                                              DynamicMatrix<double>& roo,
+                                                              const auto&) {
+      seen_ii = rii[0][0];
+      seen_io = rio[0][0];
+      seen_oi = roi[0][0];
+      seen_oo = roo[0][0];
+    });
 
     auto basis_in = make_const_basis();
     auto basis_out = make_const_basis();
@@ -330,8 +337,8 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   void do_nothing_lambda_gives_zero()
   {
     GenericForm form(
-        [](const auto&, const auto&, const auto&, const auto&, const auto&,
-           auto&, auto&, auto&, auto&, const auto&) {});
+        [](const auto&, const auto&, const auto&, const auto&, const auto&, auto&, auto&, auto&, auto&, const auto&) {
+        });
 
     auto basis_in = make_const_basis();
     auto basis_out = make_const_basis();
@@ -356,33 +363,43 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   // All four result matrices must be resized if they are too small.
   void result_matrices_are_resized_if_too_small()
   {
-    GenericForm form(
-        [](const auto& ti, const auto& ai, const auto& to, const auto& ao,
-           const auto& /*is*/,
-           DynamicMatrix<double>& rii, DynamicMatrix<double>& rio,
-           DynamicMatrix<double>& roi, DynamicMatrix<double>& roo,
-           const auto& /*p*/) {
-          // Write sentinel values so we can verify correct sizing.
-          (void)ti; (void)ai; (void)to; (void)ao;
-          rii[0][0] = 1.;
-          rio[0][0] = 2.;
-          roi[0][0] = 3.;
-          roo[0][0] = 4.;
-        });
+    GenericForm form([](const auto& ti,
+                        const auto& ai,
+                        const auto& to,
+                        const auto& ao,
+                        const auto& /*is*/,
+                        DynamicMatrix<double>& rii,
+                        DynamicMatrix<double>& rio,
+                        DynamicMatrix<double>& roi,
+                        DynamicMatrix<double>& roo,
+                        const auto& /*p*/) {
+      // Write sentinel values so we can verify correct sizing.
+      (void)ti;
+      (void)ai;
+      (void)to;
+      (void)ao;
+      rii[0][0] = 1.;
+      rio[0][0] = 2.;
+      roi[0][0] = 3.;
+      roo[0][0] = 4.;
+    });
 
     // Wrap the lambda to match the expected GenericFunctionType signature.
-    GenericForm form2(
-        [](const auto& /*is*/,
-           const auto& /*ti*/, const auto& /*ai*/,
-           const auto& /*to*/, const auto& /*ao*/,
-           DynamicMatrix<double>& rii, DynamicMatrix<double>& rio,
-           DynamicMatrix<double>& roi, DynamicMatrix<double>& roo,
-           const auto& /*p*/) {
-          rii[0][0] = 1.;
-          rio[0][0] = 2.;
-          roi[0][0] = 3.;
-          roo[0][0] = 4.;
-        });
+    GenericForm form2([](const auto& /*is*/,
+                         const auto& /*ti*/,
+                         const auto& /*ai*/,
+                         const auto& /*to*/,
+                         const auto& /*ao*/,
+                         DynamicMatrix<double>& rii,
+                         DynamicMatrix<double>& rio,
+                         DynamicMatrix<double>& roi,
+                         DynamicMatrix<double>& roo,
+                         const auto& /*p*/) {
+      rii[0][0] = 1.;
+      rio[0][0] = 2.;
+      roi[0][0] = 3.;
+      roo[0][0] = 4.;
+    });
 
     auto basis_in = make_const_basis();
     auto basis_out = make_const_basis();
@@ -417,12 +434,12 @@ template <class G>
 struct ElementIntegralBilinearFormTest : public IntegrandTest<G>
 {
   using BaseType = IntegrandTest<G>;
-  using typename BaseType::D;
-  using typename BaseType::E;
-  using typename BaseType::GV;
   using BaseType::grid_provider_;
   using BaseType::scalar_ansatz_;
   using BaseType::scalar_test_;
+  using typename BaseType::D;
+  using typename BaseType::E;
+  using typename BaseType::GV;
 
   using IntegralBF = LocalElementIntegralBilinearForm<E, 1>;
 
@@ -481,8 +498,7 @@ struct ElementIntegralBilinearFormTest : public IntegrandTest<G>
     DynamicMatrix<double> result(2, 2, 0.);
     form.apply2(*scalar_test_, *scalar_test_, result);
 
-    EXPECT_NEAR(result[0][1], result[1][0], 1e-13)
-        << "L2 mass matrix must be symmetric when test == ansatz basis";
+    EXPECT_NEAR(result[0][1], result[1][0], 1e-13) << "L2 mass matrix must be symmetric when test == ansatz basis";
   }
 
   // Polynomial integrands: over_integrate must not change the exact result.
@@ -513,19 +529,21 @@ struct ElementIntegralBilinearFormTest : public IntegrandTest<G>
     LocalElementProductIntegrand<E, 1> integrand;
     IntegralBF form_int(integrand);
 
-    IntegralBF form_lam(
-        [](const auto& t, const auto& a, const auto& /*p*/) { return t.order() + a.order(); },
-        [](const auto& test, const auto& ansatz, const auto& x, DynamicMatrix<double>& r,
-           const XT::Common::Parameter& param) {
-          const size_t rows = test.size(param);
-          const size_t cols = ansatz.size(param);
-          std::vector<FieldVector<double, 1>> tv(rows), av(cols);
-          test.evaluate(x, tv, param);
-          ansatz.evaluate(x, av, param);
-          for (size_t ii = 0; ii < rows; ++ii)
-            for (size_t jj = 0; jj < cols; ++jj)
-              r[ii][jj] = tv[ii][0] * av[jj][0];
-        });
+    IntegralBF form_lam([](const auto& t, const auto& a, const auto& /*p*/) { return t.order() + a.order(); },
+                        [](const auto& test,
+                           const auto& ansatz,
+                           const auto& x,
+                           DynamicMatrix<double>& r,
+                           const XT::Common::Parameter& param) {
+                          const size_t rows = test.size(param);
+                          const size_t cols = ansatz.size(param);
+                          std::vector<FieldVector<double, 1>> tv(rows), av(cols);
+                          test.evaluate(x, tv, param);
+                          ansatz.evaluate(x, av, param);
+                          for (size_t ii = 0; ii < rows; ++ii)
+                            for (size_t jj = 0; jj < cols; ++jj)
+                              r[ii][jj] = tv[ii][0] * av[jj][0];
+                        });
 
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
     scalar_test_->bind(element);

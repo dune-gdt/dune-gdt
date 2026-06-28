@@ -29,12 +29,12 @@ template <class G>
 struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
 {
   using BaseType = IntegrandTest<G>;
+  using BaseType::grid_provider_;
+  using BaseType::scalar_test_;
   using typename BaseType::D;
   using typename BaseType::E;
   using typename BaseType::GV;
   using typename BaseType::I;
-  using BaseType::grid_provider_;
-  using BaseType::scalar_test_;
 
   using UnrestrictedFunctional = LocalIntersectionIntegralFunctional<I, 1>;
   using RestrictedFunctional = LocalIntersectionRestrictedIntegralFunctional<I, 1>;
@@ -228,8 +228,7 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
       restricted.apply(intersection, *test_basis, result);
       // The constant-1 integrand integrates to the intersection's volume/length.
       const double expected = intersection.geometry().volume();
-      EXPECT_NEAR(expected, result[0], 1e-13)
-          << "constant-1 integrand must integrate to intersection measure";
+      EXPECT_NEAR(expected, result[0], 1e-13) << "constant-1 integrand must integrate to intersection measure";
     }
   }
 

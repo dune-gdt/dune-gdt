@@ -32,17 +32,16 @@ template <class I>
 auto make_constant_binary_intersection_integrand()
 {
   using Integrand = GenericLocalBinaryIntersectionIntegrand<I>;
-  return Integrand(
-      [](const auto& /*t*/, const auto& /*a*/, const auto& /*p*/) { return 0; },
-      [](const auto& t, const auto& a, const auto& /*x*/, DynamicMatrix<double>& r, const auto& /*p*/) {
-        const size_t rows = t.size();
-        const size_t cols = a.size();
-        if (r.rows() < rows || r.cols() < cols)
-          r.resize(rows, cols);
-        for (size_t ii = 0; ii < rows; ++ii)
-          for (size_t jj = 0; jj < cols; ++jj)
-            r[ii][jj] = 1.0;
-      });
+  return Integrand([](const auto& /*t*/, const auto& /*a*/, const auto& /*p*/) { return 0; },
+                   [](const auto& t, const auto& a, const auto& /*x*/, DynamicMatrix<double>& r, const auto& /*p*/) {
+                     const size_t rows = t.size();
+                     const size_t cols = a.size();
+                     if (r.rows() < rows || r.cols() < cols)
+                       r.resize(rows, cols);
+                     for (size_t ii = 0; ii < rows; ++ii)
+                       for (size_t jj = 0; jj < cols; ++jj)
+                         r[ii][jj] = 1.0;
+                   });
 }
 
 
@@ -54,13 +53,13 @@ template <class G>
 struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
 {
   using BaseType = IntegrandTest<G>;
+  using BaseType::grid_provider_;
+  using BaseType::scalar_ansatz_;
+  using BaseType::scalar_test_;
   using typename BaseType::D;
   using typename BaseType::E;
   using typename BaseType::GV;
   using typename BaseType::I;
-  using BaseType::grid_provider_;
-  using BaseType::scalar_ansatz_;
-  using BaseType::scalar_test_;
 
   using UnrestrictedBF = LocalIntersectionIntegralBilinearForm<I, 1>;
   using RestrictedBF = LocalIntersectionRestrictedIntegralBilinearForm<I, 1>;
@@ -110,8 +109,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     for (auto&& intersection : intersections(gv, element)) {
       unrestricted.apply2(intersection, *test_basis, *ansatz_basis, result_u);
       restricted.apply2(intersection, *test_basis, *ansatz_basis, result_r);
-      EXPECT_DOUBLE_EQ(result_u[0][0], result_r[0][0])
-          << "accept-all restricted form must equal unrestricted form";
+      EXPECT_DOUBLE_EQ(result_u[0][0], result_r[0][0]) << "accept-all restricted form must equal unrestricted form";
     }
   }
 
@@ -226,8 +224,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     for (auto&& intersection : intersections(gv, element)) {
       restricted.apply2(intersection, *test_basis, *ansatz_basis, result);
       const double expected = intersection.geometry().volume();
-      EXPECT_NEAR(expected, result[0][0], 1e-13)
-          << "constant-1 integrand must integrate to intersection measure";
+      EXPECT_NEAR(expected, result[0][0], 1e-13) << "constant-1 integrand must integrate to intersection measure";
     }
   }
 
@@ -293,13 +290,13 @@ template <class G>
 struct CouplingRestrictedBilinearFormTest : public IntegrandTest<G>
 {
   using BaseType = IntegrandTest<G>;
+  using BaseType::grid_provider_;
+  using BaseType::scalar_ansatz_;
+  using BaseType::scalar_test_;
   using typename BaseType::D;
   using typename BaseType::E;
   using typename BaseType::GV;
   using typename BaseType::I;
-  using BaseType::grid_provider_;
-  using BaseType::scalar_ansatz_;
-  using BaseType::scalar_test_;
 
   using LocalQuatIntegrand = LocalJumpIntegrands::Inner<I, 1>;
   using UnrestrictedBF = LocalCouplingIntersectionIntegralBilinearForm<I, 1>;
