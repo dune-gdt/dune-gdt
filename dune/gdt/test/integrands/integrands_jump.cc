@@ -70,7 +70,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
   void inner_post_bind_throws_on_boundary_intersection()
   {
     ScalarInnerIntegrandType integrand;
-    const auto& boundary_intersection = find_boundary_intersection();
+    const auto& boundary_intersection = this->find_boundary_intersection();
     EXPECT_THROW(integrand.bind(boundary_intersection), Dune::Exception);
   }
 
@@ -79,7 +79,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     // order = max(test_order_in, test_order_out) + max(ansatz_order_in, ansatz_order_out)
     // scalar_test_ has order 4, scalar_ansatz_ has order 3: expected order = 4 + 3 = 7
     ScalarInnerIntegrandType integrand;
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     EXPECT_EQ(7, integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_));
   }
@@ -93,7 +93,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     // We verify by independently evaluating the scalar_ansatz_ / scalar_test_ bases and
     // re-applying the formula, then comparing with evaluate().
     ScalarInnerIntegrandType integrand;
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     const auto h = XT::Grid::diameter(intersection);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
@@ -134,7 +134,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     //                result_in_out[ii][jj] = -h * (phi_j_out · n) * (psi_i_in · n)
     //                etc.
     VectorInnerIntegrandType integrand;
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     const auto h = XT::Grid::diameter(intersection);
     const auto integrand_order = integrand.order(*vector_test_, *vector_ansatz_, *vector_test_, *vector_ansatz_);
@@ -176,7 +176,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
   {
     // order = test_order + ansatz_order = 4 + 3 = 7
     ScalarBoundaryIntegrandType integrand;
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     EXPECT_EQ(7, integrand.order(*scalar_test_, *scalar_ansatz_));
   }
@@ -185,7 +185,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
   {
     // Formula (r=1): result[ii][jj] = h * phi_j * psi_i
     ScalarBoundaryIntegrandType integrand;
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     const auto h = XT::Grid::diameter(intersection);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_);
@@ -208,7 +208,7 @@ struct JumpIntegrandTest : public IntegrandTest<G>
     // Verify that a custom diameter function is actually called.
     double custom_h = 42.0;
     ScalarInnerIntegrandType integrand([custom_h](const I&) { return custom_h; });
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     // Use a single quadrature point at the center of the intersection.

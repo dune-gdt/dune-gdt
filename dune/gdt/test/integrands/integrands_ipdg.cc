@@ -77,7 +77,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
   void inner_penalty_post_bind_throws_on_boundary_intersection()
   {
     InnerPenaltyType integrand(1.0);
-    const auto& bnd = find_boundary_intersection();
+    const auto& bnd = this->find_boundary_intersection();
     EXPECT_THROW(integrand.bind(bnd), Dune::Exception);
   }
 
@@ -89,7 +89,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     // With unit weight (order 0), scalar_test_ (order 4), scalar_ansatz_ (order 3):
     // expected order = 0 + 4 + 3 = 7
     InnerPenaltyType integrand(10.0);
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     EXPECT_EQ(7, integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_));
   }
@@ -131,7 +131,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     //   effective_penalty = sigma * 0.5 / h
     const double sigma = 8.0;
     InnerPenaltyType integrand(sigma);
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     check_inner_penalty_evaluate(integrand, intersection, sigma * 0.5 / XT::Grid::diameter(intersection));
   }
@@ -152,7 +152,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
           return mat;
         });
     InnerPenaltyType integrand(sigma, weight_2I);
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     check_inner_penalty_evaluate(integrand, intersection, sigma * (c / 2.) / XT::Grid::diameter(intersection), 1e-12);
   }
@@ -161,7 +161,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
   {
     // TODO: Is zero penalty actually valid? The code divides sigma*weight/h, so sigma=0 → 0 results.
     InnerPenaltyType integrand(0.0);
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
@@ -181,7 +181,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
   {
     // order = weight_order + test_order + ansatz_order = 0 + 4 + 3 = 7
     BoundaryPenaltyType integrand(5.0);
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     EXPECT_EQ(7, integrand.order(*scalar_test_, *scalar_ansatz_));
   }
@@ -195,7 +195,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
     //   result[i][j] = effective_penalty * phi_j * psi_i
     const double sigma = 5.0;
     BoundaryPenaltyType integrand(sigma);
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     const double h = XT::Grid::diameter(intersection);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_);
@@ -220,7 +220,7 @@ struct IPDGIntegrandTest : public IntegrandTest<G>
   void boundary_penalty_zero_penalty_gives_zero_result()
   {
     BoundaryPenaltyType integrand(0.0);
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     const auto center = FieldVector<D, d - 1>(0.5);
     DynamicMatrix<D> result(2, 2, 0.);

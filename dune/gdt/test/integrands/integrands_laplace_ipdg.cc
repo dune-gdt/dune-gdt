@@ -79,7 +79,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
   void inner_coupling_post_bind_throws_on_boundary_intersection()
   {
     InnerCouplingType integrand(1., 1.);
-    const auto& bnd = find_boundary_intersection();
+    const auto& bnd = this->find_boundary_intersection();
     EXPECT_THROW(integrand.bind(bnd), Dune::Exception);
   }
 
@@ -101,7 +101,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
   void check_inner_coupling(const double symmetry_prefactor)
   {
     InnerCouplingType integrand(symmetry_prefactor, 1. /*diffusion=I*/, 1. /*weight=I*/);
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_);
     DynamicMatrix<D> rin_in(2, 2, 0.), rin_out(2, 2, 0.), rout_in(2, 2, 0.), rout_out(2, 2, 0.);
@@ -184,7 +184,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
     // With unit diffusion/weight (order 0) and scalar_test_(4), scalar_ansatz_(3):
     // order = 0 + 0 + 4 + 3 = 7
     InnerCouplingType integrand(1., 1.);
-    const auto& intersection = find_inner_intersection();
+    const auto& intersection = this->find_inner_intersection();
     integrand.bind(intersection);
     EXPECT_EQ(7, integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_));
   }
@@ -200,7 +200,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
     // Test with s=1 (SIPDG variant).
     const double s = 1.0;
     DirichletCouplingType integrand(s, 1. /*diffusion=I*/);
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     const auto& binary = static_cast<BinaryBaseType&>(integrand);
     const auto integrand_order = binary.order(*scalar_test_, *scalar_ansatz_);
@@ -231,7 +231,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
   {
     // order = diffusion_order + test_order + ansatz_order = 0 + 4 + 3 = 7
     DirichletCouplingType integrand(1., 1.);
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     const auto& binary = static_cast<BinaryBaseType&>(integrand);
     EXPECT_EQ(7, binary.order(*scalar_test_, *scalar_ansatz_));
@@ -247,7 +247,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
     const double s = 1.0;
     const double g_val = 2.0;
     DirichletCouplingType integrand(s, 1. /*diffusion=I*/, g_val /*dirichlet_data*/);
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     const auto& unary = static_cast<UnaryBaseType&>(integrand);
     const auto integrand_order = unary.order(*scalar_test_);
@@ -271,7 +271,7 @@ struct LaplaceIPDGIntegrandTest : public IntegrandTest<G>
   {
     // With s=0 (IIPDG): unary result should be 0.
     DirichletCouplingType integrand(0. /*s=0*/, 1. /*diffusion=I*/, 3.0 /*non-trivial data*/);
-    const auto& intersection = find_boundary_intersection();
+    const auto& intersection = this->find_boundary_intersection();
     integrand.bind(intersection);
     const auto& unary = static_cast<UnaryBaseType&>(integrand);
     const auto center = FieldVector<D, d - 1>(0.5);
