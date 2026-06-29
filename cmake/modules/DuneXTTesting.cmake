@@ -323,18 +323,19 @@ macro(DXT_ADD_PYTHON_TESTS)
     set(DXT_GCOVR_GCOV_EXECUTABLE "gcov")
   endif()
   if(NOT TARGET coverage_cpp)
-    # gcov data under the build tree -> Cobertura XML codecov understands, filtered to our own dune/ sources. Run gcovr
-    # single-threaded (-j 1): its parallel workers invoke gcov in the shared build dir, and with llvm-cov's gcov mode
-    # the ubiquitous headers (e.g. print.hh) expand to identically-named intermediate .gcov files that concurrent
-    # workers clobber, crashing one of them ("Worker thread raised exception, workers canceled"). Serial processing
-    # removes the race; report generation over our handful of dune/ sources stays cheap.
+    # gcov data under the build tree -> Cobertura XML codecov understands, filtered to our own dune/ sources.
+    # --gcov-ignore-errors=all: with llvm-cov's gcov mode, `llvm-cov-22 gcov` can exit non-zero on individual objects
+    # (e.g. headers expanded across many TUs), which otherwise aborts a gcovr worker outright with "Worker thread raised
+    # exception, workers canceled" (this is a gcov *execution* error, distinct from the parse errors already ignored
+    # above). Tolerating per-file gcov errors lets gcovr skip the offending object and still emit the report. -j 1 keeps
+    # processing serial so any remaining gcov issue is deterministic; report generation over our dune/ sources is cheap.
     add_custom_target(
       coverage_cpp
       COMMAND
         uv run --no-project --with gcovr gcovr -j 1 --root ${CMAKE_SOURCE_DIR} --filter ${CMAKE_SOURCE_DIR}/dune/
-        --gcov-executable "${DXT_GCOVR_GCOV_EXECUTABLE}" --gcov-ignore-parse-errors --exclude-unreachable-branches
-        --exclude-throw-branches --print-summary --xml-pretty -o ${CMAKE_BINARY_DIR}/coverage-cpp.xml
-        ${CMAKE_BINARY_DIR}
+        --gcov-executable "${DXT_GCOVR_GCOV_EXECUTABLE}" --gcov-ignore-parse-errors --gcov-ignore-errors all
+        --exclude-unreachable-branches --exclude-throw-branches --print-summary --xml-pretty -o
+        ${CMAKE_BINARY_DIR}/coverage-cpp.xml ${CMAKE_BINARY_DIR}
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       VERBATIM USES_TERMINAL)
   endif()
