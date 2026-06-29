@@ -282,6 +282,14 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
             const D t_out_0 = 1., t_out_1 = x_out[0] + x_out[1];
             const D a_out_0 = 2., a_out_1 = 1. + x_out[0] * x_out[1];
 
+            // res_ii and res_oi must be zero (no inside-ansatz contribution)
+            for (size_t ii = 0; ii < 2; ++ii) {
+              for (size_t jj = 0; jj < 2; ++jj) {
+                EXPECT_NEAR(0., res_ii[ii][jj], 1e-13);
+                EXPECT_NEAR(0., res_oi[ii][jj], 1e-13);
+              }
+            }
+
             EXPECT_NEAR(v_dot_n * a_out_0 * t_in_0, res_io[0][0], 1e-13);
             EXPECT_NEAR(v_dot_n * a_out_1 * t_in_0, res_io[0][1], 1e-13);
             EXPECT_NEAR(v_dot_n * a_out_0 * t_in_1, res_io[1][0], 1e-13);
@@ -377,8 +385,12 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
 
           for (size_t ii = 0; ii < 2; ++ii) {
             for (size_t jj = 0; jj < 2; ++jj) {
+              EXPECT_DOUBLE_EQ(r_ii_o[ii][jj], r_ii_c[ii][jj]);
+              EXPECT_DOUBLE_EQ(r_ii_o[ii][jj], r_ii_l[ii][jj]);
               EXPECT_DOUBLE_EQ(r_io_o[ii][jj], r_io_c[ii][jj]);
               EXPECT_DOUBLE_EQ(r_io_o[ii][jj], r_io_l[ii][jj]);
+              EXPECT_DOUBLE_EQ(r_oi_o[ii][jj], r_oi_c[ii][jj]);
+              EXPECT_DOUBLE_EQ(r_oi_o[ii][jj], r_oi_l[ii][jj]);
               EXPECT_DOUBLE_EQ(r_oo_o[ii][jj], r_oo_c[ii][jj]);
               EXPECT_DOUBLE_EQ(r_oo_o[ii][jj], r_oo_l[ii][jj]);
             }
