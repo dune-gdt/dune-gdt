@@ -242,8 +242,8 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
 
         // Use face_normal so velocity v = sign*face_normal guarantees v·n = sign != 0,
         // ensuring both inflow and outflow branches are truly exercised.
-        const auto face_normal = intersection.unitOuterNormal(
-            Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), 1)[0].position());
+        const auto face_normal =
+            intersection.unitOuterNormal(Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), 1)[0].position());
         for (const D sign : {1., -1.}) {
           const XT::Functions::GenericGridFunction<E, d> velocity(
               0,
