@@ -178,7 +178,7 @@ struct IntegrandTest : public ::testing::Test
   void for_each_intersection_of_first_element(Callable&& callable) const
   {
     const auto& gv = grid_provider_->leaf_view();
-    const auto& el = *(gv.template begin<0>());
+    const auto el = *(gv.template begin<0>());
     for (auto&& is : intersections(gv, el))
       callable(gv, el, is);
   }
