@@ -323,17 +323,20 @@ macro(DXT_ADD_PYTHON_TESTS)
     set(DXT_GCOVR_GCOV_EXECUTABLE "gcov")
   endif()
   if(NOT TARGET coverage_cpp)
-    # gcov data under the build tree -> Cobertura XML codecov understands, filtered to our own dune/ sources. With
-    # llvm-cov's gcov mode gcovr still aborts with "Worker thread raised exception, workers canceled" even at -j 1 and
-    # with both --gcov-ignore-parse-errors and --gcov-ignore-errors=all, so the failure is an uncategorized exception
-    # gcovr swallows rather than a parse/exec error those flags cover. --verbose makes gcovr print that worker traceback
-    # so the real cause is diagnosable from the CI log instead of hidden behind the generic message.
+    # gcov data under the build tree -> Cobertura XML codecov understands, filtered to our own dune/ sources. This works
+    # for the gcc-built presets. Under clang (DXT_GCOVR_GCOV_EXECUTABLE = "llvm-cov-22 gcov") gcovr currently aborts
+    # with "Worker thread raised exception, workers canceled" -- it persists at -j 1 and through both
+    # --gcov-ignore-parse-errors and --gcov-ignore-errors=all, and gcovr does not surface the underlying traceback even
+    # with --verbose, so it is an llvm-cov-gcov/gcovr incompatibility rather than something these flags reach. The clang
+    # CI leg therefore runs this target best-effort (continue-on-error in non_docker_build.yml); the flags are kept so
+    # it succeeds wherever it can. TODO: move the clang leg to native llvm-cov source-based coverage to restore C++
+    # coverage there.
     add_custom_target(
       coverage_cpp
       COMMAND
-        uv run --no-project --with gcovr gcovr -j 1 --verbose --root ${CMAKE_SOURCE_DIR} --filter
-        ${CMAKE_SOURCE_DIR}/dune/ --gcov-executable "${DXT_GCOVR_GCOV_EXECUTABLE}" --gcov-ignore-parse-errors
-        --gcov-ignore-errors all --exclude-unreachable-branches --exclude-throw-branches --print-summary --xml-pretty -o
+        uv run --no-project --with gcovr gcovr -j 1 --root ${CMAKE_SOURCE_DIR} --filter ${CMAKE_SOURCE_DIR}/dune/
+        --gcov-executable "${DXT_GCOVR_GCOV_EXECUTABLE}" --gcov-ignore-parse-errors --gcov-ignore-errors all
+        --exclude-unreachable-branches --exclude-throw-branches --print-summary --xml-pretty -o
         ${CMAKE_BINARY_DIR}/coverage-cpp.xml ${CMAKE_BINARY_DIR}
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       VERBATIM USES_TERMINAL)
