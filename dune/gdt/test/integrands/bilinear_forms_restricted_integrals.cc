@@ -348,7 +348,7 @@ struct CouplingRestrictedBilinearFormTest : public IntegrandTest<G>
 
     auto basis = make_const_basis();
     const auto& gv = grid_provider_->leaf_view();
-    const auto& element = *(gv.template begin<0>());
+    const auto element = *(gv.template begin<0>());
     basis->bind(element);
 
     DynamicMatrix<double> r(1, 1, 0.);
