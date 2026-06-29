@@ -5,9 +5,16 @@
 set(VCPKG_BUILD_TYPE release)
 set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
 
+# Fetch from several GNU mirrors, not just ftp.gnu.org: that host repeatedly timed out in CI while building this port,
+# and since every build leg (the C++ matrix and the wheel build) rebuilds the vcpkg dependencies from scratch, one slow
+# mirror blocks the whole pipeline. vcpkg_download_distfile tries the URLs in order and verifies the SHA512 of whichever
+# responds, so the extra mirrors are pure resiliency -- mirrors.kernel.org and the ftpmirror.gnu.org redirector are
+# listed ahead of ftp.gnu.org as the more reliable primaries.
 vcpkg_download_distfile(
   ARCHIVE
   URLS
+  "https://mirrors.kernel.org/gnu/autoconf-archive/autoconf-archive-${VERSION}.tar.xz"
+  "https://ftpmirror.gnu.org/autoconf-archive/autoconf-archive-${VERSION}.tar.xz"
   "https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-${VERSION}.tar.xz"
   FILENAME
   "autoconf-archive-${VERSION}.tar.xz"
