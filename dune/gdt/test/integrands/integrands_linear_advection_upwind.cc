@@ -240,12 +240,17 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
           continue;
         found = true;
 
-        for (const D vx : {1., -1.}) {
+        // Use face_normal so velocity v = sign*face_normal guarantees v·n = sign != 0,
+        // ensuring both inflow and outflow branches are truly exercised.
+        const auto face_normal = intersection.unitOuterNormal(
+            Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), 1)[0].position());
+        for (const D sign : {1., -1.}) {
           const XT::Functions::GenericGridFunction<E, d> velocity(
               0,
               [](const E&) {},
-              // Lambda captures vx by value; capture list must be explicit.
-              [vx](const DomainType&, const XT::Common::Parameter&) { return FieldVector<D, d>{{vx, 0.}}; });
+              [face_normal, sign](const DomainType&, const XT::Common::Parameter&) {
+                return FieldVector<D, d>{{sign * face_normal[0], sign * face_normal[1]}};
+              });
           InnerCouplingType integrand(velocity);
           integrand.bind(intersection);
           const auto order = integrand.order(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_);
@@ -255,8 +260,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
             const auto& x_ref = qp.position();
             const auto x_in = intersection.geometryInInside().global(x_ref);
             const auto x_out = intersection.geometryInOutside().global(x_ref);
-            const auto normal = intersection.unitOuterNormal(x_ref);
-            const D v_dot_n = vx * normal[0]; // v = (vx, 0)
+            const D v_dot_n = sign; // v = sign * face_normal => v·n = sign * |face_normal|^2 = sign
 
             integrand.evaluate(
                 *simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, x_ref, res_ii, res_io, res_oi, res_oo);
@@ -536,19 +540,25 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
         cloned_unary->bind(intersection);
         cloned_binary->bind(intersection);
 
-        // Compare binary results
+        // Compare binary and unary results across original, copy-constructor, and clones
         const auto order = original.order(*simple_test_, *simple_ansatz_);
         DynamicMatrix<D> r_orig(2, 2, 0.), r_copy(2, 2, 0.), r_clone(2, 2, 0.);
+        DynamicVector<D> u_orig(2, 0.), u_copy(2, 0.), u_clone(2, 0.);
         for (const auto& qp : Dune::QuadratureRules<D, d - 1>::rule(intersection.type(), std::max(order, 2))) {
           const auto& x_ref = qp.position();
           original.evaluate(*simple_test_, *simple_ansatz_, x_ref, r_orig);
           copy_ctor.evaluate(*simple_test_, *simple_ansatz_, x_ref, r_copy);
           cloned_binary->evaluate(*simple_test_, *simple_ansatz_, x_ref, r_clone);
+          original.evaluate(*simple_test_, x_ref, u_orig);
+          copy_ctor.evaluate(*simple_test_, x_ref, u_copy);
+          cloned_unary->evaluate(*simple_test_, x_ref, u_clone);
           for (size_t ii = 0; ii < 2; ++ii) {
             for (size_t jj = 0; jj < 2; ++jj) {
               EXPECT_DOUBLE_EQ(r_orig[ii][jj], r_copy[ii][jj]);
               EXPECT_DOUBLE_EQ(r_orig[ii][jj], r_clone[ii][jj]);
             }
+            EXPECT_DOUBLE_EQ(u_orig[ii], u_copy[ii]);
+            EXPECT_DOUBLE_EQ(u_orig[ii], u_clone[ii]);
           }
         }
         return;
