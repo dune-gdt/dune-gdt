@@ -145,6 +145,7 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     sum.bind(element);
 
     const auto order = sum.order(*scalar_test_);
+    EXPECT_EQ(std::max(unary_a.order(*scalar_test_), unary_b.order(*scalar_test_)), order);
     DynamicVector<double> result_a(2, 0.), result_b(2, 0.), result_sum(2, 0.);
     const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
     for (const auto& qp : quadrature_rule) {
