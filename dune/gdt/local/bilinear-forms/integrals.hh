@@ -78,7 +78,7 @@ public:
     , over_integrate_(over_integrate)
   {
     LOG_(info) << "LocalElementIntegralBilinearForm(this=" << this << ", order_function=" << &order_function
-               << ", evaluate_function=" << evaluate_function << ", param_type=" << print(param_type)
+               << ", evaluate_function=" << &evaluate_function << ", param_type=" << print(param_type)
                << ", over_integrate=" << over_integrate << ")" << std::endl;
   }
 
