@@ -323,18 +323,17 @@ macro(DXT_ADD_PYTHON_TESTS)
     set(DXT_GCOVR_GCOV_EXECUTABLE "gcov")
   endif()
   if(NOT TARGET coverage_cpp)
-    # gcov data under the build tree -> Cobertura XML codecov understands, filtered to our own dune/ sources.
-    # --gcov-ignore-errors=all: with llvm-cov's gcov mode, `llvm-cov-22 gcov` can exit non-zero on individual objects
-    # (e.g. headers expanded across many TUs), which otherwise aborts a gcovr worker outright with "Worker thread raised
-    # exception, workers canceled" (this is a gcov *execution* error, distinct from the parse errors already ignored
-    # above). Tolerating per-file gcov errors lets gcovr skip the offending object and still emit the report. -j 1 keeps
-    # processing serial so any remaining gcov issue is deterministic; report generation over our dune/ sources is cheap.
+    # gcov data under the build tree -> Cobertura XML codecov understands, filtered to our own dune/ sources. With
+    # llvm-cov's gcov mode gcovr still aborts with "Worker thread raised exception, workers canceled" even at -j 1 and
+    # with both --gcov-ignore-parse-errors and --gcov-ignore-errors=all, so the failure is an uncategorized exception
+    # gcovr swallows rather than a parse/exec error those flags cover. --verbose makes gcovr print that worker traceback
+    # so the real cause is diagnosable from the CI log instead of hidden behind the generic message.
     add_custom_target(
       coverage_cpp
       COMMAND
-        uv run --no-project --with gcovr gcovr -j 1 --root ${CMAKE_SOURCE_DIR} --filter ${CMAKE_SOURCE_DIR}/dune/
-        --gcov-executable "${DXT_GCOVR_GCOV_EXECUTABLE}" --gcov-ignore-parse-errors --gcov-ignore-errors all
-        --exclude-unreachable-branches --exclude-throw-branches --print-summary --xml-pretty -o
+        uv run --no-project --with gcovr gcovr -j 1 --verbose --root ${CMAKE_SOURCE_DIR} --filter
+        ${CMAKE_SOURCE_DIR}/dune/ --gcov-executable "${DXT_GCOVR_GCOV_EXECUTABLE}" --gcov-ignore-parse-errors
+        --gcov-ignore-errors all --exclude-unreachable-branches --exclude-throw-branches --print-summary --xml-pretty -o
         ${CMAKE_BINARY_DIR}/coverage-cpp.xml ${CMAKE_BINARY_DIR}
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       VERBATIM USES_TERMINAL)
