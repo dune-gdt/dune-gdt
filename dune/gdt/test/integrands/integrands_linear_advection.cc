@@ -86,6 +86,25 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     EXPECT_EQ(0 + 4 + 3, integrand_nodiv.order(*scalar_test_, *scalar_ansatz_));
   }
 
+  template <class CheckFn>
+  void eval_constant_velocity_form(bool div_form, CheckFn check)
+  {
+    const XT::Functions::GenericGridFunction<E, d> velocity(
+        0,
+        [](const E&) {},
+        [](const DomainType&, const XT::Common::Parameter&) { return FieldVector<D, d>{{1., 0.}}; });
+    IntegrandType integrand(velocity, div_form);
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
+    DynamicMatrix<D> result(2, 2, 0.);
+    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+      const auto& x = qp.position();
+      integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result);
+      check(x, result);
+    }
+  }
+
   void evaluates_correctly_divergence_form()
   {
     // velocity v = (1, 0) constant, divergence form
@@ -102,24 +121,13 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     //   [0][1] = -x^2*y * 0 = 0
     //   [1][0] = -x * y^3
     //   [1][1] = -x^2*y * y^3 = -x^2*y^4  (capturing current integrand behaviour)
-    const XT::Functions::GenericGridFunction<E, d> velocity(
-        0,
-        [](const E&) {},
-        [](const DomainType&, const XT::Common::Parameter&) { return FieldVector<D, d>{{1., 0.}}; });
-    IntegrandType integrand(velocity, /*advection_in_divergence_form=*/true);
-    const auto element = *(grid_provider_->leaf_view().template begin<0>());
-    integrand.bind(element);
-    const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
-    DynamicMatrix<D> result(2, 2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
-      const auto& x = qp.position();
-      integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result);
+    eval_constant_velocity_form(true, [](const DomainType& x, const DynamicMatrix<D>& result) {
       // row i = test function index, col j = ansatz function index
       EXPECT_NEAR(0., result[0][0], 1e-13);
       EXPECT_NEAR(0., result[0][1], 1e-13);
       EXPECT_NEAR(-x[0] * std::pow(x[1], 3), result[1][0], 1e-13);
       EXPECT_NEAR(-std::pow(x[0], 2) * x[1] * std::pow(x[1], 3), result[1][1], 1e-13);
-    }
+    });
   }
 
   void evaluates_correctly_non_divergence_form()
@@ -138,23 +146,12 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     //   [0][1] = 2xy * y = 2xy^2
     //   [1][0] = 1 * xy^3 = xy^3
     //   [1][1] = 2xy * xy^3 = 2x^2*y^4
-    const XT::Functions::GenericGridFunction<E, d> velocity(
-        0,
-        [](const E&) {},
-        [](const DomainType&, const XT::Common::Parameter&) { return FieldVector<D, d>{{1., 0.}}; });
-    IntegrandType integrand(velocity, /*advection_in_divergence_form=*/false);
-    const auto element = *(grid_provider_->leaf_view().template begin<0>());
-    integrand.bind(element);
-    const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
-    DynamicMatrix<D> result(2, 2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
-      const auto& x = qp.position();
-      integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result);
+    eval_constant_velocity_form(false, [](const DomainType& x, const DynamicMatrix<D>& result) {
       EXPECT_NEAR(x[1], result[0][0], 1e-13);
       EXPECT_NEAR(2. * x[0] * std::pow(x[1], 2), result[0][1], 1e-13);
       EXPECT_NEAR(x[0] * std::pow(x[1], 3), result[1][0], 1e-13);
       EXPECT_NEAR(2. * std::pow(x[0], 2) * std::pow(x[1], 4), result[1][1], 1e-13);
-    }
+    });
   }
 
   void evaluates_correctly_with_variable_velocity()

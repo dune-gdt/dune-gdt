@@ -216,25 +216,8 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
           const D a_out_0 = 2.;
           const D a_out_1 = 1. + x_out[0] * x_out[1];
 
-          // result_in_in and result_out_in must be zero (no inside-ansatz contribution)
-          for (size_t ii = 0; ii < 2; ++ii) {
-            for (size_t jj = 0; jj < 2; ++jj) {
-              EXPECT_NEAR(0., res_ii[ii][jj], 1e-13);
-              EXPECT_NEAR(0., res_oi[ii][jj], 1e-13);
-            }
-          }
-
-          // result_in_out[i][j] = (v.n) * ansatz_out[j] * test_in[i]
-          EXPECT_NEAR(v_dot_n * a_out_0 * t_in_0, res_io[0][0], 1e-13);
-          EXPECT_NEAR(v_dot_n * a_out_1 * t_in_0, res_io[0][1], 1e-13);
-          EXPECT_NEAR(v_dot_n * a_out_0 * t_in_1, res_io[1][0], 1e-13);
-          EXPECT_NEAR(v_dot_n * a_out_1 * t_in_1, res_io[1][1], 1e-13);
-
-          // result_out_out[i][j] = -(v.n) * ansatz_out[j] * test_out[i]
-          EXPECT_NEAR(-v_dot_n * a_out_0 * t_out_0, res_oo[0][0], 1e-13);
-          EXPECT_NEAR(-v_dot_n * a_out_1 * t_out_0, res_oo[0][1], 1e-13);
-          EXPECT_NEAR(-v_dot_n * a_out_0 * t_out_1, res_oo[1][0], 1e-13);
-          EXPECT_NEAR(-v_dot_n * a_out_1 * t_out_1, res_oo[1][1], 1e-13);
+          assert_inner_coupling_result(v_dot_n, t_in_0, t_in_1, t_out_0, t_out_1, a_out_0, a_out_1,
+                                       res_ii, res_io, res_oi, res_oo);
         }
         break;
       }
@@ -282,23 +265,8 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
             const D t_out_0 = 1., t_out_1 = x_out[0] + x_out[1];
             const D a_out_0 = 2., a_out_1 = 1. + x_out[0] * x_out[1];
 
-            // res_ii and res_oi must be zero (no inside-ansatz contribution)
-            for (size_t ii = 0; ii < 2; ++ii) {
-              for (size_t jj = 0; jj < 2; ++jj) {
-                EXPECT_NEAR(0., res_ii[ii][jj], 1e-13);
-                EXPECT_NEAR(0., res_oi[ii][jj], 1e-13);
-              }
-            }
-
-            EXPECT_NEAR(v_dot_n * a_out_0 * t_in_0, res_io[0][0], 1e-13);
-            EXPECT_NEAR(v_dot_n * a_out_1 * t_in_0, res_io[0][1], 1e-13);
-            EXPECT_NEAR(v_dot_n * a_out_0 * t_in_1, res_io[1][0], 1e-13);
-            EXPECT_NEAR(v_dot_n * a_out_1 * t_in_1, res_io[1][1], 1e-13);
-
-            EXPECT_NEAR(-v_dot_n * a_out_0 * t_out_0, res_oo[0][0], 1e-13);
-            EXPECT_NEAR(-v_dot_n * a_out_1 * t_out_0, res_oo[0][1], 1e-13);
-            EXPECT_NEAR(-v_dot_n * a_out_0 * t_out_1, res_oo[1][0], 1e-13);
-            EXPECT_NEAR(-v_dot_n * a_out_1 * t_out_1, res_oo[1][1], 1e-13);
+            assert_inner_coupling_result(v_dot_n, t_in_0, t_in_1, t_out_0, t_out_1, a_out_0, a_out_1,
+                                         res_ii, res_io, res_oi, res_oo);
           }
         }
         break;
@@ -587,6 +555,26 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
       }
     }
     ADD_FAILURE() << "No boundary intersection found in grid";
+  }
+
+  // Shared assertion helper for InnerCoupling: checks all four result matrices at one quadrature point.
+  void assert_inner_coupling_result(D v_dot_n, D t_in_0, D t_in_1, D t_out_0, D t_out_1, D a_out_0, D a_out_1,
+                                    const DynamicMatrix<D>& res_ii, const DynamicMatrix<D>& res_io,
+                                    const DynamicMatrix<D>& res_oi, const DynamicMatrix<D>& res_oo)
+  {
+    for (size_t ii = 0; ii < 2; ++ii)
+      for (size_t jj = 0; jj < 2; ++jj) {
+        EXPECT_NEAR(0., res_ii[ii][jj], 1e-13);
+        EXPECT_NEAR(0., res_oi[ii][jj], 1e-13);
+      }
+    EXPECT_NEAR(v_dot_n * a_out_0 * t_in_0, res_io[0][0], 1e-13);
+    EXPECT_NEAR(v_dot_n * a_out_1 * t_in_0, res_io[0][1], 1e-13);
+    EXPECT_NEAR(v_dot_n * a_out_0 * t_in_1, res_io[1][0], 1e-13);
+    EXPECT_NEAR(v_dot_n * a_out_1 * t_in_1, res_io[1][1], 1e-13);
+    EXPECT_NEAR(-v_dot_n * a_out_0 * t_out_0, res_oo[0][0], 1e-13);
+    EXPECT_NEAR(-v_dot_n * a_out_1 * t_out_0, res_oo[0][1], 1e-13);
+    EXPECT_NEAR(-v_dot_n * a_out_0 * t_out_1, res_oo[1][0], 1e-13);
+    EXPECT_NEAR(-v_dot_n * a_out_1 * t_out_1, res_oo[1][1], 1e-13);
   }
 
   using BaseType::grid_provider_;
