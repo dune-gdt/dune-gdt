@@ -8,9 +8,14 @@ set(VCPKG_BUILD_TYPE release)
 set(VCPKG_POLICY_EMPTY_INCLUDE_FOLDER enabled)
 set(VCPKG_POLICY_SKIP_ABSOLUTE_PATHS_CHECK enabled)
 
+# List mirrors.kernel.org and the ftpmirror.gnu.org redirector ahead of ftp.gnu.org, which has been failing in CI. See
+# autoconf-archive's portfile for the rationale; vcpkg_download_distfile tries the URLs in order and verifies the same
+# SHA512, so the mirrors are pure resiliency.
 vcpkg_download_distfile(
   ARCHIVE
   URLS
+  "https://mirrors.kernel.org/gnu/automake/automake-${VERSION}.tar.xz"
+  "https://ftpmirror.gnu.org/automake/automake-${VERSION}.tar.xz"
   "https://ftp.gnu.org/gnu/automake/automake-${VERSION}.tar.xz"
   FILENAME
   "automake-${VERSION}.tar.xz"
