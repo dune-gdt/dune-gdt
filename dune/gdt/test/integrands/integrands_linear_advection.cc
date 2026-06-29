@@ -234,9 +234,10 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
       const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
       for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
         integrand.evaluate(*scalar_test_, *scalar_ansatz_, qp.position(), result);
-        for (size_t ii = 0; ii < 2; ++ii)
+        for (size_t ii = 0; ii < 2; ++ii) {
           for (size_t jj = 0; jj < 2; ++jj)
             EXPECT_DOUBLE_EQ(0., result[ii][jj]);
+        }
       }
     }
   }
@@ -264,11 +265,12 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
       original.evaluate(*scalar_test_, *scalar_ansatz_, x, res_orig);
       copy_ctor.evaluate(*scalar_test_, *scalar_ansatz_, x, res_copy);
       cloned->evaluate(*scalar_test_, *scalar_ansatz_, x, res_clone);
-      for (size_t ii = 0; ii < 2; ++ii)
+      for (size_t ii = 0; ii < 2; ++ii) {
         for (size_t jj = 0; jj < 2; ++jj) {
           EXPECT_DOUBLE_EQ(res_orig[ii][jj], res_copy[ii][jj]);
           EXPECT_DOUBLE_EQ(res_orig[ii][jj], res_clone[ii][jj]);
         }
+      }
     }
   }
 

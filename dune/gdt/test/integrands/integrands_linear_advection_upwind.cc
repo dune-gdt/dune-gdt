@@ -157,11 +157,9 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
         found = true;
         integrand.bind(intersection);
         // direction order 0, simple_test_ order 1, simple_ansatz_ order 2
-        EXPECT_EQ(0 + 1 + std::max(2, 2),
-                  integrand.order(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_));
+        EXPECT_EQ(0 + 1 + 2, integrand.order(*simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_));
         // with fixture bases: direction 0, test 4, ansatz 3
-        EXPECT_EQ(0 + 4 + std::max(3, 3),
-                  integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_));
+        EXPECT_EQ(0 + 4 + 3, integrand.order(*scalar_test_, *scalar_ansatz_, *scalar_test_, *scalar_ansatz_));
         break;
       }
       if (found)
@@ -219,11 +217,12 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
           const D a_out_1 = 1. + x_out[0] * x_out[1];
 
           // result_in_in and result_out_in must be zero (no inside-ansatz contribution)
-          for (size_t ii = 0; ii < 2; ++ii)
+          for (size_t ii = 0; ii < 2; ++ii) {
             for (size_t jj = 0; jj < 2; ++jj) {
               EXPECT_NEAR(0., res_ii[ii][jj], 1e-13);
               EXPECT_NEAR(0., res_oi[ii][jj], 1e-13);
             }
+          }
 
           // result_in_out[i][j] = (v.n) * ansatz_out[j] * test_in[i]
           EXPECT_NEAR(v_dot_n * a_out_0 * t_in_0, res_io[0][0], 1e-13);
@@ -328,13 +327,14 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
                              res_io,
                              res_oi,
                              res_oo);
-          for (size_t ii = 0; ii < 2; ++ii)
+          for (size_t ii = 0; ii < 2; ++ii) {
             for (size_t jj = 0; jj < 2; ++jj) {
               EXPECT_DOUBLE_EQ(0., res_ii[ii][jj]);
               EXPECT_DOUBLE_EQ(0., res_io[ii][jj]);
               EXPECT_DOUBLE_EQ(0., res_oi[ii][jj]);
               EXPECT_DOUBLE_EQ(0., res_oo[ii][jj]);
             }
+          }
         }
         return; // one intersection is enough
       }
@@ -375,13 +375,14 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
           cloned->evaluate(
               *simple_test_, *simple_ansatz_, *simple_test_, *simple_ansatz_, x_ref, r_ii_l, r_io_l, r_oi_l, r_oo_l);
 
-          for (size_t ii = 0; ii < 2; ++ii)
+          for (size_t ii = 0; ii < 2; ++ii) {
             for (size_t jj = 0; jj < 2; ++jj) {
               EXPECT_DOUBLE_EQ(r_io_o[ii][jj], r_io_c[ii][jj]);
               EXPECT_DOUBLE_EQ(r_io_o[ii][jj], r_io_l[ii][jj]);
               EXPECT_DOUBLE_EQ(r_oo_o[ii][jj], r_oo_c[ii][jj]);
               EXPECT_DOUBLE_EQ(r_oo_o[ii][jj], r_oo_l[ii][jj]);
             }
+          }
         }
         return;
       }
@@ -562,11 +563,12 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
           original.evaluate(*simple_test_, *simple_ansatz_, x_ref, r_orig);
           copy_ctor.evaluate(*simple_test_, *simple_ansatz_, x_ref, r_copy);
           cloned_binary->evaluate(*simple_test_, *simple_ansatz_, x_ref, r_clone);
-          for (size_t ii = 0; ii < 2; ++ii)
+          for (size_t ii = 0; ii < 2; ++ii) {
             for (size_t jj = 0; jj < 2; ++jj) {
               EXPECT_DOUBLE_EQ(r_orig[ii][jj], r_copy[ii][jj]);
               EXPECT_DOUBLE_EQ(r_orig[ii][jj], r_clone[ii][jj]);
             }
+          }
         }
         return;
       }
