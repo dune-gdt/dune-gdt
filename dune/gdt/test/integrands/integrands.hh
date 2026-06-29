@@ -144,6 +144,46 @@ struct IntegrandTest : public ::testing::Test
         });
   } // ... SetUp(...)
 
+  template <class UnaryIntegrandType, class BasisType>
+  void check_unary_clone_matches(UnaryIntegrandType& integrand, const BasisType& basis)
+  {
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    auto clone = integrand.copy_as_unary_element_integrand();
+    clone->bind(element);
+    const auto order = integrand.order(basis);
+    const size_t n = basis.size();
+    DynamicVector<double> result_orig(n, 0.), result_clone(n, 0.);
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
+      const auto& x = qp.position();
+      integrand.evaluate(basis, x, result_orig);
+      clone->evaluate(basis, x, result_clone);
+      for (size_t ii = 0; ii < n; ++ii)
+        EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
+    }
+  }
+
+  template <class BinaryIntegrandType>
+  void check_binary_clone_matches(BinaryIntegrandType& integrand)
+  {
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    auto clone = integrand.copy_as_binary_element_integrand();
+    clone->bind(element);
+    const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
+    DynamicMatrix<double> result_orig(2, 2, 0.), result_clone(2, 2, 0.);
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
+      const auto& x = qp.position();
+      integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result_orig);
+      clone->evaluate(*scalar_test_, *scalar_ansatz_, x, result_clone);
+      for (size_t ii = 0; ii < 2; ++ii)
+        for (size_t jj = 0; jj < 2; ++jj)
+          EXPECT_DOUBLE_EQ(result_orig[ii][jj], result_clone[ii][jj]);
+    }
+  }
+
   virtual void is_constructable() = 0;
 }; // struct IntegrandTest
 
