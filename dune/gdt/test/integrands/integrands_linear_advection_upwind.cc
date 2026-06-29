@@ -116,7 +116,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     EXPECT_NE(nullptr, cloned_binary);
   }
 
-  virtual void inner_coupling_throws_on_boundary_intersection()
+  void inner_coupling_throws_on_boundary_intersection()
   {
     // InnerCoupling::post_bind() must throw when given a boundary intersection.
     const XT::Functions::GenericGridFunction<E, d> velocity(
@@ -140,7 +140,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     EXPECT_TRUE(found) << "No boundary intersection found — test is vacuous";
   }
 
-  virtual void inner_coupling_order_is_correct()
+  void inner_coupling_order_is_correct()
   {
     // order = direction.order + test_inside.order + max(ansatz_inside.order, ansatz_outside.order)
     const XT::Functions::GenericGridFunction<E, d> velocity(
@@ -168,7 +168,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     EXPECT_TRUE(found) << "No interior intersection found in grid";
   }
 
-  virtual void inner_coupling_evaluates_correctly()
+  void inner_coupling_evaluates_correctly()
   {
     // For the InnerCoupling formula (computed on an interior intersection):
     //   result_in_in  = 0
@@ -244,7 +244,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     EXPECT_TRUE(found) << "No interior intersection found in grid!";
   }
 
-  virtual void inner_coupling_covers_both_sign_orientations()
+  void inner_coupling_covers_both_sign_orientations()
   {
     // Test with v=(1,0) and v=(-1,0) on the same interior intersection so that
     // both v.n > 0 (outflow) and v.n < 0 (inflow) orientations are exercised.
@@ -301,7 +301,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     EXPECT_TRUE(found) << "No interior intersection found in grid!";
   }
 
-  virtual void inner_coupling_with_zero_velocity_gives_zero()
+  void inner_coupling_with_zero_velocity_gives_zero()
   {
     // Edge case: v = 0 => v.n = 0 for all intersections => all result matrices are zero.
     const XT::Functions::GenericGridFunction<E, d> zero_vel(
@@ -341,7 +341,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     }
   }
 
-  virtual void inner_coupling_clone_gives_same_results()
+  void inner_coupling_clone_gives_same_results()
   {
     // copy constructor and copy_as_quaternary_intersection_integrand should produce identical results
     const XT::Functions::GenericGridFunction<E, d> velocity(
@@ -390,7 +390,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     ADD_FAILURE() << "No interior intersection found in grid";
   }
 
-  virtual void dirichlet_coupling_inside_is_true()
+  void dirichlet_coupling_inside_is_true()
   {
     // DirichletCoupling::inside() always returns true
     const XT::Functions::GenericGridFunction<E, d> velocity(
@@ -401,7 +401,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     EXPECT_TRUE(integrand.inside());
   }
 
-  virtual void dirichlet_coupling_evaluates_binary_correctly()
+  void dirichlet_coupling_evaluates_binary_correctly()
   {
     // DirichletCoupling binary evaluate on a boundary intersection:
     //   result[i][j] = (v.n) * ansatz[j](x_in) * test[i](x_in)
@@ -453,7 +453,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     EXPECT_TRUE(found) << "No boundary intersection found in grid";
   }
 
-  virtual void dirichlet_coupling_evaluates_unary_correctly()
+  void dirichlet_coupling_evaluates_unary_correctly()
   {
     // DirichletCoupling unary evaluate on a boundary intersection:
     //   result[j] = (v.n) * dirichlet_data * test[j](x_in)
@@ -500,7 +500,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     EXPECT_TRUE(found) << "No boundary intersection found in grid";
   }
 
-  virtual void dirichlet_coupling_with_zero_velocity_gives_zero()
+  void dirichlet_coupling_with_zero_velocity_gives_zero()
   {
     // Edge case: v = 0 => all results are zero
     const XT::Functions::GenericGridFunction<E, d> zero_vel(
@@ -522,8 +522,9 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
           integrand.evaluate(*simple_test_, qp.position(), un_result);
           for (size_t ii = 0; ii < 2; ++ii) {
             EXPECT_DOUBLE_EQ(0., un_result[ii]);
-            for (size_t jj = 0; jj < 2; ++jj)
+            for (size_t jj = 0; jj < 2; ++jj) {
               EXPECT_DOUBLE_EQ(0., bin_result[ii][jj]);
+            }
           }
         }
         return;
@@ -531,7 +532,7 @@ struct LinearAdvectionUpwindIntegrandTest : public IntegrandTest<G>
     }
   }
 
-  virtual void dirichlet_coupling_clone_gives_same_results()
+  void dirichlet_coupling_clone_gives_same_results()
   {
     // copy constructor and copy_as_* should produce identical binary evaluate results
     const XT::Functions::GenericGridFunction<E, d> velocity(

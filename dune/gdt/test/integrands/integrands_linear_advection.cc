@@ -59,7 +59,7 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     EXPECT_NE(nullptr, cloned);
   }
 
-  virtual void order_is_correct()
+  void order_is_correct()
   {
     // For constant direction (order 0): order = 0 + test.order + ansatz.order = 0 + 4 + 3 = 7
     const XT::Functions::GenericGridFunction<E, d> const_vel(
@@ -86,7 +86,7 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     EXPECT_EQ(0 + 4 + 3, integrand_nodiv.order(*scalar_test_, *scalar_ansatz_));
   }
 
-  virtual void evaluates_correctly_divergence_form()
+  void evaluates_correctly_divergence_form()
   {
     // velocity v = (1, 0) constant, divergence form
     // formula: result[i][j] = -ansatz_val[j] * (v . test_grad[i])
@@ -101,7 +101,7 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     //   [0][0] = -x * 0 = 0
     //   [0][1] = -x^2*y * 0 = 0
     //   [1][0] = -x * y^3
-    //   [1][1] = -x^2*y * y^4  <- NOTE: -x^2*y * y^3 = -x^2*y^4, todo verify this is correct behavior
+    //   [1][1] = -x^2*y * y^3 = -x^2*y^4  (capturing current integrand behaviour)
     const XT::Functions::GenericGridFunction<E, d> velocity(
         0,
         [](const E&) {},
@@ -122,7 +122,7 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     }
   }
 
-  virtual void evaluates_correctly_non_divergence_form()
+  void evaluates_correctly_non_divergence_form()
   {
     // velocity v = (1, 0) constant, non-divergence form
     // formula: result[i][j] = (v . ansatz_grad[j]) * test_val[i]
@@ -157,13 +157,13 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     }
   }
 
-  virtual void evaluates_correctly_with_variable_velocity()
+  void evaluates_correctly_with_variable_velocity()
   {
     // velocity v = (x, y) (order 1), tests both divergence and non-divergence forms
     //
     // Divergence form:
     //   v . test_grad[0] = (x,y).(0,1) = y
-    //   v . test_grad[1] = (x,y).(y^3, 3xy^2) = x*y^3 + 3xy^3 = 4xy^3  <- TODO verify
+    //   v . test_grad[1] = (x,y).(y^3, 3xy^2) = x*y^3 + 3xy^3 = 4xy^3
     //   result[i][j] = -ansatz[j] * (v . test_grad[i]):
     //     [0][0] = -x * y
     //     [0][1] = -x^2*y * y = -x^2*y^2
@@ -172,7 +172,7 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     //
     // Non-divergence form:
     //   v . ansatz_grad[0] = (x,y).(1,0) = x
-    //   v . ansatz_grad[1] = (x,y).(2xy, x^2) = 2x^2*y + x^2*y = 3x^2*y  <- TODO verify
+    //   v . ansatz_grad[1] = (x,y).(2xy, x^2) = 2x^2*y + x^2*y = 3x^2*y
     //   result[i][j] = (v . ansatz_grad[j]) * test[i]:
     //     [0][0] = x * y = xy
     //     [0][1] = 3x^2*y * y = 3x^2*y^2
@@ -218,7 +218,7 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
     }
   }
 
-  virtual void zero_velocity_gives_zero_result()
+  void zero_velocity_gives_zero_result()
   {
     // edge case: zero velocity => all results must be zero
     const XT::Functions::GenericGridFunction<E, d> zero_vel(
@@ -235,14 +235,15 @@ struct LinearAdvectionIntegrandTest : public IntegrandTest<G>
       for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
         integrand.evaluate(*scalar_test_, *scalar_ansatz_, qp.position(), result);
         for (size_t ii = 0; ii < 2; ++ii) {
-          for (size_t jj = 0; jj < 2; ++jj)
+          for (size_t jj = 0; jj < 2; ++jj) {
             EXPECT_DOUBLE_EQ(0., result[ii][jj]);
+          }
         }
       }
     }
   }
 
-  virtual void clone_gives_same_results()
+  void clone_gives_same_results()
   {
     // clone via copy constructor and copy_as_binary_element_integrand should produce identical results
     const XT::Functions::GenericGridFunction<E, d> velocity(
