@@ -134,7 +134,8 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
 
     UnrestrictedBF unrestricted(integrand);
     RestrictedBF restricted(accept_all, integrand);
-    DynamicMatrix<double> result_u(2, 2, 0.), result_r(2, 2, 0.);
+    DynamicMatrix<double> result_u(2, 2, 0.);
+    DynamicMatrix<double> result_r(2, 2, 0.);
 
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       scalar_test_->bind(el);
@@ -205,7 +206,8 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     RestrictedBF form_all(all, integrand);
     auto test_basis = make_const_basis();
     auto ansatz_basis = make_const_basis();
-    DynamicMatrix<double> res_half(1, 1, 0.), res_all(1, 1, 0.);
+    DynamicMatrix<double> res_half(1, 1, 0.);
+    DynamicMatrix<double> res_all(1, 1, 0.);
 
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
@@ -278,8 +280,14 @@ struct CouplingRestrictedBilinearFormTest : public IntegrandTest<G>
     UnrestrictedBF unrestricted(integrand);
     RestrictedBF restricted(accept_all, integrand);
 
-    DynamicMatrix<double> u_ii(1, 1), u_io(1, 1), u_oi(1, 1), u_oo(1, 1);
-    DynamicMatrix<double> r_ii(1, 1), r_io(1, 1), r_oi(1, 1), r_oo(1, 1);
+    DynamicMatrix<double> u_ii(1, 1);
+    DynamicMatrix<double> u_io(1, 1);
+    DynamicMatrix<double> u_oi(1, 1);
+    DynamicMatrix<double> u_oo(1, 1);
+    DynamicMatrix<double> r_ii(1, 1);
+    DynamicMatrix<double> r_io(1, 1);
+    DynamicMatrix<double> r_oi(1, 1);
+    DynamicMatrix<double> r_oo(1, 1);
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
       unrestricted.apply2(is, basis_in, basis_in, basis_out, basis_out, u_ii, u_io, u_oi, u_oo);
       restricted.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
@@ -300,7 +308,10 @@ struct CouplingRestrictedBilinearFormTest : public IntegrandTest<G>
     RestrictedBF restricted(reject_all, integrand);
 
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
-      DynamicMatrix<double> r_ii(1, 1, 99.), r_io(1, 1, 99.), r_oi(1, 1, 99.), r_oo(1, 1, 99.);
+      DynamicMatrix<double> r_ii(1, 1, 99.);
+      DynamicMatrix<double> r_io(1, 1, 99.);
+      DynamicMatrix<double> r_oi(1, 1, 99.);
+      DynamicMatrix<double> r_oo(1, 1, 99.);
       restricted.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
 
       EXPECT_DOUBLE_EQ(0.0, r_ii[0][0]) << "reject-all: result_in_in must be zero";
@@ -324,8 +335,14 @@ struct CouplingRestrictedBilinearFormTest : public IntegrandTest<G>
     RestrictedBF form_all(all, integrand);
 
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
-      DynamicMatrix<double> h_ii(1, 1), h_io(1, 1), h_oi(1, 1), h_oo(1, 1);
-      DynamicMatrix<double> a_ii(1, 1), a_io(1, 1), a_oi(1, 1), a_oo(1, 1);
+      DynamicMatrix<double> h_ii(1, 1);
+      DynamicMatrix<double> h_io(1, 1);
+      DynamicMatrix<double> h_oi(1, 1);
+      DynamicMatrix<double> h_oo(1, 1);
+      DynamicMatrix<double> a_ii(1, 1);
+      DynamicMatrix<double> a_io(1, 1);
+      DynamicMatrix<double> a_oi(1, 1);
+      DynamicMatrix<double> a_oo(1, 1);
 
       form_half.apply2(is, basis_in, basis_in, basis_out, basis_out, h_ii, h_io, h_oi, h_oo);
       form_all.apply2(is, basis_in, basis_in, basis_out, basis_out, a_ii, a_io, a_oi, a_oo);

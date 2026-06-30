@@ -98,7 +98,8 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     UnrestrictedFunctional unrestricted(integrand);
     RestrictedFunctional restricted(accept_all, integrand);
     auto test_basis = make_const_basis();
-    DynamicVector<double> result_u(1, 0.), result_r(1, 0.);
+    DynamicVector<double> result_u(1, 0.);
+    DynamicVector<double> result_r(1, 0.);
 
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
@@ -132,7 +133,8 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
 
     UnrestrictedFunctional unrestricted(integrand);
     RestrictedFunctional restricted(accept_all, integrand);
-    DynamicVector<double> result_u(2, 0.), result_r(2, 0.);
+    DynamicVector<double> result_u(2, 0.);
+    DynamicVector<double> result_r(2, 0.);
 
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       scalar_test_->bind(el);
@@ -166,7 +168,8 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     RestrictedFunctional form_no_over(accept_all, integrand, /*over_integrate=*/0);
     RestrictedFunctional form_over2(accept_all, integrand, /*over_integrate=*/2);
     auto test_basis = make_const_basis();
-    DynamicVector<double> result0(1, 0.), result2(1, 0.);
+    DynamicVector<double> result0(1, 0.);
+    DynamicVector<double> result2(1, 0.);
 
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
@@ -222,7 +225,8 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     RestrictedFunctional form_half(half_filter, integrand);
     RestrictedFunctional form_all(accept_all, integrand);
     auto test_basis = make_const_basis();
-    DynamicVector<double> result_half(1, 0.), result_all(1, 0.);
+    DynamicVector<double> result_half(1, 0.);
+    DynamicVector<double> result_all(1, 0.);
 
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);

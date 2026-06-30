@@ -283,7 +283,10 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   // All four result matrices must be cleared to zero before the lambda is called.
   void all_four_result_matrices_are_cleared_before_lambda()
   {
-    double seen_ii = -1., seen_io = -1., seen_oi = -1., seen_oo = -1.;
+    double seen_ii = -1.;
+    double seen_io = -1.;
+    double seen_oi = -1.;
+    double seen_oo = -1.;
     GenericForm form([&seen_ii, &seen_io, &seen_oi, &seen_oo](const auto&,
                                                               const auto&,
                                                               const auto&,
@@ -302,7 +305,10 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
 
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
       // Pre-fill with non-zero values.
-      DynamicMatrix<double> r_ii(1, 1, 7.), r_io(1, 1, 7.), r_oi(1, 1, 7.), r_oo(1, 1, 7.);
+      DynamicMatrix<double> r_ii(1, 1, 7.);
+      DynamicMatrix<double> r_io(1, 1, 7.);
+      DynamicMatrix<double> r_oi(1, 1, 7.);
+      DynamicMatrix<double> r_oo(1, 1, 7.);
       form.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
 
       EXPECT_DOUBLE_EQ(0.0, seen_ii) << "result_in_in must be zero when lambda is entered";
@@ -329,7 +335,10 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
                         const auto& /*p*/) {});
 
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
-      DynamicMatrix<double> r_ii(1, 1, 99.), r_io(1, 1, 99.), r_oi(1, 1, 99.), r_oo(1, 1, 99.);
+      DynamicMatrix<double> r_ii(1, 1, 99.);
+      DynamicMatrix<double> r_io(1, 1, 99.);
+      DynamicMatrix<double> r_oi(1, 1, 99.);
+      DynamicMatrix<double> r_oo(1, 1, 99.);
       form.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
 
       EXPECT_DOUBLE_EQ(0.0, r_ii[0][0]);
@@ -362,7 +371,10 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
 
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
       // Start with undersized matrices.
-      DynamicMatrix<double> r_ii(0, 0), r_io(0, 0), r_oi(0, 0), r_oo(0, 0);
+      DynamicMatrix<double> r_ii(0, 0);
+      DynamicMatrix<double> r_io(0, 0);
+      DynamicMatrix<double> r_oi(0, 0);
+      DynamicMatrix<double> r_oo(0, 0);
       form.apply2(is, basis_in, basis_in, basis_out, basis_out, r_ii, r_io, r_oi, r_oo);
 
       ASSERT_GE(r_ii.rows(), 1u);
@@ -427,7 +439,8 @@ struct ElementIntegralBilinearFormTest : public IntegrandTest<G>
     scalar_test_->bind(element);
     scalar_ansatz_->bind(element);
 
-    DynamicMatrix<double> prefilled(2, 2, 99.0), expected(2, 2, 0.0);
+    DynamicMatrix<double> prefilled(2, 2, 99.0);
+    DynamicMatrix<double> expected(2, 2, 0.0);
     form.apply2(*scalar_test_, *scalar_ansatz_, prefilled);
     form.apply2(*scalar_test_, *scalar_ansatz_, expected);
 
@@ -463,7 +476,8 @@ struct ElementIntegralBilinearFormTest : public IntegrandTest<G>
     scalar_test_->bind(element);
     scalar_ansatz_->bind(element);
 
-    DynamicMatrix<double> result0(2, 2, 0.), result2(2, 2, 0.);
+    DynamicMatrix<double> result0(2, 2, 0.);
+    DynamicMatrix<double> result2(2, 2, 0.);
     form0.apply2(*scalar_test_, *scalar_ansatz_, result0);
     form2.apply2(*scalar_test_, *scalar_ansatz_, result2);
 
@@ -500,7 +514,8 @@ struct ElementIntegralBilinearFormTest : public IntegrandTest<G>
     scalar_test_->bind(element);
     scalar_ansatz_->bind(element);
 
-    DynamicMatrix<double> result_int(2, 2, 0.), result_lam(2, 2, 0.);
+    DynamicMatrix<double> result_int(2, 2, 0.);
+    DynamicMatrix<double> result_lam(2, 2, 0.);
     form_int.apply2(*scalar_test_, *scalar_ansatz_, result_int);
     form_lam.apply2(*scalar_test_, *scalar_ansatz_, result_lam);
 
