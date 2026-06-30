@@ -101,13 +101,16 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     DynamicVector<double> result_u(1, 0.);
     DynamicVector<double> result_r(1, 0.);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       unrestricted.apply(is, *test_basis, result_u);
       restricted.apply(is, *test_basis, result_r);
       EXPECT_DOUBLE_EQ(result_u[0], result_r[0])
           << "accept-all restricted functional must equal unrestricted functional";
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   void reject_all_filter_gives_zero()
@@ -118,11 +121,14 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     auto test_basis = make_const_basis();
     DynamicVector<double> result(1, 99.0); // pre-filled to verify it is cleared
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       restricted.apply(is, *test_basis, result);
       EXPECT_DOUBLE_EQ(0.0, result[0]) << "reject-all filter must produce zero vector";
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   void multi_dof_accept_all_equals_unrestricted()
@@ -136,13 +142,16 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     DynamicVector<double> result_u(2, 0.);
     DynamicVector<double> result_r(2, 0.);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       scalar_test_->bind(el);
       unrestricted.apply(is, *scalar_test_, result_u);
       restricted.apply(is, *scalar_test_, result_r);
       for (size_t ii = 0; ii < 2; ++ii)
         EXPECT_DOUBLE_EQ(result_u[ii], result_r[ii]);
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   void multi_dof_reject_all_gives_zero()
@@ -152,12 +161,15 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     RestrictedFunctional restricted(reject_all, integrand);
     DynamicVector<double> result(2, 99.0);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       scalar_test_->bind(el);
       restricted.apply(is, *scalar_test_, result);
       for (size_t ii = 0; ii < 2; ++ii)
         EXPECT_DOUBLE_EQ(0.0, result[ii]);
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   void over_integrate_does_not_change_result_for_constant_integrand()
@@ -171,13 +183,16 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     DynamicVector<double> result0(1, 0.);
     DynamicVector<double> result2(1, 0.);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       form_no_over.apply(is, *test_basis, result0);
       form_over2.apply(is, *test_basis, result2);
       EXPECT_DOUBLE_EQ(result0[0], result2[0])
           << "over_integrate should not change the result for a constant integrand";
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   // The integral over an intersection of the constant function 1 should equal the
@@ -190,12 +205,15 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     auto test_basis = make_const_basis();
     DynamicVector<double> result(1, 0.);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       restricted.apply(is, *test_basis, result);
       EXPECT_NEAR(is.geometry().volume(), result[0], 1e-13)
           << "constant-1 integrand must integrate to intersection measure";
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   // Same as above but with reject-all: result should always be 0, regardless of
@@ -208,11 +226,14 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     auto test_basis = make_const_basis();
     DynamicVector<double> result(1, 99.0);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       restricted.apply(is, *test_basis, result);
       EXPECT_DOUBLE_EQ(0.0, result[0]);
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   // Verify that a partial filter accepts roughly half the quadrature mass.
@@ -228,13 +249,16 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     DynamicVector<double> result_half(1, 0.);
     DynamicVector<double> result_all(1, 0.);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       form_half.apply(is, *test_basis, result_half);
       form_all.apply(is, *test_basis, result_all);
       EXPECT_GE(result_half[0], 0.0);
       EXPECT_LE(result_half[0], result_all[0] + 1e-15);
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 }; // struct RestrictedIntersectionFunctionalTest
 

@@ -68,19 +68,22 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
   using BaseType::make_const_basis;
 
   template <class Form1, class Form2>
-  void check_apply2_equal(Form1& f1, Form2& f2) const
+  int check_apply2_equal(Form1& f1, Form2& f2) const
   {
     auto test_basis = make_const_basis();
     auto ansatz_basis = make_const_basis();
     DynamicMatrix<double> r1(1, 1, 0.);
     DynamicMatrix<double> r2(1, 1, 0.);
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       ansatz_basis->bind(el);
       f1.apply2(is, *test_basis, *ansatz_basis, r1);
       f2.apply2(is, *test_basis, *ansatz_basis, r2);
       EXPECT_DOUBLE_EQ(r1[0][0], r2[0][0]);
+      ++count;
     });
+    return count;
   }
 
   void is_constructable() final
@@ -106,7 +109,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
     UnrestrictedBF unrestricted(integrand);
     RestrictedBF restricted(accept_all, integrand);
-    check_apply2_equal(unrestricted, restricted);
+    EXPECT_GT(check_apply2_equal(unrestricted, restricted), 0);
   }
 
   void reject_all_filter_gives_zero()
@@ -117,13 +120,16 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     auto test_basis = make_const_basis();
     auto ansatz_basis = make_const_basis();
     DynamicMatrix<double> result(1, 1, 99.0);
+    int count = 0;
 
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       ansatz_basis->bind(el);
       restricted.apply2(is, *test_basis, *ansatz_basis, result);
       EXPECT_DOUBLE_EQ(0.0, result[0][0]) << "reject-all filter must produce zero matrix";
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   void multi_dof_accept_all_equals_unrestricted()
@@ -137,6 +143,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     DynamicMatrix<double> result_u(2, 2, 0.);
     DynamicMatrix<double> result_r(2, 2, 0.);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       scalar_test_->bind(el);
       scalar_ansatz_->bind(el);
@@ -145,7 +152,9 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
       for (size_t ii = 0; ii < 2; ++ii)
         for (size_t jj = 0; jj < 2; ++jj)
           EXPECT_DOUBLE_EQ(result_u[ii][jj], result_r[ii][jj]);
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   void multi_dof_reject_all_gives_zero()
@@ -155,6 +164,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     RestrictedBF restricted(reject_all, integrand);
     DynamicMatrix<double> result(2, 2, 99.0);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       scalar_test_->bind(el);
       scalar_ansatz_->bind(el);
@@ -162,7 +172,9 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
       for (size_t ii = 0; ii < 2; ++ii)
         for (size_t jj = 0; jj < 2; ++jj)
           EXPECT_DOUBLE_EQ(0.0, result[ii][jj]);
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   // A constant integrand is exact at any non-negative quadrature order, so
@@ -173,7 +185,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
     RestrictedBF form0(accept_all, integrand, /*over_integrate=*/0);
     RestrictedBF form2(accept_all, integrand, /*over_integrate=*/2);
-    check_apply2_equal(form0, form2);
+    EXPECT_GT(check_apply2_equal(form0, form2), 0);
   }
 
   // Result must equal intersection measure for constant-1 integrand with accept-all filter.
@@ -186,13 +198,16 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     auto ansatz_basis = make_const_basis();
     DynamicMatrix<double> result(1, 1, 0.);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       ansatz_basis->bind(el);
       restricted.apply2(is, *test_basis, *ansatz_basis, result);
       EXPECT_NEAR(is.geometry().volume(), result[0][0], 1e-13)
           << "constant-1 integrand must integrate to intersection measure";
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   // A partial filter must produce a result in [0, unrestricted_result].
@@ -209,6 +224,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     DynamicMatrix<double> res_half(1, 1, 0.);
     DynamicMatrix<double> res_all(1, 1, 0.);
 
+    int count = 0;
     for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       ansatz_basis->bind(el);
@@ -216,7 +232,9 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
       form_all.apply2(is, *test_basis, *ansatz_basis, res_all);
       EXPECT_GE(res_half[0][0], 0.0);
       EXPECT_LE(res_half[0][0], res_all[0][0] + 1e-15);
+      ++count;
     });
+    EXPECT_GT(count, 0);
   }
 
   // Test with LocalJumpIntegrands::Boundary which maps intersection -> element coordinates.
@@ -226,7 +244,7 @@ struct SingleSidedRestrictedBilinearFormTest : public IntegrandTest<G>
     FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
     UnrestrictedBF unrestricted(integrand);
     RestrictedBF restricted(accept_all, integrand);
-    check_apply2_equal(unrestricted, restricted);
+    EXPECT_GT(check_apply2_equal(unrestricted, restricted), 0);
   }
 }; // struct SingleSidedRestrictedBilinearFormTest
 
