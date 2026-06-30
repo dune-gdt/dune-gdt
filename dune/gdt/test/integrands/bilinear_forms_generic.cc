@@ -542,37 +542,37 @@ TYPED_TEST_SUITE(GenericElementBilinearFormTest, Grids2D);
 
 TYPED_TEST(GenericElementBilinearFormTest, is_constructable)
 {
-  this->is_constructable();
+  EXPECT_NO_FATAL_FAILURE(this->is_constructable());
 }
 
 TYPED_TEST(GenericElementBilinearFormTest, lambda_is_called)
 {
-  this->lambda_is_called();
+  EXPECT_NO_FATAL_FAILURE(this->lambda_is_called());
 }
 
 TYPED_TEST(GenericElementBilinearFormTest, result_is_cleared_before_lambda)
 {
-  this->result_is_cleared_before_lambda();
+  EXPECT_NO_FATAL_FAILURE(this->result_is_cleared_before_lambda());
 }
 
 TYPED_TEST(GenericElementBilinearFormTest, do_nothing_lambda_gives_zero)
 {
-  this->do_nothing_lambda_gives_zero();
+  EXPECT_NO_FATAL_FAILURE(this->do_nothing_lambda_gives_zero());
 }
 
 TYPED_TEST(GenericElementBilinearFormTest, result_is_resized_if_too_small)
 {
-  this->result_is_resized_if_too_small();
+  EXPECT_NO_FATAL_FAILURE(this->result_is_resized_if_too_small());
 }
 
 TYPED_TEST(GenericElementBilinearFormTest, parameter_is_forwarded_to_lambda)
 {
-  this->parameter_is_forwarded_to_lambda();
+  EXPECT_NO_FATAL_FAILURE(this->parameter_is_forwarded_to_lambda());
 }
 
 TYPED_TEST(GenericElementBilinearFormTest, generic_form_lambda_computes_product_correctly)
 {
-  this->generic_form_lambda_computes_product_correctly();
+  EXPECT_NO_FATAL_FAILURE(this->generic_form_lambda_computes_product_correctly());
 }
 
 
@@ -582,27 +582,27 @@ TYPED_TEST_SUITE(GenericCouplingBilinearFormTest, Grids2D);
 
 TYPED_TEST(GenericCouplingBilinearFormTest, is_constructable)
 {
-  this->is_constructable();
+  EXPECT_NO_FATAL_FAILURE(this->is_constructable());
 }
 
 TYPED_TEST(GenericCouplingBilinearFormTest, lambda_is_called)
 {
-  this->lambda_is_called();
+  EXPECT_NO_FATAL_FAILURE(this->lambda_is_called());
 }
 
 TYPED_TEST(GenericCouplingBilinearFormTest, all_four_result_matrices_are_cleared_before_lambda)
 {
-  this->all_four_result_matrices_are_cleared_before_lambda();
+  EXPECT_NO_FATAL_FAILURE(this->all_four_result_matrices_are_cleared_before_lambda());
 }
 
 TYPED_TEST(GenericCouplingBilinearFormTest, do_nothing_lambda_gives_zero)
 {
-  this->do_nothing_lambda_gives_zero();
+  EXPECT_NO_FATAL_FAILURE(this->do_nothing_lambda_gives_zero());
 }
 
 TYPED_TEST(GenericCouplingBilinearFormTest, result_matrices_are_resized_if_too_small)
 {
-  this->result_matrices_are_resized_if_too_small();
+  EXPECT_NO_FATAL_FAILURE(this->result_matrices_are_resized_if_too_small());
 }
 
 
@@ -612,25 +612,25 @@ TYPED_TEST_SUITE(ElementIntegralBilinearFormTest, Grids2D);
 
 TYPED_TEST(ElementIntegralBilinearFormTest, is_constructable)
 {
-  this->is_constructable();
+  EXPECT_NO_FATAL_FAILURE(this->is_constructable());
 }
 
 TYPED_TEST(ElementIntegralBilinearFormTest, result_is_cleared_on_apply)
 {
-  this->result_is_cleared_on_apply();
+  EXPECT_NO_FATAL_FAILURE(this->result_is_cleared_on_apply());
 }
 
 TYPED_TEST(ElementIntegralBilinearFormTest, product_integrand_is_symmetric)
 {
-  this->product_integrand_is_symmetric();
+  EXPECT_NO_FATAL_FAILURE(this->product_integrand_is_symmetric());
 }
 
 TYPED_TEST(ElementIntegralBilinearFormTest, over_integrate_does_not_change_result_for_polynomial_integrand)
 {
-  this->over_integrate_does_not_change_result_for_polynomial_integrand();
+  EXPECT_NO_FATAL_FAILURE(this->over_integrate_does_not_change_result_for_polynomial_integrand());
 }
 
 TYPED_TEST(ElementIntegralBilinearFormTest, lambda_constructor_matches_integrand_constructor)
 {
-  this->lambda_constructor_matches_integrand_constructor();
+  EXPECT_NO_FATAL_FAILURE(this->lambda_constructor_matches_integrand_constructor());
 }

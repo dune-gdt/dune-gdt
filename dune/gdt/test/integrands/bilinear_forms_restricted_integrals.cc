@@ -418,47 +418,47 @@ TYPED_TEST_SUITE(SingleSidedRestrictedBilinearFormTest, Grids2D);
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, is_constructable)
 {
-  this->is_constructable();
+  EXPECT_NO_FATAL_FAILURE(this->is_constructable());
 }
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, accept_all_filter_equals_unrestricted)
 {
-  this->accept_all_filter_equals_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->accept_all_filter_equals_unrestricted());
 }
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, reject_all_filter_gives_zero)
 {
-  this->reject_all_filter_gives_zero();
+  EXPECT_NO_FATAL_FAILURE(this->reject_all_filter_gives_zero());
 }
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, multi_dof_accept_all_equals_unrestricted)
 {
-  this->multi_dof_accept_all_equals_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->multi_dof_accept_all_equals_unrestricted());
 }
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, multi_dof_reject_all_gives_zero)
 {
-  this->multi_dof_reject_all_gives_zero();
+  EXPECT_NO_FATAL_FAILURE(this->multi_dof_reject_all_gives_zero());
 }
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, over_integrate_does_not_change_result_for_exact_integrand)
 {
-  this->over_integrate_does_not_change_result_for_exact_integrand();
+  EXPECT_NO_FATAL_FAILURE(this->over_integrate_does_not_change_result_for_exact_integrand());
 }
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, constant_integrand_equals_intersection_measure)
 {
-  this->constant_integrand_equals_intersection_measure();
+  EXPECT_NO_FATAL_FAILURE(this->constant_integrand_equals_intersection_measure());
 }
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, partial_filter_result_is_between_zero_and_unrestricted)
 {
-  this->partial_filter_result_is_between_zero_and_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->partial_filter_result_is_between_zero_and_unrestricted());
 }
 
 TYPED_TEST(SingleSidedRestrictedBilinearFormTest, jump_boundary_integrand_accept_all_equals_unrestricted)
 {
-  this->jump_boundary_integrand_accept_all_equals_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->jump_boundary_integrand_accept_all_equals_unrestricted());
 }
 
 
@@ -468,25 +468,25 @@ TYPED_TEST_SUITE(CouplingRestrictedBilinearFormTest, Grids2D);
 
 TYPED_TEST(CouplingRestrictedBilinearFormTest, is_constructable)
 {
-  this->is_constructable();
+  EXPECT_NO_FATAL_FAILURE(this->is_constructable());
 }
 
 TYPED_TEST(CouplingRestrictedBilinearFormTest, accept_all_filter_equals_unrestricted)
 {
-  this->accept_all_filter_equals_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->accept_all_filter_equals_unrestricted());
 }
 
 TYPED_TEST(CouplingRestrictedBilinearFormTest, reject_all_filter_gives_zero)
 {
-  this->reject_all_filter_gives_zero();
+  EXPECT_NO_FATAL_FAILURE(this->reject_all_filter_gives_zero());
 }
 
 TYPED_TEST(CouplingRestrictedBilinearFormTest, partial_filter_absolute_values_bounded_by_unrestricted)
 {
-  this->partial_filter_absolute_values_bounded_by_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->partial_filter_absolute_values_bounded_by_unrestricted());
 }
 
 TYPED_TEST(CouplingRestrictedBilinearFormTest, inner_integrand_throws_on_boundary_intersection)
 {
-  this->inner_integrand_throws_on_boundary_intersection();
+  EXPECT_NO_FATAL_FAILURE(this->inner_integrand_throws_on_boundary_intersection());
 }

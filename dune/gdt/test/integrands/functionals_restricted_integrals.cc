@@ -274,50 +274,50 @@ TYPED_TEST_SUITE(RestrictedIntersectionFunctionalTest, Grids2D);
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, is_constructable)
 {
-  this->is_constructable();
+  EXPECT_NO_FATAL_FAILURE(this->is_constructable());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, inside_returns_correct_value)
 {
-  this->inside_returns_correct_value();
+  EXPECT_NO_FATAL_FAILURE(this->inside_returns_correct_value());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, accept_all_filter_equals_unrestricted)
 {
-  this->accept_all_filter_equals_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->accept_all_filter_equals_unrestricted());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, reject_all_filter_gives_zero)
 {
-  this->reject_all_filter_gives_zero();
+  EXPECT_NO_FATAL_FAILURE(this->reject_all_filter_gives_zero());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, multi_dof_accept_all_equals_unrestricted)
 {
-  this->multi_dof_accept_all_equals_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->multi_dof_accept_all_equals_unrestricted());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, multi_dof_reject_all_gives_zero)
 {
-  this->multi_dof_reject_all_gives_zero();
+  EXPECT_NO_FATAL_FAILURE(this->multi_dof_reject_all_gives_zero());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, over_integrate_does_not_change_result_for_constant_integrand)
 {
-  this->over_integrate_does_not_change_result_for_constant_integrand();
+  EXPECT_NO_FATAL_FAILURE(this->over_integrate_does_not_change_result_for_constant_integrand());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, constant_integrand_result_equals_intersection_measure)
 {
-  this->constant_integrand_result_equals_intersection_measure();
+  EXPECT_NO_FATAL_FAILURE(this->constant_integrand_result_equals_intersection_measure());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, reject_all_gives_zero_independent_of_intersection_size)
 {
-  this->reject_all_gives_zero_independent_of_intersection_size();
+  EXPECT_NO_FATAL_FAILURE(this->reject_all_gives_zero_independent_of_intersection_size());
 }
 
 TYPED_TEST(RestrictedIntersectionFunctionalTest, partial_filter_result_is_between_zero_and_unrestricted)
 {
-  this->partial_filter_result_is_between_zero_and_unrestricted();
+  EXPECT_NO_FATAL_FAILURE(this->partial_filter_result_is_between_zero_and_unrestricted());
 }
