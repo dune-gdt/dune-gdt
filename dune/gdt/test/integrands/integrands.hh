@@ -151,7 +151,7 @@ struct IntegrandTest : public ::testing::Test
     return std::make_shared<LocalScalarBasisType>(
         /*fixed_size=*/1,
         /*ord=*/0,
-        [](const DomainType& /*x*/, std::vector<ScalarRangeType>& ret, const XT::Common::Parameter&) {
+        [](const DomainType& /*x*/, std::vector<ScalarRangeType>& ret, const XT::Common::Parameter& /*param*/) {
           ret = {{1.0}};
         });
   }

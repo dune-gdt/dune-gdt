@@ -242,9 +242,16 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
                                           auto& /*roo*/,
                                           const auto& /*p*/) {});
 
-    GenericForm orig(
-        [](const auto&, const auto&, const auto&, const auto&, const auto&, auto&, auto&, auto&, auto&, const auto&) {
-        });
+    GenericForm orig([](const auto& /*is*/,
+                        const auto& /*ti*/,
+                        const auto& /*ai*/,
+                        const auto& /*to*/,
+                        const auto& /*ao*/,
+                        auto& /*rii*/,
+                        auto& /*rio*/,
+                        auto& /*roi*/,
+                        auto& /*roo*/,
+                        const auto& /*p*/) {});
     auto ptr = orig.copy();
     ASSERT_NE(ptr, nullptr);
   }
@@ -253,11 +260,16 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   void lambda_is_called()
   {
     int call_count = 0;
-    GenericForm form(
-        [&call_count](
-            const auto&, const auto&, const auto&, const auto&, const auto&, auto&, auto&, auto&, auto&, const auto&) {
-          ++call_count;
-        });
+    GenericForm form([&call_count](const auto& /*is*/,
+                                   const auto& /*ti*/,
+                                   const auto& /*ai*/,
+                                   const auto& /*to*/,
+                                   const auto& /*ao*/,
+                                   auto& /*rii*/,
+                                   auto& /*rio*/,
+                                   auto& /*roi*/,
+                                   auto& /*roo*/,
+                                   const auto& /*p*/) { ++call_count; });
 
     DynamicMatrix<double> r(1, 1, 0.);
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
@@ -305,9 +317,16 @@ struct GenericCouplingBilinearFormTest : public IntegrandTest<G>
   // A do-nothing lambda must produce zero in all four result matrices.
   void do_nothing_lambda_gives_zero()
   {
-    GenericForm form(
-        [](const auto&, const auto&, const auto&, const auto&, const auto&, auto&, auto&, auto&, auto&, const auto&) {
-        });
+    GenericForm form([](const auto& /*is*/,
+                        const auto& /*ti*/,
+                        const auto& /*ai*/,
+                        const auto& /*to*/,
+                        const auto& /*ao*/,
+                        auto& /*rii*/,
+                        auto& /*rio*/,
+                        auto& /*roi*/,
+                        auto& /*roo*/,
+                        const auto& /*p*/) {});
 
     bool found = with_first_coupling_intersection([&](const I& is, auto& basis_in, auto& basis_out) {
       DynamicMatrix<double> r_ii(1, 1, 99.), r_io(1, 1, 99.), r_oi(1, 1, 99.), r_oo(1, 1, 99.);

@@ -63,8 +63,8 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   {
     auto integrand = make_constant_unary_integrand();
 
-    FilterType accept_all = [](const I&, const auto&) { return true; };
-    FilterType reject_all = [](const I&, const auto&) { return false; };
+    FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
+    FilterType reject_all = [](const I& /*is*/, const auto& /*x*/) { return false; };
 
     [[maybe_unused]] RestrictedFunctional func1(accept_all, integrand);
     [[maybe_unused]] RestrictedFunctional func2(accept_all, integrand, /*over_integrate=*/0);
@@ -85,7 +85,7 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
     // The functional delegates inside() to the integrand's inside().
     // GenericLocalUnaryIntersectionIntegrand defaults to inside=true.
     auto integrand = make_constant_unary_integrand();
-    FilterType accept_all = [](const I&, const auto&) { return true; };
+    FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
     RestrictedFunctional functional(accept_all, integrand);
     EXPECT_TRUE(functional.inside());
   }
@@ -93,14 +93,14 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   void accept_all_filter_equals_unrestricted()
   {
     auto integrand = make_constant_unary_integrand();
-    FilterType accept_all = [](const I&, const auto&) { return true; };
+    FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
 
     UnrestrictedFunctional unrestricted(integrand);
     RestrictedFunctional restricted(accept_all, integrand);
     auto test_basis = make_const_basis();
     DynamicVector<double> result_u(1, 0.), result_r(1, 0.);
 
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+    for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       unrestricted.apply(is, *test_basis, result_u);
       restricted.apply(is, *test_basis, result_r);
@@ -112,12 +112,12 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   void reject_all_filter_gives_zero()
   {
     auto integrand = make_constant_unary_integrand();
-    FilterType reject_all = [](const I&, const auto&) { return false; };
+    FilterType reject_all = [](const I& /*is*/, const auto& /*x*/) { return false; };
     RestrictedFunctional restricted(reject_all, integrand);
     auto test_basis = make_const_basis();
     DynamicVector<double> result(1, 99.0); // pre-filled to verify it is cleared
 
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+    for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       restricted.apply(is, *test_basis, result);
       EXPECT_DOUBLE_EQ(0.0, result[0]) << "reject-all filter must produce zero vector";
@@ -128,13 +128,13 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   {
     // Use the size-2 scalar_test_ from the fixture.
     auto integrand = make_constant_unary_integrand();
-    FilterType accept_all = [](const I&, const auto&) { return true; };
+    FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
 
     UnrestrictedFunctional unrestricted(integrand);
     RestrictedFunctional restricted(accept_all, integrand);
     DynamicVector<double> result_u(2, 0.), result_r(2, 0.);
 
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+    for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       scalar_test_->bind(el);
       unrestricted.apply(is, *scalar_test_, result_u);
       restricted.apply(is, *scalar_test_, result_r);
@@ -146,11 +146,11 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   void multi_dof_reject_all_gives_zero()
   {
     auto integrand = make_constant_unary_integrand();
-    FilterType reject_all = [](const I&, const auto&) { return false; };
+    FilterType reject_all = [](const I& /*is*/, const auto& /*x*/) { return false; };
     RestrictedFunctional restricted(reject_all, integrand);
     DynamicVector<double> result(2, 99.0);
 
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+    for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       scalar_test_->bind(el);
       restricted.apply(is, *scalar_test_, result);
       for (size_t ii = 0; ii < 2; ++ii)
@@ -161,14 +161,14 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   void over_integrate_does_not_change_result_for_constant_integrand()
   {
     auto integrand = make_constant_unary_integrand();
-    FilterType accept_all = [](const I&, const auto&) { return true; };
+    FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
 
     RestrictedFunctional form_no_over(accept_all, integrand, /*over_integrate=*/0);
     RestrictedFunctional form_over2(accept_all, integrand, /*over_integrate=*/2);
     auto test_basis = make_const_basis();
     DynamicVector<double> result0(1, 0.), result2(1, 0.);
 
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+    for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       form_no_over.apply(is, *test_basis, result0);
       form_over2.apply(is, *test_basis, result2);
@@ -182,12 +182,12 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   void constant_integrand_result_equals_intersection_measure()
   {
     auto integrand = make_constant_unary_integrand();
-    FilterType accept_all = [](const I&, const auto&) { return true; };
+    FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
     RestrictedFunctional restricted(accept_all, integrand);
     auto test_basis = make_const_basis();
     DynamicVector<double> result(1, 0.);
 
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+    for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       restricted.apply(is, *test_basis, result);
       EXPECT_NEAR(is.geometry().volume(), result[0], 1e-13)
@@ -200,12 +200,12 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   void reject_all_gives_zero_independent_of_intersection_size()
   {
     auto integrand = make_constant_unary_integrand();
-    FilterType reject_all = [](const I&, const auto&) { return false; };
+    FilterType reject_all = [](const I& /*is*/, const auto& /*x*/) { return false; };
     RestrictedFunctional restricted(reject_all, integrand);
     auto test_basis = make_const_basis();
     DynamicVector<double> result(1, 99.0);
 
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+    for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       restricted.apply(is, *test_basis, result);
       EXPECT_DOUBLE_EQ(0.0, result[0]);
@@ -216,15 +216,15 @@ struct RestrictedIntersectionFunctionalTest : public IntegrandTest<G>
   void partial_filter_result_is_between_zero_and_unrestricted()
   {
     auto integrand = make_constant_unary_integrand();
-    FilterType half_filter = [](const I&, const FieldVector<double, 1>& x) { return x[0] < 0.5; };
-    FilterType accept_all = [](const I&, const auto&) { return true; };
+    FilterType half_filter = [](const I& /*is*/, const FieldVector<double, 1>& x) { return x[0] < 0.5; };
+    FilterType accept_all = [](const I& /*is*/, const auto& /*x*/) { return true; };
 
     RestrictedFunctional form_half(half_filter, integrand);
     RestrictedFunctional form_all(accept_all, integrand);
     auto test_basis = make_const_basis();
     DynamicVector<double> result_half(1, 0.), result_all(1, 0.);
 
-    for_each_intersection_of_first_element([&](const GV&, const E& el, const I& is) {
+    for_each_intersection_of_first_element([&](const GV& /*gv*/, const E& el, const I& is) {
       test_basis->bind(el);
       form_half.apply(is, *test_basis, result_half);
       form_all.apply(is, *test_basis, result_all);
