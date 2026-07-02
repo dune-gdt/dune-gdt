@@ -168,27 +168,58 @@ struct GenericIntegrandTest : public IntegrandTest<G>
 
   void copy_gives_same_results()
   {
-    UnaryIntegrandType integrand([](const typename UnaryIntegrandType::LocalTestBasisType& basis,
-                                    const XT::Common::Parameter&) { return basis.order(); },
-                                 [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
-                                    const DomainType& x,
-                                    DynamicVector<double>& result,
-                                    const XT::Common::Parameter&) {
-                                   for (size_t ii = 0; ii < basis.size(); ++ii)
-                                     result[ii] = x[0] * x[1];
-                                 });
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
-    integrand.bind(element);
-    auto clone = integrand.copy_as_unary_element_integrand();
-    clone->bind(element);
-    const auto order = integrand.order(*scalar_test_);
-    DynamicVector<double> result_orig(2, 0.), result_clone(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
-      const auto& x = qp.position();
-      integrand.evaluate(*scalar_test_, x, result_orig);
-      clone->evaluate(*scalar_test_, x, result_clone);
-      for (size_t ii = 0; ii < 2; ++ii)
-        EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
+    // unary clone path
+    {
+      UnaryIntegrandType integrand([](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                      const XT::Common::Parameter&) { return basis.order(); },
+                                   [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                      const DomainType& x,
+                                      DynamicVector<double>& result,
+                                      const XT::Common::Parameter&) {
+                                     for (size_t ii = 0; ii < basis.size(); ++ii)
+                                       result[ii] = x[0] * x[1];
+                                   });
+      integrand.bind(element);
+      auto clone = integrand.copy_as_unary_element_integrand();
+      clone->bind(element);
+      const auto order = integrand.order(*scalar_test_);
+      DynamicVector<double> result_orig(2, 0.), result_clone(2, 0.);
+      for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+        const auto& x = qp.position();
+        integrand.evaluate(*scalar_test_, x, result_orig);
+        clone->evaluate(*scalar_test_, x, result_clone);
+        for (size_t ii = 0; ii < 2; ++ii)
+          EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
+      }
+    }
+    // binary clone path
+    {
+      BinaryIntegrandType integrand([](const typename BinaryIntegrandType::LocalTestBasisType& test,
+                                       const typename BinaryIntegrandType::LocalAnsatzBasisType& ansatz,
+                                       const XT::Common::Parameter&) { return test.order() + ansatz.order(); },
+                                    [](const typename BinaryIntegrandType::LocalTestBasisType& test,
+                                       const typename BinaryIntegrandType::LocalAnsatzBasisType& ansatz,
+                                       const DomainType& x,
+                                       DynamicMatrix<double>& result,
+                                       const XT::Common::Parameter&) {
+                                      for (size_t ii = 0; ii < test.size(); ++ii)
+                                        for (size_t jj = 0; jj < ansatz.size(); ++jj)
+                                          result[ii][jj] = x[0] * x[1];
+                                    });
+      integrand.bind(element);
+      auto clone = integrand.copy_as_binary_element_integrand();
+      clone->bind(element);
+      const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
+      DynamicMatrix<double> result_orig(2, 2, 0.), result_clone(2, 2, 0.);
+      for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+        const auto& x = qp.position();
+        integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result_orig);
+        clone->evaluate(*scalar_test_, *scalar_ansatz_, x, result_clone);
+        for (size_t ii = 0; ii < 2; ++ii)
+          for (size_t jj = 0; jj < 2; ++jj)
+            EXPECT_DOUBLE_EQ(result_orig[ii][jj], result_clone[ii][jj]);
+      }
     }
   }
 
