@@ -108,21 +108,7 @@ struct ConversionIntegrandTest : public IntegrandTest<G>
 
     ScalarProductIntegrand product(1.);
     auto unary = product.with_ansatz(inducing_fn);
-
-    const auto element = *(grid_provider_->leaf_view().template begin<0>());
-    unary.bind(element);
-    auto clone = unary.copy_as_unary_element_integrand();
-    clone->bind(element);
-
-    const auto order = unary.order(*scalar_test_);
-    DynamicVector<double> result_orig(2, 0.), result_clone(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
-      const auto& x = qp.position();
-      unary.evaluate(*scalar_test_, x, result_orig);
-      clone->evaluate(*scalar_test_, x, result_clone);
-      for (size_t ii = 0; ii < 2; ++ii)
-        EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
-    }
+    check_unary_clone_matches(unary, *scalar_test_);
   }
 
   // Edge case: inducing function = 0 => unary integrand evaluates to 0 everywhere
