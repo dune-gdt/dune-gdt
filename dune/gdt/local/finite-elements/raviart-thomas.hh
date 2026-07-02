@@ -119,7 +119,7 @@ public:
             local_keys_assosiated_with_intersection.size(), intersection_Pk_basis.size(), 0);
         XT::LA::CommonDenseVector<R> rhs(intersection_Pk_basis.size(), 0);
         // do a face quadrature
-        const auto& quadrature_rule_face = QuadratureRules<D, d - 1>::rule(
+        const auto quadrature_rule_face = QuadratureRules<D, d - 1>::rule(
             intersection_geometry_type,
             std::max(basis_->order() + intersection_Pk_basis.order(), order + intersection_Pk_basis.order()));
         for (auto&& quadrature_point : quadrature_rule_face) {
@@ -176,7 +176,7 @@ public:
       XT::LA::CommonDenseMatrix<R> lhs(local_keys_assosiated_with_element.size(), element_Pkminus1_basis.size(), 0);
       XT::LA::CommonDenseVector<R> rhs(element_Pkminus1_basis.size(), 0);
       // do a volume quadrature
-      const auto& quadrature_rule_vol = QuadratureRules<D, d>::rule(
+      const auto quadrature_rule_vol = QuadratureRules<D, d>::rule(
           this->geometry_type(),
           std::max(basis_->order() + element_Pkminus1_basis.order(), order + element_Pkminus1_basis.order()));
       for (auto&& quadrature_point : quadrature_rule_vol) {

@@ -50,7 +50,7 @@ public:
     {
       // approximate minimum over the element (evaluate at some points)
       double min = std::numeric_limits<double>::max();
-      const auto& quadrature_rule = QuadratureRules<double, d>::rule(func.element().type(), order);
+      const auto quadrature_rule = QuadratureRules<double, d>::rule(func.element().type(), order);
       for (auto&& quadrature_point : quadrature_rule)
         min = std::min(min, func.evaluate(quadrature_point.position(), param)[0]);
       return min;
@@ -64,7 +64,7 @@ public:
     {
       // approximate minimum eigenvalue over the element (evaluate at some points)
       double min_EV = std::numeric_limits<double>::max();
-      const auto& quadrature_rule_ev = QuadratureRules<double, d>::rule(func.element().type(), order);
+      const auto quadrature_rule_ev = QuadratureRules<double, d>::rule(func.element().type(), order);
       for (auto&& quadrature_point : quadrature_rule_ev) {
         auto value = func.evaluate(quadrature_point.position(), param);
         auto eigen_solver =

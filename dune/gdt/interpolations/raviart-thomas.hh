@@ -86,7 +86,7 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
             there_are_intersection_dofs_to_determine = true;
             local_source_neighbor->bind(neighbor);
             // do a face quadrature, average source
-            const auto& quadrature_rule_face_avg = QuadratureRules<D, d - 1>::rule(
+            const auto quadrature_rule_face_avg = QuadratureRules<D, d - 1>::rule(
                 intersection.type(),
                 std::max(rt_basis->order() + intersection_Pk_basis.order(),
                          std::max(local_source_element->order(param), local_source_neighbor->order(param))
@@ -131,7 +131,7 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
         } else {
           there_are_intersection_dofs_to_determine = true;
           // do a face quadrature
-          const auto& quadrature_rule_face = QuadratureRules<D, d - 1>::rule(
+          const auto quadrature_rule_face = QuadratureRules<D, d - 1>::rule(
               intersection.type(),
               std::max(rt_basis->order() + intersection_Pk_basis.order(),
                        local_source_element->order(param) + intersection_Pk_basis.order()));
@@ -193,7 +193,7 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
       XT::LA::CommonDenseMatrix<R> lhs(local_keys_assosiated_with_element.size(), element_Pkminus1_basis.size(), 0);
       XT::LA::CommonDenseVector<R> rhs(element_Pkminus1_basis.size(), 0);
       // do a volume quadrature
-      const auto& quadrature_rule_vol =
+      const auto quadrature_rule_vol =
           QuadratureRules<D, d>::rule(element.type(),
                                       std::max(rt_basis->order() + element_Pkminus1_basis.order(),
                                                local_source_element->order(param) + element_Pkminus1_basis.order()));

@@ -56,7 +56,7 @@ double estimate_dt_for_hyperbolic_system(
   auto local_state = state.local_function();
   for (auto&& element : elements(grid_view)) {
     local_state->bind(element);
-    const auto& quadrature_rule_elem = QuadratureRules<D, d>::rule(element.type(), local_state->order());
+    const auto quadrature_rule_elem = QuadratureRules<D, d>::rule(element.type(), local_state->order());
     for (auto&& quadrature_point : quadrature_rule_elem) {
       const auto state_value = local_state->evaluate(quadrature_point.position());
       for (size_t ii = 0; ii < m; ++ii) {
@@ -74,7 +74,7 @@ double estimate_dt_for_hyperbolic_system(
   const auto flux_range_grid = XT::Grid::make_cube_grid<YaspGrid<m, EquidistantOffsetCoordinates<double, m>>>(
       data_minimum, data_maximum, XT::Common::FieldVector<unsigned int, m>(1));
   const auto flux_range = *flux_range_grid.leaf_view().template begin<0>();
-  const auto& quadrature_rule_flux = QuadratureRules<R, m>::rule(flux_range.type(), flux.order());
+  const auto quadrature_rule_flux = QuadratureRules<R, m>::rule(flux_range.type(), flux.order());
   for (auto&& quadrature_point : quadrature_rule_flux) {
     const auto df = flux.jacobian(flux_range.geometry().global(quadrature_point.position()));
     for (size_t ss = 0; ss < d; ++ss)
