@@ -284,7 +284,8 @@ public:
     dofs *= 0.;
     std::vector<RangeType> basis_values(local_basis_->size());
     RangeType function_value;
-    for (auto&& quadrature_point : QuadratureRules<D, d>::rule(this->geometry_type(), order + local_basis_->order())) {
+    const auto& quadrature_rule = QuadratureRules<D, d>::rule(this->geometry_type(), order + local_basis_->order());
+    for (auto&& quadrature_point : quadrature_rule) {
       const auto point_in_reference_element = quadrature_point.position();
       const auto quadrature_weight = quadrature_point.weight();
       local_basis_->evaluate(point_in_reference_element, basis_values);

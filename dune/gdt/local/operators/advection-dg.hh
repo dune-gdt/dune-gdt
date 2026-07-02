@@ -138,7 +138,8 @@ public:
     const auto u_order = u_->order(param);
     const auto local_basis_order = basis.order(param);
     const auto integrand_order = local_flux_->order(param) * u_order + std::max(local_basis_order - 1, 0);
-    for (auto&& quadrature_point : QuadratureRules<D, d>::rule(element().type(), integrand_order)) {
+    const auto& quadrature_rule_vol = QuadratureRules<D, d>::rule(element().type(), integrand_order);
+    for (auto&& quadrature_point : quadrature_rule_vol) {
       // prepare
       const auto point_in_reference_element = quadrature_point.position();
       const auto integration_factor = element().geometry().integrationElement(point_in_reference_element);
@@ -792,7 +793,8 @@ public:
         const auto neighbor = intersection.outside();
         v_->bind(neighbor);
         const auto integration_order = std::pow(std::max(u_->order(param), v_->order(param)), 2);
-        for (auto&& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection.type(), integration_order)) {
+        const auto& quadrature_rule_face = QuadratureRules<D, d - 1>::rule(intersection.type(), integration_order);
+        for (auto&& quadrature_point : quadrature_rule_face) {
           const auto point_in_reference_intersection = quadrature_point.position();
           const auto point_in_reference_element =
               intersection.geometryInInside().global(point_in_reference_intersection);
@@ -822,8 +824,9 @@ public:
     // evaluate artificial viscosity form (8.183)
     if (smoothed_discrete_jump_indicator > 0) {
       const auto h = element().geometry().volume();
-      for (auto&& quadrature_point : QuadratureRules<D, d>::rule(
-               element().type(), std::max(0, u_->order(param) - 1) + std::max(0, basis.order(param) - 1))) {
+      const auto& quadrature_rule_visc = QuadratureRules<D, d>::rule(
+          element().type(), std::max(0, u_->order(param) - 1) + std::max(0, basis.order(param) - 1));
+      for (auto&& quadrature_point : quadrature_rule_visc) {
         const auto point_in_reference_element = quadrature_point.position();
         const auto integration_factor = element().geometry().integrationElement(point_in_reference_element);
         const auto quadrature_weight = quadrature_point.weight();

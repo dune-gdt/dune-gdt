@@ -92,7 +92,8 @@ public:
       double ret = 0.;
       const OneDGrid state_grid(1, 0., s[0]);
       const auto state_interval = *state_grid.leafGridView().template begin<0>();
-      for (const auto& quadrature_point : QuadratureRules<R, 1>::rule(state_interval.type(), local_flux.order(param))) {
+      const auto& quadrature_rule_state = QuadratureRules<R, 1>::rule(state_interval.type(), local_flux.order(param));
+      for (const auto& quadrature_point : quadrature_rule_state) {
         const auto local_uu = quadrature_point.position();
         const auto uu = state_interval.geometry().global(local_uu);
         const auto df = local_flux.jacobian(x, uu, param);
