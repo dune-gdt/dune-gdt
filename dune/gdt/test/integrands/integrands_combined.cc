@@ -103,23 +103,7 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     ScalarProductIntegrand left(2.);
     ScalarProductIntegrand right(3.);
     auto sum = left + right;
-
-    const auto element = *(grid_provider_->leaf_view().template begin<0>());
-    sum.bind(element);
-    auto clone = sum.copy_as_binary_element_integrand();
-    clone->bind(element);
-
-    const auto order = sum.order(*scalar_test_, *scalar_ansatz_);
-    DynamicMatrix<double> result_orig(2, 2, 0.);
-    DynamicMatrix<double> result_clone(2, 2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
-      const auto& x = qp.position();
-      sum.evaluate(*scalar_test_, *scalar_ansatz_, x, result_orig);
-      clone->evaluate(*scalar_test_, *scalar_ansatz_, x, result_clone);
-      for (size_t ii = 0; ii < 2; ++ii)
-        for (size_t jj = 0; jj < 2; ++jj)
-          EXPECT_DOUBLE_EQ(result_orig[ii][jj], result_clone[ii][jj]);
-    }
+    check_binary_clone_matches(sum);
   }
 
   void unary_sum_evaluates_as_elementwise_sum()
@@ -172,21 +156,7 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     auto unary_a = product_a.with_ansatz(inducing_fn);
     auto unary_b = product_b.with_ansatz(inducing_fn);
     auto sum = unary_a + unary_b;
-
-    const auto element = *(grid_provider_->leaf_view().template begin<0>());
-    sum.bind(element);
-    auto clone = sum.copy_as_unary_element_integrand();
-    clone->bind(element);
-
-    const auto order = sum.order(*scalar_test_);
-    DynamicVector<double> result_orig(2, 0.), result_clone(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
-      const auto& x = qp.position();
-      sum.evaluate(*scalar_test_, x, result_orig);
-      clone->evaluate(*scalar_test_, x, result_clone);
-      for (size_t ii = 0; ii < 2; ++ii)
-        EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
-    }
+    check_unary_clone_matches(sum, *scalar_test_);
   }
 
   // Edge case: sum of two integrands with same weight — result should be 2x single
