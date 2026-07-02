@@ -1,5 +1,13 @@
 ---
 # actionlint configuration.
 #
-# All jobs run on GitHub-hosted runners (ubuntu-26.04), so there are no custom
-# self-hosted runner labels to register here.
+# All jobs run on GitHub-hosted runners (ubuntu-26.04); there are no actual
+# self-hosted runners. ubuntu-26.04 is listed below purely as a workaround:
+# actionlint validates `runs-on` against a hardcoded list of known GitHub-hosted
+# labels baked into the pinned actionlint version, which predates the
+# ubuntu-26.04 image and would otherwise flag it as unknown. Registering it as
+# a "self-hosted" label is actionlint's documented escape hatch for labels it
+# doesn't recognize yet -- see https://github.com/rhysd/actionlint/blob/main/docs/config.md.
+self-hosted-runner:
+  labels:
+  - ubuntu-26.04
