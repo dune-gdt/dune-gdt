@@ -76,8 +76,8 @@ if(DXT_USE_UV_PYTHON)
 endif()
 if(UV_EXECUTABLE)
   # `uv python find` only locates an already-available interpreter; it does not download one. On a host/runner whose
-  # system Python doesn't match the pinned (.python-version) interpreter, resolve it in two steps: try to find it,
-  # and if that fails install it with `uv python install` (uv downloads a managed CPython) and find it again.
+  # system Python doesn't match the pinned (.python-version) interpreter, resolve it in two steps: try to find it, and
+  # if that fails install it with `uv python install` (uv downloads a managed CPython) and find it again.
   execute_process(
     COMMAND ${UV_EXECUTABLE} python find
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
