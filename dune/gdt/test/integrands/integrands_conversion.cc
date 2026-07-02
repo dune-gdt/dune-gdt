@@ -89,7 +89,7 @@ struct ConversionIntegrandTest : public IntegrandTest<G>
     const XT::Functions::GenericGridFunction<E, 1> inducing_fn(
         2, [](const E&) {}, [](const DomainType& x, const XT::Common::Parameter&) { return x[0] * x[1]; });
 
-    ScalarProductIntegrand product(1.);  // weight order = 0
+    ScalarProductIntegrand product(1.); // weight order = 0
     auto unary = product.with_ansatz(inducing_fn);
 
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
