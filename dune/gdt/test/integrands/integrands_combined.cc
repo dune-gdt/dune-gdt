@@ -101,19 +101,10 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
 
   void binary_sum_copy_gives_same_results()
   {
-    // TODO: This test documents a known bug: ElementBoundObject::bind() short-circuits (returns
-    // early without calling post_bind()) when bound to the same element_ already stored by the
-    // object. Copy constructors of ElementBoundObject transfer element_, so after copying a bound
-    // integrand, the clone already has element_ set. When clone->bind(same_element) is called, the
-    // guard `if (element_ && ele == *element_) return *this;` skips post_bind() entirely. The
-    // inner local functions (e.g. local_weight_ in LocalElementProductIntegrand) are freshly
-    // constructed in the copy and never bound, causing evaluate() to throw. The Correct behavior
-    // would be for copy constructors to NOT transfer element_ (so bind always runs post_bind), or
-    // for bind() to always call post_bind() on freshly-copied objects.
     ScalarProductIntegrand left(2.);
     ScalarProductIntegrand right(3.);
     auto sum = left + right;
-    EXPECT_THROW(this->check_binary_clone_matches(sum), Dune::Exception);
+    this->check_binary_clone_matches(sum);
   }
 
   void unary_sum_evaluates_as_elementwise_sum()
@@ -160,11 +151,6 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
 
   void unary_sum_copy_gives_same_results()
   {
-    // TODO: Same root cause as binary_sum_copy_gives_same_results: the ElementBoundObject::bind()
-    // guard skips post_bind() on clones that were copied from already-bound integrands. The freshly
-    // constructed inner local functions (local_function_ in LocalBinaryToUnaryElementIntegrand and
-    // local_weight_ in the wrapped LocalElementProductIntegrand) remain unbound, causing evaluate()
-    // to throw not_bound_to_an_element_yet.
     const XT::Functions::GenericGridFunction<E, 1> inducing_fn(
         1, [](const E&) {}, [](const DomainType& x, const XT::Common::Parameter&) { return x[0]; });
 
@@ -173,7 +159,7 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     auto unary_a = product_a.with_ansatz(inducing_fn);
     auto unary_b = product_b.with_ansatz(inducing_fn);
     auto sum = unary_a + unary_b;
-    EXPECT_THROW(this->check_unary_clone_matches(sum, *scalar_test_), Dune::Exception);
+    this->check_unary_clone_matches(sum, *scalar_test_);
   }
 
   // Edge case: sum of two integrands with same weight — result should be 2x single

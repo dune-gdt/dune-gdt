@@ -104,19 +104,12 @@ struct ConversionIntegrandTest : public IntegrandTest<G>
 
   void copy_gives_same_results()
   {
-    // TODO: This test documents a known bug: LocalBinaryToUnaryElementIntegrand::
-    // copy_as_unary_element_integrand() creates fresh local_function_ and local_binary_integrand_
-    // objects. The copy constructor of ElementBoundObject (base class) transfers element_, so when
-    // clone->bind(same_element) is called, the guard `if (element_ && ele == *element_) return
-    // *this;` skips post_bind() entirely. The inner local functions remain unbound and evaluate()
-    // throws not_bound_to_an_element_yet. The Correct behavior would be for copy constructors to
-    // NOT transfer element_ so that bind() always runs post_bind() and initializes inner objects.
     const XT::Functions::GenericGridFunction<E, 1> inducing_fn(
         1, [](const E&) {}, [](const DomainType& x, const XT::Common::Parameter&) { return x[0] + x[1]; });
 
     ScalarProductIntegrand product(1.);
     auto unary = product.with_ansatz(inducing_fn);
-    EXPECT_THROW(this->check_unary_clone_matches(unary, *scalar_test_), Dune::Exception);
+    this->check_unary_clone_matches(unary, *scalar_test_);
   }
 
   // Edge case: inducing function = 0 => unary integrand evaluates to 0 everywhere
