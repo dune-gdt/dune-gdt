@@ -86,11 +86,12 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
             there_are_intersection_dofs_to_determine = true;
             local_source_neighbor->bind(neighbor);
             // do a face quadrature, average source
-            for (auto&& quadrature_point : QuadratureRules<D, d - 1>::rule(
-                     intersection.type(),
-                     std::max(rt_basis->order() + intersection_Pk_basis.order(),
-                              std::max(local_source_element->order(param), local_source_neighbor->order(param))
-                                  + intersection_Pk_basis.order()))) {
+            const auto& quadrature_rule_face_avg = QuadratureRules<D, d - 1>::rule(
+                intersection.type(),
+                std::max(rt_basis->order() + intersection_Pk_basis.order(),
+                         std::max(local_source_element->order(param), local_source_neighbor->order(param))
+                             + intersection_Pk_basis.order()));
+            for (auto&& quadrature_point : quadrature_rule_face_avg) {
               const auto point_on_reference_intersection = quadrature_point.position();
               const auto point_in_reference_element =
                   intersection.geometryInInside().global(point_on_reference_intersection);
@@ -130,10 +131,11 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
         } else {
           there_are_intersection_dofs_to_determine = true;
           // do a face quadrature
-          for (auto&& quadrature_point : QuadratureRules<D, d - 1>::rule(
-                   intersection.type(),
-                   std::max(rt_basis->order() + intersection_Pk_basis.order(),
-                            local_source_element->order(param) + intersection_Pk_basis.order()))) {
+          const auto& quadrature_rule_face = QuadratureRules<D, d - 1>::rule(
+              intersection.type(),
+              std::max(rt_basis->order() + intersection_Pk_basis.order(),
+                       local_source_element->order(param) + intersection_Pk_basis.order()));
+          for (auto&& quadrature_point : quadrature_rule_face) {
             const auto point_on_reference_intersection = quadrature_point.position();
             const auto point_in_reference_element =
                 intersection.geometryInInside().global(point_on_reference_intersection);
@@ -191,10 +193,11 @@ void raviart_thomas_interpolation(const XT::Functions::GridFunctionInterface<E, 
       XT::LA::CommonDenseMatrix<R> lhs(local_keys_assosiated_with_element.size(), element_Pkminus1_basis.size(), 0);
       XT::LA::CommonDenseVector<R> rhs(element_Pkminus1_basis.size(), 0);
       // do a volume quadrature
-      for (auto [point_in_reference_element, quadrature_weight] :
-           QuadratureRules<D, d>::rule(element.type(),
-                                       std::max(rt_basis->order() + element_Pkminus1_basis.order(),
-                                                local_source_element->order(param) + element_Pkminus1_basis.order()))) {
+      const auto& quadrature_rule_vol =
+          QuadratureRules<D, d>::rule(element.type(),
+                                      std::max(rt_basis->order() + element_Pkminus1_basis.order(),
+                                               local_source_element->order(param) + element_Pkminus1_basis.order()));
+      for (auto [point_in_reference_element, quadrature_weight] : quadrature_rule_vol) {
         const auto integration_factor = element.geometry().integrationElement(point_in_reference_element);
         const auto rt_basis_values = rt_basis->evaluate_set(point_in_reference_element);
         const auto element_Pkminus1_basis_values = element_Pkminus1_basis.evaluate(point_in_reference_element);
