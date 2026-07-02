@@ -14,6 +14,7 @@
 
 #include <dune/geometry/quadraturerules.hh>
 #include <dune/geometry/type.hh>
+#include <dune/grid/common/rangegenerators.hh>
 
 #include <gtest/gtest.h>
 #include <dune/xt/common/fvector.hh>
@@ -143,6 +144,26 @@ struct IntegrandTest : public ::testing::Test
           ret[1][1] = {1., 1.};
         });
   } // ... SetUp(...)
+
+  I find_inner_intersection() const
+  {
+    const auto& gv = grid_provider_->leaf_view();
+    for (const auto& element : Dune::elements(gv))
+      for (const auto& intersection : Dune::intersections(gv, element))
+        if (intersection.neighbor())
+          return intersection;
+    DUNE_THROW(Dune::InvalidStateException, "No inner intersection found in grid!");
+  }
+
+  I find_boundary_intersection() const
+  {
+    const auto& gv = grid_provider_->leaf_view();
+    for (const auto& element : Dune::elements(gv))
+      for (const auto& intersection : Dune::intersections(gv, element))
+        if (!intersection.neighbor())
+          return intersection;
+    DUNE_THROW(Dune::InvalidStateException, "No boundary intersection found in grid!");
+  }
 
   virtual void is_constructable() = 0;
 }; // struct IntegrandTest
