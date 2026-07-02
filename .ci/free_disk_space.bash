@@ -16,12 +16,13 @@ set -uo pipefail
 
 remove_path() {
   local path="$1"
-  if [ -e "${path}" ]; then
+  if [[ -e "${path}" ]]; then
     local size
     size="$(sudo du -sh "${path}" 2>/dev/null | cut -f1)"
     echo "removing ${path} (${size:-unknown size})"
     sudo rm -rf "${path}"
   fi
+  return 0
 }
 
 before_kib="$(df --output=avail -B1K / | tail -n1)"
