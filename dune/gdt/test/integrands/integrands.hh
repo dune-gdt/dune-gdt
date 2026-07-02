@@ -229,7 +229,8 @@ struct IntegrandTest : public ::testing::Test
     const auto order = integrand.order(basis);
     const size_t n = basis.size();
     DynamicVector<double> result_orig(n, 0.), result_clone(n, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto& quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       integrand.evaluate(basis, x, result_orig);
       clone->evaluate(basis, x, result_clone);
@@ -247,7 +248,8 @@ struct IntegrandTest : public ::testing::Test
     clone->bind(element);
     const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
     DynamicMatrix<double> result_orig(2, 2, 0.), result_clone(2, 2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto& quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result_orig);
       clone->evaluate(*scalar_test_, *scalar_ansatz_, x, result_clone);
