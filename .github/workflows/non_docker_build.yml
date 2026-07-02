@@ -139,14 +139,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        # the stock debug build (no instrumentation), compiled with clang-22
+        # the stock debug build (no instrumentation), compiled with clang-22 --
+        # this leg is the clang-22 migration gate (it compiles the whole project,
+        # the ~400 test binaries and the Python bindings with clang-22 and runs the
+        # full suite).
         - preset: clang22-debug
           coverage: false
-        # the release build compiled with clang-22 + gcov-style instrumentation
-        # (clang22-release_coverage preset) so it can report C++ (and, via the
-        # bindings, Python) coverage. The preset points gcovr at `llvm-cov-22 gcov`
-        # to read clang's .gcno/.gcda data.
-        - preset: clang22-release_coverage
+        # the release build compiled with gcov instrumentation (release_coverage
+        # preset) so it can report C++ (and, via the bindings, Python) coverage.
+        # This leg stays on gcc: clang's --coverage data has to be read through
+        # `llvm-cov gcov`, and gcovr driving that path aborts with an uncategorized
+        # worker exception, so the mature gcc/gcovr -> Cobertura pipeline is used for
+        # the coverage report instead. Coverage measures which source lines the test
+        # suite exercises, which is compiler-independent, and clang-22 itself is
+        # fully exercised by the debug leg above.
+        - preset: release_coverage
           coverage: true
     env:
       # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
@@ -177,18 +184,19 @@ jobs:
         sudo apt-get install -y ninja-build ccache xvfb
 
     - name: Install Clang 22
-      # The clang22-* presets compile with clang-22/clang++-22 (the project only;
-      # the vcpkg dependencies still build with the runner's default gcc, exactly
-      # as the existing clang-* presets do). clang-22 is not in the stock
-      # ubuntu-26.04 apt repositories yet, so add the official LLVM apt repo via the
-      # upstream llvm.sh helper, which pins and installs the requested major version.
-      # llvm-22 provides llvm-cov-22, used by the coverage leg's gcovr
-      # (the clang22-release_coverage preset passes --gcov-executable "llvm-cov-22 gcov").
+      # Only the clang22-* leg needs clang-22; the gcc release_coverage leg builds
+      # with the runner's default gcc, so skip this (slow) apt repo add there.
+      # The clang22-* presets compile the project with clang-22/clang++-22 (the
+      # vcpkg dependencies still build with the runner's default gcc, exactly as the
+      # existing clang-* presets do). clang-22 is not in the stock ubuntu-24.04 apt
+      # repositories, so add the official LLVM apt repo via the upstream llvm.sh
+      # helper, which pins and installs the requested major version.
+      if: startsWith(matrix.preset, 'clang22')
       run: |
         wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
         chmod +x /tmp/llvm.sh
         sudo /tmp/llvm.sh 22
-        sudo apt-get install -y clang-22 llvm-22
+        sudo apt-get install -y clang-22
         clang-22 --version
 
     - name: Set up uv
@@ -217,8 +225,8 @@ jobs:
       # Route every compile through ccache. Passing the launcher as a cache
       # variable (not just an env var) is harmless on the fresh build/ tree here
       # (build/ is no longer cached). The gcov-style instrumentation lives in the
-      # clang22-release_coverage preset (see CMakePresets.json), so nothing extra
-      # is injected here.
+      # release_coverage preset (see CMakePresets.json), so nothing extra is
+      # injected here.
       run: >
         cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
@@ -259,20 +267,7 @@ jobs:
     - name: Collect C++ coverage (coverage_cpp target -> Cobertura XML)
       # gcovr is run by the CMake coverage_cpp target (pulled on the fly via uv);
       # it writes build/<preset>/coverage-cpp.xml.
-      #
-      # Best-effort (continue-on-error) on the clang leg: gcovr driving
-      # `llvm-cov-22 gcov` over clang's --coverage data currently aborts with
-      # "Worker thread raised exception, workers canceled" (it persists at -j1 and
-      # through --gcov-ignore-parse-errors / --gcov-ignore-errors=all, and gcovr
-      # does not surface the underlying traceback even with --verbose). The build is
-      # still compiled with coverage instrumentation and the full suite still runs
-      # and passes; only the gcov->Cobertura report generation is broken, so we do
-      # not block the clang-22 switch on it. TODO: restore C++ coverage here, most
-      # likely by moving the clang leg to native llvm-cov source-based coverage
-      # (-fprofile-instr-generate -fcoverage-mapping + llvm-profdata + llvm-cov
-      # export) instead of the gcov-emulation path.
       if: ${{ matrix.coverage }}
-      continue-on-error: true
       run: cmake --build --preset=${{ matrix.preset }} --target coverage_cpp
 
     - name: Collect Python coverage (coverage_python target -> XML)
@@ -282,11 +277,7 @@ jobs:
       run: cmake --build --preset=${{ matrix.preset }} --target coverage_python
 
     - name: Upload C++ coverage to Codecov
-      # Best-effort, paired with the coverage_cpp step above: while gcov->Cobertura
-      # generation is broken under clang/llvm-cov, coverage-cpp.xml is usually
-      # absent, so this upload must neither run its own search nor fail the job.
       if: ${{ matrix.coverage }}
-      continue-on-error: true
       uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         # OIDC (id-token) auth instead of an upload token; see job permissions.
@@ -298,9 +289,9 @@ jobs:
         # gcov plugin would otherwise re-run gcov over the whole build tree).
         disable_search: true
         plugins: noop
-        # Do not fail the job on a missing/failed C++ coverage upload: report
-        # generation is best-effort on the clang leg (see coverage_cpp above).
-        fail_ci_if_error: false
+        # fail the job if the upload fails, so coverage reporting cannot silently
+        # break (requires the repo to be activated on codecov.io).
+        fail_ci_if_error: true
 
     - name: Upload Python coverage to Codecov
       if: ${{ matrix.coverage }}
