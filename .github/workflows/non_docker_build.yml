@@ -27,7 +27,7 @@ jobs:
   # pipeline. `push`/`workflow_dispatch` ignore the outputs and always run full.
   changes:
     name: Detect changed paths
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       # paths-filter reads the PR file list via the API on pull_request events
@@ -67,7 +67,7 @@ jobs:
     # workflow-wide constant; a job output (needs.config.outputs.*) is the
     # simplest shared value.
     name: CI sizing constants
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
     outputs:
@@ -80,7 +80,7 @@ jobs:
         # ---- GitHub-hosted runner vCPU count ----
         # Detect the runner's core count instead of hard-coding it, so the derived
         # -j / --parallel levels stay correct if the runner class ever changes. The
-        # config job shares build-linux's ubuntu-24.04 label, so its nproc matches
+        # config job shares build-linux's ubuntu-26.04 label, so its nproc matches
         # that job's core count; standard GitHub-hosted runners report 4.
         linux_cpu="$(nproc)"
         # -----------------------------------------
@@ -119,7 +119,7 @@ jobs:
     # level OOM-killed this 16 GB runner. Every compile step (incl. the main Build)
     # is -j capped for the same reason. Neither preset uses LTO, so there is no
     # /tmp ltrans explosion like build_wheels.
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # A fully cold leg (no build cache) compiles every vcpkg dependency as a shared
     # library, the project, the ~400 test binaries and the Python bindings from
     # scratch; on the 4 vCPU hosted runner with the memory-bounded -j caps above
@@ -161,6 +161,12 @@ jobs:
         submodules: recursive
         fetch-tags: true
         fetch-depth: 0
+
+    - name: Free disk space
+      # vcpkg builds every dependency from source and this leg additionally keeps a
+      # coverage-instrumented build tree; the runner's preinstalled SDKs (Android,
+      # .NET, Haskell, ...) are unused here and just eat into that budget.
+      run: ./.ci/free_disk_space.bash
 
     # The build/ tree and .vcpkg-root toolchain are intentionally NOT cached: a
     # corrupted restore was repeatedly failing the build (vcpkg configure dying
@@ -316,7 +322,7 @@ jobs:
     # their *.ltrans.o scratch within /tmp and the build stays within memory (the
     # much wider -j on the old self-hosted box needed an enlarged volume for the
     # spill — moot at -j3).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     # A cold build compiles every vcpkg dependency plus the LTO release bindings
     # from scratch. On the 4 vCPU hosted runner (half the cores of the old
     # self-hosted box, and -j3 vs -j7) that is far slower, so the timeout is raised
@@ -336,6 +342,12 @@ jobs:
         submodules: recursive
         fetch-tags: true
         fetch-depth: 0
+
+    - name: Free disk space
+      # vcpkg builds every dependency from source and the LTO release bindings spill
+      # link scratch to /tmp; the runner's preinstalled SDKs (Android, .NET, Haskell,
+      # ...) are unused here and just eat into that budget.
+      run: ./.ci/free_disk_space.bash
 
     - name: Restore wheel-build ccache
       # build-wheels.sh sets CCACHE_DIR to build/wheelhouse/cache (on the host
@@ -430,7 +442,7 @@ jobs:
     # GitHub-hosted standard runner (4 vCPU / 16 GB). The docs build is
     # single-threaded (sphinx -j 1), so the standard runner is plenty (it only
     # downloads the wheels artifact and renders HTML).
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     permissions:
       contents: read
@@ -588,7 +600,7 @@ jobs:
 
   deploy_docs:
     name: Deploy docs to GitHub Pages
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_docs
     # publish only on pushes to main; PRs and the merge queue build (above) but
     # never deploy. build_docs must have succeeded, so broken docs are not
@@ -625,7 +637,7 @@ jobs:
 
   test_publish:
     name: Publish to Test PyPI
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_wheels
     # only publish to Test PyPI on pushes to main, never on PRs, the merge
     # queue, or manual runs
@@ -656,7 +668,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_wheels
     if: startsWith(github.ref, 'refs/tags/')
     timeout-minutes: 120
@@ -689,7 +701,7 @@ jobs:
   # check pending forever. Matrix job results aggregate (any failed leg => failure).
   ci-gate:
     name: CI gate
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions: {}
     if: always()
     needs: [changes, config, build-linux, build_wheels, build_docs]

@@ -1,5 +1,5 @@
 ---
 # actionlint configuration.
 #
-# All jobs run on GitHub-hosted runners (ubuntu-24.04), so there are no custom
+# All jobs run on GitHub-hosted runners (ubuntu-26.04), so there are no custom
 # self-hosted runner labels to register here.
