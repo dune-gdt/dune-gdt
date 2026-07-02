@@ -32,16 +32,23 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
 
   using ScalarProductIntegrand = LocalElementProductIntegrand<E, 1>;
   using BinarySum = LocalBinaryElementIntegrandSum<E, 1, 1, double, double, 1, 1, double>;
+  using UnarySum = LocalUnaryElementIntegrandSum<E, 1, 1, double, double>;
 
   void is_constructable() final
   {
     // Build sum of two product integrands with scalar weights
     ScalarProductIntegrand left(2.);
     ScalarProductIntegrand right(3.);
-    // Via constructor
-    [[maybe_unused]] BinarySum sum_via_ctor(left, right);
-    // Via operator+
-    [[maybe_unused]] auto sum_via_op = left + right;
+    // Binary sum: via constructor and via operator+
+    [[maybe_unused]] BinarySum binary_sum_via_ctor(left, right);
+    [[maybe_unused]] auto binary_sum_via_op = left + right;
+    // Unary sum: via constructor and via operator+
+    const XT::Functions::GenericGridFunction<E, 1> inducing_fn(
+        1, [](const E&) {}, [](const DomainType& x, const XT::Common::Parameter&) { return x[0]; });
+    auto unary_left = left.with_ansatz(inducing_fn);
+    auto unary_right = right.with_ansatz(inducing_fn);
+    [[maybe_unused]] UnarySum unary_sum_via_ctor(unary_left, unary_right);
+    [[maybe_unused]] auto unary_sum_via_op = unary_left + unary_right;
   }
 
   void binary_sum_order_is_max_of_parts()
