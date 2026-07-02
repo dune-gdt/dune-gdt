@@ -87,7 +87,8 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     DynamicMatrix<double> result_left(2, 2, 0.);
     DynamicMatrix<double> result_right(2, 2, 0.);
     DynamicMatrix<double> result_sum(2, 2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       left.evaluate(*scalar_test_, *scalar_ansatz_, x, result_left);
       right.evaluate(*scalar_test_, *scalar_ansatz_, x, result_right);
@@ -103,7 +104,7 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     ScalarProductIntegrand left(2.);
     ScalarProductIntegrand right(3.);
     auto sum = left + right;
-    check_binary_clone_matches(sum);
+    this->check_binary_clone_matches(sum);
   }
 
   void unary_sum_evaluates_as_elementwise_sum()
@@ -136,7 +137,8 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
 
     const auto order = sum.order(*scalar_test_);
     DynamicVector<double> result_a(2, 0.), result_b(2, 0.), result_sum(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       unary_a.evaluate(*scalar_test_, x, result_a);
       unary_b.evaluate(*scalar_test_, x, result_b);
@@ -156,7 +158,7 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     auto unary_a = product_a.with_ansatz(inducing_fn);
     auto unary_b = product_b.with_ansatz(inducing_fn);
     auto sum = unary_a + unary_b;
-    check_unary_clone_matches(sum, *scalar_test_);
+    this->check_unary_clone_matches(sum, *scalar_test_);
   }
 
   // Edge case: sum of two integrands with same weight — result should be 2x single
@@ -174,7 +176,8 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     const auto order = sum.order(*scalar_test_, *scalar_ansatz_);
     DynamicMatrix<double> result_sum(2, 2, 0.);
     DynamicMatrix<double> result_single(2, 2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       sum.evaluate(*scalar_test_, *scalar_ansatz_, x, result_sum);
       single.evaluate(*scalar_test_, *scalar_ansatz_, x, result_single);

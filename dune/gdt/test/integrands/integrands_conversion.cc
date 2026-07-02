@@ -66,7 +66,8 @@ struct ConversionIntegrandTest : public IntegrandTest<G>
 
     const auto order = unary.order(*scalar_test_);
     DynamicVector<double> result(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       unary.evaluate(*scalar_test_, x, result);
       // scalar_test_ basis (see integrands.hh): phi_0 = x[1], phi_1 = x[0]*x[1]^3
@@ -108,7 +109,7 @@ struct ConversionIntegrandTest : public IntegrandTest<G>
 
     ScalarProductIntegrand product(1.);
     auto unary = product.with_ansatz(inducing_fn);
-    check_unary_clone_matches(unary, *scalar_test_);
+    this->check_unary_clone_matches(unary, *scalar_test_);
   }
 
   // Edge case: inducing function = 0 => unary integrand evaluates to 0 everywhere
@@ -125,7 +126,8 @@ struct ConversionIntegrandTest : public IntegrandTest<G>
 
     const auto order = unary.order(*scalar_test_);
     DynamicVector<double> result(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       unary.evaluate(*scalar_test_, x, result);
       EXPECT_DOUBLE_EQ(0., result[0]);

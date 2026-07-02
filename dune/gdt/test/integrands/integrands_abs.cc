@@ -65,7 +65,8 @@ struct AbsIntegrandTest : public IntegrandTest<G>
 
     const auto order = integrand.order(*scalar_test_);
     DynamicVector<double> result(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       integrand.evaluate(*scalar_test_, x, result);
       // scalar_test_: phi_0(x) = x[1], phi_1(x) = x[0]*x[1]^3
@@ -86,7 +87,8 @@ struct AbsIntegrandTest : public IntegrandTest<G>
 
     const auto order = integrand.order(*vector_test_);
     DynamicVector<double> result(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       const auto& x = qp.position();
       integrand.evaluate(*vector_test_, x, result);
       EXPECT_NEAR(std::sqrt(5.), result[0], 1e-13);
@@ -120,7 +122,8 @@ struct AbsIntegrandTest : public IntegrandTest<G>
 
     const auto order = integrand.order(*scalar_test_);
     DynamicVector<double> result(2, 0.);
-    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), order)) {
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
       integrand.evaluate(*scalar_test_, qp.position(), result);
       EXPECT_GE(result[0], 0.);
       EXPECT_GE(result[1], 0.);
@@ -130,9 +133,9 @@ struct AbsIntegrandTest : public IntegrandTest<G>
   void copy_gives_same_results()
   {
     ScalarAbsIntegrand scalar_integrand;
-    check_unary_clone_matches(scalar_integrand, *scalar_test_);
+    this->check_unary_clone_matches(scalar_integrand, *scalar_test_);
     VectorAbsIntegrand vector_integrand;
-    check_unary_clone_matches(vector_integrand, *vector_test_);
+    this->check_unary_clone_matches(vector_integrand, *vector_test_);
   }
 
   using BaseType::grid_provider_;

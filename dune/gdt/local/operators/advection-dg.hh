@@ -317,7 +317,8 @@ public:
     const auto v_order = v_->order(param);
     const auto integrand_order = std::max(inside_basis.order(param), outside_basis.order(param))
                                  + std::max(inside_flux_order * u_order, outside_flux_order * v_order);
-    for (const auto& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order)) {
+    const auto quadrature_rule = QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order);
+    for (const auto& quadrature_point : quadrature_rule) {
       // prepare
       const auto point_in_reference_intersection = quadrature_point.position();
       const auto integration_factor = intersection().geometry().integrationElement(point_in_reference_intersection);
@@ -478,7 +479,8 @@ public:
     inside_local_dofs_.resize(inside_basis.size(param));
     inside_local_dofs_ *= 0.;
     const auto integrand_order = inside_basis.order(param) + numerical_flux_order_ * u_->order(param);
-    for (const auto& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order)) {
+    const auto quadrature_rule = QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order);
+    for (const auto& quadrature_point : quadrature_rule) {
       // prepare
       const auto point_in_reference_intersection = quadrature_point.position();
       const auto integration_factor = intersection().geometry().integrationElement(point_in_reference_intersection);
@@ -617,7 +619,8 @@ public:
     inside_local_dofs_.resize(inside_basis.size(param));
     inside_local_dofs_ *= 0.;
     const auto integrand_order = inside_basis.order(param) + local_flux_->order(param) * u_->order(param);
-    for (const auto& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order)) {
+    const auto quadrature_rule = QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order);
+    for (const auto& quadrature_point : quadrature_rule) {
       // prepare
       const auto point_in_reference_intersection = quadrature_point.position();
       const auto integration_factor = intersection().geometry().integrationElement(point_in_reference_intersection);
