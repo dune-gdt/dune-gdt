@@ -49,8 +49,8 @@ struct CombinedIntegrandTest : public IntegrandTest<G>
     // Product with weight x*y (order 2) and constant weight 1.0 (order 0)
     const XT::Functions::GenericGridFunction<E, 1> weight_fn(
         2, [](const E&) {}, [](const DomainType& x, const XT::Common::Parameter&) { return x[0] * x[1]; });
-    ScalarProductIntegrand left(weight_fn);  // order = 2 + test + ansatz
-    ScalarProductIntegrand right(1.);        // order = 0 + test + ansatz
+    ScalarProductIntegrand left(weight_fn); // order = 2 + test + ansatz
+    ScalarProductIntegrand right(1.); // order = 0 + test + ansatz
 
     auto sum = left + right;
     const auto element = *(grid_provider_->leaf_view().template begin<0>());

@@ -36,17 +36,15 @@ struct GenericIntegrandTest : public IntegrandTest<G>
   void is_constructable() final
   {
     // Unary: order lambda returns constant 2, evaluate lambda sets result[ii] = ii+1
-    [[maybe_unused]] UnaryIntegrandType unary_integrand(
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis, const XT::Common::Parameter&) {
-          return basis.order();
-        },
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
-           const DomainType&,
-           DynamicVector<double>& result,
-           const XT::Common::Parameter&) {
-          for (size_t ii = 0; ii < basis.size(); ++ii)
-            result[ii] = static_cast<double>(ii + 1);
-        });
+    [[maybe_unused]] UnaryIntegrandType unary_integrand([](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                                           const XT::Common::Parameter&) { return basis.order(); },
+                                                        [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                                           const DomainType&,
+                                                           DynamicVector<double>& result,
+                                                           const XT::Common::Parameter&) {
+                                                          for (size_t ii = 0; ii < basis.size(); ++ii)
+                                                            result[ii] = static_cast<double>(ii + 1);
+                                                        });
 
     // Unary with post-bind
     bool post_bind_called = false;
@@ -82,17 +80,15 @@ struct GenericIntegrandTest : public IntegrandTest<G>
   void order_is_forwarded_correctly()
   {
     const int expected_order = 42;
-    UnaryIntegrandType integrand(
-        [expected_order](const typename UnaryIntegrandType::LocalTestBasisType&, const XT::Common::Parameter&) {
-          return expected_order;
-        },
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
-           const DomainType&,
-           DynamicVector<double>& result,
-           const XT::Common::Parameter&) {
-          for (size_t ii = 0; ii < basis.size(); ++ii)
-            result[ii] = 0.;
-        });
+    UnaryIntegrandType integrand([expected_order](const typename UnaryIntegrandType::LocalTestBasisType&,
+                                                  const XT::Common::Parameter&) { return expected_order; },
+                                 [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                    const DomainType&,
+                                    DynamicVector<double>& result,
+                                    const XT::Common::Parameter&) {
+                                   for (size_t ii = 0; ii < basis.size(); ++ii)
+                                     result[ii] = 0.;
+                                 });
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
     integrand.bind(element);
     EXPECT_EQ(expected_order, integrand.order(*scalar_test_));
@@ -101,17 +97,15 @@ struct GenericIntegrandTest : public IntegrandTest<G>
   void evaluate_lambda_is_called()
   {
     // Unary integrand that sets result[ii] = x[0] + x[1] for each basis function
-    UnaryIntegrandType integrand(
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis, const XT::Common::Parameter&) {
-          return basis.order();
-        },
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
-           const DomainType& x,
-           DynamicVector<double>& result,
-           const XT::Common::Parameter&) {
-          for (size_t ii = 0; ii < basis.size(); ++ii)
-            result[ii] = x[0] + x[1];
-        });
+    UnaryIntegrandType integrand([](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                    const XT::Common::Parameter&) { return basis.order(); },
+                                 [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                    const DomainType& x,
+                                    DynamicVector<double>& result,
+                                    const XT::Common::Parameter&) {
+                                   for (size_t ii = 0; ii < basis.size(); ++ii)
+                                     result[ii] = x[0] + x[1];
+                                 });
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
     integrand.bind(element);
     const auto integrand_order = integrand.order(*scalar_test_);
@@ -127,19 +121,18 @@ struct GenericIntegrandTest : public IntegrandTest<G>
   void binary_evaluate_lambda_is_called()
   {
     // Binary integrand: result[ii][jj] = (ii+1) * (jj+1) * x[0]
-    BinaryIntegrandType integrand(
-        [](const typename BinaryIntegrandType::LocalTestBasisType& test,
-           const typename BinaryIntegrandType::LocalAnsatzBasisType& ansatz,
-           const XT::Common::Parameter&) { return test.order() + ansatz.order(); },
-        [](const typename BinaryIntegrandType::LocalTestBasisType& test,
-           const typename BinaryIntegrandType::LocalAnsatzBasisType& ansatz,
-           const DomainType& x,
-           DynamicMatrix<double>& result,
-           const XT::Common::Parameter&) {
-          for (size_t ii = 0; ii < test.size(); ++ii)
-            for (size_t jj = 0; jj < ansatz.size(); ++jj)
-              result[ii][jj] = static_cast<double>((ii + 1) * (jj + 1)) * x[0];
-        });
+    BinaryIntegrandType integrand([](const typename BinaryIntegrandType::LocalTestBasisType& test,
+                                     const typename BinaryIntegrandType::LocalAnsatzBasisType& ansatz,
+                                     const XT::Common::Parameter&) { return test.order() + ansatz.order(); },
+                                  [](const typename BinaryIntegrandType::LocalTestBasisType& test,
+                                     const typename BinaryIntegrandType::LocalAnsatzBasisType& ansatz,
+                                     const DomainType& x,
+                                     DynamicMatrix<double>& result,
+                                     const XT::Common::Parameter&) {
+                                    for (size_t ii = 0; ii < test.size(); ++ii)
+                                      for (size_t jj = 0; jj < ansatz.size(); ++jj)
+                                        result[ii][jj] = static_cast<double>((ii + 1) * (jj + 1)) * x[0];
+                                  });
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
     integrand.bind(element);
     const auto integrand_order = integrand.order(*scalar_test_, *scalar_ansatz_);
@@ -157,18 +150,16 @@ struct GenericIntegrandTest : public IntegrandTest<G>
   void post_bind_is_called()
   {
     bool was_called = false;
-    UnaryIntegrandType integrand(
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis, const XT::Common::Parameter&) {
-          return basis.order();
-        },
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
-           const DomainType&,
-           DynamicVector<double>& result,
-           const XT::Common::Parameter&) {
-          for (size_t ii = 0; ii < basis.size(); ++ii)
-            result[ii] = 0.;
-        },
-        [&was_called](const E&) { was_called = true; });
+    UnaryIntegrandType integrand([](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                    const XT::Common::Parameter&) { return basis.order(); },
+                                 [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                    const DomainType&,
+                                    DynamicVector<double>& result,
+                                    const XT::Common::Parameter&) {
+                                   for (size_t ii = 0; ii < basis.size(); ++ii)
+                                     result[ii] = 0.;
+                                 },
+                                 [&was_called](const E&) { was_called = true; });
     EXPECT_FALSE(was_called);
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
     integrand.bind(element);
@@ -177,17 +168,15 @@ struct GenericIntegrandTest : public IntegrandTest<G>
 
   void copy_gives_same_results()
   {
-    UnaryIntegrandType integrand(
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis, const XT::Common::Parameter&) {
-          return basis.order();
-        },
-        [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
-           const DomainType& x,
-           DynamicVector<double>& result,
-           const XT::Common::Parameter&) {
-          for (size_t ii = 0; ii < basis.size(); ++ii)
-            result[ii] = x[0] * x[1];
-        });
+    UnaryIntegrandType integrand([](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                    const XT::Common::Parameter&) { return basis.order(); },
+                                 [](const typename UnaryIntegrandType::LocalTestBasisType& basis,
+                                    const DomainType& x,
+                                    DynamicVector<double>& result,
+                                    const XT::Common::Parameter&) {
+                                   for (size_t ii = 0; ii < basis.size(); ++ii)
+                                     result[ii] = x[0] * x[1];
+                                 });
     const auto element = *(grid_provider_->leaf_view().template begin<0>());
     integrand.bind(element);
     auto clone = integrand.copy_as_unary_element_integrand();
