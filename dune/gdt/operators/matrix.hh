@@ -799,12 +799,14 @@ auto make_matrix_operator(const SpaceInterface<GV, r, rC, F>& space,
                           const std::string& logging_prefix = "")
 {
   using M = XT::LA::IstlRowMajorSparseMatrix<F>;
-  return MatrixOperator<GV, r, rC, r, rC, F, M, GV, GV>(
-      space.grid_view(),
-      space,
-      space,
-      new M(space.mapper().size(), space.mapper().size(), make_sparsity_pattern(space, stencil), internal::assembly_num_mutexes()),
-      logging_prefix);
+  return MatrixOperator<GV, r, rC, r, rC, F, M, GV, GV>(space.grid_view(),
+                                                        space,
+                                                        space,
+                                                        new M(space.mapper().size(),
+                                                              space.mapper().size(),
+                                                              make_sparsity_pattern(space, stencil),
+                                                              internal::assembly_num_mutexes()),
+                                                        logging_prefix);
 } // ... make_matrix_operator(...)
 
 
@@ -820,13 +822,14 @@ auto make_matrix_operator(const SpaceInterface<GV, r, rC, F>& space,
                           const std::string& logging_prefix = "")
 {
   static_assert(XT::LA::is_matrix<MatrixType>::value, "");
-  return MatrixOperator<GV, r, rC, r, rC, F, MatrixType, GV, GV>(
-      space.grid_view(),
-      space,
-      space,
-      new MatrixType(
-          space.mapper().size(), space.mapper().size(), make_sparsity_pattern(space, stencil), internal::assembly_num_mutexes()),
-      logging_prefix);
+  return MatrixOperator<GV, r, rC, r, rC, F, MatrixType, GV, GV>(space.grid_view(),
+                                                                 space,
+                                                                 space,
+                                                                 new MatrixType(space.mapper().size(),
+                                                                                space.mapper().size(),
+                                                                                make_sparsity_pattern(space, stencil),
+                                                                                internal::assembly_num_mutexes()),
+                                                                 logging_prefix);
 } // ... make_matrix_operator(...)
 
 

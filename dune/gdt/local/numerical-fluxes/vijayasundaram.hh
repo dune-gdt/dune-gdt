@@ -123,8 +123,7 @@ public:
                   const PhysicalDomainType& n,
                   const XT::Common::Parameter& param = {}) const override final
   {
-    DUNE_THROW(Dune::NotImplemented,
-               "The Vijayasundaram flux is currently disabled (see the commented code below)!");
+    DUNE_THROW(Dune::NotImplemented, "The Vijayasundaram flux is currently disabled (see the commented code below)!");
     // compute decomposition
     //! TODO: re-enable
     // this->compute_entity_coords(x);
