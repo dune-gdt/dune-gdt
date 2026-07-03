@@ -16,6 +16,9 @@
 #ifndef DUNE_GDT_LOCAL_BILINEAR_FORMS_INTEGRALS_HH
 #define DUNE_GDT_LOCAL_BILINEAR_FORMS_INTEGRALS_HH
 
+#include <type_traits>
+#include <utility>
+
 #include <dune/geometry/quadraturerules.hh>
 
 #include <dune/gdt/local/integrands/interfaces.hh>
@@ -144,6 +147,129 @@ private:
   const int over_integrate_;
   mutable DynamicMatrix<F> integrand_values_;
 }; // class LocalElementIntegralBilinearForm
+
+
+/**
+ * \brief Statically dispatched variant of LocalElementIntegralBilinearForm.
+ *
+ * While LocalElementIntegralBilinearForm calls its type-erased integrand through a pure-virtual evaluate() once per
+ * quadrature point (which the compiler can neither inline nor vectorize across), this variant keeps the concrete
+ * integrand as a template parameter and by value, and calls it via qualified (hence non-virtual) calls. Type erasure
+ * is thereby confined to the API boundary: this class still implements LocalElementBilinearFormInterface, so it can
+ * be appended to operators and assemblers like any other local bilinear form, at the cost of one virtual apply2()
+ * per element instead of several virtual calls per quadrature point (review D1).
+ *
+ * \sa make_local_element_integral_bilinear_form
+ */
+template <class Integrand>
+class StaticLocalElementIntegralBilinearForm
+  : public LocalElementBilinearFormInterface<typename Integrand::E,
+                                             Integrand::t_r,
+                                             Integrand::t_rC,
+                                             typename Integrand::TR,
+                                             typename Integrand::F,
+                                             Integrand::a_r,
+                                             Integrand::a_rC,
+                                             typename Integrand::AR>
+{
+  static_assert(std::is_base_of_v<LocalBinaryElementIntegrandInterface<typename Integrand::E,
+                                                                       Integrand::t_r,
+                                                                       Integrand::t_rC,
+                                                                       typename Integrand::TR,
+                                                                       typename Integrand::F,
+                                                                       Integrand::a_r,
+                                                                       Integrand::a_rC,
+                                                                       typename Integrand::AR>,
+                                  Integrand>,
+                "Integrand has to implement LocalBinaryElementIntegrandInterface!");
+
+  using ThisType = StaticLocalElementIntegralBilinearForm;
+  using BaseType = LocalElementBilinearFormInterface<typename Integrand::E,
+                                                     Integrand::t_r,
+                                                     Integrand::t_rC,
+                                                     typename Integrand::TR,
+                                                     typename Integrand::F,
+                                                     Integrand::a_r,
+                                                     Integrand::a_rC,
+                                                     typename Integrand::AR>;
+
+public:
+  using BaseType::d;
+  using typename BaseType::D;
+  using typename BaseType::F;
+  using typename BaseType::LocalAnsatzBasisType;
+  using typename BaseType::LocalTestBasisType;
+
+  using IntegrandType = Integrand;
+
+  explicit StaticLocalElementIntegralBilinearForm(IntegrandType integrand, const int over_integrate = 0)
+    : BaseType(integrand.parameter_type())
+    , integrand_(std::move(integrand))
+    , over_integrate_(over_integrate)
+  {
+  }
+
+  StaticLocalElementIntegralBilinearForm(const ThisType& other) = default;
+
+  StaticLocalElementIntegralBilinearForm(ThisType&& source) noexcept = default;
+
+  std::unique_ptr<BaseType> copy() const override final
+  {
+    return std::make_unique<ThisType>(*this);
+  }
+
+  using BaseType::apply2;
+
+  void apply2(const LocalTestBasisType& test_basis,
+              const LocalAnsatzBasisType& ansatz_basis,
+              DynamicMatrix<F>& result,
+              const XT::Common::Parameter& param = {}) const override final
+  {
+    // prepare integand
+    const auto& element = ansatz_basis.element();
+    assert(test_basis.element() == element && "This must not happen!");
+    integrand_.bind(element);
+    // prepare storage
+    const size_t rows = test_basis.size(param);
+    const size_t cols = ansatz_basis.size(param);
+    if (result.rows() < rows || result.cols() < cols)
+      result.resize(rows, cols);
+    result *= 0;
+    // loop over all quadrature points (note the qualified calls into the integrand, which suppress virtual dispatch)
+    const auto integrand_order = integrand_.IntegrandType::order(test_basis, ansatz_basis, param) + over_integrate_;
+    const auto quadrature_rule = QuadratureRules<D, d>::rule(element.type(), integrand_order);
+    const auto geometry = element.geometry();
+    for (auto [point_in_reference_element, quadrature_weight] : quadrature_rule) {
+      // integration factors
+      const auto factor = geometry.integrationElement(point_in_reference_element) * quadrature_weight;
+      // evaluate the integrand
+      integrand_.IntegrandType::evaluate(
+          test_basis, ansatz_basis, point_in_reference_element, integrand_values_, param);
+      assert(integrand_values_.rows() >= rows && "This must not happen!");
+      assert(integrand_values_.cols() >= cols && "This must not happen!");
+      // compute integral
+      for (size_t ii = 0; ii < rows; ++ii)
+        for (size_t jj = 0; jj < cols; ++jj)
+          result[ii][jj] += integrand_values_[ii][jj] * factor;
+    } // loop over all quadrature points
+  } // ... apply2(...)
+
+private:
+  mutable IntegrandType integrand_;
+  const int over_integrate_;
+  mutable DynamicMatrix<F> integrand_values_;
+}; // class StaticLocalElementIntegralBilinearForm
+
+
+/**
+ * \brief Creates a StaticLocalElementIntegralBilinearForm, deducing the concrete integrand type.
+ */
+template <class Integrand>
+StaticLocalElementIntegralBilinearForm<Integrand>
+make_local_element_integral_bilinear_form(Integrand integrand, const int over_integrate = 0)
+{
+  return StaticLocalElementIntegralBilinearForm<Integrand>(std::move(integrand), over_integrate);
+}
 
 
 /**
