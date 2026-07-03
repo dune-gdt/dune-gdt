@@ -304,7 +304,7 @@ public:
         std::fill(stages_k_[ii].dofs().vector().begin(), stages_k_[ii].dofs().vector().end(), RangeFieldType(0.));
         u_tmp_.dofs().vector() = u_n.dofs().vector();
         for (size_t jj = 0; jj < ii; ++jj)
-          u_tmp_.dofs().vector() += stages_k_[jj].dofs().vector() * (actual_dt * r_ * (A_[ii][jj]));
+          u_tmp_.dofs().vector().axpy(actual_dt * r_ * A_[ii][jj], stages_k_[jj].dofs().vector());
         try {
           op_.apply(u_tmp_.dofs().vector(), stages_k_[ii].dofs().vector(), t + actual_dt * c_[ii]);
         } catch (const Dune::MathError& e) {
@@ -324,15 +324,16 @@ public:
 
       if (!skip_error_computation) {
         // compute error vector
-        u_tmp_.dofs().vector() = stages_k_[0].dofs().vector() * b_diff_[0];
+        u_tmp_.dofs().vector() = stages_k_[0].dofs().vector();
+        u_tmp_.dofs().vector() *= b_diff_[0];
         for (size_t ii = 1; ii < num_stages_; ++ii)
-          u_tmp_.dofs().vector() += stages_k_[ii].dofs().vector() * b_diff_[ii];
+          u_tmp_.dofs().vector().axpy(b_diff_[ii], stages_k_[ii].dofs().vector());
         u_tmp_.dofs().vector() *= actual_dt * r_;
 
         // calculate u at timestep n+1 (keep a backup to be able to roll back a rejected step exactly)
         u_backup_.dofs().vector() = u_n.dofs().vector();
         for (size_t ii = 0; ii < num_stages_; ++ii)
-          u_n.dofs().vector() += stages_k_[ii].dofs().vector() * (actual_dt * r_ * b_1_[ii]);
+          u_n.dofs().vector().axpy(actual_dt * r_ * b_1_[ii], stages_k_[ii].dofs().vector());
 
         // scale error, use absolute error if norm is less than 0.01 and relative error else
         auto& diff_vector = u_tmp_.dofs().vector();
