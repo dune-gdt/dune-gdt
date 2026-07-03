@@ -467,7 +467,17 @@ public:
 
   void finalize() override final
   {
-    // clear everything after assembling into the matrix
+    // let the local assemblers merge their pending (scatter buffered) contributions into the matrix ...
+    const auto finalize_local_assemblers = [](auto& data_list) {
+      for (auto& data : data_list)
+        std::get<0>(data)->finalize();
+    };
+    finalize_local_assemblers(element_bilinear_form_data_);
+    finalize_local_assemblers(coupling_intersection_bilinear_form_data_);
+    finalize_local_assemblers(intersection_bilinear_form_data_);
+    finalize_local_assemblers(element_fd_operator_data_);
+    finalize_local_assemblers(intersection_fd_operator_data_);
+    // ... and clear everything after assembling into the matrix
     element_bilinear_form_data_.clear();
     coupling_intersection_bilinear_form_data_.clear();
     intersection_bilinear_form_data_.clear();
