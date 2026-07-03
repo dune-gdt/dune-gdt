@@ -293,13 +293,12 @@ protected:
 
 public:
   /**
-   * \note This is not thread-safe without the mutex because operator[] is not thread-safe for the vectors from
-   *dune-xt-la. \todo The mutex here is just a quick fix, properly fix thread safety.
+   * \note Accessing the same global DoF through overlapping local views from several threads concurrently is not safe
+   *       (the returned reference bypasses any synchronization of the underlying vector) -- the caller has to ensure
+   *       exclusive access, e.g. by thread-local accumulation or by scheduling threads on disjoint DoFs.
    **/
   ScalarType& operator[](const size_t ii)
   {
-    static std::mutex mutex;
-    [[maybe_unused]] std::lock_guard<std::mutex> guard{mutex};
     DUNE_THROW_IF(!this->is_bound_, Exceptions::not_bound_to_an_element_yet, "");
     assert(ii < size_);
     return global_vector_[global_DoF_indices_[ii]];
