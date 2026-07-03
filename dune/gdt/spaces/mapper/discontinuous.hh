@@ -92,7 +92,7 @@ public:
 
   size_t size() const override final
   {
-    return std::accumulate(size_.begin(), size_.end(), 0);
+    return std::accumulate(size_.begin(), size_.end(), size_t(0));
   }
 
   size_t max_local_size() const override final
