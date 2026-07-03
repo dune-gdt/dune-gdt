@@ -203,7 +203,7 @@ public:
                      const auto restriction_data_value = restriction_data_as_function_on_child_element.evaluate(x);
                      basis.evaluate(x, child_basis_values);
                      for (size_t ii = 0; ii < basis.size(); ++ii)
-                       result = child_basis_values[ii] * restriction_data_value;
+                       result[ii] = child_basis_values[ii] * restriction_data_value;
                    })
                    .apply(element_basis_on_child_element);
       }
