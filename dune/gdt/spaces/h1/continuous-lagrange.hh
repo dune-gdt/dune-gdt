@@ -68,32 +68,41 @@ private:
   using MapperImplementation = ContinuousMapper<GridViewType, LocalFiniteElementFamilyType>;
   using GlobalBasisImplementation = DefaultGlobalBasis<GridViewType, r, 1, R>;
 
+  /**
+   * Holds everything the read-only interface of this space exposes. The core is shared between all copies of a space
+   * (mapper and basis reference the core's grid view and finite elements, so its address has to be stable anyway),
+   * which makes copy() O(1) instead of a full mapper rebuild over the whole grid view (review A3/C7/D4).
+   */
+  struct Core
+  {
+    Core(GridViewType grd_vw, const int order)
+      : grid_view(std::move(grd_vw))
+      , fe_order(order)
+      , local_finite_elements(std::make_unique<LocalLagrangeFiniteElementFamily<D, d, R, r>>())
+    {
+    }
+
+    const GridViewType grid_view;
+    const int fe_order;
+    std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, r>> local_finite_elements;
+    std::unique_ptr<MapperImplementation> mapper;
+    std::unique_ptr<GlobalBasisImplementation> basis;
+  }; // struct Core
+
 public:
   ContinuousLagrangeSpace(GridViewType grd_vw,
                           const int order,
                           const std::string& logging_prefix = "",
                           const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType(logging_prefix.empty() ? "ContinuousLagrangeSpace" : logging_prefix, logging_state)
-    , grid_view_(grd_vw)
-    , fe_order_(order)
-    , local_finite_elements_(std::make_unique<LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    , mapper_(nullptr)
-    , basis_(nullptr)
+    , core_(std::make_shared<Core>(std::move(grd_vw), order))
   {
-    LOG_(info) << "ContinuousLagrangeSpace(&grd_vw=" << &grd_vw << ", order=" << fe_order_ << ")" << std::endl;
+    LOG_(info) << "ContinuousLagrangeSpace(order=" << order << ")" << std::endl;
     this->update_after_adapt();
   }
 
-  ContinuousLagrangeSpace(const ThisType& other)
-    : BaseType(other)
-    , grid_view_(other.grid_view_)
-    , fe_order_(other.fe_order_)
-    , local_finite_elements_(std::make_unique<LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    , mapper_(nullptr)
-    , basis_(nullptr)
-  {
-    this->update_after_adapt();
-  }
+  /// \note Shares the core (grid view, finite elements, mapper and basis) with other, \sa Core.
+  ContinuousLagrangeSpace(const ThisType&) = default;
 
   ContinuousLagrangeSpace(ThisType&&) noexcept = default;
 
@@ -108,24 +117,24 @@ public:
 
   const GridViewType& grid_view() const final
   {
-    return grid_view_;
+    return core_->grid_view;
   }
 
   const MapperType& mapper() const final
   {
-    assert(mapper_ && "This must not happen!");
-    return *mapper_;
+    assert(core_->mapper && "This must not happen!");
+    return *core_->mapper;
   }
 
   const GlobalBasisType& basis() const final
   {
-    assert(basis_ && "This must not happen!");
-    return *basis_;
+    assert(core_->basis && "This must not happen!");
+    return *core_->basis;
   }
 
   const LocalFiniteElementFamilyType& finite_elements() const final
   {
-    return *local_finite_elements_;
+    return *core_->local_finite_elements;
   }
 
   SpaceType type() const final
@@ -135,12 +144,12 @@ public:
 
   int min_polorder() const final
   {
-    return fe_order_;
+    return core_->fe_order;
   }
 
   int max_polorder() const final
   {
-    return fe_order_;
+    return core_->fe_order;
   }
 
   bool continuous(const int diff_order) const final
@@ -158,34 +167,31 @@ public:
     return true;
   }
 
+  /// \note Updates the shared core, i.e. all copies of this space see the updated mapper and basis.
   void update_after_adapt() final
   {
     // check: the mapper does not work for non-conforming intersections
-    if (d == 3 && grid_view_.indexSet().types(0).size() != 1)
+    if (d == 3 && core_->grid_view.indexSet().types(0).size() != 1)
       DUNE_THROW(Exceptions::space_error,
                  "in ContinuousLagrangeSpace: non-conforming intersections are not (yet) "
                  "supported, and more than one element type in 3d leads to non-conforming intersections!");
     // create/update mapper ...
-    if (mapper_)
-      mapper_->update_after_adapt();
+    if (core_->mapper)
+      core_->mapper->update_after_adapt();
     else
-      mapper_ = std::make_unique<MapperImplementation>(grid_view_, *local_finite_elements_, fe_order_);
+      core_->mapper =
+          std::make_unique<MapperImplementation>(core_->grid_view, *core_->local_finite_elements, core_->fe_order);
     // ... and basis
-    if (basis_)
-      basis_->update_after_adapt();
+    if (core_->basis)
+      core_->basis->update_after_adapt();
     else
-      basis_ = std::make_unique<GlobalBasisImplementation>(grid_view_, *local_finite_elements_, fe_order_);
+      core_->basis =
+          std::make_unique<GlobalBasisImplementation>(core_->grid_view, *core_->local_finite_elements, core_->fe_order);
     this->create_communicator();
   } // ... update_after_adapt(...)
 
 private:
-  const GridViewType grid_view_;
-  const int fe_order_;
-  int min_polorder_;
-  int max_polorder_;
-  std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, r>> local_finite_elements_;
-  std::unique_ptr<MapperImplementation> mapper_;
-  std::unique_ptr<GlobalBasisImplementation> basis_;
+  std::shared_ptr<Core> core_;
 }; // class ContinuousLagrangeSpace
 
 
