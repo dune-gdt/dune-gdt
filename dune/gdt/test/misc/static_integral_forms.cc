@@ -61,21 +61,21 @@ struct StaticIntegralFormsTest : public ::testing::Test
 
 TEST_F(StaticIntegralFormsTest, laplace_bilinear_form_matches_type_erased_variant)
 {
-  const LocalElementIntegralBilinearForm<E> dynamic_form(LocalLaplaceIntegrand<E>());
+  const LocalElementIntegralBilinearForm<E> dynamic_form{LocalLaplaceIntegrand<E>()};
   const auto static_form = make_local_element_integral_bilinear_form(LocalLaplaceIntegrand<E>());
   this->expect_same_local_matrices(dynamic_form, static_form);
 }
 
 TEST_F(StaticIntegralFormsTest, product_bilinear_form_matches_type_erased_variant)
 {
-  const LocalElementIntegralBilinearForm<E> dynamic_form(LocalElementProductIntegrand<E>());
+  const LocalElementIntegralBilinearForm<E> dynamic_form{LocalElementProductIntegrand<E>()};
   const auto static_form = make_local_element_integral_bilinear_form(LocalElementProductIntegrand<E>());
   this->expect_same_local_matrices(dynamic_form, static_form);
 }
 
 TEST_F(StaticIntegralFormsTest, static_bilinear_form_works_through_the_type_erased_interface)
 {
-  const LocalElementIntegralBilinearForm<E> dynamic_form(LocalLaplaceIntegrand<E>());
+  const LocalElementIntegralBilinearForm<E> dynamic_form{LocalLaplaceIntegrand<E>()};
   const auto static_form = make_local_element_integral_bilinear_form(LocalLaplaceIntegrand<E>());
   // erase the type, as operators and assemblers do
   const auto erased_copy = static_form.copy();
