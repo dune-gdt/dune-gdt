@@ -81,9 +81,10 @@ public:
   {
     this->compute_entity_coords(x_in_intersection_coords);
     auto integrate_f = [&](const LocalFluxType& local_flux, const auto& x, const auto& s, const auto& min_max) {
-      if (!(s[0] > 0.))
+      if (s[0] == 0.)
         return 0.;
-      // integrate over the state interval [0, s[0]] by mapping a reference line quadrature affinely
+      // integrate over the state interval [0, s[0]] by mapping a reference line quadrature affinely; for negative
+      // states the scaling by s[0] yields the correctly oriented integral
       double ret = 0.;
       const auto quadrature_rule_state = QuadratureRules<R, 1>::rule(GeometryTypes::line, local_flux.order(param));
       for (const auto& quadrature_point : quadrature_rule_state) {
