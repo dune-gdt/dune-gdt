@@ -27,6 +27,48 @@
 
 namespace Dune {
 namespace GDT {
+namespace internal {
+
+
+/**
+ * \brief COO staging buffer for the matrix assemblers below.
+ *
+ * Each assembler functor (and thus each thread, since the grid walker copies functors per thread) stages its
+ * contributions here instead of scattering scalars into the global matrix under its entry locks (review A2/D2). The
+ * walker calls finalize() on every functor copy sequentially after the walk, so the bulk of the scatter is merged
+ * lock-free; buffers overflowing the size cap are flushed during the walk, where thread safety rests on the internal
+ * locking of Matrix::add_to_entry.
+ */
+template <class Matrix>
+class MatrixScatterBuffer
+{
+  static_assert(XT::LA::is_matrix<Matrix>::value, "");
+  using FieldType = typename Matrix::ScalarType;
+
+public:
+  void stage(const size_t ii, const size_t jj, const FieldType& value, Matrix& matrix)
+  {
+    entries_.emplace_back(ii, jj, value);
+    if (entries_.size() >= max_pending_entries)
+      this->flush(matrix);
+  }
+
+  void flush(Matrix& matrix)
+  {
+    for (const auto& [ii, jj, value] : entries_)
+      matrix.add_to_entry(ii, jj, value);
+    entries_.clear();
+  }
+
+private:
+  //! bounds the memory held between flushes (~6 MiB at 24 bytes/entry)
+  static constexpr size_t max_pending_entries = 1 << 18;
+
+  std::vector<std::tuple<size_t, size_t, FieldType>> entries_;
+}; // class MatrixScatterBuffer
+
+
+} // namespace internal
 
 
 template <class Matrix,
@@ -134,32 +176,17 @@ public:
     ansatz_space_->mapper().global_indices(element, global_ansatz_indices_);
     for (size_t ii = 0; ii < test_basis_->size(param_); ++ii)
       for (size_t jj = 0; jj < ansatz_basis_->size(param_); ++jj)
-        scatter_.emplace_back(global_test_indices_[ii], global_ansatz_indices_[jj], scaling_ * local_matrix_[ii][jj]);
-    if (scatter_.size() >= max_pending_scatter_entries)
-      flush_scatter();
+        scatter_.stage(
+            global_test_indices_[ii], global_ansatz_indices_[jj], scaling_ * local_matrix_[ii][jj], global_matrix_);
   } // ... apply_local(...)
 
-  /**
-   * Merges this functor's pending contributions into the global matrix. Called by the grid walker once per functor
-   * copy after the walk (sequentially, so the bulk of the scatter is lock-free); overflowing buffers are flushed
-   * during the walk, where thread safety rests on the internal locking of MatrixType::add_to_entry.
-   */
+  //! merges this functor's pending contributions into the global matrix, \sa internal::MatrixScatterBuffer
   void finalize() override final
   {
-    flush_scatter();
+    scatter_.flush(global_matrix_);
   }
 
 private:
-  void flush_scatter()
-  {
-    for (const auto& [ii, jj, value] : scatter_)
-      global_matrix_.add_to_entry(ii, jj, value);
-    scatter_.clear();
-  }
-
-  //! bounds the memory held between flushes (~6 MiB at 24 bytes/entry)
-  static constexpr size_t max_pending_scatter_entries = 1 << 18;
-
   const std::unique_ptr<TestSpaceType> test_space_;
   const std::unique_ptr<AnsatzSpaceType> ansatz_space_;
   const std::unique_ptr<LocalBilinearFormType> local_bilinear_form_;
@@ -171,7 +198,7 @@ private:
   DynamicVector<size_t> global_ansatz_indices_;
   mutable std::unique_ptr<typename TestSpaceType::GlobalBasisType::LocalizedType> test_basis_;
   mutable std::unique_ptr<typename AnsatzSpaceType::GlobalBasisType::LocalizedType> ansatz_basis_;
-  std::vector<std::tuple<size_t, size_t, FieldType>> scatter_;
+  internal::MatrixScatterBuffer<MatrixType> scatter_;
 }; // class LocalElementBilinearFormAssembler
 
 
@@ -299,45 +326,37 @@ public:
     ansatz_space_->mapper().global_indices(outside_element, global_ansatz_indices_out_);
     for (size_t ii = 0; ii < test_basis_inside_->size(param_); ++ii) {
       for (size_t jj = 0; jj < ansatz_basis_inside_->size(param_); ++jj)
-        scatter_.emplace_back(
-            global_test_indices_in_[ii], global_ansatz_indices_in_[jj], scaling_ * local_matrix_in_in_[ii][jj]);
+        scatter_.stage(global_test_indices_in_[ii],
+                       global_ansatz_indices_in_[jj],
+                       scaling_ * local_matrix_in_in_[ii][jj],
+                       global_matrix_);
       for (size_t jj = 0; jj < ansatz_basis_outside_->size(param_); ++jj)
-        scatter_.emplace_back(
-            global_test_indices_in_[ii], global_ansatz_indices_out_[jj], scaling_ * local_matrix_in_out_[ii][jj]);
+        scatter_.stage(global_test_indices_in_[ii],
+                       global_ansatz_indices_out_[jj],
+                       scaling_ * local_matrix_in_out_[ii][jj],
+                       global_matrix_);
     }
     for (size_t ii = 0; ii < test_basis_outside_->size(param_); ++ii) {
       for (size_t jj = 0; jj < ansatz_basis_inside_->size(param_); ++jj)
-        scatter_.emplace_back(
-            global_test_indices_out_[ii], global_ansatz_indices_in_[jj], scaling_ * local_matrix_out_in_[ii][jj]);
+        scatter_.stage(global_test_indices_out_[ii],
+                       global_ansatz_indices_in_[jj],
+                       scaling_ * local_matrix_out_in_[ii][jj],
+                       global_matrix_);
       for (size_t jj = 0; jj < ansatz_basis_outside_->size(param_); ++jj)
-        scatter_.emplace_back(
-            global_test_indices_out_[ii], global_ansatz_indices_out_[jj], scaling_ * local_matrix_out_out_[ii][jj]);
+        scatter_.stage(global_test_indices_out_[ii],
+                       global_ansatz_indices_out_[jj],
+                       scaling_ * local_matrix_out_out_[ii][jj],
+                       global_matrix_);
     }
-    if (scatter_.size() >= max_pending_scatter_entries)
-      flush_scatter();
   } // ... apply_local(...)
 
-  /**
-   * Merges this functor's pending contributions into the global matrix. Called by the grid walker once per functor
-   * copy after the walk (sequentially, so the bulk of the scatter is lock-free); overflowing buffers are flushed
-   * during the walk, where thread safety rests on the internal locking of MatrixType::add_to_entry.
-   */
+  //! merges this functor's pending contributions into the global matrix, \sa internal::MatrixScatterBuffer
   void finalize() override final
   {
-    flush_scatter();
+    scatter_.flush(global_matrix_);
   }
 
 private:
-  void flush_scatter()
-  {
-    for (const auto& [ii, jj, value] : scatter_)
-      global_matrix_.add_to_entry(ii, jj, value);
-    scatter_.clear();
-  }
-
-  //! bounds the memory held between flushes (~6 MiB at 24 bytes/entry)
-  static constexpr size_t max_pending_scatter_entries = 1 << 18;
-
   const std::unique_ptr<TestSpaceType> test_space_;
   const std::unique_ptr<AnsatzSpaceType> ansatz_space_;
   const std::unique_ptr<LocalBilinearFormType> local_bilinear_form_;
@@ -356,7 +375,7 @@ private:
   mutable std::unique_ptr<typename TestSpaceType::GlobalBasisType::LocalizedType> test_basis_outside_;
   mutable std::unique_ptr<typename AnsatzSpaceType::GlobalBasisType::LocalizedType> ansatz_basis_inside_;
   mutable std::unique_ptr<typename AnsatzSpaceType::GlobalBasisType::LocalizedType> ansatz_basis_outside_;
-  std::vector<std::tuple<size_t, size_t, FieldType>> scatter_;
+  internal::MatrixScatterBuffer<MatrixType> scatter_;
 }; // class LocalCouplingIntersectionBilinearFormAssembler
 
 
@@ -457,32 +476,17 @@ public:
     ansatz_space_->mapper().global_indices(element, global_ansatz_indices_);
     for (size_t ii = 0; ii < test_basis_->size(param_); ++ii)
       for (size_t jj = 0; jj < ansatz_basis_->size(param_); ++jj)
-        scatter_.emplace_back(global_test_indices_[ii], global_ansatz_indices_[jj], scaling_ * local_matrix_[ii][jj]);
-    if (scatter_.size() >= max_pending_scatter_entries)
-      flush_scatter();
+        scatter_.stage(
+            global_test_indices_[ii], global_ansatz_indices_[jj], scaling_ * local_matrix_[ii][jj], global_matrix_);
   } // ... apply_local(...)
 
-  /**
-   * Merges this functor's pending contributions into the global matrix. Called by the grid walker once per functor
-   * copy after the walk (sequentially, so the bulk of the scatter is lock-free); overflowing buffers are flushed
-   * during the walk, where thread safety rests on the internal locking of MatrixType::add_to_entry.
-   */
+  //! merges this functor's pending contributions into the global matrix, \sa internal::MatrixScatterBuffer
   void finalize() override final
   {
-    flush_scatter();
+    scatter_.flush(global_matrix_);
   }
 
 private:
-  void flush_scatter()
-  {
-    for (const auto& [ii, jj, value] : scatter_)
-      global_matrix_.add_to_entry(ii, jj, value);
-    scatter_.clear();
-  }
-
-  //! bounds the memory held between flushes (~6 MiB at 24 bytes/entry)
-  static constexpr size_t max_pending_scatter_entries = 1 << 18;
-
   const std::unique_ptr<TestSpaceType> test_space_;
   const std::unique_ptr<AnsatzSpaceType> ansatz_space_;
   const std::unique_ptr<LocalBilinearFormType> local_bilinear_form_;
@@ -494,7 +498,7 @@ private:
   DynamicVector<size_t> global_ansatz_indices_;
   mutable std::unique_ptr<typename TestSpaceType::GlobalBasisType::LocalizedType> test_basis_;
   mutable std::unique_ptr<typename AnsatzSpaceType::GlobalBasisType::LocalizedType> ansatz_basis_;
-  std::vector<std::tuple<size_t, size_t, FieldType>> scatter_;
+  internal::MatrixScatterBuffer<MatrixType> scatter_;
 }; // class LocalIntersectionBilinearFormAssembler
 
 
