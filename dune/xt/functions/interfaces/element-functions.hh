@@ -588,10 +588,10 @@ public:
     // prepare result
     RangeSelector::ensure_size(result);
     // call actual evaluate
-    auto tmp_result = std::make_unique<std::vector<RangeType>>(1);
-    this->evaluate(point_in_reference_element, *tmp_result, param);
+    std::vector<RangeType> tmp_result(1);
+    this->evaluate(point_in_reference_element, tmp_result, param);
     // convert
-    RangeSelector::convert((*tmp_result)[0], result);
+    RangeSelector::convert(tmp_result[0], result);
   } // ... evaluate(...)
 
   virtual void jacobian(const DomainType& point_in_reference_element,
@@ -601,10 +601,10 @@ public:
     // prepare result
     DerivativeRangeSelector::ensure_size(result);
     // call actual jacobians
-    auto tmp_result = std::make_unique<std::vector<DerivativeRangeType>>(1);
-    this->jacobians(point_in_reference_element, *tmp_result, param);
+    std::vector<DerivativeRangeType> tmp_result(1);
+    this->jacobians(point_in_reference_element, tmp_result, param);
     // convert
-    DerivativeRangeSelector::convert((*tmp_result)[0], result);
+    DerivativeRangeSelector::convert(tmp_result[0], result);
   } // ... jacobians(...)
 
   virtual void derivative(const std::array<size_t, d>& alpha,
@@ -615,10 +615,10 @@ public:
     // prepare result
     DerivativeRangeSelector::ensure_size(result);
     // call actual derivatives
-    auto tmp_result = std::make_unique<std::vector<DerivativeRangeType>>(1);
-    this->derivatives(alpha, point_in_reference_element, *tmp_result, param);
+    std::vector<DerivativeRangeType> tmp_result(1);
+    this->derivatives(alpha, point_in_reference_element, tmp_result, param);
     // convert
-    DerivativeRangeSelector::convert((*tmp_result)[0], result);
+    DerivativeRangeSelector::convert(tmp_result[0], result);
   } // ... derivatives(...)
 
   /**
