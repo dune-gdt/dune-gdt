@@ -18,6 +18,7 @@
 #define DUNE_GDT_OPERATORS_MATRIX_HH
 
 #include <dune/xt/common/memory.hh>
+#include <dune/xt/common/parallel/threadmanager.hh>
 #include <dune/xt/common/type_traits.hh>
 #include <dune/xt/la/container.hh>
 #include <dune/xt/la/container/matrix-interface.hh>
@@ -629,6 +630,20 @@ auto make_matrix_operator(const SpaceInterface<GV, r, rC, F>& space,
 }
 
 
+namespace internal {
+
+
+//! Stripe the entry-wise locks of an assembled matrix over the available threads (\sa XT::LA::internal::LockGuard),
+//! instead of serializing all threads' writes through the single default mutex.
+inline size_t assembly_num_mutexes()
+{
+  return XT::Common::threadManager().max_threads();
+}
+
+
+} // namespace internal
+
+
 /// \}
 /// \name Variants of make_matrix_operator, where an appropriate matrix is created from a given pattern
 /// \{
@@ -646,7 +661,7 @@ auto make_matrix_operator(const AssemblyGridViewType& assembly_grid_view,
       assembly_grid_view,
       source_space,
       range_space,
-      new M(range_space.mapper().size(), source_space.mapper().size(), pattern),
+      new M(range_space.mapper().size(), source_space.mapper().size(), pattern, internal::assembly_num_mutexes()),
       logging_prefix);
 } // ... make_matrix_operator(...)
 
@@ -677,7 +692,8 @@ auto make_matrix_operator(const AssemblyGridViewType& assembly_grid_view,
       assembly_grid_view,
       source_space,
       range_space,
-      new MatrixType(range_space.mapper().size(), source_space.mapper().size(), pattern),
+      new MatrixType(
+          range_space.mapper().size(), source_space.mapper().size(), pattern, internal::assembly_num_mutexes()),
       logging_prefix);
 } // ... make_matrix_operator(...)
 
@@ -689,7 +705,11 @@ auto make_matrix_operator(const SpaceInterface<GV, r, rC, F>& space,
 {
   using M = XT::LA::IstlRowMajorSparseMatrix<F>;
   return MatrixOperator<GV, r, rC, r, rC, F, M, GV, GV>(
-      space.grid_view(), space, space, new M(space.mapper().size(), space.mapper().size(), pattern), logging_prefix);
+      space.grid_view(),
+      space,
+      space,
+      new M(space.mapper().size(), space.mapper().size(), pattern, internal::assembly_num_mutexes()),
+      logging_prefix);
 }
 
 
@@ -709,7 +729,7 @@ auto make_matrix_operator(const SpaceInterface<GV, r, rC, F>& space,
       space.grid_view(),
       space,
       space,
-      new MatrixType(space.mapper().size(), space.mapper().size(), pattern),
+      new MatrixType(space.mapper().size(), space.mapper().size(), pattern, internal::assembly_num_mutexes()),
       logging_prefix);
 } // ... make_matrix_operator(...)
 
@@ -733,7 +753,8 @@ auto make_matrix_operator(const AssemblyGridViewType& assembly_grid_view,
       range_space,
       new M(range_space.mapper().size(),
             source_space.mapper().size(),
-            make_sparsity_pattern(range_space, source_space, assembly_grid_view, stencil)),
+            make_sparsity_pattern(range_space, source_space, assembly_grid_view, stencil),
+            internal::assembly_num_mutexes()),
       logging_prefix);
 } // ... make_matrix_operator(...)
 
@@ -766,7 +787,8 @@ auto make_matrix_operator(const AssemblyGridViewType& assembly_grid_view,
       range_space,
       new MatrixType(range_space.mapper().size(),
                      source_space.mapper().size(),
-                     make_sparsity_pattern(range_space, source_space, assembly_grid_view, stencil)),
+                     make_sparsity_pattern(range_space, source_space, assembly_grid_view, stencil),
+                     internal::assembly_num_mutexes()),
       logging_prefix);
 } // ... make_matrix_operator(...)
 
@@ -781,7 +803,7 @@ auto make_matrix_operator(const SpaceInterface<GV, r, rC, F>& space,
       space.grid_view(),
       space,
       space,
-      new M(space.mapper().size(), space.mapper().size(), make_sparsity_pattern(space, stencil)),
+      new M(space.mapper().size(), space.mapper().size(), make_sparsity_pattern(space, stencil), internal::assembly_num_mutexes()),
       logging_prefix);
 } // ... make_matrix_operator(...)
 
@@ -802,7 +824,8 @@ auto make_matrix_operator(const SpaceInterface<GV, r, rC, F>& space,
       space.grid_view(),
       space,
       space,
-      new MatrixType(space.mapper().size(), space.mapper().size(), make_sparsity_pattern(space, stencil)),
+      new MatrixType(
+          space.mapper().size(), space.mapper().size(), make_sparsity_pattern(space, stencil), internal::assembly_num_mutexes()),
       logging_prefix);
 } // ... make_matrix_operator(...)
 
