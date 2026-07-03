@@ -38,7 +38,7 @@ auto L2Product(const GridViewType& grid_view,
   static_assert(XT::Grid::is_view<GridViewType>::value, "");
   using E = XT::Grid::extract_entity_t<GridViewType>;
   auto product = make_bilinear_form<r, 1, r, 1>(grid_view);
-  product += LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>(weight), over_integrate);
+  product += make_local_element_integral_bilinear_form(LocalProductIntegrand<E, r>(weight), over_integrate);
   return product;
 }
 
@@ -68,7 +68,7 @@ auto H1SemiProduct(const GridViewType& grid_view,
   static_assert(XT::Grid::is_view<GridViewType>::value, "");
   using E = XT::Grid::extract_entity_t<GridViewType>;
   auto product = make_bilinear_form<r, 1, r, 1>(grid_view);
-  product += LocalElementIntegralBilinearForm<E, r>(LocalLaplaceIntegrand<E, r>(weight), over_integrate);
+  product += make_local_element_integral_bilinear_form(LocalLaplaceIntegrand<E, r>(weight), over_integrate);
   return product;
 }
 
@@ -99,8 +99,8 @@ auto H1Product(const GridViewType& grid_view,
   static_assert(XT::Grid::is_view<GridViewType>::value, "");
   using E = XT::Grid::extract_entity_t<GridViewType>;
   auto product = make_bilinear_form<r, 1, r, 1>(grid_view);
-  product += LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>(l2_weight), over_integrate);
-  product += LocalElementIntegralBilinearForm<E, r>(LocalLaplaceIntegrand<E, r>(h1_semi_weight), over_integrate);
+  product += make_local_element_integral_bilinear_form(LocalProductIntegrand<E, r>(l2_weight), over_integrate);
+  product += make_local_element_integral_bilinear_form(LocalLaplaceIntegrand<E, r>(h1_semi_weight), over_integrate);
   return product;
 }
 
@@ -118,8 +118,8 @@ H1Product(const GridViewType& grid_view,
   static_assert(XT::Grid::is_view<GridViewType>::value, "");
   using E = XT::Grid::extract_entity_t<GridViewType>;
   auto product = make_bilinear_form<r, 1, r, 1>(grid_view);
-  product += LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>(weight), over_integrate);
-  product += LocalElementIntegralBilinearForm<E, r>(LocalLaplaceIntegrand<E, r>(weight), over_integrate);
+  product += make_local_element_integral_bilinear_form(LocalProductIntegrand<E, r>(weight), over_integrate);
+  product += make_local_element_integral_bilinear_form(LocalLaplaceIntegrand<E, r>(weight), over_integrate);
   return product;
 }
 
@@ -137,8 +137,8 @@ H1Product(const GridViewType& grid_view,
   static_assert(XT::Grid::is_view<GridViewType>::value, "");
   using E = XT::Grid::extract_entity_t<GridViewType>;
   auto product = make_bilinear_form<r, 1, r, 1>(grid_view);
-  product += LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>(weight), over_integrate);
-  product += LocalElementIntegralBilinearForm<E, r>(LocalLaplaceIntegrand<E, r>(weight), over_integrate);
+  product += make_local_element_integral_bilinear_form(LocalProductIntegrand<E, r>(weight), over_integrate);
+  product += make_local_element_integral_bilinear_form(LocalLaplaceIntegrand<E, r>(weight), over_integrate);
   return product;
 }
 

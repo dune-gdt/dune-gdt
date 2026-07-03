@@ -90,8 +90,8 @@ public:
   {
     local_basis_->bind(element);
     const size_t id = element_mapper_.global_index(element, 0);
-    const LocalElementIntegralBilinearForm<E, r, rC, F, F> local_l2_bilinear_form(
-        LocalProductIntegrand<E, r, F, F>(1.));
+    const auto local_l2_bilinear_form =
+        make_local_element_integral_bilinear_form(LocalProductIntegrand<E, r, F, F>(1.));
     auto matrix =
         XT::LA::convert_to<XT::LA::CommonDenseMatrix<F>>(local_l2_bilinear_form.apply2(*local_basis_, *local_basis_));
     auto inverse = XT::LA::invert_matrix(matrix);
