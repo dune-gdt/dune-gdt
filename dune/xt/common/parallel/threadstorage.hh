@@ -402,6 +402,8 @@ public:
   void finalize_imp()
   {
     Reduction reduce;
+    // all thread-local copies share base_, so the read-modify-write has to be serialized via the base's mutex
+    const std::lock_guard<std::mutex> guard(base_->mutex_);
     base_->set_result(reduce(base_->result(), imp_->result()));
   }
 
