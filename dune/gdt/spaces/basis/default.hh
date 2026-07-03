@@ -16,6 +16,11 @@
 #ifndef DUNE_GDT_SPACES_BASIS_DEFAULT_HH
 #define DUNE_GDT_SPACES_BASIS_DEFAULT_HH
 
+#include <algorithm>
+#include <map>
+#include <utility>
+#include <vector>
+
 #include <dune/xt/common/memory.hh>
 #include <dune/xt/functions/interfaces/grid-function.hh>
 
@@ -146,23 +151,59 @@ private:
     using BaseType::evaluate;
     using BaseType::jacobians;
 
+    /**
+     * \note Since the shape functions of a finite element are identical for every element of a geometry type, their
+     *       values at a given point in reference coordinates are cached (per geometry type) and shared between all
+     *       elements this basis is bound to over its lifetime -- quadrature points thus trigger an actual shape
+     *       function evaluation only once (review C3/D3). The cache is per localized basis (which is not shared
+     *       between threads), so no synchronization is required.
+     */
     void evaluate(const DomainType& point_in_reference_element,
                   std::vector<RangeType>& result,
                   const XT::Common::Parameter& /*param*/ = {}) const override final
     {
       DUNE_THROW_IF(!current_local_fe_.valid(), Exceptions::not_bound_to_an_element_yet, "");
       this->assert_inside_reference_element(point_in_reference_element);
+      auto& cache = shape_values_cache_[geometry_type_];
+      for (const auto& [cached_point, cached_values] : cache)
+        if (cached_point == point_in_reference_element) {
+          if (result.size() < size_)
+            result.resize(size_);
+          std::copy(cached_values.begin(), cached_values.end(), result.begin());
+          return;
+        }
       current_local_fe_.access().basis().evaluate(point_in_reference_element, result);
-    }
+      if (cache.size() < max_cached_points_per_geometry_type)
+        cache.emplace_back(point_in_reference_element, std::vector<RangeType>(result.begin(), result.begin() + size_));
+    } // ... evaluate(...)
 
+    /**
+     * \note The element-independent shape function jacobians (in reference coordinates) are cached as in evaluate();
+     *       only the geometry transformation is applied per element (review C3/D3).
+     */
     void jacobians(const DomainType& point_in_reference_element,
                    std::vector<DerivativeRangeType>& result,
                    const XT::Common::Parameter& /*param*/ = {}) const override final
     {
       DUNE_THROW_IF(!current_local_fe_.valid(), Exceptions::not_bound_to_an_element_yet, "");
       this->assert_inside_reference_element(point_in_reference_element);
-      // evaluate jacobian of shape functions
-      current_local_fe_.access().basis().jacobian(point_in_reference_element, result);
+      // evaluate jacobian of shape functions (or look them up in the cache)
+      bool found_in_cache = false;
+      auto& cache = shape_jacobians_cache_[geometry_type_];
+      for (const auto& [cached_point, cached_jacobians] : cache)
+        if (cached_point == point_in_reference_element) {
+          if (result.size() < size_)
+            result.resize(size_);
+          std::copy(cached_jacobians.begin(), cached_jacobians.end(), result.begin());
+          found_in_cache = true;
+          break;
+        }
+      if (!found_in_cache) {
+        current_local_fe_.access().basis().jacobian(point_in_reference_element, result);
+        if (cache.size() < max_cached_points_per_geometry_type)
+          cache.emplace_back(point_in_reference_element,
+                             std::vector<DerivativeRangeType>(result.begin(), result.begin() + size_));
+      }
       // Apply transformation:
       // Let f: E -> R^r be a basis function, and g: E' -> E be the mapping from reference to actual element, then f
       // \circ g is a shape function. We have the chain rule J_f = J(f \circ g \circ g^{-1}) = J(f \circ g) J_g^{-1}.
@@ -213,11 +254,18 @@ private:
     }
 
   private:
+    //! bounds the per-geometry-type memory of the shape value/jacobian caches; quadratures, interpolation points and
+    //! visualization lattices stay well below this in practice
+    static constexpr size_t max_cached_points_per_geometry_type = 256;
+
     const DefaultGlobalBasis<GV, r, rC, R>& self_;
     XT::Common::ConstStorageProvider<LocalFiniteElementInterface<D, d, R, r, rC>> current_local_fe_;
     size_t size_;
     int order_;
     Dune::GeometryType geometry_type_;
+    mutable std::map<GeometryType, std::vector<std::pair<DomainType, std::vector<RangeType>>>> shape_values_cache_;
+    mutable std::map<GeometryType, std::vector<std::pair<DomainType, std::vector<DerivativeRangeType>>>>
+        shape_jacobians_cache_;
   }; // class LocalizedDefaultGlobalBasis
 
   const GridViewType& grid_view_;
