@@ -190,7 +190,7 @@ jobs:
         enable-cache: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     - name: Restore ccache
-      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ github.workspace }}/.ccache
         # run_id makes every save a unique (always-miss) key so each run writes a
@@ -292,7 +292,7 @@ jobs:
       # here as defence-in-depth + to satisfy the cache-poisoning lint on a
       # standalone save step; the job-level `if` already blocks fork PRs.
       if: always() && steps.configure_cmake.outcome == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ github.workspace }}/.ccache
         key: ${{ runner.os }}-ccache-${{ matrix.preset }}-${{ github.run_id }}
@@ -354,7 +354,7 @@ jobs:
       # bind-mount), so the compiler cache survives between runs. Split into
       # restore/save (rather than the unified action) so the write can be gated to
       # trusted contexts, matching build-linux and avoiding cache poisoning.
-      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: build/wheelhouse/cache
         # Unique per-run key so the save below always writes a fresh cache; the
@@ -414,7 +414,7 @@ jobs:
       # repeated here as defence-in-depth (and to satisfy the cache-poisoning lint
       # on a standalone save step).
       if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: build/wheelhouse/cache
         key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
