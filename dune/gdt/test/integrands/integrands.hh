@@ -165,7 +165,6 @@ struct IntegrandTest : public ::testing::Test
     DUNE_THROW(Dune::InvalidStateException, "No boundary intersection found in grid!");
   }
 
-  // Returns a constant-1 scalar basis function set (size=1, order=0) for use in tests.
   std::shared_ptr<LocalScalarBasisType> make_const_basis() const
   {
     return std::make_shared<LocalScalarBasisType>(
@@ -176,8 +175,6 @@ struct IntegrandTest : public ::testing::Test
         });
   }
 
-  // Execute callable(gv, el, is) on the first interior (neighbor) intersection found in the
-  // grid.  Returns true if such an intersection was found, false if the grid has none.
   template <class Callable>
   bool with_first_interior_intersection(Callable&& callable) const
   {
@@ -193,7 +190,6 @@ struct IntegrandTest : public ::testing::Test
     return false;
   }
 
-  // Execute callable(gv, el, is) for every intersection of the first grid element.
   template <class Callable>
   void for_each_intersection_of_first_element(Callable&& callable) const
   {
@@ -203,9 +199,6 @@ struct IntegrandTest : public ::testing::Test
       callable(gv, el, is);
   }
 
-  // Find the first interior intersection, construct two const-1 bases bound to the inside/outside
-  // elements, and invoke callable(is, basis_in, basis_out).  Returns true if such an intersection
-  // was found.  Avoids repeating the el_out / basis setup boilerplate in coupling tests.
   template <class Callable>
   bool with_first_coupling_intersection(Callable&& callable) const
   {
@@ -217,6 +210,46 @@ struct IntegrandTest : public ::testing::Test
       basis_out->bind(el_out);
       callable(is, *basis_in, *basis_out);
     });
+  }
+
+  template <class UnaryIntegrandType, class BasisType>
+  void check_unary_clone_matches(UnaryIntegrandType& integrand, const BasisType& basis)
+  {
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    auto clone = integrand.copy_as_unary_element_integrand();
+    clone->bind(element);
+    const auto order = integrand.order(basis);
+    const size_t n = basis.size();
+    DynamicVector<double> result_orig(n, 0.), result_clone(n, 0.);
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
+      const auto& x = qp.position();
+      integrand.evaluate(basis, x, result_orig);
+      clone->evaluate(basis, x, result_clone);
+      for (size_t ii = 0; ii < n; ++ii)
+        EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
+    }
+  }
+
+  template <class BinaryIntegrandType>
+  void check_binary_clone_matches(BinaryIntegrandType& integrand)
+  {
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    auto clone = integrand.copy_as_binary_element_integrand();
+    clone->bind(element);
+    const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
+    DynamicMatrix<double> result_orig(2, 2, 0.), result_clone(2, 2, 0.);
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
+      const auto& x = qp.position();
+      integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result_orig);
+      clone->evaluate(*scalar_test_, *scalar_ansatz_, x, result_clone);
+      for (size_t ii = 0; ii < 2; ++ii)
+        for (size_t jj = 0; jj < 2; ++jj)
+          EXPECT_DOUBLE_EQ(result_orig[ii][jj], result_clone[ii][jj]);
+    }
   }
 
   virtual void is_constructable() = 0;

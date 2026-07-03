@@ -189,7 +189,8 @@ protected:
               // approximate minimum eigenvalue of the diffusion over the element ...
               double min_EV = std::numeric_limits<double>::max();
               // ... which we do by evaluating at some quadrature points
-              for (auto&& quadrature_point : QuadratureRules<double, d>::rule(element.type(), local_df->order() + 3)) {
+              const auto quadrature_rule_df = QuadratureRules<double, d>::rule(element.type(), local_df->order() + 3);
+              for (auto&& quadrature_point : quadrature_rule_df) {
                 auto diff = local_df->evaluate(quadrature_point.position());
                 auto eigen_solver =
                     XT::LA::make_eigen_solver(diff,

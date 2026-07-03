@@ -19,7 +19,7 @@ permissions:
 jobs:
   benchmarks:
     name: Build and run benchmarks (Release)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
 
     steps:
@@ -31,6 +31,11 @@ jobs:
         submodules: recursive
         fetch-tags: true
         fetch-depth: 0
+
+    - name: Free disk space
+      # vcpkg builds every dependency from source; the runner's preinstalled SDKs
+      # (Android, .NET, Haskell, ...) are unused here and just eat into that budget.
+      run: ./.ci/free_disk_space.bash
 
     # The build/ tree and .vcpkg-root toolchain are intentionally NOT cached (see
     # non_docker_build.yml): a corrupted restore was repeatedly failing builds, so

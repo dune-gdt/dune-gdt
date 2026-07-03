@@ -162,6 +162,12 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
 
+    - name: Free disk space
+      # vcpkg builds every dependency from source and this leg additionally keeps a
+      # coverage-instrumented build tree; the runner's preinstalled SDKs (Android,
+      # .NET, Haskell, ...) are unused here and just eat into that budget.
+      run: ./.ci/free_disk_space.bash
+
     # The build/ tree and .vcpkg-root toolchain are intentionally NOT cached: a
     # corrupted restore was repeatedly failing the build (vcpkg configure dying
     # early on a half-written toolchain/installed tree). Each run bootstraps vcpkg
@@ -336,6 +342,12 @@ jobs:
         submodules: recursive
         fetch-tags: true
         fetch-depth: 0
+
+    - name: Free disk space
+      # vcpkg builds every dependency from source and the LTO release bindings spill
+      # link scratch to /tmp; the runner's preinstalled SDKs (Android, .NET, Haskell,
+      # ...) are unused here and just eat into that budget.
+      run: ./.ci/free_disk_space.bash
 
     - name: Restore wheel-build ccache
       # build-wheels.sh sets CCACHE_DIR to build/wheelhouse/cache (on the host

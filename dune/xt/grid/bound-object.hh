@@ -96,8 +96,6 @@ public:
 
   ThisType& bind(const ElementType& ele)
   {
-    if (element_ && ele == *element_)
-      return *this;
     element_ = std::make_unique<ElementType>(ele);
     is_bound_ = true;
     this->post_bind(*element_);

@@ -119,9 +119,10 @@ public:
             local_keys_assosiated_with_intersection.size(), intersection_Pk_basis.size(), 0);
         XT::LA::CommonDenseVector<R> rhs(intersection_Pk_basis.size(), 0);
         // do a face quadrature
-        for (auto&& quadrature_point : QuadratureRules<D, d - 1>::rule(
-                 intersection_geometry_type,
-                 std::max(basis_->order() + intersection_Pk_basis.order(), order + intersection_Pk_basis.order()))) {
+        const auto quadrature_rule_face = QuadratureRules<D, d - 1>::rule(
+            intersection_geometry_type,
+            std::max(basis_->order() + intersection_Pk_basis.order(), order + intersection_Pk_basis.order()));
+        for (auto&& quadrature_point : quadrature_rule_face) {
           const auto point_on_reference_intersection = quadrature_point.position();
           const auto point_in_reference_element =
               reference_element.template geometry<1>(intersection_index).global(point_on_reference_intersection);
@@ -175,9 +176,10 @@ public:
       XT::LA::CommonDenseMatrix<R> lhs(local_keys_assosiated_with_element.size(), element_Pkminus1_basis.size(), 0);
       XT::LA::CommonDenseVector<R> rhs(element_Pkminus1_basis.size(), 0);
       // do a volume quadrature
-      for (auto&& quadrature_point : QuadratureRules<D, d>::rule(
-               this->geometry_type(),
-               std::max(basis_->order() + element_Pkminus1_basis.order(), order + element_Pkminus1_basis.order()))) {
+      const auto quadrature_rule_vol = QuadratureRules<D, d>::rule(
+          this->geometry_type(),
+          std::max(basis_->order() + element_Pkminus1_basis.order(), order + element_Pkminus1_basis.order()));
+      for (auto&& quadrature_point : quadrature_rule_vol) {
         const auto point_in_reference_element = quadrature_point.position();
         const auto quadrature_weight = quadrature_point.weight();
         const auto rt_basis_values = basis_->evaluate(point_in_reference_element);
