@@ -330,12 +330,6 @@ public:
   {
   }
 
-  LocalDiscreteFunction(const SpaceType& spc, DofVectorType& dof_vector, const ElementType& ent)
-    : BaseType(spc, dof_vector, ent)
-    , dof_vector_(dof_vector.localize(ent))
-  {
-  }
-
 protected:
   void post_bind(const ElementType& ent) override final
   {
