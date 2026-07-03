@@ -218,6 +218,7 @@ public:
     , scale_factor_min_(scale_factor_min)
     , scale_factor_max_(scale_factor_max)
     , u_tmp_(BaseType::current_solution())
+    , u_backup_(BaseType::current_solution())
     , A_(A)
     , b_1_(b_1)
     , b_2_(b_2)
@@ -328,7 +329,8 @@ public:
           u_tmp_.dofs().vector() += stages_k_[ii].dofs().vector() * b_diff_[ii];
         u_tmp_.dofs().vector() *= actual_dt * r_;
 
-        // calculate u at timestep n+1
+        // calculate u at timestep n+1 (keep a backup to be able to roll back a rejected step exactly)
+        u_backup_.dofs().vector() = u_n.dofs().vector();
         for (size_t ii = 0; ii < num_stages_; ++ii)
           u_n.dofs().vector() += stages_k_[ii].dofs().vector() * (actual_dt * r_ * b_1_[ii]);
 
@@ -343,10 +345,8 @@ public:
         time_step_scale_factor =
             std::min(std::max(0.9 * std::pow(tol_ / mixed_error, 1.0 / 5.0), scale_factor_min_), scale_factor_max_);
 
-        if (mixed_error > tol_) { // go back from u at timestep n+1 to timestep n
-          for (size_t ii = 0; ii < num_stages_; ++ii)
-            u_n.dofs().vector() += stages_k_[ii].dofs().vector() * (-1.0 * r_ * actual_dt * b_1_[ii]);
-        }
+        if (mixed_error > tol_) // go back from u at timestep n+1 to timestep n
+          u_n.dofs().vector() = u_backup_.dofs().vector();
       }
     } // while (mixed_error > tol_)
     if (!last_stage_of_previous_step_)
@@ -365,6 +365,7 @@ private:
   const RangeFieldType scale_factor_min_;
   const RangeFieldType scale_factor_max_;
   DiscreteFunctionType u_tmp_;
+  DiscreteFunctionType u_backup_;
   const MatrixType A_;
   const VectorType b_1_;
   const VectorType b_2_;
