@@ -68,13 +68,18 @@ public:
   using typename BaseType::SingleDerivativeRangeReturnType;
   using typename BaseType::SingleDerivativeRangeType;
 
+  /**
+   * \note This local view borrows the space (it must not outlive spc, which holds for the usual case of local views
+   *       created by a discrete function) instead of copying it: a per-element view has no business owning a copy of
+   *       the space, and the copy used to make every local_function() call O(#grid elements) (review A3/D4).
+   */
   ConstLocalDiscreteFunction(const SpaceType& spc, const ConstDofVectorType& dof_vector)
     : BaseType()
-    , space_(spc.copy())
-    , space_is_fv_(space_->type() == GDT::SpaceType::finite_volume)
+    , space_(spc)
+    , space_is_fv_(space_.type() == GDT::SpaceType::finite_volume)
     , dof_vector_(dof_vector.localize())
-    , basis_(space_->basis().localize())
-    , basis_values_(space_is_fv_ ? 0 : space_->mapper().max_local_size())
+    , basis_(space_.basis().localize())
+    , basis_values_(space_is_fv_ ? 0 : space_.mapper().max_local_size())
     , dynamic_basis_values_(basis_values_.size())
     , basis_derivatives_(basis_values_.size())
     , dynamic_basis_derivatives_(basis_values_.size())
@@ -100,7 +105,7 @@ public:
 
   const SpaceType& space() const
   {
-    return *space_;
+    return space_;
   }
 
   const LocalBasisType& basis() const
@@ -290,7 +295,7 @@ public:
   /// \}
 
 private:
-  std::unique_ptr<const SpaceType> space_;
+  const SpaceType& space_;
   const bool space_is_fv_;
   ConstLocalDofVectorType dof_vector_;
   std::unique_ptr<LocalBasisType> basis_;
