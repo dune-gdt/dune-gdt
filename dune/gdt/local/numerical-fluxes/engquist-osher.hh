@@ -15,11 +15,8 @@
 #ifndef DUNE_GDT_LOCAL_NUMERICAL_FLUXES_ENGQUIST_OSHER_HH
 #define DUNE_GDT_LOCAL_NUMERICAL_FLUXES_ENGQUIST_OSHER_HH
 
-#include <functional>
-
 #include <dune/geometry/quadraturerules.hh>
-
-#include <dune/grid/onedgrid.hh>
+#include <dune/geometry/type.hh>
 
 #include "interface.hh"
 #include <dune/xt/common/type_traits.hh>
@@ -83,22 +80,16 @@ public:
                   const XT::Common::Parameter& param = {}) const override final
   {
     this->compute_entity_coords(x_in_intersection_coords);
-    auto integrate_f = [&](const LocalFluxType& local_flux,
-                           const auto& x,
-                           const auto& s,
-                           const std::function<double(const R&, const R&)>& min_max) {
+    auto integrate_f = [&](const LocalFluxType& local_flux, const auto& x, const auto& s, const auto& min_max) {
       if (!(s[0] > 0.))
         return 0.;
+      // integrate over the state interval [0, s[0]] by mapping a reference line quadrature affinely
       double ret = 0.;
-      const OneDGrid state_grid(1, 0., s[0]);
-      const auto state_interval = *state_grid.leafGridView().template begin<0>();
-      const auto quadrature_rule_state = QuadratureRules<R, 1>::rule(state_interval.type(), local_flux.order(param));
+      const auto quadrature_rule_state = QuadratureRules<R, 1>::rule(GeometryTypes::line, local_flux.order(param));
       for (const auto& quadrature_point : quadrature_rule_state) {
-        const auto local_uu = quadrature_point.position();
-        const auto uu = state_interval.geometry().global(local_uu);
+        const StateType uu(quadrature_point.position()[0] * s[0]);
         const auto df = local_flux.jacobian(x, uu, param);
-        ret +=
-            state_interval.geometry().integrationElement(local_uu) * quadrature_point.weight() * min_max(n * df[0], 0.);
+        ret += s[0] * quadrature_point.weight() * min_max(n * df[0], 0.);
       }
       return ret;
     };
