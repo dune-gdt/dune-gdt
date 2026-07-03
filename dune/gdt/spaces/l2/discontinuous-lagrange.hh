@@ -33,6 +33,7 @@
 #include <dune/gdt/spaces/basis/default.hh>
 #include <dune/gdt/spaces/mapper/discontinuous.hh>
 #include <dune/gdt/spaces/interface.hh>
+#include <dune/gdt/spaces/shared-core.hh>
 
 namespace Dune {
 namespace GDT {
@@ -61,54 +62,36 @@ namespace GDT {
  * \sa make_discontinuous_lagrange_space
  */
 template <class GV, size_t r = 1, class R = double>
-class DiscontinuousLagrangeSpace : public SpaceInterface<GV, r, 1, R>
+class DiscontinuousLagrangeSpace
+  : public internal::SpaceWithSharedCore<
+        GV,
+        r,
+        1,
+        R,
+        LocalLagrangeFiniteElementFamily<typename GV::ctype, GV::dimension, R, r>,
+        DiscontinuousMapper<GV, LocalFiniteElementFamilyInterface<typename GV::ctype, GV::dimension, R, r, 1>>,
+        DefaultGlobalBasis<GV, r, 1, R>>
 {
   using ThisType = DiscontinuousLagrangeSpace;
-  using BaseType = SpaceInterface<GV, r, 1, R>;
+  using BaseType = internal::SpaceWithSharedCore<
+      GV,
+      r,
+      1,
+      R,
+      LocalLagrangeFiniteElementFamily<typename GV::ctype, GV::dimension, R, r>,
+      DiscontinuousMapper<GV, LocalFiniteElementFamilyInterface<typename GV::ctype, GV::dimension, R, r, 1>>,
+      DefaultGlobalBasis<GV, r, 1, R>>;
 
 public:
-  using BaseType::d;
-  using typename BaseType::D;
-  using typename BaseType::GlobalBasisType;
   using typename BaseType::GridViewType;
-  using typename BaseType::LocalFiniteElementFamilyType;
-  using typename BaseType::MapperType;
 
-private:
-  using MapperImplementation = DiscontinuousMapper<GridViewType, LocalFiniteElementFamilyType>;
-  using GlobalBasisImplementation = DefaultGlobalBasis<GridViewType, r, 1, R>;
-
-  /**
-   * Holds everything the read-only interface of this space exposes. The core is shared between all copies of a space
-   * (mapper and basis reference the core's grid view and finite elements, so its address has to be stable anyway),
-   * which makes copy() O(1) instead of a full mapper rebuild over the whole grid view (review A3/C7/D4).
-   */
-  struct Core
-  {
-    Core(GridViewType grd_vw, const int ord)
-      : grid_view(std::move(grd_vw))
-      , order(ord)
-      , local_finite_elements(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    {
-    }
-
-    const GridViewType grid_view;
-    const int order;
-    std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, r>> local_finite_elements;
-    std::unique_ptr<MapperImplementation> mapper;
-    std::unique_ptr<GlobalBasisImplementation> basis;
-  }; // struct Core
-
-public:
   DiscontinuousLagrangeSpace(GridViewType grd_vw, const int order = 1, const bool dimws_glbl_mppng = false)
-    : BaseType()
+    : BaseType(std::move(grd_vw), order, "DiscontinuousLagrangeSpace", XT::Common::default_logger_state())
     , dimwise_global_mapping((r == 1) ? false : dimws_glbl_mppng) // does not make sense in the scalar case
-    , core_(std::make_shared<Core>(std::move(grd_vw), order))
   {
     this->update_after_adapt();
   }
 
-  /// \note Shares the core (grid view, finite elements, mapper and basis) with other, \sa Core.
   DiscontinuousLagrangeSpace(const ThisType&) = default;
 
   DiscontinuousLagrangeSpace(ThisType&&) noexcept = default;
@@ -122,28 +105,6 @@ public:
     return new ThisType(*this);
   }
 
-  const GridViewType& grid_view() const override final
-  {
-    return core_->grid_view;
-  }
-
-  const MapperType& mapper() const override final
-  {
-    assert(core_->mapper && "This must not happen!");
-    return *core_->mapper;
-  }
-
-  const GlobalBasisType& basis() const override final
-  {
-    assert(core_->basis && "This must not happen!");
-    return *core_->basis;
-  }
-
-  const LocalFiniteElementFamilyType& finite_elements() const override final
-  {
-    return *core_->local_finite_elements;
-  }
-
   SpaceType type() const override final
   {
     return SpaceType::discontinuous_lagrange;
@@ -151,12 +112,12 @@ public:
 
   int min_polorder() const override final
   {
-    return core_->order;
+    return this->fe_order();
   }
 
   int max_polorder() const override final
   {
-    return core_->order;
+    return this->fe_order();
   }
 
   bool continuous(const int /*diff_order*/) const override final
@@ -174,29 +135,13 @@ public:
     return true;
   }
 
-  /// \note Updates the shared core, i.e. all copies of this space see the updated mapper and basis.
   void update_after_adapt() override final
   {
-    // create/update mapper ...
-    if (core_->mapper)
-      core_->mapper->update_after_adapt();
-    else
-      core_->mapper = std::make_unique<MapperImplementation>(
-          core_->grid_view, *core_->local_finite_elements, core_->order, dimwise_global_mapping);
-    // ... and basis
-    if (core_->basis)
-      core_->basis->update_after_adapt();
-    else
-      core_->basis =
-          std::make_unique<GlobalBasisImplementation>(core_->grid_view, *core_->local_finite_elements, core_->order);
-    this->create_communicator();
-  } // ... update_after_adapt(...)
+    this->create_or_update_core(dimwise_global_mapping);
+  }
 
 public:
   const bool dimwise_global_mapping;
-
-private:
-  std::shared_ptr<Core> core_;
 }; // class DiscontinuousLagrangeSpace
 
 
