@@ -78,30 +78,38 @@ private:
   using MapperImplementation = DiscontinuousMapper<GridViewType, LocalFiniteElementFamilyType>;
   using GlobalBasisImplementation = DefaultGlobalBasis<GridViewType, r, 1, R>;
 
+  /**
+   * Holds everything the read-only interface of this space exposes. The core is shared between all copies of a space
+   * (mapper and basis reference the core's grid view and finite elements, so its address has to be stable anyway),
+   * which makes copy() O(1) instead of a full mapper rebuild over the whole grid view (review A3/C7/D4).
+   */
+  struct Core
+  {
+    Core(GridViewType grd_vw, const int ord)
+      : grid_view(std::move(grd_vw))
+      , order(ord)
+      , local_finite_elements(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, r>>())
+    {
+    }
+
+    const GridViewType grid_view;
+    const int order;
+    std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, r>> local_finite_elements;
+    std::unique_ptr<MapperImplementation> mapper;
+    std::unique_ptr<GlobalBasisImplementation> basis;
+  }; // struct Core
+
 public:
   DiscontinuousLagrangeSpace(GridViewType grd_vw, const int order = 1, const bool dimws_glbl_mppng = false)
     : BaseType()
-    , grid_view_(grd_vw)
-    , order_(order)
     , dimwise_global_mapping((r == 1) ? false : dimws_glbl_mppng) // does not make sense in the scalar case
-    , local_finite_elements_(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    , mapper_(nullptr)
-    , basis_(nullptr)
+    , core_(std::make_shared<Core>(std::move(grd_vw), order))
   {
     this->update_after_adapt();
   }
 
-  DiscontinuousLagrangeSpace(const ThisType& other)
-    : BaseType(other)
-    , grid_view_(other.grid_view_)
-    , order_(other.order_)
-    , dimwise_global_mapping(other.dimwise_global_mapping)
-    , local_finite_elements_(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    , mapper_(nullptr)
-    , basis_(nullptr)
-  {
-    this->update_after_adapt();
-  }
+  /// \note Shares the core (grid view, finite elements, mapper and basis) with other, \sa Core.
+  DiscontinuousLagrangeSpace(const ThisType&) = default;
 
   DiscontinuousLagrangeSpace(ThisType&&) noexcept = default;
 
@@ -116,24 +124,24 @@ public:
 
   const GridViewType& grid_view() const override final
   {
-    return grid_view_;
+    return core_->grid_view;
   }
 
   const MapperType& mapper() const override final
   {
-    assert(mapper_ && "This must not happen!");
-    return *mapper_;
+    assert(core_->mapper && "This must not happen!");
+    return *core_->mapper;
   }
 
   const GlobalBasisType& basis() const override final
   {
-    assert(basis_ && "This must not happen!");
-    return *basis_;
+    assert(core_->basis && "This must not happen!");
+    return *core_->basis;
   }
 
   const LocalFiniteElementFamilyType& finite_elements() const override final
   {
-    return *local_finite_elements_;
+    return *core_->local_finite_elements;
   }
 
   SpaceType type() const override final
@@ -143,12 +151,12 @@ public:
 
   int min_polorder() const override final
   {
-    return order_;
+    return core_->order;
   }
 
   int max_polorder() const override final
   {
-    return order_;
+    return core_->order;
   }
 
   bool continuous(const int /*diff_order*/) const override final
@@ -166,33 +174,29 @@ public:
     return true;
   }
 
+  /// \note Updates the shared core, i.e. all copies of this space see the updated mapper and basis.
   void update_after_adapt() override final
   {
     // create/update mapper ...
-    if (mapper_)
-      mapper_->update_after_adapt();
+    if (core_->mapper)
+      core_->mapper->update_after_adapt();
     else
-      mapper_ =
-          std::make_unique<MapperImplementation>(grid_view_, *local_finite_elements_, order_, dimwise_global_mapping);
+      core_->mapper = std::make_unique<MapperImplementation>(
+          core_->grid_view, *core_->local_finite_elements, core_->order, dimwise_global_mapping);
     // ... and basis
-    if (basis_)
-      basis_->update_after_adapt();
+    if (core_->basis)
+      core_->basis->update_after_adapt();
     else
-      basis_ = std::make_unique<GlobalBasisImplementation>(grid_view_, *local_finite_elements_, order_);
+      core_->basis =
+          std::make_unique<GlobalBasisImplementation>(core_->grid_view, *core_->local_finite_elements, core_->order);
     this->create_communicator();
   } // ... update_after_adapt(...)
-
-private:
-  const GridViewType grid_view_;
-  const int order_;
 
 public:
   const bool dimwise_global_mapping;
 
 private:
-  std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, r>> local_finite_elements_;
-  std::unique_ptr<MapperImplementation> mapper_;
-  std::unique_ptr<GlobalBasisImplementation> basis_;
+  std::shared_ptr<Core> core_;
 }; // class DiscontinuousLagrangeSpace
 
 
