@@ -109,7 +109,7 @@ public:
     ensure_size_and_clear(result_out_out, rows_out, cols_out);
     // loop over all quadrature points
     const size_t integrand_order =
-        integrand_->order(test_basis_inside, ansatz_basis_inside, test_basis_outside, ansatz_basis_outside)
+        integrand_->order(test_basis_inside, ansatz_basis_inside, test_basis_outside, ansatz_basis_outside, param)
         + over_integrate_;
     for (const auto& quadrature_point :
          QuadratureRules<D, d - 1>::rule(intersection.type(), XT::Common::numeric_cast<int>(integrand_order))) {
@@ -242,7 +242,7 @@ public:
       result.resize(rows, cols);
     result *= 0;
     // loop over all quadrature points
-    const size_t integrand_order = integrand_->order(test_basis, ansatz_basis) + over_integrate_;
+    const size_t integrand_order = integrand_->order(test_basis, ansatz_basis, param) + over_integrate_;
     const auto quadrature_rule =
         QuadratureRules<D, d - 1>::rule(intersection.geometry().type(), XT::Common::numeric_cast<int>(integrand_order));
     for (const auto& quadrature_point : quadrature_rule) {
