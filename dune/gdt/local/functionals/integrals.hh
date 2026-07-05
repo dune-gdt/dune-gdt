@@ -16,6 +16,9 @@
 #ifndef DUNE_GDT_LOCAL_FUNCTIONALS_INTEGRALS_HH
 #define DUNE_GDT_LOCAL_FUNCTIONALS_INTEGRALS_HH
 
+#include <type_traits>
+#include <utility>
+
 #include <dune/geometry/quadraturerules.hh>
 
 #include <dune/gdt/local/integrands/interfaces.hh>
@@ -112,6 +115,111 @@ private:
   const int over_integrate_;
   mutable DynamicVector<F> integrand_values_;
 }; // class LocalElementIntegralFunctional
+
+
+/**
+ * \brief Statically dispatched variant of LocalElementIntegralFunctional.
+ *
+ * Keeps the concrete integrand as a template parameter and by value instead of type-erasing it, so the quadrature
+ * loop calls the integrand via qualified (hence non-virtual, inlinable) calls; type erasure is confined to the
+ * per-element apply() of the LocalElementFunctionalInterface (review D1).
+ *
+ * \sa StaticLocalElementIntegralBilinearForm
+ * \sa make_local_element_integral_functional
+ */
+template <class Integrand>
+class StaticLocalElementIntegralFunctional
+  : public LocalElementFunctionalInterface<typename Integrand::E,
+                                           Integrand::r,
+                                           Integrand::rC,
+                                           typename Integrand::R,
+                                           typename Integrand::F>
+{
+  static_assert(std::is_base_of_v<LocalUnaryElementIntegrandInterface<typename Integrand::E,
+                                                                      Integrand::r,
+                                                                      Integrand::rC,
+                                                                      typename Integrand::R,
+                                                                      typename Integrand::F>,
+                                  Integrand>,
+                "Integrand has to implement LocalUnaryElementIntegrandInterface!");
+
+  using ThisType = StaticLocalElementIntegralFunctional;
+  using BaseType = LocalElementFunctionalInterface<typename Integrand::E,
+                                                   Integrand::r,
+                                                   Integrand::rC,
+                                                   typename Integrand::R,
+                                                   typename Integrand::F>;
+
+public:
+  using BaseType::d;
+  using typename BaseType::D;
+  using typename BaseType::F;
+  using typename BaseType::LocalBasisType;
+
+  using IntegrandType = Integrand;
+
+  explicit StaticLocalElementIntegralFunctional(IntegrandType integrand, const int over_integrate = 0)
+    : BaseType(integrand.parameter_type())
+    , integrand_(std::move(integrand))
+    , over_integrate_(over_integrate)
+  {
+  }
+
+  StaticLocalElementIntegralFunctional(const ThisType& other) = default;
+
+  StaticLocalElementIntegralFunctional(ThisType&& source) noexcept = default;
+
+  std::unique_ptr<BaseType> copy() const override final
+  {
+    return std::make_unique<ThisType>(*this);
+  }
+
+  using BaseType::apply;
+
+  void apply(const LocalBasisType& basis,
+             DynamicVector<F>& result,
+             const XT::Common::Parameter& param = {}) const override final
+  {
+    // prepare integand
+    const auto& element = basis.element();
+    integrand_.bind(element);
+    // prepare storage
+    const auto size = basis.size(param);
+    if (result.size() < size)
+      result.resize(size);
+    result *= 0;
+    // loop over all quadrature points (note the qualified calls into the integrand, which suppress virtual dispatch)
+    const auto integrand_order = integrand_.IntegrandType::order(basis, param) + over_integrate_;
+    const auto quadrature_rule = QuadratureRules<D, d>::rule(element.type(), integrand_order);
+    const auto geometry = element.geometry();
+    for (auto [point_in_reference_element, quadrature_weight] : quadrature_rule) {
+      // integration factors
+      const auto integration_factor = geometry.integrationElement(point_in_reference_element);
+      // evaluate the integrand
+      integrand_.IntegrandType::evaluate(basis, point_in_reference_element, integrand_values_, param);
+      assert(integrand_values_.size() >= size && "This must not happen!");
+      // compute integral
+      for (size_t ii = 0; ii < size; ++ii)
+        result[ii] += integrand_values_[ii] * integration_factor * quadrature_weight;
+    } // loop over all quadrature points
+  } // ... apply(...)
+
+private:
+  mutable IntegrandType integrand_;
+  const int over_integrate_;
+  mutable DynamicVector<F> integrand_values_;
+}; // class StaticLocalElementIntegralFunctional
+
+
+/**
+ * \brief Creates a StaticLocalElementIntegralFunctional, deducing the concrete integrand type.
+ */
+template <class Integrand>
+StaticLocalElementIntegralFunctional<Integrand> make_local_element_integral_functional(Integrand integrand,
+                                                                                       const int over_integrate = 0)
+{
+  return StaticLocalElementIntegralFunctional<Integrand>(std::move(integrand), over_integrate);
+}
 
 
 /**

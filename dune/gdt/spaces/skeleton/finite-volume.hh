@@ -59,26 +59,37 @@ private:
   using MapperImplementation = FiniteVolumeSkeletonMapper<GridViewType, 1, 1>;
   using GlobalBasisImplementation = FiniteVolumeGlobalBasis<GridViewType, 1, R>;
 
+  /**
+   * Holds everything the read-only interface of this space exposes. The core is shared between all copies of a space
+   * (mapper and basis reference the core's grid view, so its address has to be stable anyway), which makes copy()
+   * O(1) instead of a full mapper rebuild over the whole grid view (review A3/C7/D4).
+   */
+  struct Core
+  {
+    Core(GridViewType grd_vw)
+      : grid_view(std::move(grd_vw))
+      , local_finite_elements(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, 1>>())
+      , mapper(grid_view)
+      , basis(grid_view)
+    {
+    }
+
+    const GridViewType grid_view;
+    std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, 1>> local_finite_elements;
+    MapperImplementation mapper;
+    GlobalBasisImplementation basis;
+  }; // struct Core
+
 public:
   FiniteVolumeSkeletonSpace(GridViewType grd_vw)
     : BaseType()
-    , grid_view_(grd_vw)
-    , local_finite_elements_(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, 1>>())
-    , mapper_(grid_view_)
-    , basis_(grid_view_)
+    , core_(std::make_shared<Core>(std::move(grd_vw)))
   {
     this->update_after_adapt();
   }
 
-  FiniteVolumeSkeletonSpace(const ThisType& other)
-    : BaseType(other)
-    , grid_view_(other.grid_view_)
-    , local_finite_elements_(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, 1>>())
-    , mapper_(grid_view_)
-    , basis_(grid_view_)
-  {
-    this->update_after_adapt();
-  }
+  /// \note Shares the core (grid view, finite elements, mapper and basis) with other, \sa Core.
+  FiniteVolumeSkeletonSpace(const ThisType&) = default;
 
   FiniteVolumeSkeletonSpace(ThisType&&) noexcept = default;
 
@@ -93,23 +104,23 @@ public:
 
   const GridViewType& grid_view() const override final
   {
-    return grid_view_;
+    return core_->grid_view;
   }
 
   const MapperType& mapper() const override final
   {
-    return mapper_;
+    return core_->mapper;
   }
 
   const GlobalBasisType& basis() const override final
   {
-    return basis_;
+    return core_->basis;
   }
 
   const LocalFiniteElementFamilyType& finite_elements() const override final
   {
     DUNE_THROW(Exceptions::space_error, "Not implemented yet for skeleton space!");
-    return *local_finite_elements_;
+    return *core_->local_finite_elements;
   }
 
   SpaceType type() const override final
@@ -149,11 +160,12 @@ public:
     DUNE_THROW(Exceptions::space_error, "Not implemented yet for skeleton space!");
   }
 
+  /// \note Updates the shared core, i.e. all copies of this space see the updated mapper and basis.
   void update_after_adapt() override final
   {
     // update mapper and basis
-    mapper_.update_after_adapt();
-    basis_.update_after_adapt();
+    core_->mapper.update_after_adapt();
+    core_->basis.update_after_adapt();
     this->create_communicator();
   }
 
@@ -167,10 +179,7 @@ public:
   }
 
 private:
-  const GridViewType grid_view_;
-  std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, 1>> local_finite_elements_;
-  MapperImplementation mapper_;
-  GlobalBasisImplementation basis_;
+  std::shared_ptr<Core> core_;
 }; // class FiniteVolumeSkeletonSpace< ..., 1, 1 >
 
 

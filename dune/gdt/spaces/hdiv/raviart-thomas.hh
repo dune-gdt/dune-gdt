@@ -71,34 +71,59 @@ private:
   using MapperImplementation = ContinuousMapper<GV, LocalFiniteElementFamilyType>;
   using GlobalBasisImplementation = RaviartThomasGlobalBasis<GV, R>;
 
+  /**
+   * Holds everything the read-only interface of this space exposes. The core is shared between all copies of a space
+   * (mapper and basis reference the core's grid view, finite elements and FE data, so its address has to be stable
+   * anyway), which makes copy() O(1) instead of a full rebuild over the whole grid view (review A3/C7/D4).
+   */
+  struct Core
+  {
+    Core(GridViewType grd_vw,
+         const int ord,
+         const std::string& logging_prefix,
+         const std::array<bool, 3>& logging_state)
+      : grid_view(std::move(grd_vw))
+      , order(ord)
+      , local_finite_elements()
+      , element_indices(grid_view)
+      , fe_data()
+      , mapper(grid_view, local_finite_elements, order)
+      , basis(grid_view,
+              order,
+              local_finite_elements,
+              element_indices,
+              fe_data,
+              logging_prefix.empty() ? "" : logging_prefix + "_basis",
+              logging_state)
+    {
+    }
+
+    const GridViewType grid_view;
+    const int order;
+    const LocalRaviartThomasFiniteElementFamily<D, d, R> local_finite_elements;
+    FiniteVolumeMapper<GV> element_indices;
+    std::vector<DynamicVector<R>> fe_data;
+    MapperImplementation mapper;
+    GlobalBasisImplementation basis;
+  }; // struct Core
+
 public:
   RaviartThomasSpace(GridViewType grd_vw,
                      const int order,
                      const std::string& logging_prefix = "",
                      const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType(logging_prefix.empty() ? "RtSpace" : logging_prefix, logging_state)
-    , grid_view_(grd_vw)
-    , order_(order)
-    , local_finite_elements_()
-    , element_indices_(grid_view_)
-    , fe_data_()
-    , mapper_(grid_view_, local_finite_elements_, order_ /*, logging_prefix.empty() ? "" : logging_prefix + "_mapper"*/)
-    , basis_(grid_view_,
-             order_,
-             local_finite_elements_,
-             element_indices_,
-             fe_data_,
-             logging_prefix.empty() ? "" : logging_prefix + "_basis",
-             logging_state)
+    , core_(std::make_shared<Core>(std::move(grd_vw), order, logging_prefix, logging_state))
   {
-    LOG_(info) << "RaviartThomasSpace(grid_view=" << &grd_vw << ", order=" << order << ")" << std::endl;
-    DUNE_THROW_IF(order_ != 0, Exceptions::space_error, "Higher orders are not testet yet!");
+    LOG_(info) << "RaviartThomasSpace(order=" << order << ")" << std::endl;
+    DUNE_THROW_IF(core_->order != 0, Exceptions::space_error, "Higher orders are not testet yet!");
     this->update_after_adapt();
-    LOG_(debug) << "   element_indices_.size() = " << element_indices_.size()
-                << "\n   fe_data_.size() = " << fe_data_.size() << std::endl;
+    LOG_(debug) << "   element_indices.size() = " << core_->element_indices.size()
+                << "\n   fe_data.size() = " << core_->fe_data.size() << std::endl;
   }
 
-  RaviartThomasSpace(const ThisType& other) = delete;
+  /// \note Shares the core (grid view, finite elements, mapper and basis) with other, \sa Core.
+  RaviartThomasSpace(const ThisType&) = default;
 
   RaviartThomasSpace(ThisType&&) noexcept = default;
 
@@ -106,30 +131,29 @@ public:
 
   ThisType& operator=(ThisType&&) = delete;
 
-  /// \todo propagete logging, if desired
   BaseType* copy() const override final
   {
-    return new ThisType(this->grid_view_, this->order_);
+    return new ThisType(*this);
   }
 
   const GridViewType& grid_view() const override final
   {
-    return grid_view_;
+    return core_->grid_view;
   }
 
   const MapperType& mapper() const override final
   {
-    return mapper_;
+    return core_->mapper;
   }
 
   const GlobalBasisType& basis() const override final
   {
-    return basis_;
+    return core_->basis;
   }
 
   const LocalFiniteElementFamilyType& finite_elements() const override final
   {
-    return local_finite_elements_;
+    return core_->local_finite_elements;
   }
 
   SpaceType type() const override final
@@ -139,12 +163,12 @@ public:
 
   int min_polorder() const override final
   {
-    return order_;
+    return core_->order;
   }
 
   int max_polorder() const override final
   {
-    return order_;
+    return core_->order;
   }
 
   bool continuous(const int /*diff_order*/) const override final
@@ -163,19 +187,20 @@ public:
   }
 
 protected:
+  /// \note Updates the shared core, i.e. all copies of this space see the updated mapper and basis.
   void update_after_adapt() override final
   {
     LOG_(info) << "update_after_adapt()" << std::endl;
-    element_indices_.update_after_adapt();
+    core_->element_indices.update_after_adapt();
     // check: the mapper does not work for non-conforming intersections
-    if (d == 3 && grid_view_.indexSet().types(0).size() != 1)
+    if (d == 3 && core_->grid_view.indexSet().types(0).size() != 1)
       DUNE_THROW(Exceptions::space_error,
                  "in RaviartThomasSpace: non-conforming intersections are not (yet) "
                  "supported, and more than one element type in 3d leads to non-conforming intersections!");
     // compute scaling to ensure basis*integrationElementNormal = 1
     std::map<GeometryType, DynamicVector<R>> geometry_to_scaling_factors_map;
-    for (const auto& geometry_type : grid_view_.indexSet().types(0)) {
-      const auto& finite_element = local_finite_elements_.get(geometry_type, order_);
+    for (const auto& geometry_type : core_->grid_view.indexSet().types(0)) {
+      const auto& finite_element = core_->local_finite_elements.get(geometry_type, core_->order);
       const auto& reference_element = ReferenceElements<D, d>::general(geometry_type);
       const auto num_intersections = reference_element.size(1);
       geometry_to_scaling_factors_map.insert(std::make_pair(geometry_type, DynamicVector<R>(num_intersections, R(1.))));
@@ -191,16 +216,16 @@ protected:
     }
     // compute switches (as signs of the scaling factor) to ensure continuity of the normal component (therefore we need
     // unique indices for codim 0  entities, which cannot be achieved by the grid layers index set for mixed grids)
-    fe_data_.resize(element_indices_.size());
-    for (auto&& entity : elements(grid_view_)) {
+    core_->fe_data.resize(core_->element_indices.size());
+    for (auto&& entity : elements(core_->grid_view)) {
       const auto geometry_type = entity.type();
-      const auto& finite_element = local_finite_elements_.get(geometry_type, order_);
+      const auto& finite_element = core_->local_finite_elements.get(geometry_type, core_->order);
       const auto& coeffs = finite_element.coefficients();
-      const auto element_index = element_indices_.global_index(entity, 0);
-      fe_data_[element_index] = geometry_to_scaling_factors_map.at(geometry_type);
-      auto& local_switches = fe_data_[element_index];
-      for (auto&& intersection : intersections(grid_view_, entity)) {
-        if (intersection.neighbor() && element_index < element_indices_.global_index(intersection.outside(), 0)) {
+      const auto element_index = core_->element_indices.global_index(entity, 0);
+      core_->fe_data[element_index] = geometry_to_scaling_factors_map.at(geometry_type);
+      auto& local_switches = core_->fe_data[element_index];
+      for (auto&& intersection : intersections(core_->grid_view, entity)) {
+        if (intersection.neighbor() && element_index < core_->element_indices.global_index(intersection.outside(), 0)) {
           const auto intersection_index = XT::Common::numeric_cast<unsigned int>(intersection.indexInInside());
           for (size_t ii = 0; ii < coeffs.size(); ++ii) {
             const auto& local_key = coeffs.local_key(ii);
@@ -212,19 +237,13 @@ protected:
       }
     }
     // update mapper, basis and communicator
-    mapper_.update_after_adapt();
-    basis_.update_after_adapt();
+    core_->mapper.update_after_adapt();
+    core_->basis.update_after_adapt();
     this->create_communicator();
   } // ... update_after_adapt(...)
 
 private:
-  const GridViewType grid_view_;
-  const int order_;
-  const LocalRaviartThomasFiniteElementFamily<D, d, R> local_finite_elements_;
-  FiniteVolumeMapper<GV> element_indices_;
-  std::vector<DynamicVector<R>> fe_data_;
-  MapperImplementation mapper_;
-  GlobalBasisImplementation basis_;
+  std::shared_ptr<Core> core_;
 }; // class RaviartThomasSpace
 
 

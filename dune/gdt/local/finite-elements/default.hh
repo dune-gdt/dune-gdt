@@ -15,6 +15,9 @@
 #ifndef DUNE_GDT_LOCAL_FINITE_ELEMENTS_DEFAULT_HH
 #define DUNE_GDT_LOCAL_FINITE_ELEMENTS_DEFAULT_HH
 
+#include <mutex>
+#include <shared_mutex>
+
 #include <dune/geometry/quadraturerules.hh>
 
 #include <dune/xt/common/memory.hh>
@@ -178,8 +181,9 @@ private:
 
 /**
  * \brief Implements LocalFiniteElementFamilyInterface by lazily creating and caching local finite elements from a
- *        user-provided factory, with creation guarded by a mutex.
- * \note  See the implementation of get() for a caveat regarding the double-checked locking pattern used here.
+ *        user-provided factory, with cache accesses synchronized by a shared mutex.
+ * \note  get() may be called concurrently from several threads; this class is the single synchronized home of the
+ *        finite element cache (spaces, mappers and bases all funnel through it).
  */
 template <class D, size_t d, class R = double, size_t r = 1, size_t rC = 1>
 class ThreadSafeDefaultLocalFiniteElementFamily : public LocalFiniteElementFamilyInterface<D, d, R, r, rC>
@@ -211,23 +215,27 @@ public:
   const LocalFiniteElementType& get(const GeometryType& geometry_type, const int order) const override final
   {
     const auto key = std::make_pair(geometry_type, order);
-    // if the FE already exists, no need to lock since at() is thread safe and we are returning the object reference,
-    // not a map iterator which might get invalidated
-    // TODO: Double checked locking pattern is not thread-safe without memory barriers.
-    if (fes_.count(key) == 0) {
-      // the FE needs to be created, we need to lock
-      [[maybe_unused]] std::lock_guard<std::mutex> guard(mutex_);
-      // and to check again if someone else created the FE while we were waiting to acquire the lock
-      if (fes_.count(key) == 0)
-        fes_[key] = factory_(geometry_type, order);
+    {
+      // common case: the FE already exists, a shared lock suffices (references into the map remain valid while other
+      // threads insert)
+      std::shared_lock<std::shared_mutex> read_guard(mutex_);
+      const auto it = fes_.find(key);
+      if (it != fes_.end())
+        return *it->second;
     }
-    return *fes_.at(key);
+    // the FE (probably) needs to be created, we need exclusive access; someone else may have created it while we were
+    // waiting to acquire the lock, so operator[] + check is used instead of an unconditional insert
+    std::lock_guard<std::shared_mutex> write_guard(mutex_);
+    auto& fe = fes_[key];
+    if (!fe)
+      fe = factory_(geometry_type, order);
+    return *fe;
   } // ... get(...)
 
 private:
   const std::function<std::unique_ptr<LocalFiniteElementType>(const GeometryType&, const int&)> factory_;
   mutable std::map<std::pair<GeometryType, int>, std::unique_ptr<LocalFiniteElementType>> fes_;
-  mutable std::mutex mutex_;
+  mutable std::shared_mutex mutex_;
 }; // class ThreadSafeDefaultLocalFiniteElementFamily
 
 

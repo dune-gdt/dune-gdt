@@ -50,9 +50,9 @@ double estimate_inverse_inequality_constant(const SpaceInterface<GV, r>& space)
     basis->bind(element);
     const double h = XT::Grid::diameter(element);
     auto H1_product_matrix = XT::LA::convert_to<XT::LA::CommonDenseMatrix<double>>(
-        LocalElementIntegralBilinearForm<E, r>(LocalLaplaceIntegrand<E, r>()).apply2(*basis, *basis));
+        make_local_element_integral_bilinear_form(LocalLaplaceIntegrand<E, r>()).apply2(*basis, *basis));
     auto L2_product_matrix = XT::LA::convert_to<XT::LA::CommonDenseMatrix<double>>(
-        LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>()).apply2(*basis, *basis));
+        make_local_element_integral_bilinear_form(LocalProductIntegrand<E, r>()).apply2(*basis, *basis));
     auto evs =
         XT::LA::make_generalized_eigen_solver(H1_product_matrix,
                                               L2_product_matrix,
@@ -96,7 +96,7 @@ double estimate_combined_inverse_trace_inequality_constant(const SpaceInterface<
           L2_face_product_matrix.add_to_entry(ii, jj, tmp_L2_face_product_matrix[ii][jj]);
     }
     auto L2_element_product_matrix = XT::LA::convert_to<XT::LA::CommonDenseMatrix<double>>(
-        LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>(1.)).apply2(*basis, *basis));
+        make_local_element_integral_bilinear_form(LocalProductIntegrand<E, r>(1.)).apply2(*basis, *basis));
     auto evs = XT::LA::make_generalized_eigen_solver(
                    L2_face_product_matrix,
                    L2_element_product_matrix,

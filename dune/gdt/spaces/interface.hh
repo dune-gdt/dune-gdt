@@ -161,7 +161,7 @@ public:
       auto element_basis = this->basis().localize();
       element_restriction_FE_data = element_basis->default_data(element.type());
       element_basis->restore(element, element_restriction_FE_data);
-      auto lhs = LocalElementIntegralBilinearForm<E, r, rC, R, R>(LocalProductIntegrand<E, r, R, R>())
+      auto lhs = make_local_element_integral_bilinear_form(LocalProductIntegrand<E, r, R, R>())
                      .apply2(*element_basis, *element_basis);
       DynamicVector<R> rhs(element_basis->size(), 0.);
       for (auto&& child_element : descendantElements(element, element.level() + 1)) {

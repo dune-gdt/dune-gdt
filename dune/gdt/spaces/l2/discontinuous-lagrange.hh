@@ -33,6 +33,7 @@
 #include <dune/gdt/spaces/basis/default.hh>
 #include <dune/gdt/spaces/mapper/discontinuous.hh>
 #include <dune/gdt/spaces/interface.hh>
+#include <dune/gdt/spaces/shared-core.hh>
 
 namespace Dune {
 namespace GDT {
@@ -61,47 +62,37 @@ namespace GDT {
  * \sa make_discontinuous_lagrange_space
  */
 template <class GV, size_t r = 1, class R = double>
-class DiscontinuousLagrangeSpace : public SpaceInterface<GV, r, 1, R>
+class DiscontinuousLagrangeSpace
+  : public internal::SpaceWithSharedCore<
+        GV,
+        r,
+        1,
+        R,
+        LocalLagrangeFiniteElementFamily<typename GV::ctype, GV::dimension, R, r>,
+        DiscontinuousMapper<GV, LocalFiniteElementFamilyInterface<typename GV::ctype, GV::dimension, R, r, 1>>,
+        DefaultGlobalBasis<GV, r, 1, R>>
 {
   using ThisType = DiscontinuousLagrangeSpace;
-  using BaseType = SpaceInterface<GV, r, 1, R>;
+  using BaseType = internal::SpaceWithSharedCore<
+      GV,
+      r,
+      1,
+      R,
+      LocalLagrangeFiniteElementFamily<typename GV::ctype, GV::dimension, R, r>,
+      DiscontinuousMapper<GV, LocalFiniteElementFamilyInterface<typename GV::ctype, GV::dimension, R, r, 1>>,
+      DefaultGlobalBasis<GV, r, 1, R>>;
 
 public:
-  using BaseType::d;
-  using typename BaseType::D;
-  using typename BaseType::GlobalBasisType;
   using typename BaseType::GridViewType;
-  using typename BaseType::LocalFiniteElementFamilyType;
-  using typename BaseType::MapperType;
 
-private:
-  using MapperImplementation = DiscontinuousMapper<GridViewType, LocalFiniteElementFamilyType>;
-  using GlobalBasisImplementation = DefaultGlobalBasis<GridViewType, r, 1, R>;
-
-public:
   DiscontinuousLagrangeSpace(GridViewType grd_vw, const int order = 1, const bool dimws_glbl_mppng = false)
-    : BaseType()
-    , grid_view_(grd_vw)
-    , order_(order)
+    : BaseType(std::move(grd_vw), order, "DiscontinuousLagrangeSpace", XT::Common::default_logger_state())
     , dimwise_global_mapping((r == 1) ? false : dimws_glbl_mppng) // does not make sense in the scalar case
-    , local_finite_elements_(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    , mapper_(nullptr)
-    , basis_(nullptr)
   {
     this->update_after_adapt();
   }
 
-  DiscontinuousLagrangeSpace(const ThisType& other)
-    : BaseType(other)
-    , grid_view_(other.grid_view_)
-    , order_(other.order_)
-    , dimwise_global_mapping(other.dimwise_global_mapping)
-    , local_finite_elements_(std::make_unique<const LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    , mapper_(nullptr)
-    , basis_(nullptr)
-  {
-    this->update_after_adapt();
-  }
+  DiscontinuousLagrangeSpace(const ThisType&) = default;
 
   DiscontinuousLagrangeSpace(ThisType&&) noexcept = default;
 
@@ -114,28 +105,6 @@ public:
     return new ThisType(*this);
   }
 
-  const GridViewType& grid_view() const override final
-  {
-    return grid_view_;
-  }
-
-  const MapperType& mapper() const override final
-  {
-    assert(mapper_ && "This must not happen!");
-    return *mapper_;
-  }
-
-  const GlobalBasisType& basis() const override final
-  {
-    assert(basis_ && "This must not happen!");
-    return *basis_;
-  }
-
-  const LocalFiniteElementFamilyType& finite_elements() const override final
-  {
-    return *local_finite_elements_;
-  }
-
   SpaceType type() const override final
   {
     return SpaceType::discontinuous_lagrange;
@@ -143,12 +112,12 @@ public:
 
   int min_polorder() const override final
   {
-    return order_;
+    return this->fe_order();
   }
 
   int max_polorder() const override final
   {
-    return order_;
+    return this->fe_order();
   }
 
   bool continuous(const int /*diff_order*/) const override final
@@ -168,31 +137,11 @@ public:
 
   void update_after_adapt() override final
   {
-    // create/update mapper ...
-    if (mapper_)
-      mapper_->update_after_adapt();
-    else
-      mapper_ =
-          std::make_unique<MapperImplementation>(grid_view_, *local_finite_elements_, order_, dimwise_global_mapping);
-    // ... and basis
-    if (basis_)
-      basis_->update_after_adapt();
-    else
-      basis_ = std::make_unique<GlobalBasisImplementation>(grid_view_, *local_finite_elements_, order_);
-    this->create_communicator();
-  } // ... update_after_adapt(...)
-
-private:
-  const GridViewType grid_view_;
-  const int order_;
+    this->create_or_update_core(dimwise_global_mapping);
+  }
 
 public:
   const bool dimwise_global_mapping;
-
-private:
-  std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, r>> local_finite_elements_;
-  std::unique_ptr<MapperImplementation> mapper_;
-  std::unique_ptr<GlobalBasisImplementation> basis_;
 }; // class DiscontinuousLagrangeSpace
 
 

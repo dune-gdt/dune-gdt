@@ -31,6 +31,7 @@
 #include <dune/gdt/spaces/basis/default.hh>
 #include <dune/gdt/spaces/mapper/continuous.hh>
 #include <dune/gdt/spaces/interface.hh>
+#include <dune/gdt/spaces/shared-core.hh>
 
 namespace Dune {
 namespace GDT {
@@ -51,49 +52,42 @@ namespace GDT {
  * \sa make_local_lagrange_finite_element
  */
 template <class GV, size_t r = 1, class R = double>
-class ContinuousLagrangeSpace : public SpaceInterface<GV, r, 1, R>
+class ContinuousLagrangeSpace
+  : public internal::SpaceWithSharedCore<
+        GV,
+        r,
+        1,
+        R,
+        LocalLagrangeFiniteElementFamily<typename GV::ctype, GV::dimension, R, r>,
+        ContinuousMapper<GV, LocalFiniteElementFamilyInterface<typename GV::ctype, GV::dimension, R, r, 1>>,
+        DefaultGlobalBasis<GV, r, 1, R>>
 {
   using ThisType = ContinuousLagrangeSpace;
-  using BaseType = SpaceInterface<GV, r, 1, R>;
+  using BaseType = internal::SpaceWithSharedCore<
+      GV,
+      r,
+      1,
+      R,
+      LocalLagrangeFiniteElementFamily<typename GV::ctype, GV::dimension, R, r>,
+      ContinuousMapper<GV, LocalFiniteElementFamilyInterface<typename GV::ctype, GV::dimension, R, r, 1>>,
+      DefaultGlobalBasis<GV, r, 1, R>>;
 
 public:
   using BaseType::d;
-  using typename BaseType::D;
-  using typename BaseType::GlobalBasisType;
   using typename BaseType::GridViewType;
-  using typename BaseType::LocalFiniteElementFamilyType;
-  using typename BaseType::MapperType;
 
-private:
-  using MapperImplementation = ContinuousMapper<GridViewType, LocalFiniteElementFamilyType>;
-  using GlobalBasisImplementation = DefaultGlobalBasis<GridViewType, r, 1, R>;
-
-public:
   ContinuousLagrangeSpace(GridViewType grd_vw,
                           const int order,
                           const std::string& logging_prefix = "",
                           const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
-    : BaseType(logging_prefix.empty() ? "ContinuousLagrangeSpace" : logging_prefix, logging_state)
-    , grid_view_(grd_vw)
-    , fe_order_(order)
-    , local_finite_elements_(std::make_unique<LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    , mapper_(nullptr)
-    , basis_(nullptr)
+    : BaseType(
+          std::move(grd_vw), order, logging_prefix.empty() ? "ContinuousLagrangeSpace" : logging_prefix, logging_state)
   {
-    LOG_(info) << "ContinuousLagrangeSpace(&grd_vw=" << &grd_vw << ", order=" << fe_order_ << ")" << std::endl;
+    LOG_(info) << "ContinuousLagrangeSpace(order=" << order << ")" << std::endl;
     this->update_after_adapt();
   }
 
-  ContinuousLagrangeSpace(const ThisType& other)
-    : BaseType(other)
-    , grid_view_(other.grid_view_)
-    , fe_order_(other.fe_order_)
-    , local_finite_elements_(std::make_unique<LocalLagrangeFiniteElementFamily<D, d, R, r>>())
-    , mapper_(nullptr)
-    , basis_(nullptr)
-  {
-    this->update_after_adapt();
-  }
+  ContinuousLagrangeSpace(const ThisType&) = default;
 
   ContinuousLagrangeSpace(ThisType&&) noexcept = default;
 
@@ -106,28 +100,6 @@ public:
     return new ThisType(*this);
   }
 
-  const GridViewType& grid_view() const final
-  {
-    return grid_view_;
-  }
-
-  const MapperType& mapper() const final
-  {
-    assert(mapper_ && "This must not happen!");
-    return *mapper_;
-  }
-
-  const GlobalBasisType& basis() const final
-  {
-    assert(basis_ && "This must not happen!");
-    return *basis_;
-  }
-
-  const LocalFiniteElementFamilyType& finite_elements() const final
-  {
-    return *local_finite_elements_;
-  }
-
   SpaceType type() const final
   {
     return SpaceType::continuous_lagrange;
@@ -135,12 +107,12 @@ public:
 
   int min_polorder() const final
   {
-    return fe_order_;
+    return this->fe_order();
   }
 
   int max_polorder() const final
   {
-    return fe_order_;
+    return this->fe_order();
   }
 
   bool continuous(const int diff_order) const final
@@ -161,31 +133,12 @@ public:
   void update_after_adapt() final
   {
     // check: the mapper does not work for non-conforming intersections
-    if (d == 3 && grid_view_.indexSet().types(0).size() != 1)
+    if (d == 3 && this->grid_view().indexSet().types(0).size() != 1)
       DUNE_THROW(Exceptions::space_error,
                  "in ContinuousLagrangeSpace: non-conforming intersections are not (yet) "
                  "supported, and more than one element type in 3d leads to non-conforming intersections!");
-    // create/update mapper ...
-    if (mapper_)
-      mapper_->update_after_adapt();
-    else
-      mapper_ = std::make_unique<MapperImplementation>(grid_view_, *local_finite_elements_, fe_order_);
-    // ... and basis
-    if (basis_)
-      basis_->update_after_adapt();
-    else
-      basis_ = std::make_unique<GlobalBasisImplementation>(grid_view_, *local_finite_elements_, fe_order_);
-    this->create_communicator();
-  } // ... update_after_adapt(...)
-
-private:
-  const GridViewType grid_view_;
-  const int fe_order_;
-  int min_polorder_;
-  int max_polorder_;
-  std::unique_ptr<const LocalLagrangeFiniteElementFamily<D, d, R, r>> local_finite_elements_;
-  std::unique_ptr<MapperImplementation> mapper_;
-  std::unique_ptr<GlobalBasisImplementation> basis_;
+    this->create_or_update_core();
+  }
 }; // class ContinuousLagrangeSpace
 
 

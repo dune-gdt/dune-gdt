@@ -15,6 +15,9 @@
 #ifndef DUNE_GDT_LOCAL_ASSEMBLER_TWO_FORM_ASSEMBLERS_HH
 #define DUNE_GDT_LOCAL_ASSEMBLER_TWO_FORM_ASSEMBLERS_HH
 
+#include <tuple>
+#include <vector>
+
 #include <dune/xt/grid/functors/interfaces.hh>
 #include <dune/xt/la/container/matrix-interface.hh>
 
@@ -24,6 +27,48 @@
 
 namespace Dune {
 namespace GDT {
+namespace internal {
+
+
+/**
+ * \brief COO staging buffer for the matrix assemblers below.
+ *
+ * Each assembler functor (and thus each thread, since the grid walker copies functors per thread) stages its
+ * contributions here instead of scattering scalars into the global matrix under its entry locks (review A2/D2). The
+ * walker calls finalize() on every functor copy sequentially after the walk, so the bulk of the scatter is merged
+ * lock-free; buffers overflowing the size cap are flushed during the walk, where thread safety rests on the internal
+ * locking of Matrix::add_to_entry.
+ */
+template <class Matrix>
+class MatrixScatterBuffer
+{
+  static_assert(XT::LA::is_matrix<Matrix>::value, "");
+  using FieldType = typename Matrix::ScalarType;
+
+public:
+  void stage(const size_t ii, const size_t jj, const FieldType& value, Matrix& matrix)
+  {
+    entries_.emplace_back(ii, jj, value);
+    if (entries_.size() >= max_pending_entries)
+      this->flush(matrix);
+  }
+
+  void flush(Matrix& matrix)
+  {
+    for (const auto& [ii, jj, value] : entries_)
+      matrix.add_to_entry(ii, jj, value);
+    entries_.clear();
+  }
+
+private:
+  //! bounds the memory held between flushes (~6 MiB at 24 bytes/entry)
+  static constexpr size_t max_pending_entries = 1 << 18;
+
+  std::vector<std::tuple<size_t, size_t, FieldType>> entries_;
+}; // class MatrixScatterBuffer
+
+
+} // namespace internal
 
 
 template <class Matrix,
@@ -126,14 +171,20 @@ public:
                 << "\n   {test|ansatz}_basis_->size(param_) = {" << test_basis_->size(param_) << "|"
                 << ansatz_basis_->size(param_) << "}"
                 << "\n   local_matrix_ = " << print(local_matrix_, {{"oneline", "true"}}) << std::endl;
-    // copy local matrix to global matrix
+    // stage the local matrix in this functor's (hence this thread's) scatter buffer
     test_space_->mapper().global_indices(element, global_test_indices_);
     ansatz_space_->mapper().global_indices(element, global_ansatz_indices_);
     for (size_t ii = 0; ii < test_basis_->size(param_); ++ii)
       for (size_t jj = 0; jj < ansatz_basis_->size(param_); ++jj)
-        global_matrix_.add_to_entry(
-            global_test_indices_[ii], global_ansatz_indices_[jj], scaling_ * local_matrix_[ii][jj]);
+        scatter_.stage(
+            global_test_indices_[ii], global_ansatz_indices_[jj], scaling_ * local_matrix_[ii][jj], global_matrix_);
   } // ... apply_local(...)
+
+  //! merges this functor's pending contributions into the global matrix, \sa internal::MatrixScatterBuffer
+  void finalize() override final
+  {
+    scatter_.flush(global_matrix_);
+  }
 
 private:
   const std::unique_ptr<TestSpaceType> test_space_;
@@ -147,6 +198,7 @@ private:
   DynamicVector<size_t> global_ansatz_indices_;
   mutable std::unique_ptr<typename TestSpaceType::GlobalBasisType::LocalizedType> test_basis_;
   mutable std::unique_ptr<typename AnsatzSpaceType::GlobalBasisType::LocalizedType> ansatz_basis_;
+  internal::MatrixScatterBuffer<MatrixType> scatter_;
 }; // class LocalElementBilinearFormAssembler
 
 
@@ -267,28 +319,42 @@ public:
                                  local_matrix_out_in_,
                                  local_matrix_out_out_,
                                  param_);
-    // copy local matrices to global matrix
+    // stage the local matrices in this functor's (hence this thread's) scatter buffer
     test_space_->mapper().global_indices(inside_element, global_test_indices_in_);
     test_space_->mapper().global_indices(outside_element, global_test_indices_out_);
     ansatz_space_->mapper().global_indices(inside_element, global_ansatz_indices_in_);
     ansatz_space_->mapper().global_indices(outside_element, global_ansatz_indices_out_);
     for (size_t ii = 0; ii < test_basis_inside_->size(param_); ++ii) {
       for (size_t jj = 0; jj < ansatz_basis_inside_->size(param_); ++jj)
-        global_matrix_.add_to_entry(
-            global_test_indices_in_[ii], global_ansatz_indices_in_[jj], scaling_ * local_matrix_in_in_[ii][jj]);
+        scatter_.stage(global_test_indices_in_[ii],
+                       global_ansatz_indices_in_[jj],
+                       scaling_ * local_matrix_in_in_[ii][jj],
+                       global_matrix_);
       for (size_t jj = 0; jj < ansatz_basis_outside_->size(param_); ++jj)
-        global_matrix_.add_to_entry(
-            global_test_indices_in_[ii], global_ansatz_indices_out_[jj], scaling_ * local_matrix_in_out_[ii][jj]);
+        scatter_.stage(global_test_indices_in_[ii],
+                       global_ansatz_indices_out_[jj],
+                       scaling_ * local_matrix_in_out_[ii][jj],
+                       global_matrix_);
     }
     for (size_t ii = 0; ii < test_basis_outside_->size(param_); ++ii) {
       for (size_t jj = 0; jj < ansatz_basis_inside_->size(param_); ++jj)
-        global_matrix_.add_to_entry(
-            global_test_indices_out_[ii], global_ansatz_indices_in_[jj], scaling_ * local_matrix_out_in_[ii][jj]);
+        scatter_.stage(global_test_indices_out_[ii],
+                       global_ansatz_indices_in_[jj],
+                       scaling_ * local_matrix_out_in_[ii][jj],
+                       global_matrix_);
       for (size_t jj = 0; jj < ansatz_basis_outside_->size(param_); ++jj)
-        global_matrix_.add_to_entry(
-            global_test_indices_out_[ii], global_ansatz_indices_out_[jj], scaling_ * local_matrix_out_out_[ii][jj]);
+        scatter_.stage(global_test_indices_out_[ii],
+                       global_ansatz_indices_out_[jj],
+                       scaling_ * local_matrix_out_out_[ii][jj],
+                       global_matrix_);
     }
   } // ... apply_local(...)
+
+  //! merges this functor's pending contributions into the global matrix, \sa internal::MatrixScatterBuffer
+  void finalize() override final
+  {
+    scatter_.flush(global_matrix_);
+  }
 
 private:
   const std::unique_ptr<TestSpaceType> test_space_;
@@ -309,6 +375,7 @@ private:
   mutable std::unique_ptr<typename TestSpaceType::GlobalBasisType::LocalizedType> test_basis_outside_;
   mutable std::unique_ptr<typename AnsatzSpaceType::GlobalBasisType::LocalizedType> ansatz_basis_inside_;
   mutable std::unique_ptr<typename AnsatzSpaceType::GlobalBasisType::LocalizedType> ansatz_basis_outside_;
+  internal::MatrixScatterBuffer<MatrixType> scatter_;
 }; // class LocalCouplingIntersectionBilinearFormAssembler
 
 
@@ -404,14 +471,20 @@ public:
     test_basis_->bind(element);
     ansatz_basis_->bind(element);
     local_bilinear_form_->apply2(intersection, *test_basis_, *ansatz_basis_, local_matrix_, param_);
-    // copy local matrices to global matrix
+    // stage the local matrix in this functor's (hence this thread's) scatter buffer
     test_space_->mapper().global_indices(element, global_test_indices_);
     ansatz_space_->mapper().global_indices(element, global_ansatz_indices_);
     for (size_t ii = 0; ii < test_basis_->size(param_); ++ii)
       for (size_t jj = 0; jj < ansatz_basis_->size(param_); ++jj)
-        global_matrix_.add_to_entry(
-            global_test_indices_[ii], global_ansatz_indices_[jj], scaling_ * local_matrix_[ii][jj]);
+        scatter_.stage(
+            global_test_indices_[ii], global_ansatz_indices_[jj], scaling_ * local_matrix_[ii][jj], global_matrix_);
   } // ... apply_local(...)
+
+  //! merges this functor's pending contributions into the global matrix, \sa internal::MatrixScatterBuffer
+  void finalize() override final
+  {
+    scatter_.flush(global_matrix_);
+  }
 
 private:
   const std::unique_ptr<TestSpaceType> test_space_;
@@ -425,6 +498,7 @@ private:
   DynamicVector<size_t> global_ansatz_indices_;
   mutable std::unique_ptr<typename TestSpaceType::GlobalBasisType::LocalizedType> test_basis_;
   mutable std::unique_ptr<typename AnsatzSpaceType::GlobalBasisType::LocalizedType> ansatz_basis_;
+  internal::MatrixScatterBuffer<MatrixType> scatter_;
 }; // class LocalIntersectionBilinearFormAssembler
 
 
