@@ -722,23 +722,20 @@ public:
       apply_local(element, element_functor_wrappers, element_and_intersection_functor_wrappers);
 
       // only walk the intersections, if there are codim1 functors present
-      if ((intersection_functor_wrappers.size() + element_and_intersection_functor_wrappers.size()) > 0) {
-        for (auto&& intersection : intersections(grid_view_, element)) {
-          if (intersection.neighbor()) {
-            const auto neighbor = intersection.outside();
-            apply_local(intersection,
-                        element,
-                        neighbor,
-                        intersection_functor_wrappers,
-                        element_and_intersection_functor_wrappers);
-          } else
-            apply_local(intersection,
-                        element,
-                        element,
-                        intersection_functor_wrappers,
-                        element_and_intersection_functor_wrappers);
-        } // walk the intersections
-      } // only walk the intersections, if there are codim1 functors present
+      if ((intersection_functor_wrappers.size() + element_and_intersection_functor_wrappers.size()) == 0)
+        continue;
+      for (auto&& intersection : intersections(grid_view_, element)) {
+        if (intersection.neighbor()) {
+          const auto neighbor = intersection.outside();
+          apply_local(intersection,
+                      element,
+                      neighbor,
+                      intersection_functor_wrappers,
+                      element_and_intersection_functor_wrappers);
+        } else
+          apply_local(
+              intersection, element, element, intersection_functor_wrappers, element_and_intersection_functor_wrappers);
+      } // walk the intersections
     } // .. walk elements
   } // ... walk_range(...)
 

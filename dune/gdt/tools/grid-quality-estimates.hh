@@ -36,6 +36,21 @@ namespace Dune {
 namespace GDT {
 
 
+namespace internal {
+
+
+template <class TargetMatrix, class SourceMatrix>
+void add_matrix_to_matrix(TargetMatrix& target, const SourceMatrix& source, const size_t rows, const size_t cols)
+{
+  for (size_t ii = 0; ii < rows; ++ii)
+    for (size_t jj = 0; jj < cols; ++jj)
+      target.add_to_entry(ii, jj, source[ii][jj]);
+}
+
+
+} // namespace internal
+
+
 /**
  * \brief Numerically estimates the constant C_I of the inverse inequality over the given space's grid.
  */
@@ -91,9 +106,7 @@ double estimate_combined_inverse_trace_inequality_constant(const SpaceInterface<
     for (auto&& intersection : intersections(space.grid_view(), element)) {
       LocalIntersectionIntegralBilinearForm<I, r>(LocalProductIntegrand<I, r>(1.))
           .apply2(intersection, *basis, *basis, tmp_L2_face_product_matrix);
-      for (size_t ii = 0; ii < basis->size(); ++ii)
-        for (size_t jj = 0; jj < basis->size(); ++jj)
-          L2_face_product_matrix.add_to_entry(ii, jj, tmp_L2_face_product_matrix[ii][jj]);
+      internal::add_matrix_to_matrix(L2_face_product_matrix, tmp_L2_face_product_matrix, basis->size(), basis->size());
     }
     auto L2_element_product_matrix = XT::LA::convert_to<XT::LA::CommonDenseMatrix<double>>(
         LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>(1.)).apply2(*basis, *basis));
