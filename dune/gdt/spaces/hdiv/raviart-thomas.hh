@@ -38,6 +38,24 @@
 
 namespace Dune {
 namespace GDT {
+namespace internal {
+
+
+template <class CoefficientsType, class SwitchesType>
+void apply_raviart_thomas_switches(const CoefficientsType& coeffs,
+                                   const unsigned int intersection_index,
+                                   SwitchesType& local_switches)
+{
+  for (size_t ii = 0; ii < coeffs.size(); ++ii) {
+    const auto& local_key = coeffs.local_key(ii);
+    const auto DoF_subentity_index = local_key.subEntity();
+    if (local_key.codim() == 1 && DoF_subentity_index == intersection_index)
+      local_switches[DoF_subentity_index] *= -1.;
+  }
+} // ... apply_raviart_thomas_switches(...)
+
+
+} // namespace internal
 
 
 /**
@@ -200,15 +218,10 @@ protected:
       fe_data_[element_index] = geometry_to_scaling_factors_map.at(geometry_type);
       auto& local_switches = fe_data_[element_index];
       for (auto&& intersection : intersections(grid_view_, entity)) {
-        if (intersection.neighbor() && element_index < element_indices_.global_index(intersection.outside(), 0)) {
-          const auto intersection_index = XT::Common::numeric_cast<unsigned int>(intersection.indexInInside());
-          for (size_t ii = 0; ii < coeffs.size(); ++ii) {
-            const auto& local_key = coeffs.local_key(ii);
-            const auto DoF_subentity_index = local_key.subEntity();
-            if (local_key.codim() == 1 && DoF_subentity_index == intersection_index)
-              local_switches[DoF_subentity_index] *= -1.;
-          }
-        }
+        if (!(intersection.neighbor() && element_index < element_indices_.global_index(intersection.outside(), 0)))
+          continue;
+        const auto intersection_index = XT::Common::numeric_cast<unsigned int>(intersection.indexInInside());
+        internal::apply_raviart_thomas_switches(coeffs, intersection_index, local_switches);
       }
     }
     // update mapper, basis and communicator
