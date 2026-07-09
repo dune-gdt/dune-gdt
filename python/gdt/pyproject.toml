@@ -6,6 +6,10 @@ build-backend = "hatchling.build"
 name = "dune.gdt"
 description = "Python bindings for dune-gdt"
 readme = "README.md"
+# Matches the lower bound declared in python/xt/pyproject.toml (dune.gdt pins dune.xt to its own exact version, so the
+# two projects resolve as one graph). Declared explicitly so `uv lock` resolves a deterministic, universal lockfile
+# instead of silently defaulting to `>=3.11`.
+requires-python = ">=3.10"
 # LICENSE.txt is bundled into the wheel via [project] license-files (hatchling copies it into the .dist-info); we
 # intentionally do not set a [project] license field, as the dual BSD-2-Clause / GPL-2.0+ license is not a single SPDX
 # expression.
