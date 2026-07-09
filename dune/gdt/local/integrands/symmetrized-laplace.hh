@@ -22,6 +22,27 @@
 
 namespace Dune {
 namespace GDT {
+namespace internal {
+
+
+// Accumulates the symmetrized-gradient contribution sum_{rr,cc} sym_grad[rr][cc] * test_grad[rr][cc] * diffusion for a
+// single (test, ansatz) basis function pair (extracted to keep control-flow nesting <= 3, cpp:S134).
+template <class SymGradType, class TestGradType, class F>
+F symmetrized_laplace_pair(const SymGradType& sym_ansatz_grad,
+                           const TestGradType& test_grad,
+                           const size_t r,
+                           const size_t d,
+                           const F& diffusion)
+{
+  F ret(0);
+  for (size_t rr = 0; rr < r; ++rr)
+    for (size_t cc = 0; cc < d; ++cc)
+      ret += sym_ansatz_grad[rr][cc] * test_grad[rr][cc] * diffusion;
+  return ret;
+}
+
+
+} // namespace internal
 
 
 /**
@@ -107,9 +128,8 @@ public:
     // compute elliptic evaluation
     for (size_t ii = 0; ii < rows; ++ii)
       for (size_t jj = 0; jj < cols; ++jj)
-        for (size_t rr = 0; rr < r; ++rr)
-          for (size_t cc = 0; cc < d; ++cc)
-            result[ii][jj] += symmetric_ansatz_basis_grads_[jj][rr][cc] * test_basis_grads_[ii][rr][cc] * diffusion;
+        result[ii][jj] += internal::symmetrized_laplace_pair(
+            symmetric_ansatz_basis_grads_[jj], test_basis_grads_[ii], r, d, diffusion);
   } // ... evaluate(...)
 
 private:
