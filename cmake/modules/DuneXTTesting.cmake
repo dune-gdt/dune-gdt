@@ -299,18 +299,20 @@ macro(DXT_ADD_PYTHON_TESTS)
   # first.
   #
   # `--frozen` pins resolution to the committed lockfile (python/{xt,gdt}/uv.lock, symlinked into the assembly point
-  # alongside pyproject.toml). It is used as-is: uv neither re-resolves against an index nor writes the lock back through
-  # that symlink into the source tree, keeping the test run reproducible and offline. Regenerate the lockfiles from a
-  # clean source checkout with `python python/update_lockfiles.py` (no build dir required).
-  add_test(NAME xt_test_python
-           COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group test python -m pytest ${CMAKE_BINARY_DIR}/python/xt
-                   --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml)
+  # alongside pyproject.toml). It is used as-is: uv neither re-resolves against an index nor writes the lock back
+  # through that symlink into the source tree, keeping the test run reproducible and offline. Regenerate the lockfiles
+  # from a clean source checkout with `python python/update_lockfiles.py` (no build dir required).
+  add_test(
+    NAME xt_test_python
+    COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group test python -m pytest ${CMAKE_BINARY_DIR}/python/xt
+            --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml)
   set_tests_properties(
     xt_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/xt ENVIRONMENT
                               COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-xt LABELS "dune-gdt-test;python_test")
-  add_test(NAME gdt_test_python
-           COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group test python -m pytest ${CMAKE_BINARY_DIR}/python/gdt
-                   --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml)
+  add_test(
+    NAME gdt_test_python
+    COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group test python -m pytest ${CMAKE_BINARY_DIR}/python/gdt
+            --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml)
   set_tests_properties(
     gdt_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/gdt ENVIRONMENT
                                COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt LABELS "dune-gdt-test;python_test")
