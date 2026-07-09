@@ -6,6 +6,10 @@ build-backend = "hatchling.build"
 name = "dune.xt"
 description = "Python for Dune-Gdt"
 readme = "README.md"
+# Lower bound implied by the environment markers used throughout this file (the `python_version < "3.11"` pymor pin and
+# the `python_version >= "3.13"` clangquill pin). Declared explicitly so `uv lock` resolves a deterministic, universal
+# lockfile instead of silently defaulting to `>=3.11` (which would drop the 3.10 markers from the resolution).
+requires-python = ">=3.10"
 # LICENSE.txt is bundled into the wheel via [project] license-files (hatchling copies it into the .dist-info); we
 # intentionally do not set a [project] license field, as the dual BSD-2-Clause / GPL-2.0+ license is not a single SPDX
 # expression.
