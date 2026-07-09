@@ -22,6 +22,7 @@
 
 #include <dune/xt/common/memory.hh>
 #include <dune/xt/common/parameter.hh>
+#include <dune/xt/grid/entity.hh>
 #include <dune/xt/grid/intersection.hh>
 
 #include <dune/gdt/exceptions.hh>
@@ -788,11 +789,8 @@ public:
       return;
     // compute jump indicator (8.176)
     double element_jump_indicator = 0;
-    double element_boundary_without_domain_boundary = (d == 1) ? 1. : 0.;
     for (auto&& intersection : intersections(assembly_grid_view_, element())) {
       if (intersection.neighbor() && !intersection.boundary()) {
-        if (d > 1)
-          element_boundary_without_domain_boundary += XT::Grid::diameter(intersection);
         const auto neighbor = intersection.outside();
         v_->bind(neighbor);
         const auto integration_order = std::pow(std::max(u_->order(param), v_->order(param)), 2);
@@ -811,8 +809,10 @@ public:
               integration_factor * quadrature_weight * std::pow(value_on_element - value_on_neighbor, 2);
         }
       }
-      element_jump_indicator /= element_boundary_without_domain_boundary * element().geometry().volume();
     }
+    // normalize once by h_K |K|^(3/4) as in (8.176) (this used to happen within the intersection loop above, dividing
+    // earlier faces' contributions repeatedly and yielding 0/0 = NaN on elements touching the domain boundary)
+    element_jump_indicator /= XT::Grid::diameter(element()) * std::pow(element().geometry().volume(), 0.75);
     // compute smoothed discrete jump indicator (8.180)
     double smoothed_discrete_jump_indicator = 0;
     const double xi_min = 0.5;
@@ -823,7 +823,7 @@ public:
       smoothed_discrete_jump_indicator = 1;
     else
       smoothed_discrete_jump_indicator =
-          0.5 * std::sin(M_PI * (element_jump_indicator - (xi_max - xi_min)) / (2 * (xi_max - xi_min))) + 0.5;
+          0.5 * std::sin(M_PI * (element_jump_indicator - 0.5 * (xi_min + xi_max)) / (xi_max - xi_min)) + 0.5;
     // evaluate artificial viscosity form (8.183)
     if (smoothed_discrete_jump_indicator > 0) {
       const auto h = element().geometry().volume();
@@ -835,10 +835,14 @@ public:
         const auto quadrature_weight = quadrature_point.weight();
         const auto source_jacobian = u_->jacobian(point_in_reference_element, param);
         basis.jacobians(point_in_reference_element, basis_jacobians_, param);
-        // compute beta_h
-        for (size_t ii = 0; ii < basis.size(param); ++ii)
+        // compute beta_h, the viscous form acts on all m components (Frobenius product of the jacobians)
+        for (size_t ii = 0; ii < basis.size(param); ++ii) {
+          double grad_u_times_grad_basis = 0.;
+          for (size_t rr = 0; rr < m; ++rr)
+            grad_u_times_grad_basis += source_jacobian[rr] * basis_jacobians_[ii][rr];
           local_dofs_[ii] += integration_factor * quadrature_weight * nu_1_ * std::pow(h, alpha_1_)
-                             * smoothed_discrete_jump_indicator * (source_jacobian[0] * basis_jacobians_[ii][0]);
+                             * smoothed_discrete_jump_indicator * grad_u_times_grad_basis;
+        }
       }
     }
     // apply local mass matrix, if required (not optimal, uses a temporary)
