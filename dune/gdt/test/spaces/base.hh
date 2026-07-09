@@ -110,14 +110,14 @@ struct SpaceTestBase : public ::testing::Test
       EXPECT_EQ(lagrange_points.size(), basis->size() / r);
       for (size_t ii = 0; ii < lagrange_points.size(); ++ii) {
         const auto values = basis->evaluate_set(lagrange_points[ii]);
-        for (size_t rr = 0; rr < r; ++rr) {
-          for (size_t jj = 0; jj < lagrange_points.size(); ++jj) {
-            EXPECT_TRUE(XT::Common::FloatCmp::eq(
-                values[rr * lagrange_points.size() + jj][rr], ii == jj ? 1. : 0., tolerance, tolerance))
-                << "ii = " << ii << "\nrr = " << rr << "\njj = " << jj
-                << "\nlagrange_points[ii] = " << lagrange_points[ii]
-                << "\nbasis->evaluate_set(lagrange_points[ii])[jj] = " << values[jj];
-          }
+        for (size_t rr_jj = 0; rr_jj < r * lagrange_points.size(); ++rr_jj) {
+          const size_t rr = rr_jj / lagrange_points.size();
+          const size_t jj = rr_jj % lagrange_points.size();
+          EXPECT_TRUE(XT::Common::FloatCmp::eq(
+              values[rr * lagrange_points.size() + jj][rr], ii == jj ? 1. : 0., tolerance, tolerance))
+              << "ii = " << ii << "\nrr = " << rr << "\njj = " << jj
+              << "\nlagrange_points[ii] = " << lagrange_points[ii]
+              << "\nbasis->evaluate_set(lagrange_points[ii])[jj] = " << values[jj];
         }
       }
     }
