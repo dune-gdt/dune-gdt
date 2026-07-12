@@ -64,7 +64,7 @@ def parse_info(path):
 
 def area_of(path, root):
     if root and path.startswith(root):
-        path = path[len(root):].lstrip("/")
+        path = path[len(root) :].lstrip("/")
     for area in sorted(AREAS, key=len, reverse=True):
         if path.startswith(area + "/") or path == area:
             return area
@@ -74,10 +74,14 @@ def area_of(path, root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("info")
-    parser.add_argument("--root", default="", help="source dir prefix to strip from SF: paths")
+    parser.add_argument(
+        "--root", default="", help="source dir prefix to strip from SF: paths"
+    )
     args = parser.parse_args()
 
-    stats = {area: [0, 0, 0, 0] for area in AREAS + [OTHER]}  # lines, hits, misses, partials
+    stats = {
+        area: [0, 0, 0, 0] for area in AREAS + [OTHER]
+    }  # lines, hits, misses, partials
     for path, lines in parse_info(args.info).items():
         acc = stats[area_of(path, args.root)]
         for count, br_total, br_taken in lines.values():
