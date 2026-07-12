@@ -47,21 +47,37 @@ struct LocalAdvectionFvCouplingOperatorTest : public ::testing::Test
   using FluxType = XT::Functions::GenericFunction<1, d, 1>;
   using NumericalFluxType = NumericalUpwindFlux<I, d, 1, double>;
   using OperatorType = LocalAdvectionFvCouplingOperator<I, V, GV>;
+  using DomainType = XT::Common::FieldVector<double, d>;
+
+  // The linear-transport flux f(u) = direction * u and its jacobian df/du = direction, held as members (with the
+  // lambdas capturing the direction member by reference) exactly as in dune/gdt/test/linear-transport/base.hh; the
+  // upwind numerical flux requires the jacobian, so it must be provided.
+  static DomainType unit_direction()
+  {
+    DomainType dir(0.);
+    dir[0] = 1.;
+    return dir;
+  }
+
+  const DomainType direction_;
+  const FluxType flux_;
+
+  LocalAdvectionFvCouplingOperatorTest()
+    : direction_(unit_direction())
+    , flux_(
+          1,
+          [&](const auto& u, const auto& /*param*/) { return direction_ * u; },
+          "linear_transport",
+          {},
+          [&](const auto& /*u*/, const auto& /*param*/) { return direction_; })
+  {
+  }
 
   static GP make_grid()
   {
     return GP(XT::Grid::make_cube_grid<G>(XT::Common::from_string<FieldVector<double, d>>("[0 0 0 0]"),
                                           XT::Common::from_string<FieldVector<double, d>>("[1 1 1 1]"),
                                           XT::Common::from_string<std::array<unsigned int, d>>("[2 2 2 2]")));
-  }
-
-  static FluxType make_flux()
-  {
-    XT::Common::FieldVector<double, d> direction(0.);
-    direction[0] = 1.;
-    // f(u) = direction * u; the jacobian argument is left defaulted (the upwind flux then behaves as a central flux
-    // for equal in/out states, which is all these constant-source conservation checks require).
-    return FluxType(1, [direction](const auto& u, const auto& /*param*/) { return direction * u; });
   }
 
   // On a single interior intersection the FV coupling operator adds
@@ -80,8 +96,7 @@ struct LocalAdvectionFvCouplingOperatorTest : public ::testing::Test
     auto source = make_discrete_function<V>(fv_space);
     for (size_t ii = 0; ii < source.dofs().vector().size(); ++ii)
       source.dofs().vector().set_entry(ii, c);
-    auto flux = make_flux();
-    NumericalFluxType numerical_flux(flux);
+    NumericalFluxType numerical_flux(this->flux_);
     OperatorType op(source, numerical_flux, /*source_is_elementwise_constant=*/true);
     const auto element = *(grid_view.template begin<0>());
     double max_abs_update = 0.;
@@ -114,8 +129,7 @@ struct LocalAdvectionFvCouplingOperatorTest : public ::testing::Test
     auto source = make_discrete_function<V>(fv_space);
     for (size_t ii = 0; ii < source.dofs().vector().size(); ++ii)
       source.dofs().vector().set_entry(ii, c);
-    auto flux = make_flux();
-    NumericalFluxType numerical_flux(flux);
+    NumericalFluxType numerical_flux(this->flux_);
     OperatorType op_from_source(source, numerical_flux, /*source_is_elementwise_constant=*/true);
     OperatorType op_from_space_and_vector(
         fv_space, source.dofs().vector(), numerical_flux, /*source_is_elementwise_constant=*/true);
@@ -151,8 +165,7 @@ struct LocalAdvectionFvCouplingOperatorTest : public ::testing::Test
     auto source = make_discrete_function<V>(fv_space);
     for (size_t ii = 0; ii < source.dofs().vector().size(); ++ii)
       source.dofs().vector().set_entry(ii, c);
-    auto flux = make_flux();
-    NumericalFluxType numerical_flux(flux);
+    NumericalFluxType numerical_flux(this->flux_);
     OperatorType op(source, numerical_flux, /*source_is_elementwise_constant=*/true);
     auto clone = op.copy();
     const auto element = *(grid_view.template begin<0>());
