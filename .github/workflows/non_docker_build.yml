@@ -142,10 +142,21 @@ jobs:
         # the stock debug build (no instrumentation)
         - preset: debug
           coverage: false
+          coverage_llvm: false
         # the release build compiled with gcov instrumentation (release_coverage
         # preset) so it can report C++ (and, via the bindings, Python) coverage
         - preset: release_coverage
           coverage: true
+          coverage_llvm: false
+        # measurement experiment (issue #314 / PR #277): the same release build
+        # compiled with clang-22's native source-based coverage instead of gcov
+        # (-fprofile-instr-generate -fcoverage-mapping), exported to lcov format via
+        # llvm-profdata/llvm-cov. Produces artifacts + a job summary for comparison
+        # against the gcc/gcovr leg above; deliberately NOT uploaded to Codecov, so
+        # the commit's Codecov report stays a pure gcc baseline for the A/B.
+        - preset: clang22-release_coverage
+          coverage: false
+          coverage_llvm: true
     env:
       # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
       # hash), the ccache survives manifest changes and partial rebuilds, so the
@@ -179,6 +190,22 @@ jobs:
         # those tests. gcovr/coverage.py are pulled on the fly by uv inside the
         # CMake coverage_cpp / coverage_python targets (coverage leg only).
         sudo apt-get install -y ninja-build ccache xvfb
+
+    - name: Install Clang 22
+      # Only the clang22-* leg needs clang-22; skip the (slow) apt repo add elsewhere.
+      # The clang22-* presets compile the project with clang-22/clang++-22 (the vcpkg
+      # dependencies still build with the runner's default gcc, exactly as the existing
+      # clang-* presets do). clang-22 is not in the stock ubuntu-24.04 apt repositories,
+      # so add the official LLVM apt repo via the upstream llvm.sh helper; llvm-22
+      # provides the llvm-profdata-22/llvm-cov-22/llvm-objdump-22 tools the
+      # coverage_cpp_llvm target runs.
+      if: startsWith(matrix.preset, 'clang22')
+      run: |
+        wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+        chmod +x /tmp/llvm.sh
+        sudo /tmp/llvm.sh 22
+        sudo apt-get install -y clang-22 llvm-22
+        clang-22 --version
 
     - name: Set up uv
       # Both legs run the Python test suite, which the ctest xt_test_python /
@@ -256,6 +283,31 @@ jobs:
       # written by the pytest ctest runs and writes build/<preset>/coverage-python.xml.
       if: ${{ matrix.coverage }}
       run: cmake --build --preset=${{ matrix.preset }} --target coverage_python
+
+    - name: Collect C++ coverage (llvm source-based -> lcov)
+      # merges the .profraw files written by the instrumented test run (see the
+      # clang22-release_coverage test preset's LLVM_PROFILE_FILE) and exports two
+      # lcov-format reports (with and without branch records) plus per-area summary
+      # tables -- see .ci/llvm_cov_export.bash / .ci/lcov_area_summary.py.
+      if: ${{ matrix.coverage_llvm }}
+      run: cmake --build --preset=${{ matrix.preset }} --target coverage_cpp_llvm
+
+    - name: Publish lcov area summaries to the job summary
+      if: ${{ matrix.coverage_llvm }}
+      run: |
+        python3 .ci/lcov_area_summary.py build/${{ matrix.preset }}/coverage-cpp.info --root "$PWD" >> "$GITHUB_STEP_SUMMARY"
+        echo >> "$GITHUB_STEP_SUMMARY"
+        python3 .ci/lcov_area_summary.py build/${{ matrix.preset }}/coverage-cpp-lineonly.info --root "$PWD" >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload lcov reports as artifact
+      if: ${{ matrix.coverage_llvm }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: clang22-lcov-coverage
+        path: |
+          ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-cpp.info
+          ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-cpp-lineonly.info
+        if-no-files-found: error
 
     - name: Upload C++ coverage to Codecov
       if: ${{ matrix.coverage }}

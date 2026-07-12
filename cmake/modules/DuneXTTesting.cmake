@@ -333,6 +333,23 @@ macro(DXT_ADD_PYTHON_TESTS)
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       VERBATIM USES_TERMINAL)
   endif()
+  if(NOT TARGET coverage_cpp_llvm)
+    # llvm source-based coverage (clang22-release_coverage preset: -fprofile-instr-generate -fcoverage-mapping) ->
+    # lcov-format reports, one with llvm's branch records and one line-only, plus a per-area markdown summary of each
+    # for comparison against the gcc/gcovr numbers (issue #314). DXT_LLVM_VERSION picks the llvm-profdata/llvm-cov/
+    # llvm-objdump suffix; the preset sets it explicitly, the default matches the current clang22-* presets.
+    set(DXT_LLVM_VERSION "22" CACHE STRING "major version suffix of the llvm-profdata/llvm-cov/llvm-objdump binaries")
+    add_custom_target(
+      coverage_cpp_llvm
+      COMMAND ${CMAKE_SOURCE_DIR}/.ci/llvm_cov_export.bash ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR}
+              ${DXT_LLVM_VERSION}
+      COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/.ci/lcov_area_summary.py ${CMAKE_BINARY_DIR}/coverage-cpp.info
+              --root ${CMAKE_SOURCE_DIR}
+      COMMAND ${Python_EXECUTABLE} ${CMAKE_SOURCE_DIR}/.ci/lcov_area_summary.py
+              ${CMAKE_BINARY_DIR}/coverage-cpp-lineonly.info --root ${CMAKE_SOURCE_DIR}
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      VERBATIM USES_TERMINAL)
+  endif()
   if(NOT TARGET coverage_python)
     # combine the two coverage.py data files written by the pytest CTest runs and emit one XML.
     add_custom_target(
