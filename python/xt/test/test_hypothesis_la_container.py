@@ -16,6 +16,9 @@ Here the same cross product is a runtime pytest parametrization over the already
 binding classes, and hypothesis supplies the payloads that the .tpl tests hard-code.
 """
 
+import subprocess
+import sys
+
 import numpy as np
 import pytest
 from hypothesis import given
@@ -125,6 +128,31 @@ class TestVectorAgainstNumpy:
         vec = make_vector(cls, data)
         assert vec.almost_equal(vec)
         assert vec.almost_equal(vec.copy())
+
+
+# Iterating an *empty* vector of any backend segfaults with the current bindings
+# (`list(la.CommonVectorSizeT(0, 0))` is a minimal reproducer; nonempty vectors iterate
+# fine). Found by hypothesis shrinking the grid-provider partition test down to a
+# single-element grid, whose inner_intersection_indices() returns an empty
+# CommonVectorSizeT. Exercised in a subprocess so the crash fails this test instead of
+# killing the whole pytest process; once the binding is fixed the assertion still runs.
+@pytest.mark.parametrize(
+    "cls_name",
+    ["CommonVector", "IstlVector", "EigenVector", "CommonVectorSizeT"],
+)
+def test_iterating_empty_vector(cls_name):
+    if getattr(la, cls_name, None) is None:
+        pytest.skip(f"{cls_name} not available in this build")
+    code = f"import dune.xt.la as la\nassert list(la.{cls_name}(0, 0)) == []\n"
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True
+    )
+    if result.returncode < 0:
+        pytest.xfail(
+            f"iterating an empty {cls_name} crashes (signal {-result.returncode}); "
+            "known upstream binding bug found by this test suite"
+        )
+    assert result.returncode == 0, result.stderr
 
 
 if __name__ == "__main__":

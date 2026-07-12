@@ -111,7 +111,7 @@ def bounding_boxes(draw, dim, coordinate_range=100.0, min_extent=0.1, max_extent
             ]
         )
     )
-    upper = tuple(ll + e for ll, e in zip(lower, extents))
+    upper = tuple(ll + e for ll, e in zip(lower, extents, strict=True))
     return lower, upper
 
 
@@ -169,7 +169,10 @@ def _monomial_expression(alpha):
     return "*".join(factors) if factors else "1.0"
 
 
-@dataclass(frozen=True)
+# eq=False: with the (unhashable) coefficients dict excluded from comparison, the generated
+# __eq__/__hash__ would consider two polynomials equal iff they share the dimension; identity
+# semantics are safer for objects hypothesis puts into failure reports and caches
+@dataclass(frozen=True, eq=False)
 class Polynomial:
     """A multivariate polynomial with an exact dune ExpressionFunction representation.
 

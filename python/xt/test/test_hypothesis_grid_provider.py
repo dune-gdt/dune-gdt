@@ -61,12 +61,18 @@ def test_global_refine_scales_element_count(spec):
 @given(spec=grid_specs(max_elements_per_dim=3))
 def test_boundary_and_inner_intersection_indices_partition(spec):
     grid = spec.make_grid()
-    n_boundary = len(grid.boundary_intersection_indices())
-    n_inner = len(grid.inner_intersection_indices())
+    boundary = set(grid.boundary_intersection_indices())
+    n_boundary = len(boundary)
     assert n_boundary > 0
-    # every codim-1 entity of the (boundary-touching) structured box shows up either as a
-    # boundary intersection or as an inner one seen from both neighbours
-    assert n_inner >= 0
+    if spec.expected_num_elements > 1:
+        # single-element grids have no inner intersections, and iterating the *empty*
+        # index vector segfaults with the current bindings (iterating any empty LA vector
+        # does, see test_hypothesis_la_container.py::test_iterating_empty_vector -- found
+        # by hypothesis shrinking this very test); guard until that is fixed
+        inner = set(grid.inner_intersection_indices())
+        # every codim-1 entity of the (boundary-touching) structured box shows up either as
+        # a boundary intersection or as an inner one seen from both neighbours, never both
+        assert boundary.isdisjoint(inner)
     if spec.element == "cube":
         expected_boundary = 2 * sum(
             int(np.prod([n for jj, n in enumerate(spec.num_elements) if jj != ii]))
