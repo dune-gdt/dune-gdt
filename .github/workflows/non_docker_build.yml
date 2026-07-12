@@ -295,9 +295,11 @@ jobs:
     - name: Publish lcov area summaries to the job summary
       if: ${{ matrix.coverage_llvm }}
       run: |
-        python3 .ci/lcov_area_summary.py build/${{ matrix.preset }}/coverage-cpp.info --root "$PWD" >> "$GITHUB_STEP_SUMMARY"
-        echo >> "$GITHUB_STEP_SUMMARY"
-        python3 .ci/lcov_area_summary.py build/${{ matrix.preset }}/coverage-cpp-lineonly.info --root "$PWD" >> "$GITHUB_STEP_SUMMARY"
+        {
+          python3 .ci/lcov_area_summary.py build/${{ matrix.preset }}/coverage-cpp.info --root "$PWD"
+          echo
+          python3 .ci/lcov_area_summary.py build/${{ matrix.preset }}/coverage-cpp-lineonly.info --root "$PWD"
+        } >> "$GITHUB_STEP_SUMMARY"
 
     - name: Upload lcov reports as artifact
       if: ${{ matrix.coverage_llvm }}
