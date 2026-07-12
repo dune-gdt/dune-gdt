@@ -8,6 +8,10 @@
 //   Felix Schindler (2018)
 //   René Fritze     (2018)
 
+#ifndef DUNE_XT_COMMON_TEST_MAIN_CATCH_EXCEPTIONS
+#  define DUNE_XT_COMMON_TEST_MAIN_CATCH_EXCEPTIONS 1
+#endif
+
 #include <dune/xt/test/main.hxx> // <- this one has to come first (includes the config.h)!
 
 #include <algorithm>
