@@ -59,12 +59,9 @@ struct LocalAdvectionFvCouplingOperatorTest : public ::testing::Test
   {
     XT::Common::FieldVector<double, d> direction(0.);
     direction[0] = 1.;
-    return FluxType(
-        1,
-        [direction](const auto& u, const auto& /*param*/) { return direction * u; },
-        "linear_transport",
-        {},
-        [direction](const auto& /*u*/, const auto& /*param*/) { return direction; });
+    // f(u) = direction * u; the jacobian argument is left defaulted (the upwind flux then behaves as a central flux
+    // for equal in/out states, which is all these constant-source conservation checks require).
+    return FluxType(1, [direction](const auto& u, const auto& /*param*/) { return direction * u; });
   }
 
   // On a single interior intersection the FV coupling operator adds
