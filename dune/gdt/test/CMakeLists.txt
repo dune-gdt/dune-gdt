@@ -18,6 +18,7 @@
 set(GDT_TEST_SUBDIRS
     burgers
     discretefunction
+    finite-elements
     integrands
     interpolations
     inviscid-compressible-flow
