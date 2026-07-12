@@ -55,11 +55,11 @@ class GridSpec:
     def make_grid(self):
         from dune.xt.grid import Cube, Dim, Simplex, make_cube_grid
 
-        kwargs = dict(
-            lower_left=list(self.lower_left),
-            upper_right=list(self.upper_right),
-            num_elements=list(self.num_elements),
-        )
+        kwargs = {
+            "lower_left": list(self.lower_left),
+            "upper_right": list(self.upper_right),
+            "num_elements": list(self.num_elements),
+        }
         if self.dim == 1:  # the 1d overload (ONEDGRID) takes no element type
             return make_cube_grid(Dim(1), **kwargs)
         elem = {"cube": Cube, "simplex": Simplex}[self.element]

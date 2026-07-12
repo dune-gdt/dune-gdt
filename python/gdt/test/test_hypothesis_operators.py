@@ -183,11 +183,15 @@ def test_weighted_l2_matrix_is_positive_definite(data, spec, weight, order):
     mat = _l2_matrix(grid, space, weight)
 
     (x,) = _random_probe_vectors(data, space.num_DoFs, 1)
-    if x.sup_norm() == 0.0:
-        return  # positive definiteness says nothing about the zero vector
+    # the probe entries are drawn without subnormals, so the sup norm is either exactly 0.0
+    # (skip: positive definiteness says nothing about the zero vector) or at least DBL_MIN,
+    # making the reciprocal below finite
+    sup = x.sup_norm()
+    if sup < np.finfo(np.float64).tiny:
+        return
     # normalize the probe: for probes like [0.0, 5e-324] (found by hypothesis) the squares
     # underflow to 0.0, which is a property of double arithmetic, not of the matrix
-    x.scal(1.0 / x.sup_norm())
+    x.scal(1.0 / sup)
     # <x, Mx> == integral of (weight * u_x^2) > 0 for u_x != 0
     assert x.dot(_mv(mat, x)) > 0.0
 
