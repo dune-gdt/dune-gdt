@@ -60,7 +60,7 @@ struct LocalElementBilinearFormIndicatorOperatorTest : public ::testing::Test
     auto source = make_discrete_function<V>(fv_space);
     for (size_t ii = 0; ii < source.dofs().vector().size(); ++ii)
       source.dofs().vector().set_entry(ii, c);
-    BilinearFormType bilinear_form(LocalProductIntegrand<E>());
+    BilinearFormType bilinear_form{LocalProductIntegrand<E>()};
     OperatorType op(bilinear_form, source);
     const auto element = *(grid_view.template begin<0>());
     auto range = make_discrete_function<V>(fv_space);
@@ -81,7 +81,7 @@ struct LocalElementBilinearFormIndicatorOperatorTest : public ::testing::Test
     auto source = make_discrete_function<V>(fv_space);
     for (size_t ii = 0; ii < source.dofs().vector().size(); ++ii)
       source.dofs().vector().set_entry(ii, c);
-    BilinearFormType bilinear_form(LocalProductIntegrand<E>());
+    BilinearFormType bilinear_form{LocalProductIntegrand<E>()};
     OperatorType op(bilinear_form, source);
     const auto element = *(grid_view.template begin<0>());
     auto range = make_discrete_function<V>(fv_space);
@@ -108,7 +108,7 @@ struct LocalElementBilinearFormIndicatorOperatorTest : public ::testing::Test
     auto source = make_discrete_function<V>(fv_space);
     for (size_t ii = 0; ii < source.dofs().vector().size(); ++ii)
       source.dofs().vector().set_entry(ii, c);
-    BilinearFormType bilinear_form(LocalProductIntegrand<E>());
+    BilinearFormType bilinear_form{LocalProductIntegrand<E>()};
     // construct without source, then set it via with_source
     OperatorType op_without_source(bilinear_form);
     auto op = op_without_source.with_source(source);
