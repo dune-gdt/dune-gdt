@@ -21,8 +21,8 @@ using namespace Dune;
 using namespace Dune::GDT;
 
 
-// Checks a scalar (r == 1) local Lagrange finite element for the expected number of DoFs, polynomial order, partition of
-// unity and Kronecker delta property at the Lagrange nodes.
+// Checks a scalar (r == 1) local Lagrange finite element for the expected number of DoFs, polynomial order, partition
+// of unity and Kronecker delta property at the Lagrange nodes.
 template <size_t d>
 static void check_lagrange(const GeometryType& geometry_type,
                            const int order,

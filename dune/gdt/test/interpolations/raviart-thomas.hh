@@ -91,8 +91,8 @@ struct RaviartThomasInterpolationOnLeafViewTest : public ::testing::Test
     e_0[0] = 1.;
     constant_source = std::make_shared<XT::Functions::ConstantFunction<d, d, 1, double>>(e_0);
     // a genuinely linear (order 1) vector field which is not contained in RT0, e.g. v(x) = (x_1, x_0, ...)
-    linear_source = std::make_shared<XT::Functions::GenericFunction<d, d, 1, double>>(
-        1, [](const auto& x, const auto&) {
+    linear_source =
+        std::make_shared<XT::Functions::GenericFunction<d, d, 1, double>>(1, [](const auto& x, const auto&) {
           XT::Common::FieldVector<double, d> ret(0.);
           for (size_t ii = 0; ii < d; ++ii)
             ret[ii] = x[(ii + 1) % d];

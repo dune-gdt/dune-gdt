@@ -18,8 +18,8 @@ using namespace Dune::GDT;
 
 
 // The local Lagrange finite element is a LocalFiniteElementWrapper (wrapper.hh) around a dune-localfunctions
-// LagrangeLocalFiniteElement, which in turn derives from LocalFiniteElementDefault (default.hh). This test exercises the
-// generic accessors provided by these two classes.
+// LagrangeLocalFiniteElement, which in turn derives from LocalFiniteElementDefault (default.hh). This test exercises
+// the generic accessors provided by these two classes.
 GTEST_TEST(finite_elements_default_wrapper, generic_accessors)
 {
   auto fe = make_local_lagrange_finite_element<double, 2, double>(GeometryTypes::triangle, 2);

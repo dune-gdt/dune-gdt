@@ -22,9 +22,8 @@ using namespace Dune::GDT;
 // Checks a lowest order (order 0) local Raviart-Thomas finite element: its number of DoFs, its (finite element) order
 // and that its basis is vector-valued with range dimension d.
 template <size_t d>
-static void check_rt0(const GeometryType& geometry_type,
-                      const size_t expected_size,
-                      const FieldVector<double, d>& interior_point)
+static void
+check_rt0(const GeometryType& geometry_type, const size_t expected_size, const FieldVector<double, d>& interior_point)
 {
   auto fe = make_local_raviart_thomas_finite_element<double, d, double>(geometry_type, 0);
   EXPECT_EQ(expected_size, fe->size());

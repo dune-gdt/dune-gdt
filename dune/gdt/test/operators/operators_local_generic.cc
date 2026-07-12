@@ -61,16 +61,15 @@ struct GenericLocalElementOperatorTest : public ::testing::Test
       source.dofs().vector().set_entry(ii, c);
     bool lambda_was_called = false;
     const double factor = 3.;
-    GenericFunctionType func = [&lambda_was_called, factor](const auto& /*source*/,
-                                                            const auto& local_sources,
-                                                            auto& local_range,
-                                                            const auto& /*param*/) {
-      lambda_was_called = true;
-      const auto& element = local_range.element();
-      const auto x_in_reference_element = element.geometry().local(element.geometry().center());
-      const auto u = local_sources[0]->evaluate(x_in_reference_element)[0];
-      local_range.dofs()[0] = factor * u;
-    };
+    GenericFunctionType func =
+        [&lambda_was_called,
+         factor](const auto& /*source*/, const auto& local_sources, auto& local_range, const auto& /*param*/) {
+          lambda_was_called = true;
+          const auto& element = local_range.element();
+          const auto x_in_reference_element = element.geometry().local(element.geometry().center());
+          const auto u = local_sources[0]->evaluate(x_in_reference_element)[0];
+          local_range.dofs()[0] = factor * u;
+        };
     OperatorType op(source, func, /*num_local_sources=*/1);
     const auto element = *(grid_view.template begin<0>());
     auto range = make_discrete_function<V>(fv_space);
@@ -105,14 +104,12 @@ struct GenericLocalElementOperatorTest : public ::testing::Test
     for (size_t ii = 0; ii < source.dofs().vector().size(); ++ii)
       source.dofs().vector().set_entry(ii, c);
     const double factor = 2.;
-    GenericFunctionType func = [factor](const auto& /*source*/,
-                                        const auto& local_sources,
-                                        auto& local_range,
-                                        const auto& /*param*/) {
-      const auto& element = local_range.element();
-      const auto x_in_reference_element = element.geometry().local(element.geometry().center());
-      local_range.dofs()[0] = factor * local_sources[0]->evaluate(x_in_reference_element)[0];
-    };
+    GenericFunctionType func =
+        [factor](const auto& /*source*/, const auto& local_sources, auto& local_range, const auto& /*param*/) {
+          const auto& element = local_range.element();
+          const auto x_in_reference_element = element.geometry().local(element.geometry().center());
+          local_range.dofs()[0] = factor * local_sources[0]->evaluate(x_in_reference_element)[0];
+        };
     OperatorType op(source, func, /*num_local_sources=*/1);
     const auto element = *(grid_view.template begin<0>());
     auto clone = op.copy();
