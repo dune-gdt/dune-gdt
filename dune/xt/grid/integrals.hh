@@ -38,9 +38,9 @@ RangeType element_integral(
 {
   static_assert(XT::Grid::is_entity<Element>::value, "element has to be a codim-0 grid entity");
   RangeType result(0.), local_result;
-  const auto quadrature_rule = QuadratureRules<typename Element::Geometry::ctype, Element::dimension>::rule(
-      element.type(), polynomial_order_of_the_function);
-  for (auto [point_in_reference_element, quadrature_weight] : quadrature_rule) {
+  for (auto [point_in_reference_element, quadrature_weight] :
+       QuadratureRules<typename Element::Geometry::ctype, Element::dimension>::rule(element.type(),
+                                                                                    polynomial_order_of_the_function)) {
     const auto integration_factor = element.geometry().integrationElement(point_in_reference_element);
     local_result = function(point_in_reference_element);
     local_result *= quadrature_weight * integration_factor;
@@ -69,16 +69,15 @@ double element_integral(const Element& element,
 template <class RangeType, class IntersectionType>
 RangeType intersection_integral(
     const IntersectionType& intersection,
-    std::function<RangeType(const FieldVector<typename IntersectionType::ctype, IntersectionType::mydimension>&
-                                point_in_reference_intersection)> function,
+    std::function<RangeType(const FieldVector<typename IntersectionType::Geometry::ctype,
+                                              IntersectionType::mydimension>& point_in_reference_intersection)>
+        function,
     const int polynomial_order_of_the_function)
 {
   static_assert(XT::Grid::is_intersection<IntersectionType>::value, "intersection has to be a codim-1 grid entity");
   RangeType result(0.), local_result;
-  const auto quadrature_rule_intersection =
-      QuadratureRules<typename IntersectionType::ctype, IntersectionType::mydimension>::rule(
-          intersection.type(), polynomial_order_of_the_function);
-  for (auto&& quadrature_point : quadrature_rule_intersection) {
+  for (auto&& quadrature_point : QuadratureRules<typename IntersectionType::ctype, IntersectionType::mydimension>::rule(
+           intersection.type(), polynomial_order_of_the_function)) {
     const auto point_in_reference_intersection = quadrature_point.position();
     const auto quadrature_weight = quadrature_point.weight();
     const auto integration_factor = intersection.geometry().integrationElement(point_in_reference_intersection);
