@@ -24,7 +24,7 @@ parsers:
 
 # Non-library development scripts that should not count towards coverage.
 ignore:
-  - "python/update_lockfiles.py"
+- "python/update_lockfiles.py"
 
 # https://docs.codecov.io/docs/pull-request-comments
 # https://docs.codecov.io/docs/graphs
