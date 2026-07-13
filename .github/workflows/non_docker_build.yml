@@ -139,23 +139,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        # the stock debug build (no instrumentation)
+        # the stock debug build (no instrumentation), compiled with the runner's
+        # default gcc -- kept on gcc deliberately so both major compilers still
+        # build and run the full suite
         - preset: debug
-          coverage: false
           coverage_llvm: false
-        # the release build compiled with gcov instrumentation (release_coverage
-        # preset) so it can report C++ (and, via the bindings, Python) coverage
-        - preset: release_coverage
-          coverage: true
-          coverage_llvm: false
-        # measurement experiment (issue #314 / PR #277): the same release build
-        # compiled with clang-22's native source-based coverage instead of gcov
-        # (-fprofile-instr-generate -fcoverage-mapping), exported to lcov format via
-        # llvm-profdata/llvm-cov. Produces artifacts + a job summary for comparison
-        # against the gcc/gcovr leg above; deliberately NOT uploaded to Codecov, so
-        # the commit's Codecov report stays a pure gcc baseline for the A/B.
+        # the coverage leg: the release build compiled with clang-22's native
+        # source-based coverage (-fprofile-instr-generate -fcoverage-mapping),
+        # exported to lcov format via llvm-profdata/llvm-cov (see
+        # .ci/llvm_cov_export.bash) and uploaded to Codecov. This replaced the
+        # previous gcc --coverage / gcovr pipeline: gcovr cannot read clang's
+        # gcov-style data (PR #277), and llvm's own branch data is free of the
+        # gcov template/exception noise that motivated issue #314's Track A (see
+        # PR #318 for the side-by-side measurement).
         - preset: clang22-release_coverage
-          coverage: false
           coverage_llvm: true
     env:
       # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
@@ -187,8 +184,8 @@ jobs:
       run: |
         sudo apt-get update
         # xvfb gives the Python binding tests a headless display; both legs run
-        # those tests. gcovr/coverage.py are pulled on the fly by uv inside the
-        # CMake coverage_cpp / coverage_python targets (coverage leg only).
+        # those tests. coverage.py is pulled on the fly by uv inside the CMake
+        # coverage_python target (coverage leg only).
         sudo apt-get install -y ninja-build ccache xvfb
 
     - name: Install Clang 22
@@ -232,9 +229,9 @@ jobs:
       id: configure_cmake
       # Route every compile through ccache. Passing the launcher as a cache
       # variable (not just an env var) is harmless on the fresh build/ tree here
-      # (build/ is no longer cached). The gcov instrumentation lives in the
-      # release_coverage preset (see CMakePresets.json), so nothing extra is
-      # injected here.
+      # (build/ is no longer cached). The source-based coverage instrumentation
+      # lives in the clang22-release_coverage preset (see CMakePresets.json), so
+      # nothing extra is injected here.
       run: >
         cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
@@ -272,16 +269,11 @@ jobs:
       run: |
         xvfb-run -a ctest --preset=${{ matrix.preset }} --parallel ${{ needs.config.outputs.ctest_parallel }}
 
-    - name: Collect C++ coverage (coverage_cpp target -> Cobertura XML)
-      # gcovr is run by the CMake coverage_cpp target (pulled on the fly via uv);
-      # it writes build/<preset>/coverage-cpp.xml.
-      if: ${{ matrix.coverage }}
-      run: cmake --build --preset=${{ matrix.preset }} --target coverage_cpp
-
     - name: Collect Python coverage (coverage_python target -> XML)
       # the CMake coverage_python target combines the two coverage.py data files
       # written by the pytest ctest runs and writes build/<preset>/coverage-python.xml.
-      if: ${{ matrix.coverage }}
+      # coverage.py data is compiler-independent, so it rides on the coverage leg.
+      if: ${{ matrix.coverage_llvm }}
       run: cmake --build --preset=${{ matrix.preset }} --target coverage_python
 
     - name: Collect C++ coverage (llvm source-based -> lcov)
@@ -312,14 +304,17 @@ jobs:
         if-no-files-found: error
 
     - name: Upload C++ coverage to Codecov
-      if: ${{ matrix.coverage }}
+      # uploads the lcov report incl. llvm's branch records (Codecov counts a hit
+      # line with untaken branches as a partial). The line-only variant is kept as
+      # an artifact; switching the upload to it is a one-filename change.
+      if: ${{ matrix.coverage_llvm }}
       uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         # OIDC (id-token) auth instead of an upload token; see job permissions.
         use_oidc: true
-        files: ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-cpp.xml
+        files: ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-cpp.info
         flags: cpp
-        # We already produced the Cobertura XML with gcovr above; stop the action
+        # We already produced the lcov report with llvm-cov above; stop the action
         # from searching the tree and from running its own coverage plugins (the
         # gcov plugin would otherwise re-run gcov over the whole build tree).
         disable_search: true
@@ -329,7 +324,7 @@ jobs:
         fail_ci_if_error: true
 
     - name: Upload Python coverage to Codecov
-      if: ${{ matrix.coverage }}
+      if: ${{ matrix.coverage_llvm }}
       uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
       with:
         use_oidc: true
