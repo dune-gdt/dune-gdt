@@ -34,98 +34,97 @@ using namespace Dune::XT::Grid::bindings;
 #if HAVE_DUNE_UGGRID || HAVE_UG
 
 
+// Shared tail: create the grid from a filled factory and refine it. Keeping it in one place (rather
+// than repeating it in every builder) is both less code and less duplication for the analysers.
 template <class G>
-struct make_prism_grid
+XT::Grid::GridProvider<G> build_and_refine(GridFactory<G>& factory, const unsigned int num_refinements)
 {
+  XT::Grid::GridProvider<G> grid(factory.createGrid());
+  grid.global_refine(num_refinements);
+  return grid;
+}
+
+
+template <class G>
+XT::Grid::GridProvider<G> make_prism_grid(const unsigned int num_refinements)
+{
+  using D = typename G::ctype;
   static constexpr size_t d = G::dimension;
   static_assert(d == 3, "prism grids are only meaningful in 3d");
-
-  static void bind(pybind11::module& m)
-  {
-    using namespace pybind11::literals;
-    using D = typename G::ctype;
-
-    m.def(
-        "make_prism_grid",
-        [](const Dimension<d>&, const unsigned int num_refinements) {
-          GridFactory<G> factory;
-          for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5, -1.5}),
-                                XT::Common::FieldVector<D, d>({-1., -1., -1.5}),
-                                XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.5}),
-                                XT::Common::FieldVector<D, d>({-1., -1.5, -1.}),
-                                XT::Common::FieldVector<D, d>({-1., -1., -1.}),
-                                XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.})}) {
-            factory.insertVertex(vertex);
-          }
-          factory.insertElement(GeometryTypes::prism, {0, 1, 2, 3, 4, 5});
-          XT::Grid::GridProvider<G> grid(factory.createGrid());
-          grid.global_refine(num_refinements);
-          return grid;
-        },
-        "dimension"_a,
-        "num_refinements"_a = 0);
-  } // ... bind(...)
-}; // struct make_prism_grid
+  GridFactory<G> factory;
+  for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5, -1.5}),
+                        XT::Common::FieldVector<D, d>({-1., -1., -1.5}),
+                        XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.5}),
+                        XT::Common::FieldVector<D, d>({-1., -1.5, -1.}),
+                        XT::Common::FieldVector<D, d>({-1., -1., -1.}),
+                        XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.})}) {
+    factory.insertVertex(vertex);
+  }
+  factory.insertElement(GeometryTypes::prism, {0, 1, 2, 3, 4, 5});
+  return build_and_refine(factory, num_refinements);
+}
 
 
 template <class G>
-struct make_mixed_grid
+XT::Grid::GridProvider<G> make_mixed_grid(const unsigned int num_refinements)
 {
+  using D = typename G::ctype;
   static constexpr size_t d = G::dimension;
   static_assert(d == 2 || d == 3, "mixed-element grids are only implemented in 2d and 3d");
+  GridFactory<G> factory;
+  if constexpr (d == 2) {
+    for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5}),
+                          XT::Common::FieldVector<D, d>({-1., -1.25}),
+                          XT::Common::FieldVector<D, d>({-1., -1.}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1.5}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1.25}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1.}),
+                          XT::Common::FieldVector<D, d>({-1.75, -1.25})}) {
+      factory.insertVertex(vertex);
+    }
+    factory.insertElement(GeometryTypes::cube(2), {3, 0, 4, 1});
+    factory.insertElement(GeometryTypes::cube(2), {4, 1, 5, 2});
+    factory.insertElement(GeometryTypes::simplex(2), {4, 6, 3});
+    factory.insertElement(GeometryTypes::simplex(2), {4, 5, 6});
+  } else {
+    for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5, -1.}),
+                          XT::Common::FieldVector<D, d>({-1., -1.25, -1.}),
+                          XT::Common::FieldVector<D, d>({-1., -1., -1.}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1.25, -1.}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1., -1.}),
+                          XT::Common::FieldVector<D, d>({-1., -1.5, -1.5}),
+                          XT::Common::FieldVector<D, d>({-1., -1.25, -1.5}),
+                          XT::Common::FieldVector<D, d>({-1., -1., -1.5}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.5}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1.25, -1.5}),
+                          XT::Common::FieldVector<D, d>({-1.5, -1., -1.5}),
+                          XT::Common::FieldVector<D, d>({-1.75, -1.25, -1.})}) {
+      factory.insertVertex(vertex);
+    }
+    factory.insertElement(GeometryTypes::cube(3), {3, 0, 4, 1, 9, 6, 10, 7});
+    factory.insertElement(GeometryTypes::cube(3), {4, 1, 5, 2, 10, 7, 11, 8});
+    factory.insertElement(GeometryTypes::simplex(3), {4, 12, 3, 10});
+    factory.insertElement(GeometryTypes::simplex(3), {4, 5, 12, 10});
+  }
+  return build_and_refine(factory, num_refinements);
+}
 
-  static void bind(pybind11::module& m)
-  {
-    using namespace pybind11::literals;
-    using D = typename G::ctype;
 
-    m.def(
-        "make_mixed_grid",
-        [](const Dimension<d>&, const unsigned int num_refinements) {
-          GridFactory<G> factory;
-          if constexpr (d == 2) {
-            for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5}),
-                                  XT::Common::FieldVector<D, d>({-1., -1.25}),
-                                  XT::Common::FieldVector<D, d>({-1., -1.}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1.5}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1.25}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1.}),
-                                  XT::Common::FieldVector<D, d>({-1.75, -1.25})}) {
-              factory.insertVertex(vertex);
-            }
-            factory.insertElement(GeometryTypes::cube(2), {3, 0, 4, 1});
-            factory.insertElement(GeometryTypes::cube(2), {4, 1, 5, 2});
-            factory.insertElement(GeometryTypes::simplex(2), {4, 6, 3});
-            factory.insertElement(GeometryTypes::simplex(2), {4, 5, 6});
-          } else {
-            for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5, -1.}),
-                                  XT::Common::FieldVector<D, d>({-1., -1.25, -1.}),
-                                  XT::Common::FieldVector<D, d>({-1., -1., -1.}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1.25, -1.}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1., -1.}),
-                                  XT::Common::FieldVector<D, d>({-1., -1.5, -1.5}),
-                                  XT::Common::FieldVector<D, d>({-1., -1.25, -1.5}),
-                                  XT::Common::FieldVector<D, d>({-1., -1., -1.5}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.5}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1.25, -1.5}),
-                                  XT::Common::FieldVector<D, d>({-1.5, -1., -1.5}),
-                                  XT::Common::FieldVector<D, d>({-1.75, -1.25, -1.})}) {
-              factory.insertVertex(vertex);
-            }
-            factory.insertElement(GeometryTypes::cube(3), {3, 0, 4, 1, 9, 6, 10, 7});
-            factory.insertElement(GeometryTypes::cube(3), {4, 1, 5, 2, 10, 7, 11, 8});
-            factory.insertElement(GeometryTypes::simplex(3), {4, 12, 3, 10});
-            factory.insertElement(GeometryTypes::simplex(3), {4, 5, 12, 10});
-          }
-          XT::Grid::GridProvider<G> grid(factory.createGrid());
-          grid.global_refine(num_refinements);
-          return grid;
-        },
-        "dimension"_a,
-        "num_refinements"_a = 0);
-  } // ... bind(...)
-}; // struct make_mixed_grid
+// Both factories share the same python signature -- (Dim, num_refinements) -> GridProvider -- so a
+// single generic binder expresses it once; the concrete builder is passed as a function pointer.
+template <class G, XT::Grid::GridProvider<G> (*factory_function)(unsigned int)>
+void bind_unstructured_factory(pybind11::module& m, const std::string& name)
+{
+  using namespace pybind11::literals;
+  m.def(
+      name.c_str(),
+      [](const Dimension<G::dimension>&, const unsigned int num_refinements) {
+        return factory_function(num_refinements);
+      },
+      "dimension"_a,
+      "num_refinements"_a = 0);
+}
 
 
 #endif // HAVE_DUNE_UGGRID || HAVE_UG
@@ -140,8 +139,8 @@ PYBIND11_MODULE(_grid_gridprovider_unstructured, m)
   py::module::import("dune.xt.grid._grid_traits");
 
 #if HAVE_DUNE_UGGRID || HAVE_UG
-  make_mixed_grid<UG_2D>::bind(m);
-  make_mixed_grid<UG_3D>::bind(m);
-  make_prism_grid<UG_3D>::bind(m);
+  bind_unstructured_factory<UG_2D, &make_mixed_grid<UG_2D>>(m, "make_mixed_grid");
+  bind_unstructured_factory<UG_3D, &make_mixed_grid<UG_3D>>(m, "make_mixed_grid");
+  bind_unstructured_factory<UG_3D, &make_prism_grid<UG_3D>>(m, "make_prism_grid");
 #endif
 }
