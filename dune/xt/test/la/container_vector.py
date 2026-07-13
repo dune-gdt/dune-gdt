@@ -17,8 +17,18 @@ from matrices import fieldtypes, latype, vector_filter, vectors
 
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
+# The dense double vectors of the binding-exposed backends are property-tested at runtime
+# against a numpy oracle (python/xt/test/test_hypothesis_la_container.py), so their .tpl
+# instantiations are dropped here; the combinations the bindings do not reach (complex
+# fields, sparse and mapped vectors) keep their compiled tests.
+covered_by_python_bindings = {
+    "CommonDenseVector",
+    "EigenDenseVector",
+    "IstlDenseVector",
+}
+
 testtypes = [
     (safe_name(f"{mv}_{f}"), latype(mv, f))
     for mv, f in product(vectors(cache), fieldtypes(cache))  # noqa: F821
-    if vector_filter(mv, f)
+    if vector_filter(mv, f) and not (f == "double" and mv in covered_by_python_bindings)
 ]

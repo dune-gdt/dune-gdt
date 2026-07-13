@@ -14,6 +14,10 @@ The C++ side covers this via dune/xt/test/la/container_vector.tpl, which dxt_cod
 expands into one translation unit per (container backend x field type) and compiles each.
 Here the same cross product is a runtime pytest parametrization over the already-compiled
 binding classes, and hypothesis supplies the payloads that the .tpl tests hard-code.
+
+This suite *replaces* the dense-double .tpl instantiations of the backends bound here (their
+combinations are excluded in dune/xt/test/la/container_vector.py); the compiled tests remain
+for what the bindings cannot reach (complex fields, sparse and mapped vectors).
 """
 
 import subprocess
@@ -128,6 +132,44 @@ class TestVectorAgainstNumpy:
         vec = make_vector(cls, data)
         assert vec.almost_equal(vec)
         assert vec.almost_equal(vec.copy())
+
+    @given(data=vector_data())
+    def test_amax_matches_numpy(self, cls, data):
+        vec = make_vector(cls, data)
+        arr = np.asarray(data)
+        index, value = vec.amax()
+        try:
+            # comparisons only, no accumulation: the result is exact
+            assert value == np.abs(arr).max()
+            assert abs(vec.get_entry(index)) == value
+        except AssertionError:
+            if cls.__name__ == "EigenVector":
+                # EigenBaseVector::amax (dune/xt/la/container/eigen/base.hh) tie-breaks via a
+                # fuzzy FloatCmp::eq and then returns the *minimum*: for [0.0, 2.7e-163] it
+                # reports (0, 0.0), disagreeing with the Common and Istl backends. Found by
+                # this test; xfail (instead of weakening the property) until the C++ is fixed.
+                pytest.xfail(
+                    "known EigenBaseVector::amax defect for near-equal magnitudes"
+                )
+            raise
+
+    @given(data=vector_data(), summand=finite_floats(bound=1e3))
+    def test_neg_and_add_to_entry(self, cls, data, summand):
+        vec = make_vector(cls, data)
+        arr = np.asarray(data)
+        negated = vec.neg()
+        assert as_numpy(negated) == pytest.approx(-arr, abs=0.0)
+        # neg is out-of-place
+        assert as_numpy(vec) == pytest.approx(arr, abs=0.0)
+        vec.add_to_entry(0, summand)
+        assert vec.get_entry(0) == arr[0] + summand
+
+    @given(data=vector_data())
+    def test_copy_is_deep(self, cls, data):
+        vec = make_vector(cls, data)
+        clone = vec.copy()
+        clone.set_entry(0, clone.get_entry(0) + 1.0)
+        assert vec.get_entry(0) == data[0]
 
 
 # Iterating an *empty* vector of any backend segfaults with the current bindings

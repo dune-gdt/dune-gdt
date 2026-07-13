@@ -14,7 +14,10 @@
 #include "default.hh"
 
 
-using Simplicial1dGrids = ::testing::Types<ONED_1D, YASP_1D_EQUIDISTANT_OFFSET>;
+// ONED_1D is covered at runtime by the hypothesis property tests driving the bindings
+// (python/gdt/test/test_hypothesis_interpolation.py); only the grids the bindings do not
+// instantiate remain here.
+using Simplicial1dGrids = ::testing::Types<YASP_1D_EQUIDISTANT_OFFSET>;
 
 
 template <class G>

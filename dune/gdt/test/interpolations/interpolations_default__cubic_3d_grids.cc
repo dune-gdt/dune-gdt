@@ -14,18 +14,22 @@
 #include "default.hh"
 
 
-using Cubic3dGrids = ::testing::Types<YASP_3D_EQUIDISTANT_OFFSET
+// YASP_3D_EQUIDISTANT_OFFSET is covered at runtime by the hypothesis property tests driving
+// the bindings (python/gdt/test/test_hypothesis_interpolation.py); only the grids the
+// bindings do not instantiate remain here.
+using Cubic3dGrids = ::testing::Types<
 #if HAVE_DUNE_ALUGRID
-                                      ,
-                                      ALU_3D_CUBE
+    ALU_3D_CUBE
+#endif
+#if HAVE_DUNE_ALUGRID && HAVE_DUNE_UGGRID
+    ,
 #endif
 #if HAVE_DUNE_UGGRID
-                                      ,
-                                      UG_3D
+    UG_3D
 #endif
-                                      >;
+    >;
 
-
+#if HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
 template <class G>
 using InterpolationTest = Dune::GDT::Test::DefaultInterpolationOnLeafViewTest<G>;
 TYPED_TEST_SUITE(InterpolationTest, Cubic3dGrids);
@@ -33,3 +37,4 @@ TYPED_TEST(InterpolationTest, interpolates_correctly)
 {
   this->interpolates_correctly(2e-13);
 }
+#endif // HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID

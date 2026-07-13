@@ -14,9 +14,11 @@
 #include "default.hh"
 
 
+// ALU_2D_SIMPLEX_CONFORMING is covered at runtime by the hypothesis property tests driving
+// the bindings (python/gdt/test/test_hypothesis_interpolation.py); only the grids the
+// bindings do not instantiate remain here.
 using Simplicial2dGrids = ::testing::Types<
 #if HAVE_DUNE_ALUGRID
-    ALU_2D_SIMPLEX_CONFORMING,
     ALU_2D_SIMPLEX_NONCONFORMING
 #endif
 #if HAVE_DUNE_ALUGRID && HAVE_DUNE_UGGRID
