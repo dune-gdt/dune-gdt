@@ -28,7 +28,21 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from dune.xt.test.hypothesis_strategies import grid_specs
+from dune.xt.test.hypothesis_strategies import GRID_COMBINATIONS, grid_specs, has_grid
+
+# Skip cleanly on builds that bind no grids at all; element-specific tests below add their own
+# guard so a build without, e.g., ALUGrid (no simplex grids) skips just those.
+pytestmark = pytest.mark.skipif(
+    not GRID_COMBINATIONS, reason="no grid bindings available in this build"
+)
+
+_needs_cube = pytest.mark.skipif(
+    not has_grid(element="cube"), reason="no cube grid bindings available in this build"
+)
+_needs_simplex = pytest.mark.skipif(
+    not has_grid(element="simplex"),
+    reason="no simplex grid bindings available in this build",
+)
 
 
 # binomial(order + dim, dim): dimension of P_k on a d-simplex
@@ -44,6 +58,7 @@ def _cg_orders(spec, top=3):
     return st.integers(1, min(top, 2) if spec.element == "simplex" else top)
 
 
+@_needs_cube
 @given(spec=grid_specs(elements=("cube",)), order=st.integers(1, 3))
 def test_cg_dof_count_on_cube_grids(spec, order):
     from dune.gdt import ContinuousLagrangeSpace
@@ -54,6 +69,7 @@ def test_cg_dof_count_on_cube_grids(spec, order):
     assert space.min_polorder == space.max_polorder == order
 
 
+@_needs_simplex
 @given(spec=grid_specs(elements=("simplex",)))
 def test_p1_cg_dofs_are_the_vertices_on_simplicial_grids(spec):
     from dune.gdt import ContinuousLagrangeSpace

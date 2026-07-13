@@ -21,22 +21,126 @@ This module ships with the dune.xt wheel (like dune.xt.test.grid_types) so both 
 the dune-gdt pytest suites can import the same strategies.
 """
 
+import importlib
+import re
 from dataclasses import dataclass, field
 from itertools import product as _cartesian
 
 import numpy as np
 from hypothesis import strategies as st
 
-# The bindings pre-instantiate exactly these grid types (see the GridProvider* binding names):
-# 1d ONEDGRID, 2d/3d cube YASPGRID and 2d/3d simplex ALUGRID (conforming). This tuple *is* the
-# runtime-reachable slice of the compile-time grid lists used by the C++ typed tests.
-GRID_COMBINATIONS = (
-    (1, "simplex"),  # GridProvider1dSimplexOnedgrid
-    (2, "cube"),  # GridProvider2dCubeYaspgrid
-    (2, "simplex"),  # GridProvider2dSimplexAluconformgrid
-    (3, "cube"),  # GridProvider3dCubeYaspgrid
-    (3, "simplex"),  # GridProvider3dSimplexAluconformgrid
-)
+# --- binding discovery ------------------------------------------------------------------
+#
+# Rather than hard-coding which grid/container combinations the wheel was built with, we probe
+# the compiled modules for the classes they actually expose. A binding adds an instantiation ->
+# the class appears in dune.xt.grid / dune.xt.la -> the strategies below pick it up with no edit
+# here; a build without an optional dependency (Eigen, ALUGrid, ISTL, ...) simply omits those
+# classes and the dependent tests skip. This is the WP0 plumbing that #320's later work packages
+# rely on to have their new combinations property-tested automatically.
+
+
+def _import_optional(module_name):
+    """Import a compiled binding module, returning None if the wheel does not provide it."""
+    try:
+        return importlib.import_module(module_name)
+    except ImportError:
+        return None
+
+
+# GridProvider bindings are named `to_camel_case("grid_provider_" + grid_name)` (see
+# python/xt/dune/xt/grid/gridprovider.hh), where grid_name is "<dim>d_<element>_<impl>grid"
+# (python/xt/dune/xt/grid/grids.bindings.hh), e.g. GridProvider2dCubeYaspgrid,
+# GridProvider1dSimplexOnedgrid, GridProvider2dSimplexAluconformgrid. to_camel_case only
+# upper-cases the first letter of each underscore-separated word, so the element is a single
+# capitalised word and the implementation follows as one more capitalised word.
+_GRID_PROVIDER_RE = re.compile(r"^GridProvider(\d+)d([A-Z][a-z]+)([A-Z][A-Za-z0-9]*)$")
+
+
+@dataclass(frozen=True)
+class GridBinding:
+    """One compiled `GridProvider*` class, parsed back into its structural coordinates."""
+
+    dim: int
+    element: str  # "cube", "simplex", ... (lower case, as in the grid_name)
+    impl: str  # grid implementation, e.g. "yaspgrid", "onedgrid", "aluconformgrid"
+    class_name: str
+
+    @property
+    def grid_name(self):
+        return f"{self.dim}d_{self.element}_{self.impl}"
+
+
+def _parse_grid_provider_name(name):
+    """Return (dim, element, impl) for a GridProvider* class name, or None if it is not one."""
+    match = _GRID_PROVIDER_RE.match(name)
+    if match is None:
+        return None
+    return int(match.group(1)), match.group(2).lower(), match.group(3).lower()
+
+
+def discover_grid_bindings(module=None):
+    """All GridProvider* classes the dune.xt.grid binding exposes, as GridBinding descriptors.
+
+    Pass an explicit module (e.g. a stub) to test the parsing without the compiled wheel.
+    """
+    grid = module if module is not None else _import_optional("dune.xt.grid")
+    if grid is None:
+        return ()
+    bindings = []
+    for name in dir(grid):
+        parsed = _parse_grid_provider_name(name)
+        if parsed is None or not isinstance(getattr(grid, name), type):
+            continue
+        dim, element, impl = parsed
+        bindings.append(
+            GridBinding(dim=dim, element=element, impl=impl, class_name=name)
+        )
+    return tuple(sorted(bindings, key=lambda b: (b.dim, b.element, b.impl)))
+
+
+def discover_grid_combinations(module=None):
+    """The de-duplicated (dim, element) grid slice the bindings make reachable at runtime."""
+    return tuple(sorted({(b.dim, b.element) for b in discover_grid_bindings(module)}))
+
+
+def _discover_container_types(suffix, module=None):
+    la = module if module is not None else _import_optional("dune.xt.la")
+    if la is None:
+        return ()
+    result = []
+    for name in sorted(dir(la)):
+        # `CommonVectorSizeT` is an integer index container, not a floating point payload, and
+        # ends in "SizeT" rather than the suffix -- so it is naturally excluded from vectors.
+        if name == suffix or not name.endswith(suffix):
+            continue
+        obj = getattr(la, name)
+        if isinstance(obj, type):
+            result.append(obj)
+    return tuple(result)
+
+
+def discover_vector_types(module=None):
+    """Double-valued LA vector container classes exposed by dune.xt.la (Common/Istl/Eigen)."""
+    return _discover_container_types("Vector", module)
+
+
+def discover_matrix_types(module=None):
+    """LA matrix container classes exposed by dune.xt.la (dense Common, sparse Istl/Eigen)."""
+    return _discover_container_types("Matrix", module)
+
+
+# The runtime-reachable slice of the compile-time grid lists used by the C++ typed tests, e.g.
+# on a full build: (1, "simplex") ONEDGRID, (2|3, "cube") YASPGRID, (2|3, "simplex") ALUGRID.
+GRID_COMBINATIONS = discover_grid_combinations()
+
+
+def has_grid(dim=None, element=None):
+    """Whether the current build binds a grid with the given dimension and/or element type."""
+    return any(
+        (dim is None or d == dim) and (element is None or e == element)
+        for (d, e) in GRID_COMBINATIONS
+    )
+
 
 # Number of simplices a DGF cube is split into by make_cube_grid per dimension.
 SIMPLICES_PER_CUBE = {1: 1, 2: 2, 3: 6}

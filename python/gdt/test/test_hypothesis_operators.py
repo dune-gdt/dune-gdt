@@ -29,7 +29,12 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from dune.xt.test.hypothesis_strategies import grid_specs
+from dune.xt.test.hypothesis_strategies import GRID_COMBINATIONS, grid_specs
+
+# Skip cleanly on builds that bind no grids at all (nothing to draw from otherwise).
+pytestmark = pytest.mark.skipif(
+    not GRID_COMBINATIONS, reason="no grid bindings available in this build"
+)
 
 
 def _assemble(grid, space, integrand):
