@@ -34,7 +34,11 @@ template <class T>
 struct GridWalkerTest : public ::testing::Test
 {
   static constexpr size_t griddim = T::value;
-  static constexpr size_t level = 128;
+  // Number of elements per dimension (passed as num_elements to make_cube_grid, not a refinement level). Kept small on
+  // purpose: at 128 the 3d instance builds a ~2M-element grid and walks it repeatedly, which times out under the
+  // instrumented coverage build (the test is killed before it can flush its profile, so the whole TU reports 0%). All
+  // assertions below are invariants that hold at any resolution, so a small grid exercises the same code paths.
+  static constexpr size_t level = 8;
   using GridType = Dune::YaspGrid<griddim, Dune::EquidistantOffsetCoordinates<double, griddim>>;
   using GridLayerType = typename GridType::LeafGridView;
   using EntityType = extract_entity_t<GridLayerType>;
