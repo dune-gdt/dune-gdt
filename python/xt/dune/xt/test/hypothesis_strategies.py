@@ -164,7 +164,10 @@ class GridSpec:
             "upper_right": list(self.upper_right),
             "num_elements": list(self.num_elements),
         }
-        if self.dim == 1:  # the 1d overload (ONEDGRID) takes no element type
+        if self.dim == 1 and self.element == "simplex":
+            # ONEDGRID is bound through the dimension-only make_cube_grid overload (no element
+            # type); the structured 1d YaspGrid (WP2, #320) instead uses the (Dim, Cube) overload
+            # like its 2d/3d siblings, handled by the general branch below.
             return make_cube_grid(Dim(1), **kwargs)
         elem = {"cube": Cube, "simplex": Simplex}[self.element]
         return make_cube_grid(Dim(self.dim), elem(), **kwargs)

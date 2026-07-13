@@ -93,6 +93,9 @@ PYBIND11_MODULE(_grid_gridprovider_cube, m)
   py::module::import("dune.xt.grid._grid_traits");
 
   make_cube_grid<ONED_1D, void>::bind(m);
+  // WP2 (#320): the structured 1d YaspGrid uses the (Dimension, Cube) overload so it can coexist
+  // with ONED_1D (dimension-only overload) without an ambiguous 1d make_cube_grid signature.
+  make_cube_grid<YASP_1D_EQUIDISTANT_OFFSET, Cube>::bind(m);
   make_cube_grid<YASP_2D_EQUIDISTANT_OFFSET, Cube>::bind(m);
   make_cube_grid<YASP_3D_EQUIDISTANT_OFFSET, Cube>::bind(m);
 #if HAVE_DUNE_ALUGRID
