@@ -32,13 +32,33 @@ Most grid managers hold a single geometry type: `YaspGrid` is all cubes, `ALUGri
 (and, in 3d, prisms). The `dune-gdt` C++ test suite exercises those element types through the
 `make_mixed_grid` / `make_prism_grid` fixtures (`dune/gdt/test/spaces/base.hh`); this example uses
 the matching Python factories `dune.xt.grid.make_mixed_grid` / `make_prism_grid`, which build the
-same meshes and are only available when the wheel was compiled with `UGGrid`.
+same meshes.
+
+`UGGrid` is an optional dependency (the `uggrid` vcpkg feature). The cell below detects whether the
+installed wheel was built with it; if not, the demonstration cells further down are skipped with a
+note instead of failing, so this page still builds. (The property tests in
+`python/gdt/test/test_hypothesis_mixed_grids.py` exercise the same factories whenever the build
+provides them.)
 
 ```{code-cell}
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
 
 import numpy as np
+
+from dune.xt.grid import Dim, visualize_grid
+
+try:
+    from dune.xt.grid import make_mixed_grid, make_prism_grid
+
+    HAVE_UGGRID = True
+except ImportError:
+    HAVE_UGGRID = False
+    print(
+        "This wheel was built without the 'uggrid' vcpkg feature, so make_mixed_grid /\n"
+        "make_prism_grid are not available and the cells below are skipped. Rebuild with the\n"
+        "'uggrid' feature enabled (see CMakePresets.json) to run the full example."
+    )
 ```
 
 ## 1: a mixed cube/simplex grid in 2d
@@ -47,10 +67,9 @@ import numpy as np
 polygonal domain:
 
 ```{code-cell}
-from dune.xt.grid import Dim, make_mixed_grid, visualize_grid
-
-grid = make_mixed_grid(Dim(2))
-print(f"{grid.size(0)} elements, {grid.size(grid.dimension)} vertices")
+if HAVE_UGGRID:
+    grid = make_mixed_grid(Dim(2))
+    print(f"{grid.size(0)} elements, {grid.size(grid.dimension)} vertices")
 ```
 
 The number of elements *per geometry type* is what distinguishes a mixed grid from the structured
@@ -61,14 +80,16 @@ quadrilateral/cube):
 ```{code-cell}
 from dune.xt.test.hypothesis_strategies import element_geometry_counts
 
-element_geometry_counts(grid)
+if HAVE_UGGRID:
+    print(element_geometry_counts(grid))
 ```
 
 We can look at the mesh directly; the two triangles and two quadrilaterals share a common edge
 skeleton:
 
 ```{code-cell}
-_ = visualize_grid(grid)
+if HAVE_UGGRID:
+    _ = visualize_grid(grid)
 ```
 
 ## 2: assembling and solving on the mixed grid
@@ -79,20 +100,24 @@ adjacent elements are the same geometry type. We refine the grid a couple of tim
 solution -- refinement multiplies the element counts but keeps both geometry types present:
 
 ```{code-cell}
-grid.global_refine(2)
-element_geometry_counts(grid)
+if HAVE_UGGRID:
+    grid.global_refine(2)
+    print(element_geometry_counts(grid))
 ```
 
 ```{code-cell}
-from discretize_elliptic_ipdg import discretize_elliptic_ipdg_dirichlet_zero
+if HAVE_UGGRID:
+    from discretize_elliptic_ipdg import discretize_elliptic_ipdg_dirichlet_zero
 
-u_h = discretize_elliptic_ipdg_dirichlet_zero(grid, diffusion=1, source=1)
+    u_h = discretize_elliptic_ipdg_dirichlet_zero(grid, diffusion=1, source=1)
+    _ = visualize_grid(grid)
 ```
 
 ```{code-cell}
-from dune.gdt import visualize_function
+if HAVE_UGGRID:
+    from dune.gdt import visualize_function
 
-_ = visualize_function(u_h)
+    _ = visualize_function(u_h)
 ```
 
 The size of the DG space is bookkept per element and per geometry type: an order-`k` cube
@@ -102,14 +127,15 @@ global DoF count exactly -- this is the mixed-grid generalization of the per-ele
 tested in `python/gdt/test/test_hypothesis_mixed_grids.py`:
 
 ```{code-cell}
-from dune.gdt import DiscontinuousLagrangeSpace
-from dune.xt.test.hypothesis_strategies import dg_dof_count_on_mixed_grid
+if HAVE_UGGRID:
+    from dune.gdt import DiscontinuousLagrangeSpace
+    from dune.xt.test.hypothesis_strategies import dg_dof_count_on_mixed_grid
 
-order = 1
-space = DiscontinuousLagrangeSpace(grid, order=order)
-expected = dg_dof_count_on_mixed_grid(grid, order)
-print(f"space.num_DoFs = {space.num_DoFs}, expected = {expected}")
-assert space.num_DoFs == expected
+    order = 1
+    space = DiscontinuousLagrangeSpace(grid, order=order)
+    expected = dg_dof_count_on_mixed_grid(grid, order)
+    print(f"space.num_DoFs = {space.num_DoFs}, expected = {expected}")
+    assert space.num_DoFs == expected
 ```
 
 ## 3: a prism grid in 3d
@@ -118,10 +144,9 @@ In three dimensions `UGGrid` additionally supports prisms (a triangle extruded a
 `make_prism_grid(Dim(3))` builds a single prism, which we refine once to obtain several:
 
 ```{code-cell}
-from dune.xt.grid import make_prism_grid
-
-prism_grid = make_prism_grid(Dim(3), num_refinements=1)
-element_geometry_counts(prism_grid)
+if HAVE_UGGRID:
+    prism_grid = make_prism_grid(Dim(3), num_refinements=1)
+    print(element_geometry_counts(prism_grid))
 ```
 
 All elements are prisms (6 corners each), a geometry type that is unreachable from Python with any
