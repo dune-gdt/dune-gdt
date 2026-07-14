@@ -44,6 +44,8 @@ provides them.)
 # wurlitzer: display dune's output in the notebook
 %load_ext wurlitzer
 
+import math
+
 import numpy as np
 
 from dune.xt.grid import Dim, visualize_grid
@@ -61,6 +63,32 @@ except ImportError:
     )
 ```
 
+A small helper classifies each leaf element by its number of corners (in 2d: 3 -> triangle/simplex,
+4 -> quadrilateral/cube; in 3d a prism has 6) and counts how many of each geometry type the grid
+holds -- this is what makes a mixed grid visibly different from the structured ones:
+
+```{code-cell}
+_GEOMETRY_BY_CORNERS = {
+    (2, 3): "simplex",
+    (2, 4): "cube",
+    (3, 4): "simplex",
+    (3, 6): "prism",
+    (3, 8): "cube",
+}
+
+
+def element_geometry_counts(grid):
+    dim = grid.dimension
+    counts = {}
+
+    def visit(element):
+        geometry_type = _GEOMETRY_BY_CORNERS.get((dim, element.corners.shape[0]), "unknown")
+        counts[geometry_type] = counts.get(geometry_type, 0) + 1
+
+    grid.apply_on_each_element(visit)
+    return counts
+```
+
 ## 1: a mixed cube/simplex grid in 2d
 
 `make_mixed_grid(Dim(2))` inserts two quadrilaterals and two triangles that together tile a small
@@ -70,17 +98,6 @@ polygonal domain:
 if HAVE_UGGRID:
     grid = make_mixed_grid(Dim(2))
     print(f"{grid.size(0)} elements, {grid.size(grid.dimension)} vertices")
-```
-
-The number of elements *per geometry type* is what distinguishes a mixed grid from the structured
-ones. `dune.xt.test.hypothesis_strategies.element_geometry_counts` walks the leaf view and
-classifies each element by its corner count (3 corners -> triangle/simplex, 4 corners ->
-quadrilateral/cube):
-
-```{code-cell}
-from dune.xt.test.hypothesis_strategies import element_geometry_counts
-
-if HAVE_UGGRID:
     print(element_geometry_counts(grid))
 ```
 
@@ -123,17 +140,27 @@ if HAVE_UGGRID:
 The size of the DG space is bookkept per element and per geometry type: an order-`k` cube
 contributes `(k + 1)^d` (tensor-product `Q_k`) local degrees of freedom, a simplex contributes
 `binomial(k + d, d)` (`P_k`). Summing over the elements actually present must reproduce the space's
-global DoF count exactly -- this is the mixed-grid generalization of the per-element DG DoF property
-tested in `python/gdt/test/test_hypothesis_mixed_grids.py`:
+global DoF count exactly -- the mixed-grid generalization of the per-element DG DoF property tested
+in `python/gdt/test/test_hypothesis_mixed_grids.py`:
 
 ```{code-cell}
+def dg_dofs_per_element(geometry_type, order, dim):
+    if geometry_type == "cube":
+        return (order + 1) ** dim  # Q_k
+    if geometry_type == "simplex":
+        return math.comb(order + dim, dim)  # P_k
+    raise NotImplementedError(geometry_type)
+
+
 if HAVE_UGGRID:
     from dune.gdt import DiscontinuousLagrangeSpace
-    from dune.xt.test.hypothesis_strategies import dg_dof_count_on_mixed_grid
 
     order = 1
     space = DiscontinuousLagrangeSpace(grid, order=order)
-    expected = dg_dof_count_on_mixed_grid(grid, order)
+    expected = sum(
+        count * dg_dofs_per_element(geometry_type, order, grid.dimension)
+        for geometry_type, count in element_geometry_counts(grid).items()
+    )
     print(f"space.num_DoFs = {space.num_DoFs}, expected = {expected}")
     assert space.num_DoFs == expected
 ```
