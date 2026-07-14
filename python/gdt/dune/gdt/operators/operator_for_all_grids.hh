@@ -7,7 +7,9 @@
 // Authors:
 //   Felix Schindler (2020)
 
-#include "config.h"
+#ifndef PYTHON_DUNE_GDT_OPERATORS_OPERATOR_FOR_ALL_GRIDS_HH
+#define PYTHON_DUNE_GDT_OPERATORS_OPERATOR_FOR_ALL_GRIDS_HH
+
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -201,28 +203,4 @@ struct Operator_for_all_grids<M, MT, Dune::XT::Common::tuple_null_type>
 };
 
 
-PYBIND11_MODULE(_operators_operator, m)
-{
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._local_operators_element_interface");
-  py::module::import("dune.gdt._local_operators_intersection_interface");
-  py::module::import("dune.gdt._operators_interfaces_common");
-  py::module::import("dune.gdt._operators_interfaces_eigen");
-  py::module::import("dune.gdt._operators_interfaces_istl_1d");
-  py::module::import("dune.gdt._operators_interfaces_istl_2d");
-  py::module::import("dune.gdt._operators_interfaces_istl_3d");
-
-  /// \todo Add other la backends if required
-  Operator_for_all_grids<LA::IstlRowMajorSparseMatrix<double>,
-                         LA::bindings::Istl,
-                         XT::Grid::bindings::AvailableGridTypes>::bind(m, "istl_sparse");
-}
+#endif // PYTHON_DUNE_GDT_OPERATORS_OPERATOR_FOR_ALL_GRIDS_HH

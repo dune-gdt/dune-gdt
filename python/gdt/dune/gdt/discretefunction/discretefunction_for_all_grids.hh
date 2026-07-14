@@ -7,7 +7,9 @@
 // Authors:
 //   Felix Schindler (2019)
 
-#include "config.h"
+#ifndef PYTHON_DUNE_GDT_DISCRETEFUNCTION_DISCRETEFUNCTION_FOR_ALL_GRIDS_HH
+#define PYTHON_DUNE_GDT_DISCRETEFUNCTION_DISCRETEFUNCTION_FOR_ALL_GRIDS_HH
+
 
 #include <dune/xt/grid/grids.hh>
 #include <python/xt/dune/xt/la/traits.hh>
@@ -43,30 +45,4 @@ struct DiscreteFunction_for_all_grids<V, VT, Dune::XT::Common::tuple_null_type>
 };
 
 
-PYBIND11_MODULE(_discretefunction_discretefunction, m)
-{
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._spaces_interface");
-  py::module::import("dune.gdt._discretefunction_dof_vector");
-
-  DiscreteFunction_for_all_grids<LA::CommonDenseVector<double>,
-                                 LA::bindings::Common,
-                                 XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#if HAVE_EIGEN
-  DiscreteFunction_for_all_grids<LA::EigenDenseVector<double>,
-                                 LA::bindings::Eigen,
-                                 XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#endif
-  DiscreteFunction_for_all_grids<LA::IstlDenseVector<double>,
-                                 LA::bindings::Istl,
-                                 XT::Grid::bindings::AvailableGridTypes>::bind(m);
-}
+#endif // PYTHON_DUNE_GDT_DISCRETEFUNCTION_DISCRETEFUNCTION_FOR_ALL_GRIDS_HH

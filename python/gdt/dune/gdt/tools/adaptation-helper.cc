@@ -244,7 +244,9 @@ PYBIND11_MODULE(_tools_adaptation_helper, m)
   py::module::import("dune.xt.functions");
 
   py::module::import("dune.gdt._spaces_interface");
-  py::module::import("dune.gdt._discretefunction_discretefunction");
+  py::module::import("dune.gdt._discretefunction_discretefunction_1d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_2d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_3d");
 
   //  AdaptationHelper_for_all_grids<LA::CommonDenseVector<double>, LA::bindings::Common>::bind(m);
   // #if HAVE_EIGEN

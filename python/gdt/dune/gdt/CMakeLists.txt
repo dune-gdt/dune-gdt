@@ -14,13 +14,24 @@
 file(GLOB_RECURSE header "*.hh")
 
 dune_pybindxi_add_module(_discretefunction_bochner EXCLUDE_FROM_ALL ${header} discretefunction/bochner.cc)
-dune_pybindxi_add_module(_discretefunction_discretefunction EXCLUDE_FROM_ALL ${header}
-                         discretefunction/discretefunction.cc)
+dune_pybindxi_add_module(_discretefunction_discretefunction_1d EXCLUDE_FROM_ALL ${header}
+                         discretefunction/discretefunction_1d.cc)
+dune_pybindxi_add_module(_discretefunction_discretefunction_2d EXCLUDE_FROM_ALL ${header}
+                         discretefunction/discretefunction_2d.cc)
+dune_pybindxi_add_module(_discretefunction_discretefunction_3d EXCLUDE_FROM_ALL ${header}
+                         discretefunction/discretefunction_3d.cc)
 dune_pybindxi_add_module(_discretefunction_dof_vector EXCLUDE_FROM_ALL ${header} discretefunction/dof-vector.cc)
 dune_pybindxi_add_module(_functionals_interfaces_common EXCLUDE_FROM_ALL ${header} functionals/interfaces_common.cc)
 dune_pybindxi_add_module(_functionals_interfaces_eigen EXCLUDE_FROM_ALL ${header} functionals/interfaces_eigen.cc)
-dune_pybindxi_add_module(_functionals_interfaces_istl EXCLUDE_FROM_ALL ${header} functionals/interfaces_istl.cc)
-dune_pybindxi_add_module(_functionals_vector_based EXCLUDE_FROM_ALL ${header} functionals/vector-based.cc)
+dune_pybindxi_add_module(_functionals_interfaces_istl_1d EXCLUDE_FROM_ALL ${header}
+                         functionals/interfaces_istl_1d.cc)
+dune_pybindxi_add_module(_functionals_interfaces_istl_2d EXCLUDE_FROM_ALL ${header}
+                         functionals/interfaces_istl_2d.cc)
+dune_pybindxi_add_module(_functionals_interfaces_istl_3d EXCLUDE_FROM_ALL ${header}
+                         functionals/interfaces_istl_3d.cc)
+dune_pybindxi_add_module(_functionals_vector_based_1d EXCLUDE_FROM_ALL ${header} functionals/vector-based_1d.cc)
+dune_pybindxi_add_module(_functionals_vector_based_2d EXCLUDE_FROM_ALL ${header} functionals/vector-based_2d.cc)
+dune_pybindxi_add_module(_functionals_vector_based_3d EXCLUDE_FROM_ALL ${header} functionals/vector-based_3d.cc)
 dune_pybindxi_add_module(_interpolations_boundary EXCLUDE_FROM_ALL ${header} interpolations/boundary.cc)
 dune_pybindxi_add_module(_interpolations_default EXCLUDE_FROM_ALL ${header} interpolations/default.cc)
 dune_pybindxi_add_module(_interpolations_oswald EXCLUDE_FROM_ALL ${header} interpolations/oswald.cc)
@@ -95,7 +106,9 @@ dune_pybindxi_add_module(_local_operators_intersection_indicator EXCLUDE_FROM_AL
                          local/operators/intersection_indicator.cc)
 dune_pybindxi_add_module(_local_operators_intersection_interface EXCLUDE_FROM_ALL ${header}
                          local/operators/intersection_interface.cc)
-dune_pybindxi_add_module(_operators_bilinear_form EXCLUDE_FROM_ALL ${header} operators/bilinear-form.cc)
+dune_pybindxi_add_module(_operators_bilinear_form_1d EXCLUDE_FROM_ALL ${header} operators/bilinear-form_1d.cc)
+dune_pybindxi_add_module(_operators_bilinear_form_2d EXCLUDE_FROM_ALL ${header} operators/bilinear-form_2d.cc)
+dune_pybindxi_add_module(_operators_bilinear_form_3d EXCLUDE_FROM_ALL ${header} operators/bilinear-form_3d.cc)
 dune_pybindxi_add_module(_operators_interfaces_common EXCLUDE_FROM_ALL ${header} operators/interfaces_common.cc)
 dune_pybindxi_add_module(_operators_interfaces_eigen EXCLUDE_FROM_ALL ${header} operators/interfaces_eigen.cc)
 dune_pybindxi_add_module(_operators_interfaces_istl_1d EXCLUDE_FROM_ALL ${header} operators/interfaces_istl_1d.cc)
@@ -103,15 +116,31 @@ dune_pybindxi_add_module(_operators_interfaces_istl_2d EXCLUDE_FROM_ALL ${header
 dune_pybindxi_add_module(_operators_interfaces_istl_3d EXCLUDE_FROM_ALL ${header} operators/interfaces_istl_3d.cc)
 dune_pybindxi_add_module(_operators_laplace_ipdg_flux_reconstruction EXCLUDE_FROM_ALL ${header}
                          operators/laplace_ipdg_flux_reconstruction.cc)
-dune_pybindxi_add_module(_operators_matrix_based_factory EXCLUDE_FROM_ALL ${header} operators/matrix-based_factory.cc)
-dune_pybindxi_add_module(_operators_operator EXCLUDE_FROM_ALL ${header} operators/operator.cc)
+dune_pybindxi_add_module(_operators_matrix_based_factory_1d EXCLUDE_FROM_ALL ${header}
+                         operators/matrix-based_factory_1d.cc)
+dune_pybindxi_add_module(_operators_matrix_based_factory_2d EXCLUDE_FROM_ALL ${header}
+                         operators/matrix-based_factory_2d.cc)
+dune_pybindxi_add_module(_operators_matrix_based_factory_3d EXCLUDE_FROM_ALL ${header}
+                         operators/matrix-based_factory_3d.cc)
+dune_pybindxi_add_module(_operators_operator_1d EXCLUDE_FROM_ALL ${header} operators/operator_1d.cc)
+dune_pybindxi_add_module(_operators_operator_2d EXCLUDE_FROM_ALL ${header} operators/operator_2d.cc)
+dune_pybindxi_add_module(_operators_operator_3d EXCLUDE_FROM_ALL ${header} operators/operator_3d.cc)
 dune_pybindxi_add_module(_prolongations EXCLUDE_FROM_ALL ${header} prolongations.cc)
 dune_pybindxi_add_module(_spaces_bochner EXCLUDE_FROM_ALL ${header} spaces/bochner.cc)
-dune_pybindxi_add_module(_spaces_h1_continuous_lagrange EXCLUDE_FROM_ALL ${header} spaces/h1/continuous-lagrange.cc)
+dune_pybindxi_add_module(_spaces_h1_continuous_lagrange_1d EXCLUDE_FROM_ALL ${header}
+                         spaces/h1/continuous-lagrange_1d.cc)
+dune_pybindxi_add_module(_spaces_h1_continuous_lagrange_2d EXCLUDE_FROM_ALL ${header}
+                         spaces/h1/continuous-lagrange_2d.cc)
+dune_pybindxi_add_module(_spaces_h1_continuous_lagrange_3d EXCLUDE_FROM_ALL ${header}
+                         spaces/h1/continuous-lagrange_3d.cc)
 dune_pybindxi_add_module(_spaces_hdiv_raviart_thomas EXCLUDE_FROM_ALL ${header} spaces/hdiv/raviart-thomas.cc)
 dune_pybindxi_add_module(_spaces_interface EXCLUDE_FROM_ALL ${header} spaces/interface.cc)
-dune_pybindxi_add_module(_spaces_l2_discontinuous_lagrange EXCLUDE_FROM_ALL ${header}
-                         spaces/l2/discontinuous-lagrange.cc)
+dune_pybindxi_add_module(_spaces_l2_discontinuous_lagrange_1d EXCLUDE_FROM_ALL ${header}
+                         spaces/l2/discontinuous-lagrange_1d.cc)
+dune_pybindxi_add_module(_spaces_l2_discontinuous_lagrange_2d EXCLUDE_FROM_ALL ${header}
+                         spaces/l2/discontinuous-lagrange_2d.cc)
+dune_pybindxi_add_module(_spaces_l2_discontinuous_lagrange_3d EXCLUDE_FROM_ALL ${header}
+                         spaces/l2/discontinuous-lagrange_3d.cc)
 dune_pybindxi_add_module(_spaces_l2_finite_volume EXCLUDE_FROM_ALL ${header} spaces/l2/finite-volume.cc)
 dune_pybindxi_add_module(_spaces_skeleton_finite_volume EXCLUDE_FROM_ALL ${header} spaces/skeleton/finite-volume.cc)
 dune_pybindxi_add_module(_tools_adaptation_helper EXCLUDE_FROM_ALL ${header} tools/adaptation-helper.cc)

@@ -7,7 +7,9 @@
 // Authors:
 //   Felix Schindler (2020)
 
-#include "config.h"
+#ifndef PYTHON_DUNE_GDT_SPACES_H1_CONTINUOUS_LAGRANGE_FOR_ALL_GRIDS_HH
+#define PYTHON_DUNE_GDT_SPACES_H1_CONTINUOUS_LAGRANGE_FOR_ALL_GRIDS_HH
+
 
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 
@@ -39,19 +41,4 @@ struct ContinuousLagrangeSpace_for_all_grids<Dune::XT::Common::tuple_null_type>
 };
 
 
-PYBIND11_MODULE(_spaces_h1_continuous_lagrange, m)
-{
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._spaces_interface");
-
-  ContinuousLagrangeSpace_for_all_grids<XT::Grid::bindings::AvailableGridTypes>::bind(m);
-}
+#endif // PYTHON_DUNE_GDT_SPACES_H1_CONTINUOUS_LAGRANGE_FOR_ALL_GRIDS_HH

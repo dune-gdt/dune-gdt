@@ -9,13 +9,9 @@
 
 #include "config.h"
 
-#include <dune/xt/grid/grids.hh>
-#include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include "continuous_lagrange_for_all_grids.hh"
 
-#include "interfaces.hh"
-
-
-PYBIND11_MODULE(_functionals_interfaces_istl, m)
+PYBIND11_MODULE(_spaces_h1_continuous_lagrange_3d, m)
 {
   namespace py = pybind11;
   using namespace Dune;
@@ -29,5 +25,6 @@ PYBIND11_MODULE(_functionals_interfaces_istl, m)
 
   py::module::import("dune.gdt._spaces_interface");
 
-  FunctionalInterface_for_all_grids<LA::IstlDenseVector<double>, XT::Grid::bindings::AvailableGridTypes>::bind(m);
+  ContinuousLagrangeSpace_for_all_grids<XT::Grid::bindings::Available3dGridTypes>::bind(m);
+  m.attr("__all__") = py::make_tuple();
 }
