@@ -152,8 +152,14 @@ struct grid_name<UGGrid<dim>>
 /// \attention The following choices are on purpose: only two variants per dim, one cube one simplex.
 ///            In particular the grid_name<G>::value needs to be unique for all alugrid variants and the
 ///            make_...grid methods need to be more general if we extend the choice of grids here!
+///
+/// WP2 (#320) adds YASP_1D_EQUIDISTANT_OFFSET next to ONED_1D: a structured 1d grid with the same
+/// equidistant-offset coordinates as the 2d/3d YaspGrids (periodic/overlap features, and the C++
+/// SimplicialGrids list tests it). The two 1d grids are disambiguated in the make_cube_grid factory
+/// by their element-type tag -- ONED_1D keeps the dimension-only overload, YASP_1D binds the
+/// (Dimension, Cube) overload (see python/xt/dune/xt/grid/gridprovider/cube.cc).
 
-using Available1dGridTypes = std::tuple<ONED_1D>;
+using Available1dGridTypes = std::tuple<ONED_1D, YASP_1D_EQUIDISTANT_OFFSET>;
 
 using Available2dGridTypes = std::tuple<YASP_2D_EQUIDISTANT_OFFSET
 #if HAVE_DUNE_ALUGRID
