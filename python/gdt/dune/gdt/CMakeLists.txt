@@ -23,12 +23,9 @@ dune_pybindxi_add_module(_discretefunction_discretefunction_3d EXCLUDE_FROM_ALL 
 dune_pybindxi_add_module(_discretefunction_dof_vector EXCLUDE_FROM_ALL ${header} discretefunction/dof-vector.cc)
 dune_pybindxi_add_module(_functionals_interfaces_common EXCLUDE_FROM_ALL ${header} functionals/interfaces_common.cc)
 dune_pybindxi_add_module(_functionals_interfaces_eigen EXCLUDE_FROM_ALL ${header} functionals/interfaces_eigen.cc)
-dune_pybindxi_add_module(_functionals_interfaces_istl_1d EXCLUDE_FROM_ALL ${header}
-                         functionals/interfaces_istl_1d.cc)
-dune_pybindxi_add_module(_functionals_interfaces_istl_2d EXCLUDE_FROM_ALL ${header}
-                         functionals/interfaces_istl_2d.cc)
-dune_pybindxi_add_module(_functionals_interfaces_istl_3d EXCLUDE_FROM_ALL ${header}
-                         functionals/interfaces_istl_3d.cc)
+dune_pybindxi_add_module(_functionals_interfaces_istl_1d EXCLUDE_FROM_ALL ${header} functionals/interfaces_istl_1d.cc)
+dune_pybindxi_add_module(_functionals_interfaces_istl_2d EXCLUDE_FROM_ALL ${header} functionals/interfaces_istl_2d.cc)
+dune_pybindxi_add_module(_functionals_interfaces_istl_3d EXCLUDE_FROM_ALL ${header} functionals/interfaces_istl_3d.cc)
 dune_pybindxi_add_module(_functionals_vector_based_1d EXCLUDE_FROM_ALL ${header} functionals/vector-based_1d.cc)
 dune_pybindxi_add_module(_functionals_vector_based_2d EXCLUDE_FROM_ALL ${header} functionals/vector-based_2d.cc)
 dune_pybindxi_add_module(_functionals_vector_based_3d EXCLUDE_FROM_ALL ${header} functionals/vector-based_3d.cc)
