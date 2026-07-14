@@ -129,9 +129,25 @@ def discover_matrix_types(module=None):
     return _discover_container_types("Matrix", module)
 
 
+# Every GridProvider* the wheel exposes, at the (dim, element, impl) granularity -- so that two
+# implementations sharing a (dim, element) slice (e.g. the structured YASP cube and the
+# unstructured ALU cube added in #320 WP1) are both drawn by the strategies below.
+GRID_BINDINGS = discover_grid_bindings()
+
 # The runtime-reachable slice of the compile-time grid lists used by the C++ typed tests, e.g.
 # on a full build: (1, "simplex") ONEDGRID, (2|3, "cube") YASPGRID, (2|3, "simplex") ALUGRID.
 GRID_COMBINATIONS = discover_grid_combinations()
+
+# ALUGrid implementations whose LeafGridView is non-conforming (both the ALU cube grid and the
+# nonconforming ALU simplex grid parse to this impl -- the element disambiguates them). Several
+# GridProvider methods (size/centers for 0 < codim < dim, the intersection-index helpers) are
+# guarded with requirements_not_met on non-conforming grids, so properties relying on them draw
+# only conforming specs (grid_specs(conforming_only=True)).
+_NONCONFORMING_IMPLS = frozenset({"alunonconformgrid"})
+
+
+def _impl_is_conforming(impl):
+    return impl is None or impl not in _NONCONFORMING_IMPLS
 
 
 def has_grid(dim=None, element=None):
@@ -148,13 +164,26 @@ SIMPLICES_PER_CUBE = {1: 1, 2: 2, 3: 6}
 
 @dataclass(frozen=True)
 class GridSpec:
-    """A runtime description of a make_cube_grid call with known structural expectations."""
+    """A runtime description of a make_cube_grid call with known structural expectations.
+
+    `impl` selects the grid implementation within a (dim, element) slice, matching the impl word
+    of the discovered GridProvider name ("yaspgrid", "onedgrid", "aluconformgrid",
+    "alunonconformgrid"). It defaults to None, i.e. the structured/conforming make_cube_grid default
+    (YASP cube, conforming ALU simplex, ONEDGRID) -- so a GridSpec built without an impl keeps the
+    pre-#320 behaviour. A non-conforming impl is reached via the Nonconforming() factory selector.
+    """
 
     dim: int
     element: str  # "cube" or "simplex"
     lower_left: tuple
     upper_right: tuple
     num_elements: tuple
+    impl: str = None
+
+    @property
+    def conforming(self):
+        """Whether the grid's LeafGridView is conforming (governs which methods are available)."""
+        return _impl_is_conforming(self.impl)
 
     def make_grid(self):
         from dune.xt.grid import Cube, Dim, Simplex, make_cube_grid
@@ -169,8 +198,14 @@ class GridSpec:
             # type); the structured 1d YaspGrid (WP2, #320) instead uses the (Dim, Cube) overload
             # like its 2d/3d siblings, handled by the general branch below.
             return make_cube_grid(Dim(1), **kwargs)
-        elem = {"cube": Cube, "simplex": Simplex}[self.element]
-        return make_cube_grid(Dim(self.dim), elem(), **kwargs)
+        elem = {"cube": Cube, "simplex": Simplex}[self.element]()
+        if not self.conforming:
+            # the unstructured ALU cube/simplex grids share the (dim, element) overload signature
+            # with the structured/conforming defaults; Nonconforming() disambiguates them
+            from dune.xt.grid import Nonconforming
+
+            return make_cube_grid(Dim(self.dim), elem, Nonconforming(), **kwargs)
+        return make_cube_grid(Dim(self.dim), elem, **kwargs)
 
     @property
     def num_cubes(self):
@@ -222,6 +257,22 @@ def bounding_boxes(draw, dim, coordinate_range=100.0, min_extent=0.1, max_extent
     return lower, upper
 
 
+def _sampled_grid_bindings(dims, elements, conforming_only):
+    """The (dim, element, impl) triples to draw from, filtered to the caller's needs.
+
+    Drawn from GRID_BINDINGS (all discovered implementations), so both YASP and ALU cube grids --
+    and both conforming and nonconforming ALU simplex grids -- are exercised, not just one default
+    per (dim, element).
+    """
+    return [
+        (b.dim, b.element, b.impl)
+        for b in GRID_BINDINGS
+        if b.dim in dims
+        and b.element in elements
+        and (not conforming_only or _impl_is_conforming(b.impl))
+    ]
+
+
 @st.composite
 def grid_specs(
     draw,
@@ -229,16 +280,17 @@ def grid_specs(
     elements=("cube", "simplex"),
     max_elements_per_dim=4,
     unit_box=False,
+    conforming_only=False,
 ):
     """Draw a GridSpec for one of the binding-instantiated grid types.
 
     max_elements_per_dim keeps 3d grids small (a 4^3 cube box already yields 384 simplices);
-    hypothesis shrinks towards 1 element per axis.
+    hypothesis shrinks towards 1 element per axis. conforming_only restricts the draw to grids
+    with a conforming LeafGridView, for properties that use methods the bindings do not implement
+    on non-conforming grids (the codim-1 intersection-index helpers).
     """
-    dim, element = draw(
-        st.sampled_from(
-            [(d, e) for (d, e) in GRID_COMBINATIONS if d in dims and e in elements]
-        )
+    dim, element, impl = draw(
+        st.sampled_from(_sampled_grid_bindings(dims, elements, conforming_only))
     )
     if unit_box:
         lower, upper = (0.0,) * dim, (1.0,) * dim
@@ -253,6 +305,7 @@ def grid_specs(
         lower_left=lower,
         upper_right=upper,
         num_elements=num_elements,
+        impl=impl,
     )
 
 
