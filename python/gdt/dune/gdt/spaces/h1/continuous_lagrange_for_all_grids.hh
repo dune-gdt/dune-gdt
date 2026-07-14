@@ -41,4 +41,22 @@ struct ContinuousLagrangeSpace_for_all_grids<Dune::XT::Common::tuple_null_type>
 };
 
 
+// Shared by continuous-lagrange_1d.cc/_2d.cc/_3d.cc: see DUNE_GDT_BIND_OPERATOR_MODULE for rationale.
+#define DUNE_GDT_BIND_CONTINUOUS_LAGRANGE_MODULE(dim)                                                                  \
+  namespace py = pybind11;                                                                                             \
+  using namespace Dune;                                                                                                \
+  using namespace Dune::XT;                                                                                            \
+  using namespace Dune::GDT;                                                                                           \
+                                                                                                                       \
+  py::module::import("dune.xt.common");                                                                                \
+  py::module::import("dune.xt.la");                                                                                    \
+  py::module::import("dune.xt.grid");                                                                                  \
+  py::module::import("dune.xt.functions");                                                                             \
+                                                                                                                       \
+  py::module::import("dune.gdt._spaces_interface");                                                                    \
+                                                                                                                       \
+  ContinuousLagrangeSpace_for_all_grids<XT::Grid::bindings::Available##dim##dGridTypes>::bind(m);                      \
+  m.attr("__all__") = py::make_tuple()
+
+
 #endif // PYTHON_DUNE_GDT_SPACES_H1_CONTINUOUS_LAGRANGE_FOR_ALL_GRIDS_HH

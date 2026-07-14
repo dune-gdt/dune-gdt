@@ -13,18 +13,5 @@
 
 PYBIND11_MODULE(_spaces_h1_continuous_lagrange_1d, m)
 {
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._spaces_interface");
-
-  ContinuousLagrangeSpace_for_all_grids<XT::Grid::bindings::Available1dGridTypes>::bind(m);
-  m.attr("__all__") = py::make_tuple();
+  DUNE_GDT_BIND_CONTINUOUS_LAGRANGE_MODULE(1);
 }

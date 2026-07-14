@@ -203,4 +203,33 @@ struct Operator_for_all_grids<M, MT, Dune::XT::Common::tuple_null_type>
 };
 
 
+// Shared by operator_1d.cc/_2d.cc/_3d.cc: the only per-dimension difference is which
+// Available<dim>dGridTypes tuple gets instantiated, so the whole PYBIND11_MODULE body lives
+// here once (rather than 3x, which trips SonarCloud's copy-paste detector).
+#define DUNE_GDT_BIND_OPERATOR_MODULE(dim)                                                                             \
+  namespace py = pybind11;                                                                                             \
+  using namespace Dune;                                                                                                \
+  using namespace Dune::XT;                                                                                            \
+  using namespace Dune::GDT;                                                                                           \
+                                                                                                                       \
+  py::module::import("dune.xt.common");                                                                                \
+  py::module::import("dune.xt.la");                                                                                    \
+  py::module::import("dune.xt.grid");                                                                                  \
+  py::module::import("dune.xt.functions");                                                                             \
+                                                                                                                       \
+  py::module::import("dune.gdt._local_operators_element_interface");                                                   \
+  py::module::import("dune.gdt._local_operators_intersection_interface");                                              \
+  py::module::import("dune.gdt._operators_interfaces_common");                                                         \
+  py::module::import("dune.gdt._operators_interfaces_eigen");                                                          \
+  py::module::import("dune.gdt._operators_interfaces_istl_1d");                                                        \
+  py::module::import("dune.gdt._operators_interfaces_istl_2d");                                                        \
+  py::module::import("dune.gdt._operators_interfaces_istl_3d");                                                        \
+                                                                                                                       \
+  /* \todo Add other la backends if required */                                                                        \
+  Operator_for_all_grids<LA::IstlRowMajorSparseMatrix<double>,                                                         \
+                         LA::bindings::Istl,                                                                           \
+                         XT::Grid::bindings::Available##dim##dGridTypes>::bind(m, "istl_sparse");                      \
+  m.attr("__all__") = py::make_tuple()
+
+
 #endif // PYTHON_DUNE_GDT_OPERATORS_OPERATOR_FOR_ALL_GRIDS_HH

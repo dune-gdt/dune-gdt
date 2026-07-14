@@ -168,23 +168,30 @@ def _make_dispatch(module_base, factory_name, dim_arg=0, dim_kwarg=None):
     return _factory
 
 
-# Canonical factory names restored from their per-dimension submodules (all dispatch on the first
-# argument except DirichletConstraints, whose first argument is a BoundaryInfo).
-Operator = _make_dispatch("_operators_operator", "Operator")
-MatrixOperator = _make_dispatch("_operators_matrix_based_factory", "MatrixOperator")
-BilinearForm = _make_dispatch("_operators_bilinear_form", "BilinearForm")
+# Canonical factory names restored from their per-dimension submodules. All dispatch on the first
+# (positional or keyword) argument, which is a grid provider (.dimension) for every factory below
+# except DiscreteFunction, whose first argument is a space (.dimDomain).
+Operator = _make_dispatch("_operators_operator", "Operator", dim_kwarg="grid")
+MatrixOperator = _make_dispatch(
+    "_operators_matrix_based_factory", "MatrixOperator", dim_kwarg="grid"
+)
+BilinearForm = _make_dispatch(
+    "_operators_bilinear_form", "BilinearForm", dim_kwarg="grid"
+)
 ContinuousLagrangeSpace = _make_dispatch(
-    "_spaces_h1_continuous_lagrange", "ContinuousLagrangeSpace"
+    "_spaces_h1_continuous_lagrange", "ContinuousLagrangeSpace", dim_kwarg="grid"
 )
 DiscontinuousLagrangeSpace = _make_dispatch(
-    "_spaces_l2_discontinuous_lagrange", "DiscontinuousLagrangeSpace"
+    "_spaces_l2_discontinuous_lagrange", "DiscontinuousLagrangeSpace", dim_kwarg="grid"
 )
 DiscreteFunction = _make_dispatch(
-    "_discretefunction_discretefunction", "DiscreteFunction"
-)  # arg0 is a space -> .dimDomain
-VectorFunctional = _make_dispatch("_functionals_vector_based", "VectorFunctional")
+    "_discretefunction_discretefunction", "DiscreteFunction", dim_kwarg="space"
+)
+VectorFunctional = _make_dispatch(
+    "_functionals_vector_based", "VectorFunctional", dim_kwarg="grid"
+)
 IstlVectorFunctional = _make_dispatch(
-    "_functionals_vector_based", "IstlVectorFunctional"
+    "_functionals_vector_based", "IstlVectorFunctional", dim_kwarg="grid"
 )
 
 

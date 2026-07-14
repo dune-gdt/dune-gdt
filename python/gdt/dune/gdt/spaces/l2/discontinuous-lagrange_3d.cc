@@ -13,18 +13,5 @@
 
 PYBIND11_MODULE(_spaces_l2_discontinuous_lagrange_3d, m)
 {
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._spaces_interface");
-
-  DiscontinuousLagrangeSpace_for_all_grids<XT::Grid::bindings::Available3dGridTypes>::bind(m);
-  m.attr("__all__") = py::make_tuple();
+  DUNE_GDT_BIND_DISCONTINUOUS_LAGRANGE_MODULE(3);
 }

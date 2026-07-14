@@ -244,4 +244,37 @@ struct VectorBasedFunctional_for_all_grids<V, VT, Dune::XT::Common::tuple_null_t
 };
 
 
+// Shared by vector-based_1d.cc/_2d.cc/_3d.cc: see DUNE_GDT_BIND_OPERATOR_MODULE for rationale.
+// The commented-out non-istl backends are left generic (dimension is only ever spelled out
+// once, here) rather than duplicated per dimension.
+#define DUNE_GDT_BIND_VECTOR_BASED_FUNCTIONAL_MODULE(dim)                                                              \
+  namespace py = pybind11;                                                                                             \
+  using namespace Dune;                                                                                                \
+  using namespace Dune::XT;                                                                                            \
+  using namespace Dune::GDT;                                                                                           \
+                                                                                                                       \
+  py::module::import("dune.xt.common");                                                                                \
+  py::module::import("dune.xt.la");                                                                                    \
+  py::module::import("dune.xt.grid");                                                                                  \
+  py::module::import("dune.xt.functions");                                                                             \
+                                                                                                                       \
+  py::module::import("dune.gdt._functionals_interfaces_common");                                                       \
+  py::module::import("dune.gdt._functionals_interfaces_eigen");                                                        \
+  py::module::import("dune.gdt._functionals_interfaces_istl_1d");                                                      \
+  py::module::import("dune.gdt._functionals_interfaces_istl_2d");                                                      \
+  py::module::import("dune.gdt._functionals_interfaces_istl_3d");                                                      \
+  py::module::import("dune.gdt._spaces_interface");                                                                    \
+                                                                                                                       \
+  /* VectorBasedFunctional_for_all_grids<LA::CommonDenseVector<double>, LA::bindings::Common, */                       \
+  /* XT::Grid::bindings::AvailableNdGridTypes>::bind(m, "common_dense"); */                                            \
+  /* #if HAVE_EIGEN */                                                                                                 \
+  /* VectorBasedFunctional_for_all_grids<LA::EigenDenseVector<double>, LA::bindings::Eigen, */                         \
+  /* XT::Grid::bindings::AvailableNdGridTypes>::bind(m, "eigen_dense"); */                                             \
+  /* #endif */                                                                                                         \
+  VectorBasedFunctional_for_all_grids<LA::IstlDenseVector<double>,                                                     \
+                                      LA::bindings::Istl,                                                              \
+                                      XT::Grid::bindings::Available##dim##dGridTypes>::bind(m, "istl");                \
+  m.attr("__all__") = py::make_tuple()
+
+
 #endif // PYTHON_DUNE_GDT_FUNCTIONALS_VECTOR_BASED_FOR_ALL_GRIDS_HH

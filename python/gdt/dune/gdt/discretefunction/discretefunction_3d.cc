@@ -13,29 +13,5 @@
 
 PYBIND11_MODULE(_discretefunction_discretefunction_3d, m)
 {
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._spaces_interface");
-  py::module::import("dune.gdt._discretefunction_dof_vector");
-
-  DiscreteFunction_for_all_grids<LA::CommonDenseVector<double>,
-                                 LA::bindings::Common,
-                                 XT::Grid::bindings::Available3dGridTypes>::bind(m);
-#if HAVE_EIGEN
-  DiscreteFunction_for_all_grids<LA::EigenDenseVector<double>,
-                                 LA::bindings::Eigen,
-                                 XT::Grid::bindings::Available3dGridTypes>::bind(m);
-#endif
-  DiscreteFunction_for_all_grids<LA::IstlDenseVector<double>,
-                                 LA::bindings::Istl,
-                                 XT::Grid::bindings::Available3dGridTypes>::bind(m);
-  m.attr("__all__") = py::make_tuple();
+  DUNE_GDT_BIND_DISCRETEFUNCTION_MODULE(3);
 }

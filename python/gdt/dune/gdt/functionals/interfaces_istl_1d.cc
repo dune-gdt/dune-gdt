@@ -16,17 +16,5 @@
 
 PYBIND11_MODULE(_functionals_interfaces_istl_1d, m)
 {
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._spaces_interface");
-
-  FunctionalInterface_for_all_grids<LA::IstlDenseVector<double>, XT::Grid::bindings::Available1dGridTypes>::bind(m);
+  DUNE_GDT_BIND_FUNCTIONAL_INTERFACES_ISTL_MODULE(1);
 }

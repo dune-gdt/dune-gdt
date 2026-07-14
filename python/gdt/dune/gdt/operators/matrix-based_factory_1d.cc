@@ -13,46 +13,5 @@
 
 PYBIND11_MODULE(_operators_matrix_based_factory_1d, m)
 {
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._local_bilinear_forms_element_interface");
-  py::module::import("dune.gdt._operators_interfaces_common");
-  py::module::import("dune.gdt._operators_interfaces_eigen");
-  py::module::import("dune.gdt._operators_interfaces_istl_1d");
-  py::module::import("dune.gdt._operators_interfaces_istl_2d");
-  py::module::import("dune.gdt._operators_interfaces_istl_3d");
-  py::module::import("dune.gdt._spaces_interface");
-
-  //  MatrixOperatorFactory_for_all_grids<LA::CommonDenseMatrix<double>,
-  //                               LA::bindings::Common,
-  //                               LA::bindings::Dense,
-  //                               XT::Grid::bindings::Available1dGridTypes>::bind(m, "common_dense");
-  //  // Generic linear solver missing for CommonSparseMatrix!
-  //  MatrixOperatorFactory_for_all_grids<LA::CommonSparseMatrix<double>,
-  //                               LA::bindings::Common,
-  //                               LA::bindings::Sparse,
-  //                               XT::Grid::bindings::Available1dGridTypes>::bind(m, "common_sparse");
-  // #if HAVE_EIGEN
-  //  MatrixOperatorFactory_for_all_grids<LA::EigenDenseMatrix<double>,
-  //                               LA::bindings::Eigen,
-  //                               LA::bindings::Dense,
-  //                               XT::Grid::bindings::Available1dGridTypes>::bind(m, "eigen_dense");
-  //  MatrixOperatorFactory_for_all_grids<LA::EigenRowMajorSparseMatrix<double>,
-  //                               LA::bindings::Eigen,
-  //                               LA::bindings::Sparse,
-  //                               XT::Grid::bindings::Available1dGridTypes>::bind(m, "eigen_sparse");
-  // #endif
-  MatrixOperatorFactory_for_all_grids<LA::IstlRowMajorSparseMatrix<double>,
-                                      LA::bindings::Istl,
-                                      void,
-                                      XT::Grid::bindings::Available1dGridTypes>::bind(m, "istl_sparse");
-  m.attr("__all__") = py::make_tuple();
+  DUNE_GDT_BIND_MATRIX_BASED_FACTORY_MODULE(1);
 }

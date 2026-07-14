@@ -13,18 +13,5 @@
 
 PYBIND11_MODULE(_operators_bilinear_form_2d, m)
 {
-  namespace py = pybind11;
-  using namespace Dune;
-  using namespace Dune::XT;
-  using namespace Dune::GDT;
-
-  py::module::import("dune.xt.common");
-  py::module::import("dune.xt.la");
-  py::module::import("dune.xt.grid");
-  py::module::import("dune.xt.functions");
-
-  py::module::import("dune.gdt._local_bilinear_forms_element_interface");
-
-  BilinearForm_for_all_grids<XT::Grid::bindings::Available2dGridTypes>::bind(m);
-  m.attr("__all__") = py::make_tuple();
+  DUNE_GDT_BIND_BILINEAR_FORM_MODULE(2);
 }

@@ -258,9 +258,7 @@ def test_sampled_grid_bindings_filters_dims_elements_and_conformity(monkeypatch)
 
 
 def test_has_uggrid_detects_the_ug_provider():
-    with_ug = _stub_module(
-        list(_FULL_BUILD_GRID_CLASSES) + ["GridProvider2dSimplexUggrid"]
-    )
+    with_ug = _stub_module([*_FULL_BUILD_GRID_CLASSES, "GridProvider2dSimplexUggrid"])
     without_ug = _stub_module(_FULL_BUILD_GRID_CLASSES)
     assert hs.has_uggrid(with_ug) is True
     assert hs.has_uggrid(without_ug) is False
@@ -307,7 +305,7 @@ class _FakeMixedGrid:
     """A stand-in GridProvider: two quads and two triangles in 2d, walked corner-count first."""
 
     dimension = 2
-    _corner_counts = [4, 4, 3, 3]
+    _corner_counts = (4, 4, 3, 3)
 
     def apply_on_each_element(self, visitor):
         for corners in self._corner_counts:
