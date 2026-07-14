@@ -29,18 +29,16 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 import dune.xt.la as la
-from dune.xt.test.hypothesis_strategies import finite_floats, vector_data
+from dune.xt.test.hypothesis_strategies import (
+    discover_vector_types,
+    finite_floats,
+    vector_data,
+)
 
 # The available backends depend on the build configuration (e.g. Eigen may be disabled), so
-# collect whatever this build provides instead of hard-coding the list.
-VECTOR_CLASSES = [
-    cls
-    for cls in (
-        getattr(la, name, None)
-        for name in ("CommonVector", "IstlVector", "EigenVector")
-    )
-    if cls is not None
-]
+# discover whatever this build provides from dune.xt.la instead of hard-coding the list. Any
+# vector backend a future work package binds is picked up here without editing this file.
+VECTOR_CLASSES = list(discover_vector_types())
 
 # relative tolerance for comparisons against numpy: both sides accumulate in double, but not
 # necessarily in the same order, so exact equality only holds for order-independent quantities
