@@ -56,15 +56,19 @@ def test_global_refine_scales_element_count(spec):
     before = grid.size(0)
     grid.global_refine(1)
     if spec.element == "cube":
-        # structured cube grids refine each cell into 2^d children
+        # every cube grid -- the structured YASP grid and the unstructured, nonconforming ALU
+        # cube grid alike -- refines each cell into 2^d children under one global refinement
         assert grid.size(0) == before * 2**spec.dim
     else:
-        # the conforming ALU simplex grids refine by bisection, so one global refinement
-        # step only guarantees growth; the exact factor is a grid implementation detail
+        # the ALU simplex grids refine by bisection (conforming variant) or regular refinement
+        # (nonconforming variant), so one global refinement step only guarantees growth; the
+        # exact factor is a grid implementation detail
         assert grid.size(0) > before
 
 
-@given(spec=grid_specs(max_elements_per_dim=3))
+# The codim-1 intersection-index helpers are guarded with requirements_not_met on non-conforming
+# grids (see gridprovider.hh), so this partition property is stated only for conforming grids.
+@given(spec=grid_specs(max_elements_per_dim=3, conforming_only=True))
 def test_boundary_and_inner_intersection_indices_partition(spec):
     grid = spec.make_grid()
     boundary = set(grid.boundary_intersection_indices())

@@ -12,12 +12,58 @@
 #ifndef DUNE_XT_GRID_GRIDS_BINDINGS_HH
 #define DUNE_XT_GRID_GRIDS_BINDINGS_HH
 
+#include <tuple>
+#include <type_traits>
+
 #include <dune/xt/common/string.hh>
 #include <dune/xt/common/tuple.hh>
 #include <dune/xt/grid/grids.hh>
 
 
 namespace Dune::XT::Grid::bindings {
+
+
+namespace internal {
+
+
+// Whether Tuple already contains the exact type T.
+template <class T, class Tuple>
+struct tuple_contains : std::false_type
+{};
+
+template <class T, class Head, class... Tail>
+struct tuple_contains<T, std::tuple<Head, Tail...>>
+  : std::conditional_t<std::is_same<T, Head>::value, std::true_type, tuple_contains<T, std::tuple<Tail...>>>
+{};
+
+// Accumulate the first occurrence of every type, dropping later duplicates.
+template <class Acc, class Tuple>
+struct unique_tuple_helper
+{
+  using type = Acc;
+};
+
+template <class... Accs, class Head, class... Tail>
+struct unique_tuple_helper<std::tuple<Accs...>, std::tuple<Head, Tail...>>
+{
+  using next = std::
+      conditional_t<tuple_contains<Head, std::tuple<Accs...>>::value, std::tuple<Accs...>, std::tuple<Accs..., Head>>;
+  using type = typename unique_tuple_helper<next, std::tuple<Tail...>>::type;
+};
+
+
+} // namespace internal
+
+
+/// \brief Drop duplicate types from a grid-type tuple.
+///
+/// pybind11 registers each C++ type exactly once per interpreter, so a grid tuple that lists two
+/// aliases resolving to the *same* type (e.g. dune-alugrid maps ALUGrid<2,2,cube,nonconforming>
+/// onto the 2d simplex grid -- there is no distinct 2d cube ALUGrid) would double-register its
+/// GridProvider/BoundaryInfo classes and abort module import. Deduplicating here keeps the binding
+/// grid lists robust against such aliasing regardless of the dune-alugrid configuration.
+template <class Tuple>
+using unique_grid_tuple_t = typename internal::unique_tuple_helper<std::tuple<>, Tuple>::type;
 
 
 template <class G>
@@ -149,33 +195,45 @@ struct grid_name<UGGrid<dim>>
 #endif // HAVE_DUNE_UGGRID || HAVE_UG
 
 
-/// \attention The following choices are on purpose: only two variants per dim, one cube one simplex.
-///            In particular the grid_name<G>::value needs to be unique for all alugrid variants and the
-///            make_...grid methods need to be more general if we extend the choice of grids here!
+/// \attention grid_name<G>::value must be unique for all grid variants below, and every make_...grid
+///            factory that a bound grid needs (see gridprovider/cube.cc) has to be able to construct it.
 ///
 /// WP2 (#320) adds YASP_1D_EQUIDISTANT_OFFSET next to ONED_1D: a structured 1d grid with the same
 /// equidistant-offset coordinates as the 2d/3d YaspGrids (periodic/overlap features, and the C++
 /// SimplicialGrids list tests it). The two 1d grids are disambiguated in the make_cube_grid factory
 /// by their element-type tag -- ONED_1D keeps the dimension-only overload, YASP_1D binds the
 /// (Dimension, Cube) overload (see python/xt/dune/xt/grid/gridprovider/cube.cc).
+///
+/// #320 WP1 adds the ALU cube (hexahedral) grid in 3d -- the only ALU variant beyond the historical
+/// "one cube, one simplex per dim" set that is actually bindable: the bindings register
+/// spaces/operators/boundaryinfo keyed on the *leaf grid view* type (only named via grid_name<G>),
+/// and dune-alugrid expresses that view through the legacy ALU3dGrid<tetra|hexa> / ALU2dGrid,
+/// dropping the conforming/nonconforming refinement policy from the view type. Hence the conforming
+/// and nonconforming ALU *simplex* grids share one leaf-view type and cannot both be registered (the
+/// second aborts module import with a pybind11 "type already registered"), and there is no distinct
+/// 2d cube ALUGrid at all. Only the 3d hexahedral cube grid has a leaf view (ALU3dGrid<hexa>)
+/// distinct from the tetrahedral simplex and structured YASP views, so only it is added here.
+/// unique_grid_tuple_t guards the grid tuples against any exact-type aliasing on top.
 
 using Available1dGridTypes = std::tuple<ONED_1D, YASP_1D_EQUIDISTANT_OFFSET>;
 
-using Available2dGridTypes = std::tuple<YASP_2D_EQUIDISTANT_OFFSET
+using Available2dGridTypes = unique_grid_tuple_t<std::tuple<YASP_2D_EQUIDISTANT_OFFSET
 #if HAVE_DUNE_ALUGRID
-                                        ,
-                                        ALU_2D_SIMPLEX_CONFORMING
+                                                            ,
+                                                            ALU_2D_SIMPLEX_CONFORMING
 #endif
-                                        >;
+                                                            >>;
 
-using Available3dGridTypes = std::tuple<YASP_3D_EQUIDISTANT_OFFSET
+using Available3dGridTypes = unique_grid_tuple_t<std::tuple<YASP_3D_EQUIDISTANT_OFFSET
 #if HAVE_DUNE_ALUGRID
-                                        ,
-                                        ALU_3D_SIMPLEX_CONFORMING
+                                                            ,
+                                                            ALU_3D_SIMPLEX_CONFORMING,
+                                                            ALU_3D_CUBE
 #endif
-                                        >;
+                                                            >>;
 
-using AvailableGridTypes = Common::tuple_cat_t<Available1dGridTypes, Available2dGridTypes, Available3dGridTypes>;
+using AvailableGridTypes =
+    unique_grid_tuple_t<Common::tuple_cat_t<Available1dGridTypes, Available2dGridTypes, Available3dGridTypes>>;
 
 
 } // namespace Dune::XT::Grid::bindings

@@ -166,6 +166,94 @@ def test_discovery_ignores_non_class_attributes():
     assert [c.__name__ for c in hs.discover_vector_types(module)] == ["CommonVector"]
 
 
+# --- impl-aware GridSpec (WP1): conforming classification is pure Python ------------------
+
+
+@pytest.mark.parametrize(
+    ("impl", "conforming"),
+    [
+        (
+            None,
+            True,
+        ),  # the make_cube_grid default (structured cube / conforming simplex)
+        ("yaspgrid", True),
+        ("onedgrid", True),
+        ("aluconformgrid", True),
+        (
+            "alunonconformgrid",
+            False,
+        ),  # both the ALU cube and the nonconforming ALU simplex grid
+    ],
+)
+def test_grid_spec_conforming_reflects_the_implementation(impl, conforming):
+    spec = hs.GridSpec(
+        dim=2,
+        element="cube",
+        lower_left=(0.0, 0.0),
+        upper_right=(1.0, 1.0),
+        num_elements=(1, 1),
+        impl=impl,
+    )
+    assert spec.conforming is conforming
+    assert hs._impl_is_conforming(impl) is conforming
+
+
+def test_grid_spec_defaults_to_the_conforming_default_implementation():
+    # A GridSpec built without an impl (as the interpolation-points subprocess does) must keep the
+    # pre-#320 behaviour: the structured/conforming make_cube_grid default, hence conforming.
+    spec = hs.GridSpec(
+        dim=1,
+        element="simplex",
+        lower_left=(0.0,),
+        upper_right=(1.0,),
+        num_elements=(2,),
+    )
+    assert spec.impl is None
+    assert spec.conforming is True
+
+
+def test_sampled_grid_bindings_filters_dims_elements_and_conformity(monkeypatch):
+    # A stub mirroring the bindable ALUGrid build (#320 WP1): the 3d cube slice exposes both the
+    # structured YASP grid and the nonconforming ALU hexahedral grid, while every simplex slice has
+    # only the conforming ALU grid (conforming and nonconforming ALU simplex grids share a leaf-view
+    # type and cannot both be bound; there is no 2d cube ALUGrid) -- see grids.bindings.hh.
+    stub = [
+        hs.GridBinding(1, "simplex", "onedgrid", "GridProvider1dSimplexOnedgrid"),
+        hs.GridBinding(2, "cube", "yaspgrid", "GridProvider2dCubeYaspgrid"),
+        hs.GridBinding(
+            2, "simplex", "aluconformgrid", "GridProvider2dSimplexAluconformgrid"
+        ),
+        hs.GridBinding(3, "cube", "yaspgrid", "GridProvider3dCubeYaspgrid"),
+        hs.GridBinding(
+            3, "simplex", "aluconformgrid", "GridProvider3dSimplexAluconformgrid"
+        ),
+        hs.GridBinding(
+            3, "cube", "alunonconformgrid", "GridProvider3dCubeAlunonconformgrid"
+        ),
+    ]
+    monkeypatch.setattr(hs, "GRID_BINDINGS", stub)
+
+    # both cube implementations are offered for (3, "cube")
+    cubes = hs._sampled_grid_bindings(
+        dims=(3,), elements=("cube",), conforming_only=False
+    )
+    assert set(cubes) == {(3, "cube", "yaspgrid"), (3, "cube", "alunonconformgrid")}
+
+    # conforming_only drops the nonconforming ALU cube grid
+    conforming = hs._sampled_grid_bindings(
+        dims=(1, 2, 3), elements=("cube", "simplex"), conforming_only=True
+    )
+    assert all(impl != "alunonconformgrid" for (_, _, impl) in conforming)
+    assert (3, "cube", "yaspgrid") in conforming
+    assert (3, "simplex", "aluconformgrid") in conforming
+
+    # dimension and element filters compose
+    only_cube_3d = hs._sampled_grid_bindings(
+        dims=(3,), elements=("cube",), conforming_only=True
+    )
+    assert set(only_cube_3d) == {(3, "cube", "yaspgrid")}
+
+
 # --- against the real bindings, when this build actually provides them --------------------
 
 

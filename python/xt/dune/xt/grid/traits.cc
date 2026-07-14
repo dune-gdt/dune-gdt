@@ -60,6 +60,9 @@ PYBIND11_MODULE(_grid_traits, m)
   pybind11::class_<Prism>(m, "Prism", "tag: Prism").def(py::init()).def("__repr__", [](const Prism&) {
     return "Prism()";
   });
+  pybind11::class_<Nonconforming>(m, "Nonconforming", "tag: Nonconforming (make_cube_grid backend selector)")
+      .def(py::init())
+      .def("__repr__", [](const Nonconforming&) { return "Nonconforming()"; });
 
   pybind11::class_<Dimension<0>>(m, "Dimension0", "tag: Dimension0")
       .def(py::init())

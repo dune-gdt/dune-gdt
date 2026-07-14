@@ -6,6 +6,7 @@ The examples each highlight a specific aspect, possibly without much explanation
 example__prolongations_products_and_norms
 example__simple_grid_adaptation
 example__structured_1d_grids
+example__alugrid_variants
 example__ESV2007_estimates
 example__gmsh_grid
 example__MNS2002_estimates
