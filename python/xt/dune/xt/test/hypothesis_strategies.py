@@ -727,3 +727,101 @@ def make_prism_grid_provider(num_refinements=0):
     from dune.xt.grid import Dim, make_prism_grid
 
     return make_prism_grid(Dim(3), num_refinements=num_refinements)
+
+
+# --- hyperbolic / instationary FV: linear transport ------------------------------------------
+#
+# AdvectionFvOperator + NumericalUpwindFlux/NumericalLaxFriedrichsFlux + ExplicitRungeKuttaTimeStepper
+# (#320 WP6) reproduce the C++ linear-transport/burgers FV test setups from Python. The bindings do
+# not expose a periodic grid view, so boundary_treatment(u -> u) (zero-order extrapolation) is used
+# instead of periodicity; the strategies below draw initial data whose support decays to numerical
+# noise well before the domain boundary, so that boundary treatment never actually matters and the
+# scheme's mass (sum of dofs * cell volumes) is conserved up to floating point precision.
+
+
+def has_advection_fv(module=None):
+    """Whether the build binds AdvectionFvOperator (#320 WP6)."""
+    gdt = module if module is not None else _import_optional("dune.gdt")
+    return gdt is not None and hasattr(gdt, "AdvectionFvOperator")
+
+
+@st.composite
+def constant_transport_velocities(draw, dim, bound=5.0, min_speed=0.1):
+    """A constant advection velocity of bounded, non-negligible speed.
+
+    A velocity too close to zero would make the CFL-respecting dt (~ h / |velocity|) blow up for no
+    interesting reason; min_speed keeps the draw meaningful.
+    """
+    direction = draw(
+        st.tuples(*[finite_floats(bound=1.0) for _ in range(dim)]).filter(
+            lambda v: sum(c * c for c in v) > 1e-4
+        )
+    )
+    norm = math.sqrt(sum(c * c for c in direction))
+    speed = draw(
+        st.floats(
+            min_value=min_speed, max_value=bound, allow_nan=False, allow_infinity=False
+        )
+    )
+    return tuple(speed * c / norm for c in direction)
+
+
+def cfl_respecting_dt(spec, velocity, cfl=0.4):
+    """A time step length respecting dt * |velocity| / h <= cfl for an explicit FV upwind step."""
+    h = min(
+        (hi - lo) / n
+        for lo, hi, n in zip(spec.lower_left, spec.upper_right, spec.num_elements)
+    )
+    speed = math.sqrt(sum(c * c for c in velocity))
+    return cfl * h / speed
+
+
+def linear_transport_flux_expression(velocity):
+    """The flux f(u) = velocity * u of a linear transport equation, as a function of the state u.
+
+    dim_domain=1 (the scalar state u), dim_range=len(velocity) (the spatial/flux dimension) -- the
+    shape NumericalUpwindFlux/NumericalLaxFriedrichsFlux expect for their (x-independent) flux
+    argument (#320 WP6).
+    """
+    from dune.xt.functions import ExpressionFunction
+    from dune.xt.grid import Dim
+
+    expressions = [f"({c!r})*u[0]" for c in velocity]
+    return ExpressionFunction(
+        dim_domain=Dim(1),
+        variable="u",
+        expressions=expressions,
+        order=1,
+        name="linear_transport_flux",
+    )
+
+
+def gaussian_bump_expression(dim, center, sigma, amplitude=1.0):
+    """A Gaussian bump amplitude * exp(-|x - center|^2 / (2 sigma^2)).
+
+    Decays fast enough that a handful of `sigma` of padding between `center` and the domain boundary
+    makes the boundary value negligible in double precision (e.g. 10 sigma -> exp(-50) ~ 1e-22),
+    which is what the mass-conservation property below relies on instead of a periodic domain.
+    """
+    from dune.xt.functions import ExpressionFunction
+    from dune.xt.grid import Dim
+
+    terms = "+".join(
+        f"(x[{i}]-({center[i]!r}))*(x[{i}]-({center[i]!r}))" for i in range(dim)
+    )
+    expression = f"({amplitude!r})*exp(-({terms})/(2.0*({sigma!r})*({sigma!r})))"
+    return ExpressionFunction(
+        dim_domain=Dim(dim),
+        variable="x",
+        expressions=[expression],
+        order=2,
+        name="gaussian_bump",
+    )
+
+
+def fv_mass(discrete_function, grid):
+    """sum(dofs * cell volume) of a FiniteVolumeSpace DiscreteFunction, i.e. its discrete integral."""
+    volumes = []
+    grid.apply_on_each_element(lambda element: volumes.append(element.volume))
+    dofs = np.asarray(discrete_function.dofs.vector, dtype=float)
+    return float(np.dot(dofs, np.asarray(volumes, dtype=float)))

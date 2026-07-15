@@ -75,6 +75,9 @@ for mod_name in (  # order should not matter!
     "_local_operators_element_interface",
     "_local_operators_intersection_indicator",
     "_local_operators_intersection_interface",
+    "_operators_advection_fv_1d",
+    "_operators_advection_fv_2d",
+    "_operators_advection_fv_3d",
     "_operators_bilinear_form_1d",
     "_operators_bilinear_form_2d",
     "_operators_bilinear_form_3d",
@@ -87,6 +90,9 @@ for mod_name in (  # order should not matter!
     "_operators_matrix_based_factory_1d",
     "_operators_matrix_based_factory_2d",
     "_operators_matrix_based_factory_3d",
+    "_operators_numerical_fluxes_1d",
+    "_operators_numerical_fluxes_2d",
+    "_operators_numerical_fluxes_3d",
     "_operators_operator_1d",
     "_operators_operator_2d",
     "_operators_operator_3d",
@@ -106,6 +112,9 @@ for mod_name in (  # order should not matter!
     "_tools_dirichlet_constraints",
     "_tools_grid_quality_estimates",
     "_tools_sparsity_pattern",
+    "_tools_timestepper_1d",
+    "_tools_timestepper_2d",
+    "_tools_timestepper_3d",
 ):
     guarded_import(globals(), "dune.gdt", mod_name)
 
@@ -193,6 +202,62 @@ VectorFunctional = _make_dispatch(
 )
 IstlVectorFunctional = _make_dispatch(
     "_functionals_vector_based", "IstlVectorFunctional", dim_kwarg="grid"
+)
+AdvectionFvOperator = _make_dispatch(
+    "_operators_advection_fv", "advection_fv_operator", dim_kwarg="space"
+)
+# ExplicitRungeKuttaTimeStepper's `op` (first positional argument) has no dimension-carrying
+# attribute of its own; `initial_values` (second positional argument, a DiscreteFunction) does
+# (`.dim_domain`, see discretefunction.hh), hence dim_arg=1 instead of the usual 0.
+ExplicitEulerTimeStepper = _make_dispatch(
+    "_tools_timestepper",
+    "explicit_euler_time_stepper",
+    dim_arg=1,
+    dim_kwarg="initial_values",
+)
+ExplicitRungeKutta2TimeStepper = _make_dispatch(
+    "_tools_timestepper",
+    "explicit_rungekutta_second_order_ssp_time_stepper",
+    dim_arg=1,
+    dim_kwarg="initial_values",
+)
+ExplicitRungeKutta3TimeStepper = _make_dispatch(
+    "_tools_timestepper",
+    "explicit_rungekutta_third_order_ssp_time_stepper",
+    dim_arg=1,
+    dim_kwarg="initial_values",
+)
+ExplicitRungeKutta4TimeStepper = _make_dispatch(
+    "_tools_timestepper",
+    "explicit_rungekutta_classic_fourth_order_time_stepper",
+    dim_arg=1,
+    dim_kwarg="initial_values",
+)
+
+
+def _make_flux_dispatch(module_base, factory_name):
+    """Dispatch a numerical-flux factory on `flux.dim_range` (the spatial dimension).
+
+    Numerical fluxes are constructed from a state-dependent flux function of the *state* u, i.e. an
+    (already-bound) ExpressionFunction(dim_domain=1, dim_range=<spatial dimension>) -- its dim_domain
+    is always 1 regardless of the grid, so the usual `_make_dispatch` (which probes dim_domain first,
+    see `_dim_of`) would always resolve to the 1d submodule. dim_range carries the spatial dimension
+    instead.
+    """
+
+    def _factory(flux, *args, **kwargs):
+        submodule = _split_submodule(module_base, int(flux.dim_range))
+        return getattr(submodule, factory_name)(flux, *args, **kwargs)
+
+    _factory.__name__ = _factory.__qualname__ = factory_name
+    return _factory
+
+
+NumericalUpwindFlux = _make_flux_dispatch(
+    "_operators_numerical_fluxes", "numerical_upwind_flux"
+)
+NumericalLaxFriedrichsFlux = _make_flux_dispatch(
+    "_operators_numerical_fluxes", "numerical_lax_friedrichs_flux"
 )
 
 
