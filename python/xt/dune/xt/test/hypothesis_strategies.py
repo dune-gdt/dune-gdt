@@ -538,9 +538,7 @@ def fourier_sums(draw, dim, max_modes=3, max_frequency=4, amplitude_bound=10.0):
         )
         if all(f == 0 for f in freq):
             continue  # a zero frequency mode would silently inflate the constant term
-        phase = draw(
-            st.floats(0.0, 2 * math.pi, allow_nan=False, allow_infinity=False)
-        )
+        phase = draw(st.floats(0.0, 2 * math.pi, allow_nan=False, allow_infinity=False))
         modes.append((amplitude, freq, phase))
     return FourierSum(dim=dim, constant=constant, modes=tuple(modes))
 
