@@ -235,29 +235,15 @@ ExplicitRungeKutta4TimeStepper = _make_dispatch(
 )
 
 
-def _make_flux_dispatch(module_base, factory_name):
-    """Dispatch a numerical-flux factory on `flux.dim_range` (the spatial dimension).
-
-    Numerical fluxes are constructed from a state-dependent flux function of the *state* u, i.e. an
-    (already-bound) ExpressionFunction(dim_domain=1, dim_range=<spatial dimension>) -- its dim_domain
-    is always 1 regardless of the grid, so the usual `_make_dispatch` (which probes dim_domain first,
-    see `_dim_of`) would always resolve to the 1d submodule. dim_range carries the spatial dimension
-    instead.
-    """
-
-    def _factory(flux, *args, **kwargs):
-        submodule = _split_submodule(module_base, int(flux.dim_range))
-        return getattr(submodule, factory_name)(flux, *args, **kwargs)
-
-    _factory.__name__ = _factory.__qualname__ = factory_name
-    return _factory
-
-
-NumericalUpwindFlux = _make_flux_dispatch(
-    "_operators_numerical_fluxes", "numerical_upwind_flux"
+# NumericalUpwindFlux/NumericalLaxFriedrichsFlux take a leading `grid` argument purely so pybind11
+# can disambiguate the per-grid-type overloads accumulated under one factory name within a
+# dimension's submodule (the flux argument alone carries no grid-type information -- see the
+# comment in numerical-fluxes_for_all_grids.hh); dispatch on it like any other grid-first factory.
+NumericalUpwindFlux = _make_dispatch(
+    "_operators_numerical_fluxes", "numerical_upwind_flux", dim_kwarg="grid"
 )
-NumericalLaxFriedrichsFlux = _make_flux_dispatch(
-    "_operators_numerical_fluxes", "numerical_lax_friedrichs_flux"
+NumericalLaxFriedrichsFlux = _make_dispatch(
+    "_operators_numerical_fluxes", "numerical_lax_friedrichs_flux", dim_kwarg="grid"
 )
 
 

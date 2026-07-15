@@ -786,6 +786,11 @@ def linear_transport_flux_expression(velocity):
     from dune.xt.functions import ExpressionFunction
     from dune.xt.grid import Dim
 
+    # The C++ expression parser (ExprTk) rejects subnormal float literals (e.g. 2.2e-309) -- see the
+    # identical flush in Polynomial.linear_combination above. A normalized-direction * speed velocity
+    # component can land in that range when the drawn direction is extremely lopsided.
+    dbl_min = np.finfo(np.float64).tiny
+    velocity = tuple(0.0 if abs(c) < dbl_min else c for c in velocity)
     expressions = [f"({c!r})*u[0]" for c in velocity]
     # NumericalUpwindFlux (and NumericalLaxFriedrichsFlux without an explicit lambda) evaluate the
     # flux's Jacobian internally to pick the upwind side / a stable wave speed estimate; without

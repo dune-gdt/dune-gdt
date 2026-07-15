@@ -15,6 +15,8 @@ grid, transport velocity and CFL-respecting time step at runtime via hypothesis 
 one fixed combination per .cc file.
 """
 
+import dataclasses
+
 import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
@@ -34,6 +36,12 @@ pytestmark = pytest.mark.skipif(
     reason="this build does not bind AdvectionFvOperator (#320 WP6)",
 )
 
+# Minimum cells per axis: a too-coarse grid cannot resolve the Gaussian bump (sigma is set relative
+# to the domain extent below) well enough for the mass-conservation comparison to be meaningful --
+# an under-resolved bump's "mass" is numerical noise rather than a proper integral, which is exactly
+# what a hypothesis-shrunk 1x3-element 2d grid found (mass ~1e-9, not conserved to abs=1e-12).
+_MIN_ELEMENTS_PER_DIM = 24
+
 
 @st.composite
 def _linear_transport_cases(draw, dims=(1, 2)):
@@ -41,10 +49,14 @@ def _linear_transport_cases(draw, dims=(1, 2)):
         grid_specs(
             dims=dims,
             elements=("cube",),
-            max_elements_per_dim=8,
-            unit_box=False,
+            max_elements_per_dim=_MIN_ELEMENTS_PER_DIM,
+            unit_box=True,
             conforming_only=True,
         )
+    )
+    spec = dataclasses.replace(
+        spec,
+        num_elements=tuple(max(n, _MIN_ELEMENTS_PER_DIM) for n in spec.num_elements),
     )
     velocity = draw(constant_transport_velocities(spec.dim))
     return spec, velocity
@@ -80,12 +92,16 @@ def test_advection_fv_upwind_conserves_mass(case):
     half_extent = (
         min(hi - lo for lo, hi in zip(spec.lower_left, spec.upper_right)) / 2.0
     )
-    sigma = half_extent / 10.0
+    # 8 sigma of margin to the boundary (exp(-32) of the peak) with _MIN_ELEMENTS_PER_DIM cells
+    # comfortably resolving that same sigma -- see the comment on _MIN_ELEMENTS_PER_DIM above.
+    sigma = half_extent / 8.0
     center = tuple((lo + hi) / 2.0 for lo, hi in zip(spec.lower_left, spec.upper_right))
     bump = gaussian_bump_expression(spec.dim, center, sigma)
     u_0 = default_interpolation(GridFunction(grid, bump), space)
 
-    numerical_flux = NumericalUpwindFlux(linear_transport_flux_expression(velocity))
+    numerical_flux = NumericalUpwindFlux(
+        grid, linear_transport_flux_expression(velocity)
+    )
     op = AdvectionFvOperator(space, numerical_flux)
     # zero-order extrapolation, see advection-fv_for_all_grids.hh
     op.boundary_treatment(lambda u: u)

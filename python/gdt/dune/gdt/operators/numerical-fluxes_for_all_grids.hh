@@ -66,6 +66,8 @@ public:
 template <class GV, class F = double>
 class NumericalUpwindFlux
 {
+  using G = std::decay_t<XT::Grid::extract_grid_t<GV>>;
+  using GP = XT::Grid::GridProvider<G>;
   static const constexpr size_t d = GV::dimension;
   using I = XT::Grid::extract_intersection_t<GV>;
   using InterfaceType = NumericalFluxInterface<GV, F>;
@@ -86,13 +88,19 @@ public:
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
     c.def(py::init([](const XIndependentFluxType& flux) { return new type(flux); }), "flux"_a, py::keep_alive<1, 2>());
 
-    // NOTE: the factory is registered under class_id (snake_case) as-is -- __init__.py's
-    // _make_flux_dispatch looks up this exact (grid-agnostic) attribute name on the submodule.
+    // NOTE: the factory is registered under class_id (snake_case) as-is -- __init__.py's dispatch
+    // looks up this exact (grid-agnostic) attribute name on the submodule. The flux argument alone
+    // carries no grid-type information (XIndependentFluxType is identical across every grid type of
+    // a given dimension), so pybind11 could not otherwise disambiguate the per-grid overloads
+    // accumulated under this one name within a dimension's submodule; grid (a GridProvider<G>, a
+    // distinct C++ type per grid) is accepted purely to make that overload resolution unambiguous,
+    // matching the pattern already used by e.g. Operator's "grid" factory argument.
     m.def(
         class_id.c_str(),
-        [](const XIndependentFluxType& flux) { return new type(flux); },
+        [](const GP& /*grid*/, const XIndependentFluxType& flux) { return new type(flux); },
+        "grid"_a,
         "flux"_a,
-        py::keep_alive<0, 1>());
+        py::keep_alive<0, 2>());
     return c;
   } // ... bind(...)
 }; // class NumericalUpwindFlux
@@ -101,6 +109,8 @@ public:
 template <class GV, class F = double>
 class NumericalLaxFriedrichsFlux
 {
+  using G = std::decay_t<XT::Grid::extract_grid_t<GV>>;
+  using GP = XT::Grid::GridProvider<G>;
   static const constexpr size_t d = GV::dimension;
   using I = XT::Grid::extract_intersection_t<GV>;
   using InterfaceType = NumericalFluxInterface<GV, F>;
@@ -127,10 +137,13 @@ public:
     // NOTE: see the analogous comment in NumericalUpwindFlux::bind above.
     m.def(
         class_id.c_str(),
-        [](const XIndependentFluxType& flux, const double lambda) { return new type(flux, lambda); },
+        [](const GP& /*grid*/, const XIndependentFluxType& flux, const double lambda) {
+          return new type(flux, lambda);
+        },
+        "grid"_a,
         "flux"_a,
         "lambda_"_a = 0.,
-        py::keep_alive<0, 1>());
+        py::keep_alive<0, 2>());
     return c;
   } // ... bind(...)
 }; // class NumericalLaxFriedrichsFlux

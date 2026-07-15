@@ -138,7 +138,7 @@ u_0 = default_interpolation(
     GridFunction(grid, gaussian_bump_expression(1, center, sigma)), space
 )
 
-numerical_flux = NumericalUpwindFlux(linear_transport_flux_expression(velocity))
+numerical_flux = NumericalUpwindFlux(grid, linear_transport_flux_expression(velocity))
 op = AdvectionFvOperator(space, numerical_flux)
 op.boundary_treatment(lambda u: u)  # zero-order extrapolation; never actually reached here
 
@@ -196,7 +196,9 @@ for num_elements in resolutions:
     u_0_i = default_interpolation(
         GridFunction(grid_i, gaussian_bump_expression(1, center, sigma)), space_i
     )
-    op_i = AdvectionFvOperator(space_i, NumericalUpwindFlux(linear_transport_flux_expression(velocity)))
+    op_i = AdvectionFvOperator(
+        space_i, NumericalUpwindFlux(grid_i, linear_transport_flux_expression(velocity))
+    )
     op_i.boundary_treatment(lambda u: u)
 
     h_i = (domain[1][0] - domain[0][0]) / num_elements
@@ -242,7 +244,7 @@ u_0_2d = default_interpolation(
     GridFunction(grid_2d, gaussian_bump_expression(2, center_2d, sigma_2d)), space_2d
 )
 op_2d = AdvectionFvOperator(
-    space_2d, NumericalUpwindFlux(linear_transport_flux_expression(velocity_2d))
+    space_2d, NumericalUpwindFlux(grid_2d, linear_transport_flux_expression(velocity_2d))
 )
 op_2d.boundary_treatment(lambda u: u)
 
