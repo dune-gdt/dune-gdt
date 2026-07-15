@@ -127,7 +127,15 @@ op.boundary_treatment(lambda u: u)  # zero-order extrapolation; never actually r
 h = (domain[1][0] - domain[0][0]) / 64
 dt = 0.4 * h / abs(velocity[0])  # CFL number 0.4
 
-time_stepper = ExplicitEulerTimeStepper(op, u_0)
+time_stepper = ExplicitEulerTimeStepper(op, u_0, r=-1.0)
+```
+
+```{admonition} Sign convention
+:class: note
+`ExplicitEulerTimeStepper` (and every `ExplicitRungeKutta*TimeStepper`) solves $u_t = r \cdot L(u)$ for
+the operator $L$ passed to it. `AdvectionFvOperator.apply(u)` computes $L(u) = +\operatorname{div}(f(u))$
+(the numerical flux leaving each cell, divided by its volume), so recovering the conservation law
+$u_t + \operatorname{div}(f(u)) = 0$ requires $r = -1$.
 ```
 
 A handful of snapshots, taken every 20 explicit Euler steps, show the bump advecting to the right:
@@ -175,7 +183,7 @@ for num_elements in resolutions:
 
     h_i = (domain[1][0] - domain[0][0]) / num_elements
     dt_i = 0.4 * h_i / abs(velocity[0])
-    stepper_i = ExplicitEulerTimeStepper(op_i, u_0_i)
+    stepper_i = ExplicitEulerTimeStepper(op_i, u_0_i, r=-1.0)
     t = 0.0
     while t < T - 1e-10:
         actual_dt = min(dt_i, T - t)
@@ -223,7 +231,7 @@ op_2d.boundary_treatment(lambda u: u)
 h_2d = 10.0 / 48
 speed_2d = math.sqrt(sum(c**2 for c in velocity_2d))
 dt_2d = 0.4 * h_2d / speed_2d
-stepper_2d = ExplicitEulerTimeStepper(op_2d, u_0_2d)
+stepper_2d = ExplicitEulerTimeStepper(op_2d, u_0_2d, r=-1.0)
 for _ in range(80):
     stepper_2d.step(dt_2d)
 

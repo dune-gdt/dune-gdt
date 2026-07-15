@@ -91,7 +91,10 @@ def test_advection_fv_upwind_conserves_mass(case):
     op.boundary_treatment(lambda u: u)
 
     dt = cfl_respecting_dt(spec, velocity, cfl=0.4)
-    time_stepper = ExplicitEulerTimeStepper(op, u_0)
+    # op.apply(u) computes +div(f(u)); u_t + div(f(u)) = 0 requires r = -1 (irrelevant to mass
+    # conservation itself, which holds by flux-cancellation regardless of sign, but required for
+    # the scheme to actually be the stable upwind discretization rather than an unstable downwind one)
+    time_stepper = ExplicitEulerTimeStepper(op, u_0, r=-1.0)
 
     mass_before = fv_mass(u_0, grid)
     for _ in range(5):
