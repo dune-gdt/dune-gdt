@@ -101,7 +101,11 @@ class TestComplexVectorAgainstNumpy:
         xs, ys = pair
         xv, yv = make_vector(cls, xs), make_vector(cls, ys)
         xs_arr, ys_arr = np.asarray(xs, dtype=complex), np.asarray(ys, dtype=complex)
-        expected = complex(np.vdot(xs_arr, ys_arr) if "Istl" in cls.__name__ else np.dot(xs_arr, ys_arr))
+        expected = complex(
+            np.vdot(xs_arr, ys_arr)
+            if "Istl" in cls.__name__
+            else np.dot(xs_arr, ys_arr)
+        )
         abs_tol = 1e-9 * max(
             1.0, float(np.sum(np.abs(np.asarray(xs)) * np.abs(np.asarray(ys))))
         )
