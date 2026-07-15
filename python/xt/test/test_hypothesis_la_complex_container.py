@@ -168,6 +168,18 @@ class TestComplexMatrixAgainstNumpy:
             expected[ii, jj] = value
         assert matrix_as_numpy(mat) == pytest.approx(expected, abs=0.0)
 
+        # matvec: mat.dot(vec) (bound via addbind_Matrix_Vector_interaction) must match numpy
+        x_values = data.draw(
+            st.lists(complex_floats(bound=1e3), min_size=cols, max_size=cols)
+        )
+        xv = mat.vector_type()(cols, 0j)
+        for jj, value in enumerate(x_values):
+            xv.set_entry(jj, value)
+        yv = mat.dot(xv)
+        y_expected = expected @ np.asarray(x_values, dtype=complex)
+        y_actual = np.array([yv.get_entry(ii) for ii in range(rows)], dtype=complex)
+        assert y_actual == pytest.approx(y_expected, rel=1e-9, abs=1e-6)
+
     @given(
         shape=st.tuples(st.integers(1, 8), st.integers(1, 8)),
         data=st.data(),
