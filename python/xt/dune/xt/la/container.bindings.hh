@@ -155,9 +155,9 @@ struct container_name<CommonDenseMatrix<double>>
 };
 
 // Note: CommonSparseMatrix<double> defaults its second (layout) template argument to
-// Common::StorageLayout::csr, i.e. this is the same type as CommonSparseMatrixCsr<double>.
+// Dune::XT::Common::StorageLayout::csr, i.e. this is the same type as CommonSparseMatrixCsr<double>.
 template <>
-struct container_name<CommonSparseMatrix<double, Common::StorageLayout::csr>>
+struct container_name<CommonSparseMatrix<double, Dune::XT::Common::StorageLayout::csr>>
 {
   static std::string value()
   {
@@ -168,7 +168,7 @@ struct container_name<CommonSparseMatrix<double, Common::StorageLayout::csr>>
 };
 
 template <>
-struct container_name<CommonSparseMatrix<double, Common::StorageLayout::csc>>
+struct container_name<CommonSparseMatrix<double, Dune::XT::Common::StorageLayout::csc>>
 {
   static std::string value()
   {
@@ -199,7 +199,7 @@ struct container_name<CommonDenseMatrix<std::complex<double>>>
 };
 
 template <>
-struct container_name<CommonSparseMatrix<std::complex<double>, Common::StorageLayout::csr>>
+struct container_name<CommonSparseMatrix<std::complex<double>, Dune::XT::Common::StorageLayout::csr>>
 {
   static std::string value()
   {
@@ -208,7 +208,7 @@ struct container_name<CommonSparseMatrix<std::complex<double>, Common::StorageLa
 };
 
 template <>
-struct container_name<CommonSparseMatrix<std::complex<double>, Common::StorageLayout::csc>>
+struct container_name<CommonSparseMatrix<std::complex<double>, Dune::XT::Common::StorageLayout::csc>>
 {
   static std::string value()
   {
