@@ -145,7 +145,7 @@ struct AdvectionFvOperator_for_all_grids
 template <>
 struct AdvectionFvOperator_for_all_grids<Dune::XT::Common::tuple_null_type>
 {
-  static void bind(pybind11::module& /*m*/) {}
+  static void bind(pybind11::module& /*m*/) {} // recursion base case: no grid types left to bind
 };
 
 
