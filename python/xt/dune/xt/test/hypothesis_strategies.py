@@ -787,14 +787,22 @@ def linear_transport_flux_expression(velocity):
     from dune.xt.grid import Dim
 
     expressions = [f"({c!r})*u[0]" for c in velocity]
+    # NumericalUpwindFlux (and NumericalLaxFriedrichsFlux without an explicit lambda) evaluate the
+    # flux's Jacobian internally to pick the upwind side / a stable wave speed estimate; without
+    # gradient_expressions, ExpressionFunction throws NotImplemented on the first jacobian() call
+    # (dune/xt/functions/expression/default.hh). d(flux_i)/du = velocity[i] (a constant), since the
+    # flux is linear in u.
+    gradients = [f"{c!r}" for c in velocity]
     # ExpressionFunction's r == 1 (scalar range, i.e. 1d velocity) overload takes a single
-    # "expression" string, not the "expressions" list the r > 1 overloads take
+    # "expression"/"gradient_expressions" (a flat FieldVector<string, dim_domain=1>), not the
+    # "expressions"/FieldMatrix<string, r, 1> the r > 1 overloads take
     # (python/xt/dune/xt/functions/expression.cc).
     if len(expressions) == 1:
         return ExpressionFunction(
             dim_domain=Dim(1),
             variable="u",
             expression=expressions[0],
+            gradient_expressions=[gradients[0]],
             order=1,
             name="linear_transport_flux",
         )
@@ -802,6 +810,7 @@ def linear_transport_flux_expression(velocity):
         dim_domain=Dim(1),
         variable="u",
         expressions=expressions,
+        gradient_expressions=[[g] for g in gradients],
         order=1,
         name="linear_transport_flux",
     )

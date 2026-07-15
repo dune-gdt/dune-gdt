@@ -97,12 +97,18 @@ def gaussian_bump(x, center, sigma, amplitude=1.0):
 def linear_transport_flux_expression(velocity):
     # f(u) = velocity * u, as a function of the *state* u (dim_domain=1), not of x. Same
     # "expression" (singular, r == 1) vs. "expressions" (list, r > 1) split as gaussian_bump_expression.
+    #
+    # NumericalUpwindFlux evaluates the flux's Jacobian internally to pick the upwind side, so
+    # gradient_expressions must be supplied: d(flux_i)/du = velocity[i] (a constant, since f is
+    # linear in u).
     expressions = [f"({c!r})*u[0]" for c in velocity]
+    gradients = [f"{c!r}" for c in velocity]
     if len(expressions) == 1:
         return ExpressionFunction(
             dim_domain=Dim(1),
             variable="u",
             expression=expressions[0],
+            gradient_expressions=[gradients[0]],
             order=1,
             name="linear_transport_flux",
         )
@@ -110,6 +116,7 @@ def linear_transport_flux_expression(velocity):
         dim_domain=Dim(1),
         variable="u",
         expressions=expressions,
+        gradient_expressions=[[g] for g in gradients],
         order=1,
         name="linear_transport_flux",
     )
