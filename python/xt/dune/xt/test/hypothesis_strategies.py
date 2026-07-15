@@ -371,6 +371,29 @@ class Polynomial:
             name=name,
         )
 
+    def to_generic_function(self, name="p"):
+        """The same polynomial, evaluated by a Python callable instead of the parsed C++ string.
+
+        Gives every property that exercises `to_function()` a second, independent code path
+        (a pybind11 callback into this exact `__call__`, vs. the C++ expression-string parser)
+        computing identical math -- the "generic-function variant" #320 WP7 asks the interpolation
+        /operator property tests to gain, and unlike `to_function()` needs no subnormal-coefficient
+        flushing since there is no float-literal parser involved.
+        """
+        from dune.xt.functions import GenericFunction
+        from dune.xt.grid import Dim
+
+        def evaluate(x, _mu):
+            return [float(self(np.asarray(x))[0])]
+
+        return GenericFunction(
+            dim_domain=Dim(self.dim),
+            dim_range=Dim(1),
+            order=self.order,
+            evaluate=evaluate,
+            name=name,
+        )
+
     def __call__(self, points):
         points = np.atleast_2d(np.asarray(points, dtype=float))
         values = np.zeros(points.shape[0])
@@ -445,6 +468,83 @@ def cg_vector_dof_count(order, num_elements, dim_range):
     return dim_range * cg_scalar_dof_count(order, num_elements)
 
 
+# --- random Python-callable coefficients with a known exact integral (#320 WP7) -------------
+#
+# GenericFunction lets hypothesis generate the coefficient *function* itself (not just an
+# expression string), including adversarial local features a polynomial or a hand-written
+# expression would not think to try. FourierSum keeps the exact integral trivial (every nonzero
+# frequency mode integrates to 0 over the unit box) so exactness properties (e.g. "the mean value
+# of the interpolant matches the mean value of the interpolated function") can be checked without
+# a symbolic integrator, the same way `Polynomial.linear_combination` avoids one for linearity.
+
+
+# eq=False: see the comment on Polynomial above; the same identity-semantics argument applies here.
+@dataclass(frozen=True, eq=False)
+class FourierSum:
+    """A finite sum of axis-aligned cosine modes: constant + sum_k amplitude_k * cos(2*pi*<freq_k, x> + phase_k).
+
+    Every mode has an integer, non-zero frequency vector, and
+    integral_0^1 cos(2*pi*n*t + phase) dt == 0 for any nonzero integer n and any phase, so every
+    mode integrates to exactly 0 over the unit box regardless of its amplitude or phase -- only
+    the constant term contributes to `exact_integral`.
+    """
+
+    dim: int
+    constant: float
+    modes: tuple  # tuple of (amplitude: float, freq: tuple[int, ...], phase: float)
+
+    def __call__(self, points):
+        points = np.atleast_2d(np.asarray(points, dtype=float))
+        values = np.full(points.shape[0], self.constant, dtype=float)
+        for amplitude, freq, phase in self.modes:
+            angle = 2 * np.pi * (points * np.asarray(freq)).sum(axis=1) + phase
+            values += amplitude * np.cos(angle)
+        return values
+
+    @property
+    def exact_integral(self):
+        """The exact integral of self over the unit box [0, 1]^dim (see the class docstring)."""
+        return self.constant
+
+    def to_generic_function(self, name="fourier_sum"):
+        from dune.xt.functions import GenericFunction
+        from dune.xt.grid import Dim
+
+        def evaluate(x, _mu):
+            return [float(self(np.asarray(x))[0])]
+
+        return GenericFunction(
+            dim_domain=Dim(self.dim),
+            dim_range=Dim(1),
+            # cos(.) is smooth; any order the caller's quadrature needs is exact, 2 is a
+            # deliberately-low-but-safe default (matches the polynomial degree of a truncated
+            # Taylor expansion most quadrature rules used in these tests are already exact for).
+            order=2,
+            evaluate=evaluate,
+            name=name,
+        )
+
+
+@st.composite
+def fourier_sums(draw, dim, max_modes=3, max_frequency=4, amplitude_bound=10.0):
+    """Random finite cosine sums (see FourierSum) with a known-exact integral over the unit box."""
+    constant = draw(finite_floats(amplitude_bound))
+    num_modes = draw(st.integers(0, max_modes))
+    modes = []
+    for _ in range(num_modes):
+        amplitude = draw(finite_floats(amplitude_bound))
+        freq = tuple(
+            draw(st.integers(-max_frequency, max_frequency)) for _ in range(dim)
+        )
+        if all(f == 0 for f in freq):
+            continue  # a zero frequency mode would silently inflate the constant term
+        phase = draw(
+            st.floats(0.0, 2 * math.pi, allow_nan=False, allow_infinity=False)
+        )
+        modes.append((amplitude, freq, phase))
+    return FourierSum(dim=dim, constant=constant, modes=tuple(modes))
+
+
 # --- unstructured (UG) grids: mixed-element and prism meshes --------------------------------
 #
 # UGGrid is the only bound grid manager that can hold a mesh with more than one geometry type (or
@@ -452,6 +552,15 @@ def cg_vector_dof_count(order, num_elements, dim_range):
 # mirror the C++ fixtures in dune/gdt/test/spaces/base.hh. Their topology is fixed, so the per
 # geometry-type element counts are exact and pin the DG mapper on mixed grids -- something the
 # structured (single geometry type) grid_specs above cannot reach (WP3 of #320).
+
+
+def has_generic_function(module=None):
+    """Whether the build binds GenericFunction, i.e. Python callables as C++ functions (#320 WP7).
+
+    Pass an explicit module (e.g. a stub) to test the detection without the compiled wheel.
+    """
+    functions = module if module is not None else _import_optional("dune.xt.functions")
+    return functions is not None and hasattr(functions, "GenericFunction")
 
 
 def has_uggrid(module=None):

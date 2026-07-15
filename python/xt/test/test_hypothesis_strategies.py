@@ -19,7 +19,10 @@ bindings when they are importable and asserts the discovered slice is self-consi
 
 import types
 
+import numpy as np
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from dune.xt.test import hypothesis_strategies as hs
 
@@ -352,6 +355,39 @@ def test_cg_vector_dof_count_is_dim_range_times_scalar(order, num_elements, dim_
     assert hs.cg_vector_dof_count(
         order, num_elements, dim_range
     ) == dim_range * hs.cg_scalar_dof_count(order, num_elements)
+
+
+# --- WP7 (#320): GenericFunction discovery and the FourierSum callable strategy -----------
+
+
+def test_has_generic_function_detects_the_binding():
+    with_generic = types.SimpleNamespace(GenericFunction=lambda **kwargs: None)
+    without_generic = types.SimpleNamespace()
+    assert hs.has_generic_function(with_generic) is True
+    assert hs.has_generic_function(without_generic) is False
+
+
+def test_fourier_sum_constant_only_is_constant_everywhere():
+    f = hs.FourierSum(dim=2, constant=3.5, modes=())
+    values = f(np.array([[0.0, 0.0], [0.3, 0.7], [1.0, 1.0]]))
+    assert np.allclose(values, 3.5)
+    assert f.exact_integral == 3.5
+
+
+def test_fourier_sum_nonzero_modes_integrate_to_zero_over_the_unit_box():
+    # every mode has a nonzero integer frequency, so a fine regular grid should approximate the
+    # exact integral (== constant alone) well, numerically confirming the class docstring's claim.
+    f = hs.FourierSum(dim=1, constant=1.0, modes=((5.0, (3,), 0.7), (-2.0, (-2,), 2.1)))
+    points = np.linspace(0.0, 1.0, 2001)[:, None]
+    approx_integral = f(points).mean()
+    assert approx_integral == pytest.approx(f.exact_integral, abs=1e-3)
+
+
+@given(data=st.data())
+def test_fourier_sums_strategy_never_generates_a_zero_frequency_mode(data):
+    fourier = data.draw(hs.fourier_sums(dim=2, max_modes=5))
+    for _amplitude, freq, _phase in fourier.modes:
+        assert any(f != 0 for f in freq)
 
 
 # --- against the real bindings, when this build actually provides them --------------------

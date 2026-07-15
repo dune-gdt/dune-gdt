@@ -27,6 +27,7 @@ from hypothesis import strategies as st
 from dune.xt.test.hypothesis_strategies import (
     GRID_COMBINATIONS,
     grid_specs,
+    has_generic_function,
     polynomials,
 )
 
@@ -127,6 +128,38 @@ def test_interpolation_is_a_projection(data, spec, order):
     assert np.allclose(
         dofs_twice, dofs_once, rtol=1e-13, atol=1e-13 * (np.abs(dofs_once).max() + 1.0)
     )
+
+
+@pytest.mark.skipif(
+    not has_generic_function(),
+    reason="GenericFunction bindings unavailable in this build (#320 WP7)",
+)
+@given(
+    data=st.data(),
+    spec=grid_specs(unit_box=True, max_elements_per_dim=3),
+    order=st.integers(1, 2),
+)
+def test_interpolation_reproduces_polynomials_via_generic_function(data, spec, order):
+    """The generic-function variant of test_interpolation_reproduces_polynomials.
+
+    The very same polynomial is supplied once as a parsed C++ expression string (`to_function`)
+    and once as a Python callable (`to_generic_function`, dune.xt.functions.GenericFunction); both
+    must interpolate to the same result, since #319 already showed the expression parser to be a
+    fragile input channel (it rejects subnormal float literals) that GenericFunction sidesteps.
+    """
+    from dune.gdt import ContinuousLagrangeSpace, default_interpolation
+    from dune.xt.functions import GridFunction as GF
+
+    grid = spec.make_grid()
+    space = ContinuousLagrangeSpace(grid, order=order)
+    poly = data.draw(polynomials(dim=spec.dim, max_order=order))
+
+    interpolant = default_interpolation(GF(grid, poly.to_generic_function()), space)
+
+    diff = GF(grid, GF(grid, interpolant) - GF(grid, poly.to_function()))
+    err2 = _l2_norm2(grid, diff)
+    ref2 = _l2_norm2(grid, GF(grid, poly.to_function()))
+    assert err2 <= 1e-20 * max(ref2, 1.0)
 
 
 if __name__ == "__main__":
