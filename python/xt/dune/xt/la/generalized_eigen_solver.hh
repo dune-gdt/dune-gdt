@@ -68,7 +68,10 @@ auto bind_GeneralizedEigenSolver(pybind11::module& m)
         py::keep_alive<1, 2>(),
         py::keep_alive<1, 3>());
 
-  c.def_property_readonly("options", &C::options);
+  // Named "used_options", not "options": see the analogous comment in
+  // solver_machinery.hh's bind_single_matrix_solver_ctor() -- the static "options" bound by
+  // bind_solver_machinery_options() above would otherwise be silently shadowed.
+  c.def_property_readonly("used_options", &C::options);
   c.def_property_readonly("lhs_matrix", [](const C& self) { return M(self.lhs_matrix()); });
   c.def_property_readonly("rhs_matrix", [](const C& self) { return M(self.rhs_matrix()); });
   bind_solver_machinery_eigenvalue_accessors(c);

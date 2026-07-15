@@ -88,7 +88,10 @@ void bind_single_matrix_solver_ctor(pybind11::class_<C>& c)
         "matrix"_a,
         "options"_a,
         py::keep_alive<1, 2>());
-  c.def_property_readonly("options", &C::options);
+  // Named "used_options", not "options": the static "options" bound by bind_solver_machinery_options()
+  // above lives on this same class, and pybind11 attribute definitions on a class share one namespace --
+  // binding both under "options" would have the second def() silently shadow the first.
+  c.def_property_readonly("used_options", &C::options);
   c.def_property_readonly("matrix", [](const C& self) { return M(self.matrix()); });
 }
 
