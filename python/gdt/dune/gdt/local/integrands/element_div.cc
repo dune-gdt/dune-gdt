@@ -46,7 +46,6 @@ public:
   using base_type = GDT::LocalBinaryElementIntegrandInterface<E, d, 1, F, F, 1, 1, F>;
   using bound_type = pybind11::class_<type, base_type>;
 
-public:
   static bound_type bind(pybind11::module& m,
                          const std::string& layer_id = "",
                          const std::string& grid_id = XT::Grid::bindings::grid_name<G>::value(),
@@ -55,10 +54,7 @@ public:
     namespace py = pybind11;
     using namespace pybind11::literals;
 
-    std::string class_name = class_id;
-    class_name += "_" + grid_id;
-    if (!layer_id.empty())
-      class_name += "_" + layer_id;
+    std::string class_name = class_id + "_" + grid_id + (layer_id.empty() ? "" : "_" + layer_id);
     if (!std::is_same<F, double>::value)
       class_name += "_" + XT::Common::Typename<F>::value(/*fail_wo_typeid=*/true);
     const auto ClassName = XT::Common::to_camel_case(class_name);
