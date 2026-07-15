@@ -83,7 +83,7 @@ class TestComplexVectorAgainstNumpy:
             lambda n: st.tuples(complex_vector_data(n, n), complex_vector_data(n, n))
         )
     )
-    def test_dot_matches_the_plain_bilinear_product(self, cls, pair):
+    def test_dot_matches_the_backends_actual_convention(self, cls, pair):
         # VectorInterface::dot()'s documented default (complex_switch::dot in
         # dune/xt/la/container/vector-interface.hh) conjugates *this*, matching numpy's vdot
         # convention -- but CommonDenseVector/EigenBaseVector override dot() with a plain,
@@ -93,14 +93,15 @@ class TestComplexVectorAgainstNumpy:
         # assertions rely on that non-conjugated behavior for complex fields too. This is a
         # pre-existing inconsistency between the interface's documented default and these two
         # backends' overrides (a newly-discovered defect, only reachable now that this WP binds
-        # complex vectors' dot() at all -- see the PR description). This test pins the bindings'
+        # complex vectors' dot() at all -- see the PR description). IstlDenseVector, in contrast,
+        # delegates dot() to dune-istl's own backend().dot() (istl.hh), which does conjugate --
+        # so it alone matches the documented/vdot convention. This test pins each backend's
         # actual, currently-shipped behavior rather than the interface docstring's, to avoid a
         # conflicting fix to the existing compiled C++ test suite.
         xs, ys = pair
         xv, yv = make_vector(cls, xs), make_vector(cls, ys)
-        expected = complex(
-            np.dot(np.asarray(xs, dtype=complex), np.asarray(ys, dtype=complex))
-        )
+        xs_arr, ys_arr = np.asarray(xs, dtype=complex), np.asarray(ys, dtype=complex)
+        expected = complex(np.vdot(xs_arr, ys_arr) if "Istl" in cls.__name__ else np.dot(xs_arr, ys_arr))
         abs_tol = 1e-9 * max(
             1.0, float(np.sum(np.abs(np.asarray(xs)) * np.abs(np.asarray(ys))))
         )
