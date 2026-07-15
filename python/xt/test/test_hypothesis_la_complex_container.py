@@ -132,6 +132,23 @@ def make_matrix(cls, rows, cols, entries):
     return mat
 
 
+def matching_vector_class(matrix_cls):
+    """The complex vector class dune.xt.la pairs matrix_cls with, by shared backend prefix.
+
+    E.g. "CommonComplexSparseCsrMatrix" and "CommonComplexVector" share the "CommonComplex"
+    prefix -- every Common-family complex matrix (dense or sparse) is paired with the same
+    CommonComplexVector by addbind_Matrix_Vector_interaction in bindings.cc. Deliberately doesn't
+    use the bound `.vector_type()` accessor: reusing the already-exercised VECTOR_CLASSES/
+    make_vector keeps this test's matvec check independent of that newer binding.
+    """
+    name = matrix_cls.__name__
+    for vector_cls in VECTOR_CLASSES:
+        prefix = vector_cls.__name__[: -len("Vector")]
+        if name.startswith(prefix):
+            return vector_cls
+    raise AssertionError(f"no complex vector class found for {name}")
+
+
 def matrix_as_numpy(mat):
     return np.array(
         [[mat.get_entry(ii, jj) for jj in range(mat.cols)] for ii in range(mat.rows)],
@@ -172,9 +189,7 @@ class TestComplexMatrixAgainstNumpy:
         x_values = data.draw(
             st.lists(complex_floats(bound=1e3), min_size=cols, max_size=cols)
         )
-        xv = mat.vector_type()(cols, 0j)
-        for jj, value in enumerate(x_values):
-            xv.set_entry(jj, value)
+        xv = make_vector(matching_vector_class(cls), x_values)
         yv = mat.dot(xv)
         y_expected = expected @ np.asarray(x_values, dtype=complex)
         y_actual = np.array([yv.get_entry(ii) for ii in range(rows)], dtype=complex)

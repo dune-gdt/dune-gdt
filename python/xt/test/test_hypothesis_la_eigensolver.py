@@ -62,6 +62,24 @@ def eigen_solver_for(cls):
     return getattr(la, cls.__name__ + "EigenSolver")
 
 
+def make_eigenvalues_only_solver(solver_cls, mat):
+    """Construct solver_cls(mat) with compute_eigenvectors explicitly disabled.
+
+    EigenSolverOptions defaults *both* compute_eigenvalues and compute_eigenvectors to true (see
+    dune/xt/la/eigen-solver/internal/base.hh's default_eigen_solver_options()), so the plain
+    solver_cls(mat) constructor silently also computes eigenvectors. This property test only
+    checks eigenvalues, so requesting eigenvectors is both wasted work and -- for the LAPACK-backed
+    default.hh specialization CommonDenseMatrix/CommonSparseMatrixCsr use -- currently crashes (a
+    newly-discovered defect in the eigenvector computation path's thread_local workspace caching in
+    dune/xt/la/eigen-solver/internal/lapacke.hh, only reachable now that WP5 binds this at all; see
+    the PR description). Explicitly disabling it here keeps this test scoped to what it actually
+    verifies and avoids the crash.
+    """
+    opts = dict(solver_cls.options())
+    opts["compute_eigenvectors"] = "false"
+    return solver_cls(mat, opts)
+
+
 @pytest.mark.skipif(not MATRIX_CLASSES, reason="no eigen-solver binding available")
 @pytest.mark.parametrize("cls", MATRIX_CLASSES, ids=lambda c: c.__name__)
 class TestEigenSolverAgainstScipy:
@@ -69,7 +87,7 @@ class TestEigenSolverAgainstScipy:
     @given(arr=spd_matrices())
     def test_eigenvalues_match_scipy(self, cls, arr):
         mat = make_matrix(cls, arr)
-        solver = eigen_solver_for(cls)(mat)
+        solver = make_eigenvalues_only_solver(eigen_solver_for(cls), mat)
 
         actual = np.sort(np.array([ev.real for ev in solver.eigenvalues()]))
         actual_imag = np.array([ev.imag for ev in solver.eigenvalues()])
@@ -83,7 +101,7 @@ class TestEigenSolverAgainstScipy:
     @given(arr=spd_matrices())
     def test_min_and_max_eigenvalue_match_scipy(self, cls, arr):
         mat = make_matrix(cls, arr)
-        solver = eigen_solver_for(cls)(mat)
+        solver = make_eigenvalues_only_solver(eigen_solver_for(cls), mat)
 
         expected = np.sort(scipy_linalg.eigvalsh(arr))
         assert solver.min_eigenvalues(1)[0] == pytest.approx(

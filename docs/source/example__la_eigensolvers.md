@@ -94,6 +94,11 @@ test suite already covers (`dune/xt/test/la/eigensolver_for_*.py`), `CommonDense
 this example runnable on any build -- we convert the assembled matrix to `CommonDenseMatrix`, which
 `dune.xt.la` always binds an `EigenSolver` for.
 
+We only need eigenvalues here, so we explicitly disable eigenvector computation: `EigenSolverOptions`
+defaults *both* on, and computing eigenvectors is both unnecessary work for this example and,
+for this LAPACK-backed solver, a currently-crashing code path (a newly-discovered defect, only
+reachable now that this WP binds the eigensolver at all -- see the accompanying PR for details).
+
 ```{code-cell}
 import dune.xt.la as la
 
@@ -106,7 +111,9 @@ for ii in range(n):
     for jj in range(n):
         dense_matrix.set_entry(ii, jj, a_h.matrix.get_entry(ii, jj))
 
-solver = la.CommonDenseMatrixEigenSolver(dense_matrix)
+eigensolver_opts = dict(la.CommonDenseMatrixEigenSolver.options())
+eigensolver_opts['compute_eigenvectors'] = 'false'
+solver = la.CommonDenseMatrixEigenSolver(dense_matrix, eigensolver_opts)
 print(f'CommonDenseMatrixEigenSolver.types() = {la.CommonDenseMatrixEigenSolver.types()}')
 
 eigenvalues = np.array([ev.real for ev in solver.eigenvalues()])
