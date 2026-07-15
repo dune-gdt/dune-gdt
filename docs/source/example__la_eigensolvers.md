@@ -86,47 +86,57 @@ dirichlet_constraints.apply(a_h.matrix)
 print(f'assembled a {a_h.matrix.rows}x{a_h.matrix.cols} {type(a_h.matrix).__name__}')
 ```
 
+## restricting to the interior DoFs
+
+`dirichlet_constraints.apply` turned every boundary DoF's row and column into a unit row/column
+(`ensure_symmetry=True`, the default), so the assembled matrix's eigenvalues are the interior
+Dirichlet-Laplace spectrum we want *plus* an extra eigenvalue of exactly `1` for every boundary
+DoF -- an artifact of how the Dirichlet condition is imposed algebraically, not part of the
+Dirichlet-Laplace spectrum itself. Rather than filter those out after the fact, we discard the
+boundary rows/columns before calling the eigensolver: `dirichlet_constraints.dirichlet_DoFs` gives
+the boundary DoF indices, and since `apply` never touched interior-interior entries, the
+interior/interior submatrix is exactly the (statically condensed) discrete operator for the
+interior eigenvalue problem.
+
+```{code-cell}
+n = a_h.matrix.rows
+boundary_dofs = set(dirichlet_constraints.dirichlet_DoFs)
+interior_dofs = [dof for dof in range(n) if dof not in boundary_dofs]
+print(f'{n} DoFs total, {len(boundary_dofs)} on the boundary, {len(interior_dofs)} interior')
+```
+
 ## computing eigenvalues via the bound eigen-solver
 
 `dune.xt.la` binds one `<Matrix class name>EigenSolver` per matrix type the C++ `.tpl` eigen-solver
 test suite already covers (`dune/xt/test/la/eigensolver_for_*.py`), `CommonDenseMatrix` among them.
 `MatrixOperator` assembles into whatever the (build-dependent) default LA backend is, so -- to keep
-this example runnable on any build -- we convert the assembled matrix to `CommonDenseMatrix`, which
-`dune.xt.la` always binds an `EigenSolver` for.
+this example runnable on any build -- we convert the interior/interior submatrix to
+`CommonDenseMatrix`, which `dune.xt.la` always binds an `EigenSolver` for.
 
-We only need eigenvalues here, so we explicitly disable eigenvector computation: `EigenSolverOptions`
-defaults *both* on, and computing eigenvectors is both unnecessary work for this example and,
-for this LAPACK-backed solver, a currently-crashing code path (a newly-discovered defect, only
-reachable now that this WP binds the eigensolver at all -- see the accompanying PR for details).
+We only need eigenvalues here, so we explicitly disable eigenvector computation:
+`EigenSolverOptions` defaults *both* on, and computing eigenvectors is unnecessary work for this
+example (and, for the LAPACK-backed solver specifically, a currently-crashing code path -- a
+newly-discovered defect, only reachable now that this WP binds the eigensolver at all; see the
+accompanying PR for details).
 
 ```{code-cell}
 import dune.xt.la as la
 
-n = a_h.matrix.rows
+n_interior = len(interior_dofs)
 assembled_backend = type(a_h.matrix).__name__
-print(f'MatrixOperator assembled into a {assembled_backend} ({n}x{n})')
+print(f'MatrixOperator assembled into a {assembled_backend}, restricted to a {n_interior}x{n_interior} interior system')
 
-dense_matrix = la.CommonDenseMatrix(n, n, 0.)
-for ii in range(n):
-    for jj in range(n):
-        dense_matrix.set_entry(ii, jj, a_h.matrix.get_entry(ii, jj))
+dense_matrix = la.CommonDenseMatrix(n_interior, n_interior, 0.)
+for ii, gi in enumerate(interior_dofs):
+    for jj, gj in enumerate(interior_dofs):
+        dense_matrix.set_entry(ii, jj, a_h.matrix.get_entry(gi, gj))
 
 eigensolver_opts = dict(la.CommonDenseMatrixEigenSolver.options())
 eigensolver_opts['compute_eigenvectors'] = 'false'
 solver = la.CommonDenseMatrixEigenSolver(dense_matrix, eigensolver_opts)
 print(f'CommonDenseMatrixEigenSolver.types() = {la.CommonDenseMatrixEigenSolver.types()}')
 
-eigenvalues = np.array([ev.real for ev in solver.eigenvalues()])
-```
-
-`dirichlet_constraints.apply` turned every boundary DoF's row into a unit row, so the assembled
-matrix has an eigenvalue of exactly `1` once per boundary DoF -- those are an artifact of how the
-Dirichlet condition is imposed algebraically, not part of the (interior) Dirichlet-Laplace
-spectrum. We filter them out before comparing:
-
-```{code-cell}
-interior_eigenvalues = np.sort(eigenvalues[np.abs(eigenvalues - 1.) > 1e-8])
-print(f'{len(eigenvalues) - len(interior_eigenvalues)} boundary DoFs (eigenvalue 1, filtered out)')
+interior_eigenvalues = np.sort(np.array([ev.real for ev in solver.eigenvalues()]))
 print(f'smallest interior eigenvalues: {interior_eigenvalues[:6]}')
 ```
 
@@ -155,20 +165,20 @@ assert relative_error[0] < 0.1, 'the fundamental mode should already be within 1
 ## matrix-inverter cross-check
 
 As a sanity check on the newly bound `MatrixInverter` (dune/xt/la/matrix-inverter.hh), we verify
-that inverting the (non-singular, Dirichlet-constrained) stiffness matrix and applying it to a
-column of the inverse recovers the corresponding unit vector, `M @ M_inv[:, j] == e_j`:
+that inverting the (non-singular) interior stiffness matrix and applying it to a column of the
+inverse recovers the corresponding unit vector, `M @ M_inv[:, j] == e_j`:
 
 ```{code-cell}
 inverse = la.CommonDenseMatrixMatrixInverter(dense_matrix).inverse()
 print(f'CommonDenseMatrixMatrixInverter.types() = {la.CommonDenseMatrixMatrixInverter.types()}')
 
 max_residual = 0.
-for j in (0, n // 2, n - 1):
-    column = la.CommonVector(n, 0.)
-    for ii in range(n):
+for j in (0, n_interior // 2, n_interior - 1):
+    column = la.CommonVector(n_interior, 0.)
+    for ii in range(n_interior):
         column.set_entry(ii, inverse.get_entry(ii, j))
     unit_vector = dense_matrix.dot(column)
-    residual = np.array([unit_vector.get_entry(ii) for ii in range(n)])
+    residual = np.array([unit_vector.get_entry(ii) for ii in range(n_interior)])
     residual[j] -= 1.
     max_residual = max(max_residual, np.abs(residual).max())
 
