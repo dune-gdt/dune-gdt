@@ -11,6 +11,7 @@
 #define DUNE_XT_LA_SOLVER_MACHINERY_PBH
 
 #include <limits>
+#include <memory>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -79,11 +80,11 @@ void bind_single_matrix_solver_ctor(pybind11::class_<C>& c)
   namespace py = pybind11;
   using namespace pybind11::literals;
 
-  c.def(py::init([](const M& matrix, const std::string& type) { return new C(matrix, type); }),
+  c.def(py::init([](const M& matrix, const std::string& type) { return std::make_unique<C>(matrix, type); }),
         "matrix"_a,
         "type"_a = "",
         py::keep_alive<1, 2>());
-  c.def(py::init([](const M& matrix, const Common::Configuration& opts) { return new C(matrix, opts); }),
+  c.def(py::init([](const M& matrix, const Common::Configuration& opts) { return std::make_unique<C>(matrix, opts); }),
         "matrix"_a,
         "options"_a,
         py::keep_alive<1, 2>());

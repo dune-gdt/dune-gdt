@@ -10,6 +10,8 @@
 #ifndef DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_PBH
 #define DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_PBH
 
+#include <memory>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -50,13 +52,16 @@ auto bind_GeneralizedEigenSolver(pybind11::module& m)
 
   bind_solver_machinery_options<Opts>(c);
 
-  c.def(py::init([](const M& lhs, const M& rhs, const std::string& type) { return new C(lhs, rhs, type); }),
-        "lhs_matrix"_a,
-        "rhs_matrix"_a,
-        "type"_a = "",
-        py::keep_alive<1, 2>(),
-        py::keep_alive<1, 3>());
-  c.def(py::init([](const M& lhs, const M& rhs, const Common::Configuration& opts) { return new C(lhs, rhs, opts); }),
+  c.def(
+      py::init([](const M& lhs, const M& rhs, const std::string& type) { return std::make_unique<C>(lhs, rhs, type); }),
+      "lhs_matrix"_a,
+      "rhs_matrix"_a,
+      "type"_a = "",
+      py::keep_alive<1, 2>(),
+      py::keep_alive<1, 3>());
+  c.def(py::init([](const M& lhs, const M& rhs, const Common::Configuration& opts) {
+          return std::make_unique<C>(lhs, rhs, opts);
+        }),
         "lhs_matrix"_a,
         "rhs_matrix"_a,
         "options"_a,
