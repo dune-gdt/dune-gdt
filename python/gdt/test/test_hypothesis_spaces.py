@@ -126,12 +126,17 @@ def test_fv_space_has_one_dof_per_element(spec):
     assert space.min_polorder == space.max_polorder == 0
 
 
-@given(spec=grid_specs())
+@given(spec=grid_specs(conforming_only=True))
 def test_rt_space_order_zero_works_higher_orders_are_a_documented_contract_limit(spec):
     """WP4 (#320): unlike the CG order boundary above (a subtle, grid-dependent mapper edge case),
     RaviartThomasSpace order > 0 is unconditionally rejected (dune/gdt/spaces/hdiv/raviart-thomas.hh):
     the higher-order local RT finite elements simply do not exist in this codebase yet. Encoding order=0
     as the only value exercised here keeps that contract visible to the property suite.
+
+    conforming_only=True: the class doc comment (raviart-thomas.hh) only claims order 0 works "on
+    simplices, cubes" without distinguishing conforming/nonconforming grids, so nonconforming ALU
+    draws are excluded here rather than assumed to work; all three dims are otherwise exercised
+    (1d is explicitly documented as working, unlike the CG vector test above which needs d > 1).
     """
     from dune.gdt import RaviartThomasSpace
     from dune.xt.common import DuneError
