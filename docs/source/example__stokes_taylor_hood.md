@@ -173,19 +173,30 @@ g_D = np.array(discrete_dirichlet_values.dofs.vector)
 rhs_u = np.zeros(n_u)
 rhs_p = np.zeros(n_p)
 
+# B_upper feeds the velocity equations (row i replaced by the trivial u[i] = g_D[i] at a
+# Dirichlet DoF, so its pressure coupling is dropped there too); B_lower feeds the pressure
+# (divergence) equations and must keep every column's *true* entries -- including at the
+# Dirichlet velocity DoFs -- since u there still enters those equations, just as a value fixed
+# by A_np's unit rows rather than as a free unknown. Reusing one row-zeroed matrix for both
+# blocks would silently drop that div(u)|_{Dirichlet} contribution from the pressure equations.
+B_upper = B_np.copy()
+B_lower = B_np.T.copy()
+
 for dof in dirichlet_constraints.dirichlet_DoFs:
     A_np[dof, :] = 0.0
     A_np[dof, dof] = 1.0
-    B_np[dof, :] = 0.0
+    B_upper[dof, :] = 0.0
     rhs_u[dof] = g_D[dof]
 
-# pin pressure DoF 0 to p = 0, decoupling it from every velocity equation
-B_np[:, 0] = 0.0
+# pin pressure DoF 0 to p = 0: decouple it from every velocity equation (its true contribution
+# is p[0] * B_np[:, 0] = 0 anyway) and make its own row a pure identity, decoupled from velocity
+B_upper[:, 0] = 0.0
+B_lower[0, :] = 0.0
 
 K = np.zeros((n_u + n_p, n_u + n_p))
 K[:n_u, :n_u] = A_np
-K[:n_u, n_u:] = B_np
-K[n_u:, :n_u] = B_np.T
+K[:n_u, n_u:] = B_upper
+K[n_u:, :n_u] = B_lower
 K[n_u, n_u] = 1.0
 
 rhs = np.concatenate([rhs_u, rhs_p])

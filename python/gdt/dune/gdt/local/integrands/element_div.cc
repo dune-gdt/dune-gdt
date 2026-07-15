@@ -63,20 +63,17 @@ public:
       class_name += "_" + XT::Common::Typename<F>::value(/*fail_wo_typeid=*/true);
     const auto ClassName = XT::Common::to_camel_case(class_name);
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
-    c.def(py::init([](const XT::Functions::GridFunctionInterface<E, 1, 1, F>& weight,
-                      const std::string logging_prefix) { return new type(weight, logging_prefix); }),
-          "weight"_a,
-          "logging_prefix"_a = "");
+    // NOTE: unlike LocalElementProductIntegrand, this class has no logging_prefix constructor
+    // argument (see div.hh), so none is exposed here.
+    c.def(py::init([](const XT::Functions::GridFunctionInterface<E, 1, 1, F>& weight) { return new type(weight); }),
+          "weight"_a);
 
     // factory
     const auto FactoryName = XT::Common::to_camel_case(class_id);
     m.def(
         FactoryName.c_str(),
-        [](const XT::Functions::GridFunctionInterface<E, 1, 1, F>& weight, const std::string& logging_prefix) {
-          return new type(weight, logging_prefix);
-        },
-        "weight"_a,
-        "logging_prefix"_a = "");
+        [](const XT::Functions::GridFunctionInterface<E, 1, 1, F>& weight) { return new type(weight); },
+        "weight"_a);
 
     return c;
   } // ... bind(...)

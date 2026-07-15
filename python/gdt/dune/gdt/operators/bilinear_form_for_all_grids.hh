@@ -162,30 +162,26 @@ public:
     // would always resolve to the first-registered (here: scalar) overload without them. Only the
     // scalar (1, 1) case gets defaults, matching the pre-existing zero-argument call sites.
     const auto FactoryName = XT::Common::to_camel_case(class_id);
+    auto factory_impl = [](GP& grid,
+                           const XT::Grid::bindings::Dimension<s_r>&,
+                           const XT::Grid::bindings::Dimension<r_r>&,
+                           const std::string& logging_prefix) { return new type(grid.leaf_view(), logging_prefix); };
     if constexpr (s_r == 1 && r_r == 1)
-      m.def(
-          FactoryName.c_str(),
-          [](GP& grid,
-             const XT::Grid::bindings::Dimension<s_r>&,
-             const XT::Grid::bindings::Dimension<r_r>&,
-             const std::string& logging_prefix) { return new type(grid.leaf_view(), logging_prefix); },
-          "grid"_a,
-          "ansatz_range"_a = XT::Grid::bindings::Dimension<s_r>(),
-          "test_range"_a = XT::Grid::bindings::Dimension<r_r>(),
-          "logging_prefix"_a = "",
-          py::keep_alive<0, 1>());
+      m.def(FactoryName.c_str(),
+            factory_impl,
+            "grid"_a,
+            "ansatz_range"_a = XT::Grid::bindings::Dimension<s_r>(),
+            "test_range"_a = XT::Grid::bindings::Dimension<r_r>(),
+            "logging_prefix"_a = "",
+            py::keep_alive<0, 1>());
     else
-      m.def(
-          FactoryName.c_str(),
-          [](GP& grid,
-             const XT::Grid::bindings::Dimension<s_r>&,
-             const XT::Grid::bindings::Dimension<r_r>&,
-             const std::string& logging_prefix) { return new type(grid.leaf_view(), logging_prefix); },
-          "grid"_a,
-          "ansatz_range"_a,
-          "test_range"_a,
-          "logging_prefix"_a = "",
-          py::keep_alive<0, 1>());
+      m.def(FactoryName.c_str(),
+            factory_impl,
+            "grid"_a,
+            "ansatz_range"_a,
+            "test_range"_a,
+            "logging_prefix"_a = "",
+            py::keep_alive<0, 1>());
 
     return c;
 
@@ -217,16 +213,30 @@ public:
 
     addbind_methods(c);
 
-    // factories
+    // factories: same (s_r, r_r) disambiguation as bind_leaf, see the comment there.
     const auto FactoryName = XT::Common::to_camel_case(class_id);
-    m.def(
-        FactoryName.c_str(),
-        [](XT::Grid::CouplingGridProvider<AGV>& grid, const std::string& logging_prefix) {
-          return new type(grid.coupling_view(), logging_prefix);
-        },
-        "grid"_a,
-        "logging_prefix"_a = "",
-        py::keep_alive<0, 1>());
+    auto factory_impl = [](XT::Grid::CouplingGridProvider<AGV>& grid,
+                           const XT::Grid::bindings::Dimension<s_r>&,
+                           const XT::Grid::bindings::Dimension<r_r>&,
+                           const std::string& logging_prefix) {
+      return new type(grid.coupling_view(), logging_prefix);
+    };
+    if constexpr (s_r == 1 && r_r == 1)
+      m.def(FactoryName.c_str(),
+            factory_impl,
+            "grid"_a,
+            "ansatz_range"_a = XT::Grid::bindings::Dimension<s_r>(),
+            "test_range"_a = XT::Grid::bindings::Dimension<r_r>(),
+            "logging_prefix"_a = "",
+            py::keep_alive<0, 1>());
+    else
+      m.def(FactoryName.c_str(),
+            factory_impl,
+            "grid"_a,
+            "ansatz_range"_a,
+            "test_range"_a,
+            "logging_prefix"_a = "",
+            py::keep_alive<0, 1>());
 
     return c;
 
