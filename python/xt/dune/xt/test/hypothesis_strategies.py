@@ -787,6 +787,17 @@ def linear_transport_flux_expression(velocity):
     from dune.xt.grid import Dim
 
     expressions = [f"({c!r})*u[0]" for c in velocity]
+    # ExpressionFunction's r == 1 (scalar range, i.e. 1d velocity) overload takes a single
+    # "expression" string, not the "expressions" list the r > 1 overloads take
+    # (python/xt/dune/xt/functions/expression.cc).
+    if len(expressions) == 1:
+        return ExpressionFunction(
+            dim_domain=Dim(1),
+            variable="u",
+            expression=expressions[0],
+            order=1,
+            name="linear_transport_flux",
+        )
     return ExpressionFunction(
         dim_domain=Dim(1),
         variable="u",
@@ -810,10 +821,12 @@ def gaussian_bump_expression(dim, center, sigma, amplitude=1.0):
         f"(x[{i}]-({center[i]!r}))*(x[{i}]-({center[i]!r}))" for i in range(dim)
     )
     expression = f"({amplitude!r})*exp(-({terms})/(2.0*({sigma!r})*({sigma!r})))"
+    # ExpressionFunction's r == 1 (scalar range) overload takes a single "expression" string,
+    # not the "expressions" list the r > 1 overloads take (python/xt/dune/xt/functions/expression.cc).
     return ExpressionFunction(
         dim_domain=Dim(dim),
         variable="x",
-        expressions=[expression],
+        expression=expression,
         order=2,
         name="gaussian_bump",
     )

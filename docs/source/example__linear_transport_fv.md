@@ -78,10 +78,12 @@ def gaussian_bump_expression(dim, center, sigma, amplitude=1.0):
         f"(x[{i}]-({center[i]!r}))*(x[{i}]-({center[i]!r}))" for i in range(dim)
     )
     expression = f"({amplitude!r})*exp(-({terms})/(2.0*({sigma!r})*({sigma!r})))"
+    # ExpressionFunction's r == 1 (scalar range) overload takes a single "expression" string, not
+    # the "expressions" list the r > 1 overloads take -- the bump is always scalar-valued (r == 1).
     return ExpressionFunction(
         dim_domain=Dim(dim),
         variable="x",
-        expressions=[expression],
+        expression=expression,
         order=2,
         name="gaussian_bump",
     )
@@ -93,8 +95,17 @@ def gaussian_bump(x, center, sigma, amplitude=1.0):
 
 
 def linear_transport_flux_expression(velocity):
-    # f(u) = velocity * u, as a function of the *state* u (dim_domain=1), not of x
+    # f(u) = velocity * u, as a function of the *state* u (dim_domain=1), not of x. Same
+    # "expression" (singular, r == 1) vs. "expressions" (list, r > 1) split as gaussian_bump_expression.
     expressions = [f"({c!r})*u[0]" for c in velocity]
+    if len(expressions) == 1:
+        return ExpressionFunction(
+            dim_domain=Dim(1),
+            variable="u",
+            expression=expressions[0],
+            order=1,
+            name="linear_transport_flux",
+        )
     return ExpressionFunction(
         dim_domain=Dim(1),
         variable="u",
