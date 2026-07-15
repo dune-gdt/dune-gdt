@@ -141,6 +141,57 @@ public:
           "jacobian"_a,
           "dim_range"_a,
           "name"_a = type::static_id());
+      if constexpr (r == 1) {
+        // A 1x1 "matrix" is the same as the scalar case; ConstantFunction/GridFunction accept both
+        // a single Dimension<1> and a (Dimension<1>, Dimension<1>) pair as dim_range for exactly this
+        // reason, since dune-gdt code commonly tags tensor-like coefficients (e.g. a diffusion) with
+        // a (dim_range, dim_range) pair uniformly across dimensions, including the degenerate 1x1 case.
+        m.def(
+            Common::to_camel_case(class_id).c_str(),
+            [](const GP& /*grid*/,
+               int order,
+               typename type::GenericEvaluateFunctionType evaluate,
+               const std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>>& /*dim_range*/,
+               const std::string& name) {
+              return new type(order, type::default_post_bind_function(), evaluate, Common::ParameterType{}, name);
+            },
+            "grid"_a,
+            "order"_a,
+            "evaluate"_a,
+            "dim_range"_a,
+            "name"_a = type::static_id());
+        m.def(
+            Common::to_camel_case(class_id).c_str(),
+            [](const GP& /*grid*/,
+               int order,
+               typename type::GenericPostBindFunctionType post_bind,
+               typename type::GenericEvaluateFunctionType evaluate,
+               const std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>>& /*dim_range*/,
+               const std::string& name) { return new type(order, post_bind, evaluate, Common::ParameterType{}, name); },
+            "grid"_a,
+            "order"_a,
+            "post_bind"_a,
+            "evaluate"_a,
+            "dim_range"_a,
+            "name"_a = type::static_id());
+        m.def(
+            Common::to_camel_case(class_id).c_str(),
+            [](const GP& /*grid*/,
+               int order,
+               typename type::GenericEvaluateFunctionType evaluate,
+               typename type::GenericJacobianFunctionType jacobian,
+               const std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>>& /*dim_range*/,
+               const std::string& name) {
+              return new type(
+                  order, type::default_post_bind_function(), evaluate, Common::ParameterType{}, name, jacobian);
+            },
+            "grid"_a,
+            "order"_a,
+            "evaluate"_a,
+            "jacobian"_a,
+            "dim_range"_a,
+            "name"_a = type::static_id());
+      }
     } else {
       m.def(
           Common::to_camel_case(class_id).c_str(),

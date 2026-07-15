@@ -98,6 +98,38 @@ public:
           "evaluate"_a,
           "jacobian"_a,
           "name"_a = type::static_id());
+      if constexpr (r == 1) {
+        // A 1x1 "matrix" is the same as the scalar case; ConstantFunction/GridFunction accept both
+        // a single Dimension<1> and a (Dimension<1>, Dimension<1>) pair as dim_range for exactly this
+        // reason, since dune-gdt code commonly tags tensor-like coefficients (e.g. a diffusion) with
+        // a (dim_range, dim_range) pair uniformly across dimensions, including the degenerate 1x1 case.
+        m.def(
+            FactoryName.c_str(),
+            [](Grid::bindings::Dimension<d> /*dim_domain*/,
+               std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>> /*dim_range*/,
+               int order,
+               typename type::GenericEvaluateFunctionType evaluate,
+               const std::string& name) { return new type(order, evaluate, name); },
+            "dim_domain"_a,
+            "dim_range"_a,
+            "order"_a,
+            "evaluate"_a,
+            "name"_a = type::static_id());
+        m.def(
+            FactoryName.c_str(),
+            [](Grid::bindings::Dimension<d> /*dim_domain*/,
+               std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>> /*dim_range*/,
+               int order,
+               typename type::GenericEvaluateFunctionType evaluate,
+               typename type::GenericJacobianFunctionType jacobian,
+               const std::string& name) { return new type(order, evaluate, name, Common::ParameterType{}, jacobian); },
+            "dim_domain"_a,
+            "dim_range"_a,
+            "order"_a,
+            "evaluate"_a,
+            "jacobian"_a,
+            "name"_a = type::static_id());
+      }
     } else {
       m.def(
           FactoryName.c_str(),
