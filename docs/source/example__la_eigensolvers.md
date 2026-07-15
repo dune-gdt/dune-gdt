@@ -208,7 +208,7 @@ assert relative_error[0] < 0.1, 'the fundamental mode should already be within 1
 
 As a sanity check on the newly bound `MatrixInverter` (dune/xt/la/matrix-inverter.hh), we verify
 that inverting the (non-singular) interior stiffness matrix and applying it to a column of the
-inverse recovers the corresponding unit vector, `M @ M_inv[:, j] == e_j`:
+inverse recovers the corresponding unit vector, `K @ K_inv[:, j] == e_j`:
 
 ```{code-cell}
 inverse = la.CommonDenseMatrixMatrixInverter(dense_matrix).inverse()
@@ -224,7 +224,7 @@ for j in (0, n_interior // 2, n_interior - 1):
     residual[j] -= 1.
     max_residual = max(max_residual, np.abs(residual).max())
 
-print(f'max |M @ M_inv[:, j] - e_j| over the sampled columns: {max_residual:.2e}')
+print(f'max |K @ K_inv[:, j] - e_j| over the sampled columns: {max_residual:.2e}')
 assert max_residual < 1e-8
 ```
 
