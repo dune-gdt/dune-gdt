@@ -86,8 +86,13 @@ public:
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
     c.def(py::init([](const XIndependentFluxType& flux) { return new type(flux); }), "flux"_a, py::keep_alive<1, 2>());
 
-    const auto FactoryName = XT::Common::to_camel_case(class_id);
-    m.def(FactoryName.c_str(), [](const XIndependentFluxType& flux) { return new type(flux); }, "flux"_a);
+    // NOTE: the factory is registered under class_id (snake_case) as-is -- __init__.py's
+    // _make_flux_dispatch looks up this exact (grid-agnostic) attribute name on the submodule.
+    m.def(
+        class_id.c_str(),
+        [](const XIndependentFluxType& flux) { return new type(flux); },
+        "flux"_a,
+        py::keep_alive<0, 1>());
     return c;
   } // ... bind(...)
 }; // class NumericalUpwindFlux
@@ -119,12 +124,13 @@ public:
           "lambda_"_a = 0.,
           py::keep_alive<1, 2>());
 
-    const auto FactoryName = XT::Common::to_camel_case(class_id);
+    // NOTE: see the analogous comment in NumericalUpwindFlux::bind above.
     m.def(
-        FactoryName.c_str(),
+        class_id.c_str(),
         [](const XIndependentFluxType& flux, const double lambda) { return new type(flux, lambda); },
         "flux"_a,
-        "lambda_"_a = 0.);
+        "lambda_"_a = 0.,
+        py::keep_alive<0, 1>());
     return c;
   } // ... bind(...)
 }; // class NumericalLaxFriedrichsFlux

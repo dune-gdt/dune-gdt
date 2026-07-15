@@ -102,7 +102,11 @@ public:
           return self.boundary_treatment(lambda);
         },
         "extrapolate"_a,
-        py::return_value_policy::reference_internal);
+        py::return_value_policy::reference_internal,
+        // std::function copies the callable, so its Python refcount alone keeps it alive; this
+        // additionally makes the edge visible to Python's cyclic GC (e.g. a bound method whose
+        // self transitively references this operator would otherwise be an uncollectable cycle).
+        py::keep_alive<1, 2>());
 
     m_.def(
         "advection_fv_operator",
