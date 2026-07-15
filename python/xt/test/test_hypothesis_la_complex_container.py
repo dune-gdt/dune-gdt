@@ -21,6 +21,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from dune.xt.test.hypothesis_strategies import (
+    dense_sparsity_pattern,
     discover_matrix_types,
     discover_vector_types,
     finite_floats,
@@ -124,21 +125,8 @@ class TestComplexVectorAgainstNumpy:
 
 
 def make_matrix(cls, rows, cols, entries):
-    """entries: dict {(i, j): complex value}, all other entries zero.
-
-    Uses the (rows, cols, SparsityPatternDefault) constructor with a fully dense pattern rather
-    than (rows, cols, value): the latter is only bound for dense matrix classes (see
-    internal::addbind_Matrix<T, sparse> in python/xt/dune/xt/la/container/matrix-interface.hh),
-    while the pattern-based constructor works uniformly for both dense and sparse classes.
-    """
-    from dune.xt.la import SparsityPatternDefault
-
-    pattern = SparsityPatternDefault(rows)
-    for ii in range(rows):
-        for jj in range(cols):
-            pattern.insert(ii, jj)
-    pattern.sort()
-    mat = cls(rows, cols, pattern)
+    """entries: dict {(i, j): complex value}, all other entries zero."""
+    mat = cls(rows, cols, dense_sparsity_pattern(rows, cols))
     for (ii, jj), value in entries.items():
         mat.set_entry(ii, jj, value)
     return mat

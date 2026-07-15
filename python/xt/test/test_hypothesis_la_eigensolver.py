@@ -22,7 +22,10 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from dune.xt.test.hypothesis_strategies import discover_eigen_solver_types
+from dune.xt.test.hypothesis_strategies import (
+    dense_sparsity_pattern,
+    discover_eigen_solver_types,
+)
 
 scipy_linalg = pytest.importorskip("scipy.linalg")
 
@@ -45,15 +48,8 @@ def spd_matrices(draw, min_size=1, max_size=6, bound=10.0):
 
 
 def make_matrix(cls, arr):
-    from dune.xt.la import SparsityPatternDefault
-
     rows, cols = arr.shape
-    pattern = SparsityPatternDefault(rows)
-    for ii in range(rows):
-        for jj in range(cols):
-            pattern.insert(ii, jj)
-    pattern.sort()
-    mat = cls(rows, cols, pattern)
+    mat = cls(rows, cols, dense_sparsity_pattern(rows, cols))
     for ii in range(rows):
         for jj in range(cols):
             mat.set_entry(ii, jj, float(arr[ii, jj]))

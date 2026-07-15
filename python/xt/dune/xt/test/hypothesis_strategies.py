@@ -189,6 +189,25 @@ def discover_matrix_inverter_types(module=None):
     return _discover_solver_machinery_types("MatrixInverter", module)
 
 
+def dense_sparsity_pattern(rows, cols):
+    """A SparsityPatternDefault with every (i, j) entry present.
+
+    Every bound LA matrix class -- dense or sparse -- accepts a (rows, cols, SparsityPatternDefault)
+    constructor (see internal::addbind_Matrix<T, sparse> in
+    python/xt/dune/xt/la/container/matrix-interface.hh), unlike the (rows, cols, value) constructor,
+    which is dense-only. This gives property tests one matrix-construction path that works uniformly
+    across backends, needed by the WP5 (#320) complex-container and eigen-solver property suites.
+    """
+    from dune.xt.la import SparsityPatternDefault
+
+    pattern = SparsityPatternDefault(rows)
+    for ii in range(rows):
+        for jj in range(cols):
+            pattern.insert(ii, jj)
+    pattern.sort()
+    return pattern
+
+
 # Every GridProvider* the wheel exposes, at the (dim, element, impl) granularity -- so that two
 # implementations sharing a (dim, element) slice (e.g. the structured YASP cube and the
 # unstructured ALU cube added in #320 WP1) are both drawn by the strategies below.

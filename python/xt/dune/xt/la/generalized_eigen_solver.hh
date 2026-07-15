@@ -10,13 +10,12 @@
 #ifndef DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_PBH
 #define DUNE_XT_LA_GENERALIZED_EIGEN_SOLVER_PBH
 
-#include <limits>
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <python/xt/dune/xt/common/configuration.hh>
 #include <python/xt/dune/xt/la/container.bindings.hh>
+#include <python/xt/dune/xt/la/solver_machinery.hh>
 
 #include <dune/xt/la/container.hh>
 #include <dune/xt/la/type_traits.hh>
@@ -29,6 +28,10 @@ namespace Dune::XT::LA {
  * \brief Binds LA::GeneralizedEigenSolver<M> (dune/xt/la/generalized-eigen-solver.hh), solving
  *        the generalized eigenvalue problem lhs * v = lambda * rhs * v, for a matrix type M with
  *        C++ test coverage (see dune/xt/test/la/generalized-eigensolver_for_*.py).
+ *
+ * The two-matrix constructor below is genuinely specific to this class (LA::EigenSolver<M> and
+ * LA::MatrixInverter<M> wrap a single matrix, see solver_machinery.hh), but the types/options and
+ * eigenvalue-accessor boilerplate is shared with eigen_solver.hh via the same header.
  */
 template <class M>
 auto bind_GeneralizedEigenSolver(pybind11::module& m)
@@ -45,8 +48,7 @@ auto bind_GeneralizedEigenSolver(pybind11::module& m)
 
   py::class_<C> c(m, ClassName.c_str(), ClassName.c_str());
 
-  c.def_static("types", &Opts::types);
-  c.def_static("options", &Opts::options, "type"_a = "");
+  bind_solver_machinery_options<Opts>(c);
 
   c.def(py::init([](const M& lhs, const M& rhs, const std::string& type) { return new C(lhs, rhs, type); }),
         "lhs_matrix"_a,
@@ -64,16 +66,8 @@ auto bind_GeneralizedEigenSolver(pybind11::module& m)
   c.def_property_readonly("options", &C::options);
   c.def_property_readonly("lhs_matrix", [](const C& self) { return M(self.lhs_matrix()); });
   c.def_property_readonly("rhs_matrix", [](const C& self) { return M(self.rhs_matrix()); });
-  c.def("eigenvalues", &C::eigenvalues);
-  c.def("real_eigenvalues", &C::real_eigenvalues);
-  c.def(
-      "min_eigenvalues",
-      [](const C& self, const size_t num_evs) { return self.min_eigenvalues(num_evs); },
-      "num_evs"_a = std::numeric_limits<size_t>::max());
-  c.def(
-      "max_eigenvalues",
-      [](const C& self, const size_t num_evs) { return self.max_eigenvalues(num_evs); },
-      "num_evs"_a = std::numeric_limits<size_t>::max());
+  bind_solver_machinery_eigenvalue_accessors(c);
+
   c.def("eigenvectors", [](const C& self) { return ComplexMatrixType(self.eigenvectors()); });
   c.def("real_eigenvectors", [](const C& self) { return RealMatrixType(self.real_eigenvectors()); });
 

@@ -15,6 +15,7 @@
 
 #include <python/xt/dune/xt/common/configuration.hh>
 #include <python/xt/dune/xt/la/container.bindings.hh>
+#include <python/xt/dune/xt/la/solver_machinery.hh>
 
 #include <dune/xt/la/container.hh>
 #include <dune/xt/la/type_traits.hh>
@@ -27,6 +28,8 @@ namespace Dune::XT::LA {
  * \brief Binds LA::MatrixInverter<M> (dune/xt/la/matrix-inverter.hh) for a matrix type M that
  *        already has a MatrixInverter specialization with C++ test coverage, including
  *        std::complex<double>-valued M (see dune/xt/test/la/matrixinverter_for_complex_matrix*.py).
+ *
+ * The constructor/types/options boilerplate is shared with eigen_solver.hh via solver_machinery.hh.
  */
 template <class M>
 auto bind_MatrixInverter(pybind11::module& m)
@@ -41,34 +44,12 @@ auto bind_MatrixInverter(pybind11::module& m)
 
   py::class_<C> c(m, ClassName.c_str(), ClassName.c_str());
 
-  c.def_static("types", &Opts::types);
-  c.def_static("options", &Opts::options, "type"_a = "");
+  bind_solver_machinery_options<Opts>(c);
+  bind_single_matrix_solver_ctor<C, M>(c);
 
-  c.def(py::init([](const M& matrix, const std::string& type) { return new C(matrix, type); }),
-        "matrix"_a,
-        "type"_a = "",
-        py::keep_alive<1, 2>());
-  c.def(py::init([](const M& matrix, const Common::Configuration& opts) { return new C(matrix, opts); }),
-        "matrix"_a,
-        "options"_a,
-        py::keep_alive<1, 2>());
-
-  c.def_property_readonly("options", &C::options);
-  c.def_property_readonly("matrix", [](const C& self) { return M(self.matrix()); });
   c.def("inverse", [](const C& self) { return M(self.inverse()); });
 
-  m.def(
-      "make_matrix_inverter",
-      [](const M& matrix, const std::string& type) { return C(matrix, type); },
-      "matrix"_a,
-      "type"_a = "",
-      py::keep_alive<0, 1>());
-  m.def(
-      "make_matrix_inverter",
-      [](const M& matrix, const Common::Configuration& opts) { return C(matrix, opts); },
-      "matrix"_a,
-      "options"_a,
-      py::keep_alive<0, 1>());
+  bind_single_matrix_solver_factory<C, M>(m, "make_matrix_inverter");
   m.def(
       "invert_matrix",
       [](const M& matrix, const std::string& type) { return M(invert_matrix(matrix, type)); },
