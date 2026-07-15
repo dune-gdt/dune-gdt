@@ -127,7 +127,11 @@ from dune.gdt import (
 diffusion = GF(grid, 1.0, dim_range=(Dim(d), Dim(d)), name='diffusion')
 
 a_form = BilinearForm(grid, ansatz_range=Dim(d), test_range=Dim(d))
-a_form += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
+# dim_range_bases=Dim(d) selects the vector-valued LocalLaplaceIntegrand overload (pre-existing,
+# same dim_range_bases idiom as BilinearForm's ansatz_range/test_range above); the diffusion tensor
+# itself is always (d, d)-shaped regardless of the test/ansatz basis rank, so it alone can't
+# disambiguate the two overloads and dim_range_bases has to be passed explicitly.
+a_form += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion, dim_range_bases=Dim(d)))
 A = MatrixOperator(grid, source_space=velocity_space, range_space=velocity_space)
 A.append(a_form)
 
