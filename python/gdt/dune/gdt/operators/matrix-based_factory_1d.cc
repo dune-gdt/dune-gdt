@@ -9,13 +9,9 @@
 
 #include "config.h"
 
-#include <dune/xt/grid/grids.hh>
-#include <python/xt/dune/xt/grid/grids.bindings.hh>
-#include <python/xt/dune/xt/la/traits.hh>
+#include "matrix-based_factory.hh"
 
-#include "interfaces_all_grids.hh"
-
-PYBIND11_MODULE(_operators_interfaces_istl_1d, m)
+PYBIND11_MODULE(_operators_matrix_based_factory_1d, m)
 {
-  DUNE_GDT_BIND_OPERATOR_INTERFACES_ISTL_MODULE(1);
+  DUNE_GDT_BIND_MATRIX_BASED_FACTORY_MODULE(1);
 }

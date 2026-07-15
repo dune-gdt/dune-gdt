@@ -214,6 +214,10 @@ struct grid_name<UGGrid<dim>>
 /// 2d cube ALUGrid at all. Only the 3d hexahedral cube grid has a leaf view (ALU3dGrid<hexa>)
 /// distinct from the tetrahedral simplex and structured YASP views, so only it is added here.
 /// unique_grid_tuple_t guards the grid tuples against any exact-type aliasing on top.
+///
+/// WP3 (#320) adds UGGrid, the only bound grid manager that supports mixed-element and prism meshes,
+/// as the backend for make_mixed_grid / make_prism_grid (see gridprovider/unstructured.cc); it is
+/// added below so that GridProvider, spaces and operators are instantiated for it across the binding TUs.
 
 using Available1dGridTypes = std::tuple<ONED_1D, YASP_1D_EQUIDISTANT_OFFSET>;
 
@@ -222,6 +226,10 @@ using Available2dGridTypes = unique_grid_tuple_t<std::tuple<YASP_2D_EQUIDISTANT_
                                                             ,
                                                             ALU_2D_SIMPLEX_CONFORMING
 #endif
+#if HAVE_DUNE_UGGRID || HAVE_UG
+                                                            ,
+                                                            UG_2D
+#endif
                                                             >>;
 
 using Available3dGridTypes = unique_grid_tuple_t<std::tuple<YASP_3D_EQUIDISTANT_OFFSET
@@ -229,6 +237,10 @@ using Available3dGridTypes = unique_grid_tuple_t<std::tuple<YASP_3D_EQUIDISTANT_
                                                             ,
                                                             ALU_3D_SIMPLEX_CONFORMING,
                                                             ALU_3D_CUBE
+#endif
+#if HAVE_DUNE_UGGRID || HAVE_UG
+                                                            ,
+                                                            UG_3D
 #endif
                                                             >>;
 

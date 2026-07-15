@@ -9,13 +9,9 @@
 
 #include "config.h"
 
-#include <dune/xt/grid/grids.hh>
-#include <python/xt/dune/xt/grid/grids.bindings.hh>
-#include <python/xt/dune/xt/la/traits.hh>
+#include "continuous_lagrange_for_all_grids.hh"
 
-#include "interfaces_all_grids.hh"
-
-PYBIND11_MODULE(_operators_interfaces_istl_1d, m)
+PYBIND11_MODULE(_spaces_h1_continuous_lagrange_3d, m)
 {
-  DUNE_GDT_BIND_OPERATOR_INTERFACES_ISTL_MODULE(1);
+  DUNE_GDT_BIND_CONTINUOUS_LAGRANGE_MODULE(3);
 }

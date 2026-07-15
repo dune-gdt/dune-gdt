@@ -221,7 +221,9 @@ PYBIND11_MODULE(_discretefunction_bochner, m)
   py::module::import("dune.xt.grid");
   py::module::import("dune.xt.functions");
 
-  py::module::import("dune.gdt._discretefunction_discretefunction");
+  py::module::import("dune.gdt._discretefunction_discretefunction_1d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_2d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_3d");
   py::module::import("dune.gdt._spaces_bochner");
 
   DiscreteBochnerFunction_for_all_grids<LA::CommonDenseVector<double>,

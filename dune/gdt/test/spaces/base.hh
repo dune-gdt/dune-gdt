@@ -28,6 +28,7 @@
 #include <gtest/gtest.h>
 #include <dune/xt/common/float_cmp.hh>
 #include <dune/xt/grid/gridprovider/cube.hh>
+#include <dune/xt/grid/gridprovider/unstructured.hh>
 #include <dune/xt/grid/grids.hh>
 
 #include <dune/gdt/type_traits.hh>
@@ -323,21 +324,9 @@ template <class G,
               typename std::enable_if<XT::Grid::is_grid<G>::value && G::dimension == 3, void>::type>
 XT::Grid::GridProvider<G> make_prism_grid()
 {
-  using D = typename G::ctype;
-  static constexpr size_t d = G::dimension;
-  GridFactory<G> factory;
-  for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5, -1.5}),
-                        XT::Common::FieldVector<D, d>({-1., -1., -1.5}),
-                        XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.5}),
-                        XT::Common::FieldVector<D, d>({-1., -1.5, -1.}),
-                        XT::Common::FieldVector<D, d>({-1., -1., -1.}),
-                        XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.})}) {
-    factory.insertVertex(vertex);
-  }
-  factory.insertElement(GeometryTypes::prism, {0, 1, 2, 3, 4, 5});
-  XT::Grid::GridProvider<G> grid(factory.createGrid());
-  grid.global_refine(1);
-  return grid;
+  // The mesh is defined once in dune-xt (shared with the python make_prism_grid binding); refine
+  // once as the space tests below expect (all kinds of orientations, fully inner elements).
+  return XT::Grid::make_prism_grid<G>(/*num_refinements=*/1);
 } // ... make_prism_grid(...)
 
 
@@ -354,52 +343,9 @@ template <
         typename std::enable_if<XT::Grid::is_grid<G>::value && (G::dimension == 2 || G::dimension == 3), void>::type>
 XT::Grid::GridProvider<G> make_mixed_grid()
 {
-  using D = typename G::ctype;
-  static constexpr size_t d = G::dimension;
-  if constexpr (d == 2) {
-    GridFactory<G> factory;
-    for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5}),
-                          XT::Common::FieldVector<D, d>({-1., -1.25}),
-                          XT::Common::FieldVector<D, d>({-1., -1.}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1.5}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1.25}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1.}),
-                          XT::Common::FieldVector<D, d>({-1.75, -1.25})}) {
-      factory.insertVertex(vertex);
-    }
-    factory.insertElement(GeometryTypes::cube(2), {3, 0, 4, 1});
-    factory.insertElement(GeometryTypes::cube(2), {4, 1, 5, 2});
-    factory.insertElement(GeometryTypes::simplex(2), {4, 6, 3});
-    factory.insertElement(GeometryTypes::simplex(2), {4, 5, 6});
-    XT::Grid::GridProvider<G> grid(factory.createGrid());
-    grid.global_refine(1);
-    return grid;
-  } else if constexpr (d == 3) {
-    GridFactory<G> factory;
-    for (auto&& vertex : {XT::Common::FieldVector<D, d>({-1., -1.5, -1.}),
-                          XT::Common::FieldVector<D, d>({-1., -1.25, -1.}),
-                          XT::Common::FieldVector<D, d>({-1., -1., -1.}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1.25, -1.}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1., -1.}),
-                          XT::Common::FieldVector<D, d>({-1., -1.5, -1.5}),
-                          XT::Common::FieldVector<D, d>({-1., -1.25, -1.5}),
-                          XT::Common::FieldVector<D, d>({-1., -1., -1.5}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1.5, -1.5}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1.25, -1.5}),
-                          XT::Common::FieldVector<D, d>({-1.5, -1., -1.5}),
-                          XT::Common::FieldVector<D, d>({-1.75, -1.25, -1.})}) {
-      factory.insertVertex(vertex);
-    }
-    factory.insertElement(GeometryTypes::cube(3), {3, 0, 4, 1, 9, 6, 10, 7});
-    factory.insertElement(GeometryTypes::cube(3), {4, 1, 5, 2, 10, 7, 11, 8});
-    factory.insertElement(GeometryTypes::simplex(3), {4, 12, 3, 10});
-    factory.insertElement(GeometryTypes::simplex(3), {4, 5, 12, 10});
-    XT::Grid::GridProvider<G> grid(factory.createGrid());
-    grid.global_refine(1);
-    return grid;
-  } else
-    DUNE_THROW(InvalidStateException, "");
+  // The mesh is defined once in dune-xt (shared with the python make_mixed_grid binding); refine
+  // once to obtain conforming intersections and fully inner elements as the space tests expect.
+  return XT::Grid::make_mixed_grid<G>(/*num_refinements=*/1);
 } // ... make_mixed_grid(...)
 
 

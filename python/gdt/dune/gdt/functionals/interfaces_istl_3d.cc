@@ -11,11 +11,10 @@
 
 #include <dune/xt/grid/grids.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
-#include <python/xt/dune/xt/la/traits.hh>
 
-#include "interfaces_all_grids.hh"
+#include "interfaces.hh"
 
-PYBIND11_MODULE(_operators_interfaces_istl_1d, m)
+PYBIND11_MODULE(_functionals_interfaces_istl_3d, m)
 {
-  DUNE_GDT_BIND_OPERATOR_INTERFACES_ISTL_MODULE(1);
+  DUNE_GDT_BIND_FUNCTIONAL_INTERFACES_ISTL_MODULE(3);
 }

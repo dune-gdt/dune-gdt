@@ -22,6 +22,7 @@ the dune-gdt pytest suites can import the same strategies.
 """
 
 import importlib
+import math
 import re
 from dataclasses import dataclass, field
 from itertools import product as _cartesian
@@ -421,3 +422,102 @@ def polynomials(draw, dim, max_order=3, coefficient_bound=100.0, min_order=0):
         for alpha in multi_indices
     }
     return Polynomial(dim=dim, coefficients=coefficients)
+
+
+# --- unstructured (UG) grids: mixed-element and prism meshes --------------------------------
+#
+# UGGrid is the only bound grid manager that can hold a mesh with more than one geometry type (or
+# a prism); make_mixed_grid / make_prism_grid (python/xt/dune/xt/grid/gridprovider/unstructured.cc)
+# mirror the C++ fixtures in dune/gdt/test/spaces/base.hh. Their topology is fixed, so the per
+# geometry-type element counts are exact and pin the DG mapper on mixed grids -- something the
+# structured (single geometry type) grid_specs above cannot reach (WP3 of #320).
+
+
+def has_uggrid(module=None):
+    """Whether the build binds UGGrid, i.e. make_mixed_grid / make_prism_grid are available.
+
+    Pass an explicit module (e.g. a stub) to test the detection without the compiled wheel.
+    """
+    return any(b.impl == "uggrid" for b in discover_grid_bindings(module))
+
+
+# (dim, number of corners) -> geometry type, covering every element the bound grids can carry. A
+# 1d element is both a simplex and a cube; it is reported as "cube" (Q_k == P_k in 1d anyway).
+_GEOMETRY_BY_CORNERS = {
+    (1, 2): "cube",
+    (2, 3): "simplex",
+    (2, 4): "cube",
+    (3, 4): "simplex",
+    (3, 5): "pyramid",
+    (3, 6): "prism",
+    (3, 8): "cube",
+}
+
+
+def classify_element(dim, num_corners):
+    """Name the geometry type of an element from its dimension and corner count."""
+    return _GEOMETRY_BY_CORNERS.get((dim, num_corners), "unknown")
+
+
+def element_geometry_counts(grid):
+    """Count leaf elements per geometry type by walking the grid (exact on mixed grids)."""
+    dim = grid.dimension
+    counts = {}
+
+    def visit(element):
+        geometry_type = classify_element(dim, element.corners.shape[0])
+        counts[geometry_type] = counts.get(geometry_type, 0) + 1
+
+    grid.apply_on_each_element(visit)
+    return counts
+
+
+def dg_dofs_per_element(geometry_type, order, dim):
+    """Local (discontinuous) Lagrange DoF count for a single element of the given geometry.
+
+    These are the per-geometry blocks that a DG space assembles element by element, so on a mixed
+    grid the global DoF count is the sum over elements of this quantity (see
+    dg_dof_count_on_mixed_grid).
+    """
+    if geometry_type == "cube":
+        return (order + 1) ** dim  # Q_k, tensor-product Lagrange
+    if geometry_type == "simplex":
+        return math.comb(order + dim, dim)  # P_k on a d-simplex
+    if geometry_type == "prism":
+        # a prism is (2-simplex) x line, so its Lagrange space is P_k(triangle) (x) P_k(line)
+        return math.comb(order + 2, 2) * (order + 1)
+    raise NotImplementedError(
+        f"DG DoF count for geometry type {geometry_type!r} is not encoded"
+    )
+
+
+def dg_dof_count_on_mixed_grid(grid, order):
+    """Expected number of DoFs of a DiscontinuousLagrangeSpace(grid, order) on any (mixed) grid."""
+    dim = grid.dimension
+    return sum(
+        count * dg_dofs_per_element(geometry_type, order, dim)
+        for geometry_type, count in element_geometry_counts(grid).items()
+    )
+
+
+# Topology of the unstructured fixtures before any refinement, as dim -> {geometry type: count};
+# mirrors the element insertions in make_mixed_grid / make_prism_grid.
+MIXED_GRID_ELEMENTS = {
+    2: {"cube": 2, "simplex": 2},
+    3: {"cube": 2, "simplex": 2},
+}
+PRISM_GRID_ELEMENTS = {3: {"prism": 1}}
+
+
+def make_mixed_grid_provider(dim, num_refinements=0):
+    """A UG grid with mixed cube/simplex elements (2d or 3d), as a GridProvider."""
+    from dune.xt.grid import Dim, make_mixed_grid
+
+    return make_mixed_grid(Dim(dim), num_refinements=num_refinements)
+
+
+def make_prism_grid_provider(num_refinements=0):
+    """A 3d UG grid consisting of prism elements, as a GridProvider."""
+    from dune.xt.grid import Dim, make_prism_grid
+
+    return make_prism_grid(Dim(3), num_refinements=num_refinements)

@@ -254,6 +254,80 @@ def test_sampled_grid_bindings_filters_dims_elements_and_conformity(monkeypatch)
     assert set(only_cube_3d) == {(3, "cube", "yaspgrid")}
 
 
+# --- WP3 (#320): unstructured (UG) mixed-element and prism grid helpers --------------------
+
+
+def test_has_uggrid_detects_the_ug_provider():
+    with_ug = _stub_module([*_FULL_BUILD_GRID_CLASSES, "GridProvider2dSimplexUggrid"])
+    without_ug = _stub_module(_FULL_BUILD_GRID_CLASSES)
+    assert hs.has_uggrid(with_ug) is True
+    assert hs.has_uggrid(without_ug) is False
+
+
+@pytest.mark.parametrize(
+    ("dim", "num_corners", "expected"),
+    [
+        (1, 2, "cube"),
+        (2, 3, "simplex"),
+        (2, 4, "cube"),
+        (3, 4, "simplex"),
+        (3, 5, "pyramid"),
+        (3, 6, "prism"),
+        (3, 8, "cube"),
+        (3, 7, "unknown"),  # no element type has seven corners
+    ],
+)
+def test_classify_element(dim, num_corners, expected):
+    assert hs.classify_element(dim, num_corners) == expected
+
+
+@pytest.mark.parametrize(
+    ("geometry_type", "order", "dim", "expected"),
+    [
+        ("cube", 0, 2, 1),
+        ("cube", 1, 2, 4),  # Q_1 on a quad
+        ("cube", 2, 3, 27),  # Q_2 on a hex
+        ("simplex", 1, 2, 3),  # P_1 on a triangle
+        ("simplex", 2, 3, 10),  # P_2 on a tet
+        ("prism", 1, 3, 6),  # the six vertices of a prism
+    ],
+)
+def test_dg_dofs_per_element(geometry_type, order, dim, expected):
+    assert hs.dg_dofs_per_element(geometry_type, order, dim) == expected
+
+
+def test_dg_dofs_per_element_rejects_unknown_geometry():
+    with pytest.raises(NotImplementedError):
+        hs.dg_dofs_per_element("unknown", 1, 2)
+
+
+class _FakeMixedGrid:
+    """A stand-in GridProvider: two quads and two triangles in 2d, walked corner-count first."""
+
+    dimension = 2
+    _corner_counts = (4, 4, 3, 3)
+
+    def apply_on_each_element(self, visitor):
+        for corners in self._corner_counts:
+            visitor(types.SimpleNamespace(corners=_Shape((corners, 2))))
+
+
+class _Shape:
+    def __init__(self, shape):
+        self.shape = shape
+
+
+def test_element_geometry_counts_on_a_mixed_grid():
+    assert hs.element_geometry_counts(_FakeMixedGrid()) == {"cube": 2, "simplex": 2}
+
+
+def test_dg_dof_count_on_mixed_grid_sums_per_geometry():
+    # order 1: two quads (Q_1: 4 DoFs) + two triangles (P_1: 3 DoFs) = 2*4 + 2*3 = 14
+    assert hs.dg_dof_count_on_mixed_grid(_FakeMixedGrid(), order=1) == 14
+    # order 0: one DoF per element regardless of geometry -> 4
+    assert hs.dg_dof_count_on_mixed_grid(_FakeMixedGrid(), order=0) == 4
+
+
 # --- against the real bindings, when this build actually provides them --------------------
 
 

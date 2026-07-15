@@ -124,7 +124,9 @@ PYBIND11_MODULE(_interpolations_default, m)
   py::module::import("dune.xt.grid");
   py::module::import("dune.xt.functions");
 
-  py::module::import("dune.gdt._discretefunction_discretefunction");
+  py::module::import("dune.gdt._discretefunction_discretefunction_1d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_2d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_3d");
   py::module::import("dune.gdt._spaces_interface");
 
 #if 0
