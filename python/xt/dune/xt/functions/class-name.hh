@@ -44,7 +44,7 @@ std::string grid_range_class_name(
   if (rC > 1)
     class_name += "x" + Common::to_string(rC);
   class_name += "d";
-  if (!std::is_same<R, double>::value)
+  if (!std::is_same_v<R, double>)
     class_name += "_" + Common::Typename<R>::value(/*fail_wo_typeid=*/true);
   return Common::to_camel_case(class_name);
 }
