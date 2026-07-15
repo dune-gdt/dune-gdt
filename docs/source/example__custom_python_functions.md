@@ -118,8 +118,15 @@ if HAVE_GENERIC_FUNCTION:
 if HAVE_GENERIC_FUNCTION:
     from discretize_elliptic_ipdg import discretize_elliptic_ipdg_dirichlet_zero
 
-    u_h_expression = discretize_elliptic_ipdg_dirichlet_zero(grid, kappa_expression, f_expression)
-    u_h_generic = discretize_elliptic_ipdg_dirichlet_zero(grid, kappa_expression, f_generic)
+    # penalty_parameter is given explicitly (as in example__ipdg_stationary_heat_equation.md) to
+    # avoid the LAPACKE-dependent auto-estimation path (estimate_combined_inverse_trace_inequality_
+    # constant), which is not available in every build
+    u_h_expression = discretize_elliptic_ipdg_dirichlet_zero(
+        grid, kappa_expression, f_expression, penalty_parameter=16
+    )
+    u_h_generic = discretize_elliptic_ipdg_dirichlet_zero(
+        grid, kappa_expression, f_generic, penalty_parameter=16
+    )
 
     dofs_expression = np.array(u_h_expression.dofs.vector, copy=False)
     dofs_generic = np.array(u_h_generic.dofs.vector, copy=False)
@@ -179,7 +186,9 @@ if HAVE_GENERIC_FUNCTION:
     checkerboard_values = rng.uniform(0.1, 10.0, size=4)
     kappa_checkerboard = make_checkerboard_diffusion(grid, blocks=(2, 2), values=checkerboard_values)
 
-    u_h_checkerboard = discretize_elliptic_ipdg_dirichlet_zero(grid, kappa_checkerboard, f_expression)
+    u_h_checkerboard = discretize_elliptic_ipdg_dirichlet_zero(
+        grid, kappa_checkerboard, f_expression, penalty_parameter=16
+    )
     _ = visualize_function(u_h_checkerboard)
 ```
 
