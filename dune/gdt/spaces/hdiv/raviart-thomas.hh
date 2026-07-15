@@ -50,6 +50,12 @@ namespace GDT {
  * The following dimensions/orders/elements are tested to fail:
  *
  * - 3d: mixed simplices and cubes (the mapper cannot handle non-conforming intersections/the switches are not corect)
+ *
+ * \note Order > 0 is a *hard* contract limit, unconditionally rejected by the constructor
+ *       (`DUNE_THROW_IF(order_ != 0, ...)` below): unlike the ContinuousLagrangeSpace order limit, this
+ *       is not a subtle mapper edge case but a simple "not implemented yet" -- the higher-order local
+ *       Raviart-Thomas finite elements and the matching basis/mapper plumbing do not exist in this
+ *       codebase at all. Lifting it means adding that machinery, not fixing an existing bug.
  */
 template <class GV, class R = double>
 class RaviartThomasSpace : public SpaceInterface<GV, GV::dimension, 1, R>
