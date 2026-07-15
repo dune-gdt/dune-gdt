@@ -17,7 +17,9 @@ binding classes, and hypothesis supplies the payloads that the .tpl tests hard-c
 
 This suite *replaces* the dense-double .tpl instantiations of the backends bound here (their
 combinations are excluded in dune/xt/test/la/container_vector.py); the compiled tests remain
-for what the bindings cannot reach (complex fields, sparse and mapped vectors).
+for what the bindings cannot reach (sparse Eigen/Istl vectors, EigenMappedDenseVector, and field
+types beyond double/std::complex<double>). Complex-valued containers (WP5, #320) have their own
+runtime property suite in test_hypothesis_la_complex_container.py, mirroring this one.
 """
 
 import subprocess

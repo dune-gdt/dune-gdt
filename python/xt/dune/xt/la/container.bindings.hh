@@ -12,12 +12,17 @@
 #ifndef DUNE_XT_LA_CONTAINER_BINDINGS_HH
 #define DUNE_XT_LA_CONTAINER_BINDINGS_HH
 
+#include <complex>
+
 #include <dune/xt/la/container.hh>
 
 
 // this is used in other headers
 using COMMON_DENSE_VECTOR = Dune::XT::LA::CommonDenseVector<double>;
 using COMMON_DENSE_MATRIX = Dune::XT::LA::CommonDenseMatrix<double>;
+using COMMON_SPARSE_MATRIX_CSR = Dune::XT::LA::CommonSparseMatrixCsr<double>;
+using COMMON_SPARSE_MATRIX_CSC = Dune::XT::LA::CommonSparseMatrixCsc<double>;
+// kept for backwards compatibility, identical to COMMON_SPARSE_MATRIX_CSR (csr is the default storage layout)
 using COMMON_SPARSE_MATRIX = Dune::XT::LA::CommonSparseMatrix<double>;
 #if HAVE_EIGEN
 using EIGEN_DENSE_VECTOR = Dune::XT::LA::EigenDenseVector<double>;
@@ -26,6 +31,20 @@ using EIGEN_SPARSE_MATRIX = Dune::XT::LA::EigenRowMajorSparseMatrix<double>;
 #endif
 using ISTL_DENSE_VECTOR = Dune::XT::LA::IstlDenseVector<double>;
 using ISTL_SPARSE_MATRIX = Dune::XT::LA::IstlRowMajorSparseMatrix<double>;
+
+// std::complex<double>-valued counterparts (WP5, #320): one dense/sparse pair per backend family,
+// reusing the same container class templates (they are generic over the scalar type already).
+using COMMON_DENSE_VECTOR_COMPLEX = Dune::XT::LA::CommonDenseVector<std::complex<double>>;
+using COMMON_DENSE_MATRIX_COMPLEX = Dune::XT::LA::CommonDenseMatrix<std::complex<double>>;
+using COMMON_SPARSE_MATRIX_CSR_COMPLEX = Dune::XT::LA::CommonSparseMatrixCsr<std::complex<double>>;
+using COMMON_SPARSE_MATRIX_CSC_COMPLEX = Dune::XT::LA::CommonSparseMatrixCsc<std::complex<double>>;
+#if HAVE_EIGEN
+using EIGEN_DENSE_VECTOR_COMPLEX = Dune::XT::LA::EigenDenseVector<std::complex<double>>;
+using EIGEN_DENSE_MATRIX_COMPLEX = Dune::XT::LA::EigenDenseMatrix<std::complex<double>>;
+using EIGEN_SPARSE_MATRIX_COMPLEX = Dune::XT::LA::EigenRowMajorSparseMatrix<std::complex<double>>;
+#endif
+using ISTL_DENSE_VECTOR_COMPLEX = Dune::XT::LA::IstlDenseVector<std::complex<double>>;
+using ISTL_SPARSE_MATRIX_COMPLEX = Dune::XT::LA::IstlRowMajorSparseMatrix<std::complex<double>>;
 
 namespace Dune::XT::LA::bindings {
 
@@ -135,12 +154,65 @@ struct container_name<CommonDenseMatrix<double>>
   }
 };
 
+// Note: CommonSparseMatrix<double> defaults its second (layout) template argument to
+// Common::StorageLayout::csr, i.e. this is the same type as CommonSparseMatrixCsr<double>.
 template <>
-struct container_name<CommonSparseMatrix<double>>
+struct container_name<CommonSparseMatrix<double, Common::StorageLayout::csr>>
 {
   static std::string value()
   {
-    return "common_sparse_matrix";
+    // kept "Matrix"-suffixed (rather than e.g. "...MatrixCsr") so that name-suffix-based discovery
+    // (dune.xt.test.hypothesis_strategies.discover_matrix_types) still finds this class.
+    return "common_sparse_csr_matrix";
+  }
+};
+
+template <>
+struct container_name<CommonSparseMatrix<double, Common::StorageLayout::csc>>
+{
+  static std::string value()
+  {
+    return "common_sparse_csc_matrix";
+  }
+};
+
+// std::complex<double>-valued containers (WP5, #320): "Complex" is inserted right after the
+// backend name, matching the real-valued naming above (e.g. CommonVector -> CommonComplexVector)
+// so that dune.xt.test.hypothesis_strategies can tell backend and field type apart by name alone.
+
+template <>
+struct container_name<CommonDenseVector<std::complex<double>>>
+{
+  static std::string value()
+  {
+    return "common_complex_vector";
+  }
+};
+
+template <>
+struct container_name<CommonDenseMatrix<std::complex<double>>>
+{
+  static std::string value()
+  {
+    return "common_complex_dense_matrix";
+  }
+};
+
+template <>
+struct container_name<CommonSparseMatrix<std::complex<double>, Common::StorageLayout::csr>>
+{
+  static std::string value()
+  {
+    return "common_complex_sparse_csr_matrix";
+  }
+};
+
+template <>
+struct container_name<CommonSparseMatrix<std::complex<double>, Common::StorageLayout::csc>>
+{
+  static std::string value()
+  {
+    return "common_complex_sparse_csc_matrix";
   }
 };
 
@@ -173,6 +245,33 @@ struct container_name<EigenRowMajorSparseMatrix<double>>
   }
 };
 
+template <>
+struct container_name<EigenDenseVector<std::complex<double>>>
+{
+  static std::string value()
+  {
+    return "eigen_complex_vector";
+  }
+};
+
+template <>
+struct container_name<EigenDenseMatrix<std::complex<double>>>
+{
+  static std::string value()
+  {
+    return "eigen_complex_dense_matrix";
+  }
+};
+
+template <>
+struct container_name<EigenRowMajorSparseMatrix<std::complex<double>>>
+{
+  static std::string value()
+  {
+    return "eigen_complex_sparse_matrix";
+  }
+};
+
 #endif // HAVE_EIGEN
 
 template <>
@@ -190,6 +289,24 @@ struct container_name<IstlRowMajorSparseMatrix<double>>
   static std::string value()
   {
     return "istl_sparse_matrix";
+  }
+};
+
+template <>
+struct container_name<IstlDenseVector<std::complex<double>>>
+{
+  static std::string value()
+  {
+    return "istl_complex_vector";
+  }
+};
+
+template <>
+struct container_name<IstlRowMajorSparseMatrix<std::complex<double>>>
+{
+  static std::string value()
+  {
+    return "istl_complex_sparse_matrix";
   }
 };
 

@@ -132,6 +132,9 @@ test = [
   "lxml",
   "xmljson",
   "hatchling",
+  # oracle for the eigen-solver property test (WP5, #320): test/test_hypothesis_la_eigensolver.py
+  # compares dune.xt.la's bound EigenSolver against scipy.linalg.eigvalsh on random SPD matrices.
+  "scipy",
 ]
 
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.

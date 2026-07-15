@@ -13,4 +13,5 @@ example__mixed_and_prism_grids
 example__MNS2002_estimates
 example__ipdg_stationary_heat_equation
 example__ipdg_heat_equation
+example__la_eigensolvers
 ```
