@@ -47,7 +47,11 @@ auto bind_MatrixInverter(pybind11::module& m)
   bind_solver_machinery_options<Opts>(c);
   bind_single_matrix_solver_ctor<C, M>(c);
 
-  c.def("inverse", [](const C& self) { return M(self.inverse()); });
+  // Deliberately non-const self: MatrixInverterBase::compute() (which the const inverse() overload
+  // calls to lazily populate its cache) is not itself const -- unlike EigenSolverBase's compute(),
+  // which is -- so calling the const overload here would try to call a non-const method through a
+  // const *this. Binding the non-const overload matches the class's actual const-correctness.
+  c.def("inverse", [](C& self) { return M(self.inverse()); });
 
   bind_single_matrix_solver_factory<C, M>(m, "make_matrix_inverter");
   m.def(

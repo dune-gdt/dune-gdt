@@ -76,9 +76,11 @@ auto bind_GeneralizedEigenSolver(pybind11::module& m)
   c.def("eigenvectors", [](const C& self) { return ComplexMatrixType(self.eigenvectors()); });
   c.def("real_eigenvectors", [](const C& self) { return RealMatrixType(self.real_eigenvectors()); });
 
+  // std::make_unique<C>(...) rather than C(...) by value: see the analogous comment on
+  // bind_single_matrix_solver_factory() in solver_machinery.hh.
   m.def(
       "make_generalized_eigen_solver",
-      [](const M& lhs, const M& rhs, const std::string& type) { return C(lhs, rhs, type); },
+      [](const M& lhs, const M& rhs, const std::string& type) { return std::make_unique<C>(lhs, rhs, type); },
       "lhs_matrix"_a,
       "rhs_matrix"_a,
       "type"_a = "",
@@ -86,7 +88,7 @@ auto bind_GeneralizedEigenSolver(pybind11::module& m)
       py::keep_alive<0, 2>());
   m.def(
       "make_generalized_eigen_solver",
-      [](const M& lhs, const M& rhs, const Common::Configuration& opts) { return C(lhs, rhs, opts); },
+      [](const M& lhs, const M& rhs, const Common::Configuration& opts) { return std::make_unique<C>(lhs, rhs, opts); },
       "lhs_matrix"_a,
       "rhs_matrix"_a,
       "options"_a,

@@ -97,7 +97,11 @@ void bind_single_matrix_solver_ctor(pybind11::class_<C>& c)
  * \brief Binds the free `make_<...>(matrix, type="")` / `make_<...>(matrix, Configuration)` factory
  *        pair for a single-input-matrix solver-machinery class C, under the given Python-visible name.
  *
- * Shared for the same reason as the two functions above.
+ * Returns std::make_unique<C>(...) rather than C(...) by value: pybind11 has to move- or
+ * copy-construct a by-value return into its own heap allocation, and unlike EigenSolverBase,
+ * MatrixInverterBase declares no move constructor of its own (its unique_ptr cache member makes the
+ * implicit one deleted-via-virtual-destructor-suppression) -- returning a unique_ptr sidesteps that
+ * requirement entirely, for every class this is used with.
  */
 template <class C, class M>
 void bind_single_matrix_solver_factory(pybind11::module& m, const std::string& factory_name)
@@ -107,13 +111,13 @@ void bind_single_matrix_solver_factory(pybind11::module& m, const std::string& f
 
   m.def(
       factory_name.c_str(),
-      [](const M& matrix, const std::string& type) { return C(matrix, type); },
+      [](const M& matrix, const std::string& type) { return std::make_unique<C>(matrix, type); },
       "matrix"_a,
       "type"_a = "",
       py::keep_alive<0, 1>());
   m.def(
       factory_name.c_str(),
-      [](const M& matrix, const Common::Configuration& opts) { return C(matrix, opts); },
+      [](const M& matrix, const Common::Configuration& opts) { return std::make_unique<C>(matrix, opts); },
       "matrix"_a,
       "options"_a,
       py::keep_alive<0, 1>());
