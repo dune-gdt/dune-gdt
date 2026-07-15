@@ -349,9 +349,9 @@ def test_cg_scalar_dof_count(order, num_elements, expected):
     [(1, (2, 2)), (2, (2, 2)), (1, (2, 2, 2)), (3, (1, 1))],
 )
 def test_cg_vector_dof_count_is_dim_range_times_scalar(order, num_elements, dim_range):
-    assert hs.cg_vector_dof_count(order, num_elements, dim_range) == dim_range * hs.cg_scalar_dof_count(
-        order, num_elements
-    )
+    assert hs.cg_vector_dof_count(
+        order, num_elements, dim_range
+    ) == dim_range * hs.cg_scalar_dof_count(order, num_elements)
 
 
 # --- against the real bindings, when this build actually provides them --------------------

@@ -66,8 +66,7 @@ dune_pybindxi_add_module(_local_integrands_binary_element_interface EXCLUDE_FROM
                          local/integrands/binary_element_interface.cc)
 dune_pybindxi_add_module(_local_integrands_binary_intersection_interface EXCLUDE_FROM_ALL ${header}
                          local/integrands/binary_intersection_interface.cc)
-dune_pybindxi_add_module(_local_integrands_element_div EXCLUDE_FROM_ALL ${header}
-                         local/integrands/element_div.cc)
+dune_pybindxi_add_module(_local_integrands_element_div EXCLUDE_FROM_ALL ${header} local/integrands/element_div.cc)
 dune_pybindxi_add_module(_local_integrands_element_product EXCLUDE_FROM_ALL ${header}
                          local/integrands/element_product.cc)
 dune_pybindxi_add_module(_local_integrands_intersection_product EXCLUDE_FROM_ALL ${header}

@@ -88,7 +88,9 @@ def test_vector_cg_dof_count_on_cube_grids(spec, order):
     grid = spec.make_grid()
     scalar_space = ContinuousLagrangeSpace(grid, order=order)
     vector_space = ContinuousLagrangeSpace(grid, order=order, dim_range=Dim(spec.dim))
-    assert vector_space.num_DoFs == cg_vector_dof_count(order, spec.num_elements, spec.dim)
+    assert vector_space.num_DoFs == cg_vector_dof_count(
+        order, spec.num_elements, spec.dim
+    )
     assert vector_space.num_DoFs == spec.dim * scalar_space.num_DoFs
 
 
