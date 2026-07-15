@@ -27,6 +27,7 @@
 #include <python/xt/dune/xt/common/bindings.hh>
 #include <python/xt/dune/xt/grid/traits.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/functions/class-name.hh>
 
 namespace Dune::XT::Functions::bindings {
 
@@ -56,17 +57,7 @@ public:
     namespace py = pybind11;
     using namespace pybind11::literals;
 
-    std::string class_name = class_id;
-    class_name += "_" + grid_id;
-    if (!layer_id.empty())
-      class_name += "_" + layer_id;
-    class_name += "_to_" + Common::to_string(r);
-    if (rC > 1)
-      class_name += "x" + Common::to_string(rC);
-    class_name += "d";
-    if (!std::is_same<R, double>::value)
-      class_name += "_" + Common::Typename<R>::value(/*fail_wo_typeid=*/true);
-    const auto ClassName = Common::to_camel_case(class_name);
+    const auto ClassName = grid_range_class_name<R>(class_id, grid_id, layer_id, r, rC);
     bound_type c(m, ClassName.c_str(), Common::to_camel_case(class_id).c_str());
 
     c.def(py::init([](int order, typename type::GenericEvaluateFunctionType evaluate, const std::string& name) {
@@ -97,30 +88,106 @@ public:
           "jacobian"_a,
           "name"_a = type::static_id());
 
-    m.def(
-        Common::to_camel_case(class_id).c_str(),
-        [](const GP& /*grid*/,
-           int order,
-           typename type::GenericEvaluateFunctionType evaluate,
-           const std::string& name) {
-          return new type(order, type::default_post_bind_function(), evaluate, Common::ParameterType{}, name);
-        },
-        "grid"_a,
-        "order"_a,
-        "evaluate"_a,
-        "name"_a = type::static_id());
-    m.def(
-        Common::to_camel_case(class_id).c_str(),
-        [](const GP& /*grid*/,
-           int order,
-           typename type::GenericPostBindFunctionType post_bind,
-           typename type::GenericEvaluateFunctionType evaluate,
-           const std::string& name) { return new type(order, post_bind, evaluate, Common::ParameterType{}, name); },
-        "grid"_a,
-        "order"_a,
-        "post_bind"_a,
-        "evaluate"_a,
-        "name"_a = type::static_id());
+    // The overloads below differ only in the *content* of a std::function argument
+    // (GenericEvaluateFunctionType's RangeReturnType), never in its C++ type signature as seen by
+    // pybind11/functional.h's caster: any Python callable loads into any std::function<...> slot
+    // regardless of what it returns. Without an explicit, concretely-typed dim_range tag argument,
+    // pybind11 cannot distinguish the five (r, rC) registrations below and would always dispatch to
+    // whichever was registered first -- so, as gridfunction.cc already does for its raw-lambda
+    // factory, dim_range is threaded through here purely to disambiguate the overload set.
+    if (rC == 1) {
+      m.def(
+          Common::to_camel_case(class_id).c_str(),
+          [](const GP& /*grid*/,
+             int order,
+             typename type::GenericEvaluateFunctionType evaluate,
+             const Grid::bindings::Dimension<r>& /*dim_range*/,
+             const std::string& name) {
+            return new type(order, type::default_post_bind_function(), evaluate, Common::ParameterType{}, name);
+          },
+          "grid"_a,
+          "order"_a,
+          "evaluate"_a,
+          "dim_range"_a,
+          "name"_a = type::static_id());
+      m.def(
+          Common::to_camel_case(class_id).c_str(),
+          [](const GP& /*grid*/,
+             int order,
+             typename type::GenericPostBindFunctionType post_bind,
+             typename type::GenericEvaluateFunctionType evaluate,
+             const Grid::bindings::Dimension<r>& /*dim_range*/,
+             const std::string& name) { return new type(order, post_bind, evaluate, Common::ParameterType{}, name); },
+          "grid"_a,
+          "order"_a,
+          "post_bind"_a,
+          "evaluate"_a,
+          "dim_range"_a,
+          "name"_a = type::static_id());
+      m.def(
+          Common::to_camel_case(class_id).c_str(),
+          [](const GP& /*grid*/,
+             int order,
+             typename type::GenericEvaluateFunctionType evaluate,
+             typename type::GenericJacobianFunctionType jacobian,
+             const Grid::bindings::Dimension<r>& /*dim_range*/,
+             const std::string& name) {
+            return new type(
+                order, type::default_post_bind_function(), evaluate, Common::ParameterType{}, name, jacobian);
+          },
+          "grid"_a,
+          "order"_a,
+          "evaluate"_a,
+          "jacobian"_a,
+          "dim_range"_a,
+          "name"_a = type::static_id());
+    } else {
+      m.def(
+          Common::to_camel_case(class_id).c_str(),
+          [](const GP& /*grid*/,
+             int order,
+             typename type::GenericEvaluateFunctionType evaluate,
+             const std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>>& /*dim_range*/,
+             const std::string& name) {
+            return new type(order, type::default_post_bind_function(), evaluate, Common::ParameterType{}, name);
+          },
+          "grid"_a,
+          "order"_a,
+          "evaluate"_a,
+          "dim_range"_a,
+          "name"_a = type::static_id());
+      m.def(
+          Common::to_camel_case(class_id).c_str(),
+          [](const GP& /*grid*/,
+             int order,
+             typename type::GenericPostBindFunctionType post_bind,
+             typename type::GenericEvaluateFunctionType evaluate,
+             const std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>>& /*dim_range*/,
+             const std::string& name) { return new type(order, post_bind, evaluate, Common::ParameterType{}, name); },
+          "grid"_a,
+          "order"_a,
+          "post_bind"_a,
+          "evaluate"_a,
+          "dim_range"_a,
+          "name"_a = type::static_id());
+      m.def(
+          Common::to_camel_case(class_id).c_str(),
+          [](const GP& /*grid*/,
+             int order,
+             typename type::GenericEvaluateFunctionType evaluate,
+             typename type::GenericJacobianFunctionType jacobian,
+             const std::pair<Grid::bindings::Dimension<r>, Grid::bindings::Dimension<rC>>& /*dim_range*/,
+             const std::string& name) {
+            return new type(
+                order, type::default_post_bind_function(), evaluate, Common::ParameterType{}, name, jacobian);
+          },
+          "grid"_a,
+          "order"_a,
+          "evaluate"_a,
+          "jacobian"_a,
+          "dim_range"_a,
+          "name"_a = type::static_id());
+    }
 
     return c;
   }

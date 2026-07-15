@@ -371,14 +371,16 @@ def test_fourier_sum_constant_only_is_constant_everywhere():
     f = hs.FourierSum(dim=2, constant=3.5, modes=())
     values = f(np.array([[0.0, 0.0], [0.3, 0.7], [1.0, 1.0]]))
     assert np.allclose(values, 3.5)
-    assert f.exact_integral == 3.5
+    assert f.exact_integral == pytest.approx(3.5)
 
 
 def test_fourier_sum_nonzero_modes_integrate_to_zero_over_the_unit_box():
-    # every mode has a nonzero integer frequency, so a fine regular grid should approximate the
-    # exact integral (== constant alone) well, numerically confirming the class docstring's claim.
+    # every mode has a nonzero integer frequency, so a regular grid over one full period, taken
+    # WITHOUT the right endpoint (equal to the left one by periodicity -- including both would
+    # double-count it), averages each mode to exactly 0 by discrete orthogonality, numerically
+    # confirming the class docstring's claim.
     f = hs.FourierSum(dim=1, constant=1.0, modes=((5.0, (3,), 0.7), (-2.0, (-2,), 2.1)))
-    points = np.linspace(0.0, 1.0, 2001)[:, None]
+    points = np.linspace(0.0, 1.0, 2000, endpoint=False)[:, None]
     approx_integral = f(points).mean()
     assert approx_integral == pytest.approx(f.exact_integral, abs=1e-3)
 

@@ -164,8 +164,15 @@ if HAVE_GENERIC_FUNCTION:
             value = float(state["value"])
             return [[value if i == j else 0.0 for j in range(d)] for i in range(d)]
 
+        # dim_range disambiguates the scalar/vector/matrix GenericGridFunction overloads sharing
+        # this factory name -- it is not otherwise inferable from the post_bind/evaluate callables
         return GenericGridFunction(
-            grid, order=0, post_bind=post_bind, evaluate=evaluate, name="checkerboard_kappa"
+            grid,
+            order=0,
+            post_bind=post_bind,
+            evaluate=evaluate,
+            dim_range=(Dim(d), Dim(d)),
+            name="checkerboard_kappa",
         )
 
     rng = np.random.default_rng(0)
@@ -224,11 +231,14 @@ if HAVE_GENERIC_FUNCTION:
 
     time_expression = assemble_laplace(fine_grid, kappa_expression, repetitions)
 
+    # scalar, matching kappa_expression exactly (GF's dim_range=(Dim(d), Dim(d)) tag in
+    # assemble_laplace promotes both identically) -- so the timing difference below isolates the
+    # cost of the Python callback itself, not an unrelated scalar-vs-matrix evaluation difference
     def kappa_evaluate(x, mu):
-        return [[1.0 if i == j else 0.0 for j in range(d)] for i in range(d)]
+        return [1.0]
 
     kappa_generic = GenericFunction(
-        dim_domain=Dim(d), dim_range=(Dim(d), Dim(d)), order=0, evaluate=kappa_evaluate, name="kappa_generic"
+        dim_domain=Dim(d), dim_range=Dim(1), order=0, evaluate=kappa_evaluate, name="kappa_generic"
     )
     time_generic = assemble_laplace(fine_grid, kappa_generic, repetitions)
 
