@@ -419,6 +419,22 @@ public:
   }
 
   /// Applies the inverse of the local mass matrix.
+  /// When using this constructor, source has to be set by a call to with_source before calling apply
+  /// (like the source-less constructor of LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator,
+  /// which is what AdvectionDgOperator::boundary_treatment requires).
+  LocalAdvectionDgBoundaryTreatmentByCustomNumericalFluxOperator(
+      const LocalMassMatrixProviderType& local_mass_matrices,
+      LambdaType numerical_boundary_flux,
+      const int numerical_flux_order,
+      const XT::Common::ParameterType& numerical_flux_param_type = {})
+    : BaseType(1, numerical_flux_param_type)
+    , numerical_boundary_flux_(numerical_boundary_flux)
+    , numerical_flux_order_(numerical_flux_order)
+    , local_mass_matrices_(local_mass_matrices)
+  {
+  }
+
+  /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgBoundaryTreatmentByCustomNumericalFluxOperator(
       const SourceType& source,
       const LocalMassMatrixProviderType& local_mass_matrices,
@@ -554,6 +570,23 @@ public:
     , numerical_flux_(numerical_flux.copy())
     , local_flux_(numerical_flux_->flux().local_function())
     , extrapolate_(boundary_extrapolation_lambda)
+  {
+  }
+
+  /// Applies the inverse of the local mass matrix.
+  /// When using this constructor, source has to be set by a call to with_source before calling apply
+  /// (like the source-less constructor of LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator,
+  /// which is what AdvectionDgOperator::boundary_treatment requires).
+  LocalAdvectionDgBoundaryTreatmentByCustomExtrapolationOperator(
+      const LocalMassMatrixProviderType& local_mass_matrices,
+      const NumericalFluxType& numerical_flux,
+      LambdaType boundary_extrapolation_lambda,
+      const XT::Common::ParameterType& boundary_treatment_param_type = {})
+    : BaseType(1, numerical_flux.parameter_type() + boundary_treatment_param_type)
+    , numerical_flux_(numerical_flux.copy())
+    , local_flux_(numerical_flux_->flux().local_function())
+    , extrapolate_(boundary_extrapolation_lambda)
+    , local_mass_matrices_(local_mass_matrices)
   {
   }
 
