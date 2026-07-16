@@ -429,7 +429,10 @@ public:
     return source_space_;
   }
 
-  const auto& assembly_grid_view() const override final
+  // NOTE: a virtual function must not have a deduced (auto) return type ([dcl.spec.auto]), so this
+  // spells out the AssemblyGridViewType the interface declares (this operator was never instantiated
+  // before it was bound to Python, which is why the deduced return type went unnoticed).
+  const GV& assembly_grid_view() const override final
   {
     return source_space_.grid_view();
   }

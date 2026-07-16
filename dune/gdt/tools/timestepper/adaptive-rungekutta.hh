@@ -249,6 +249,9 @@ public:
   using BaseType::current_time;
   using BaseType::solve;
 
+  // NOTE: reset_begin_time was added to TimeStepperInterface::solve after this override was written;
+  // without it this is not an override and the class does not even instantiate (this went unnoticed
+  // for as long as nothing instantiated AdaptiveRungeKuttaTimeStepper, see the Python bindings).
   RangeFieldType solve(const RangeFieldType t_end,
                        const RangeFieldType initial_dt,
                        const size_t num_save_steps,
@@ -257,6 +260,7 @@ public:
                        const bool visualize,
                        const bool write_discrete,
                        const bool write_exact,
+                       const bool reset_begin_time,
                        const std::string prefix,
                        typename BaseType::DiscreteSolutionType& sol,
                        const typename BaseType::VisualizerType& visualizer,
@@ -271,6 +275,7 @@ public:
                                      visualize,
                                      write_discrete,
                                      write_exact,
+                                     reset_begin_time,
                                      prefix,
                                      sol,
                                      visualizer,
@@ -306,13 +311,13 @@ public:
           u_tmp_.dofs().vector() += stages_k_[jj].dofs().vector() * (actual_dt * r_ * (A_[ii][jj]));
         try {
           op_.apply(u_tmp_.dofs().vector(), stages_k_[ii].dofs().vector(), t + actual_dt * c_[ii]);
-        } catch (const Dune::MathError& e) {
+        } catch (const Dune::MathError&) {
           mixed_error = 1e10;
           skip_error_computation = true;
           time_step_scale_factor = 0.5;
           break;
 #if HAVE_TBB && __has_include(<tbb/tbb_exception.h>)
-        } catch (const tbb::captured_exception& e) {
+        } catch (const tbb::captured_exception&) {
           mixed_error = 1e10;
           skip_error_computation = true;
           time_step_scale_factor = 0.5;
