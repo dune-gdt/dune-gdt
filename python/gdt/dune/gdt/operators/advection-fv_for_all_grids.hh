@@ -27,6 +27,8 @@
 
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 
+#include <python/gdt/dune/gdt/module_imports.hh>
+
 #include "numerical-fluxes_for_all_grids.hh"
 #include "operator_for_all_grids.hh"
 
@@ -175,28 +177,8 @@ struct AdvectionFvOperator_for_all_grids<Dune::XT::Common::tuple_null_type>
 #define DUNE_GDT_BIND_ADVECTION_FV_MODULE(dim)                                                                         \
   namespace py = pybind11;                                                                                             \
   using namespace Dune;                                                                                                \
-  using namespace Dune::XT;                                                                                            \
-  using namespace Dune::GDT;                                                                                           \
                                                                                                                        \
-  py::module::import("dune.xt.common");                                                                                \
-  py::module::import("dune.xt.la");                                                                                    \
-  py::module::import("dune.xt.grid");                                                                                  \
-  py::module::import("dune.xt.functions");                                                                             \
-                                                                                                                       \
-  py::module::import("dune.gdt._local_operators_element_interface");                                                   \
-  py::module::import("dune.gdt._local_operators_intersection_interface");                                              \
-  py::module::import("dune.gdt._operators_interfaces_common");                                                         \
-  py::module::import("dune.gdt._operators_interfaces_eigen");                                                          \
-  py::module::import("dune.gdt._operators_interfaces_istl_1d");                                                        \
-  py::module::import("dune.gdt._operators_interfaces_istl_2d");                                                        \
-  py::module::import("dune.gdt._operators_interfaces_istl_3d");                                                        \
-  py::module::import("dune.gdt._operators_operator_1d");                                                               \
-  py::module::import("dune.gdt._operators_operator_2d");                                                               \
-  py::module::import("dune.gdt._operators_operator_3d");                                                               \
-  py::module::import("dune.gdt._operators_numerical_fluxes_1d");                                                       \
-  py::module::import("dune.gdt._operators_numerical_fluxes_2d");                                                       \
-  py::module::import("dune.gdt._operators_numerical_fluxes_3d");                                                       \
-  py::module::import("dune.gdt._spaces_interface");                                                                    \
+  DUNE_GDT_BIND_OPERATOR_STACK_IMPORTS;                                                                                \
                                                                                                                        \
   AdvectionFvOperator_for_all_grids<XT::Grid::bindings::Available##dim##dGridTypes>::bind(m);                          \
   m.attr("__all__") = py::make_tuple()

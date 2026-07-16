@@ -29,6 +29,7 @@
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include <python/gdt/dune/gdt/discretefunction/discretefunction_for_all_grids.hh>
+#include <python/gdt/dune/gdt/module_imports.hh>
 
 // The time steppers are instantiated over the already-bound GDT::Operator base (the class
 // MatrixOperator, AdvectionFvOperator and AdvectionDgOperator all derive from), so ANY bound
@@ -102,6 +103,13 @@ public:
   using base_type = typename InterfaceType::type;
   using bound_type = pybind11::class_<type, base_type>;
 
+  // NOTE: no time stepper is copyable or movable (TimeStepperInterface explicitly deletes both),
+  // so this must return a pointer.
+  static type* make(const OperatorImp& op, DiscreteFunctionImp& initial_values, const double r, const double t_0)
+  {
+    return new type(op, initial_values, r, t_0);
+  }
+
   static bound_type bind(pybind11::module& m,
                          const std::string& grid_id,
                          const std::string& method_id,
@@ -113,9 +121,7 @@ public:
     const auto ClassName = XT::Common::to_camel_case(class_id + "_" + method_id + "_" + grid_id);
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
 
-    c.def(py::init([](const OperatorImp& op, DiscreteFunctionImp& initial_values, const double r, const double t_0) {
-            return new type(op, initial_values, r, t_0);
-          }),
+    c.def(py::init(&ExplicitRungeKuttaTimeStepper::make),
           "op"_a,
           "initial_values"_a,
           "r"_a = 1.0,
@@ -127,11 +133,7 @@ public:
     // across grid types within one dimension submodule (like the "operator" factory in
     // operator_for_all_grids.hh) and dispatched across dimensions from Python (see __init__.py)
     m.def((method_id + "_time_stepper").c_str(),
-          [](const OperatorImp& op, DiscreteFunctionImp& initial_values, const double r, const double t_0) {
-            // NOTE: no time stepper is copyable or movable (TimeStepperInterface explicitly deletes
-            // both), so this must return a pointer.
-            return new type(op, initial_values, r, t_0);
-          },
+          &ExplicitRungeKuttaTimeStepper::make,
           "op"_a,
           "initial_values"_a,
           "r"_a = 1.0,
@@ -154,6 +156,18 @@ public:
   using base_type = typename InterfaceType::type;
   using bound_type = pybind11::class_<type, base_type>;
 
+  // NOTE: see the analogous comment in ExplicitRungeKuttaTimeStepper::make above.
+  static type* make(const OperatorImp& op,
+                    DiscreteFunctionImp& initial_values,
+                    const double r,
+                    const double t_0,
+                    const double tol,
+                    const double scale_factor_min,
+                    const double scale_factor_max)
+  {
+    return new type(op, initial_values, r, t_0, tol, scale_factor_min, scale_factor_max);
+  }
+
   static bound_type bind(pybind11::module& m,
                          const std::string& grid_id,
                          const std::string& method_id,
@@ -165,15 +179,7 @@ public:
     const auto ClassName = XT::Common::to_camel_case(class_id + "_" + method_id + "_" + grid_id);
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
 
-    c.def(py::init([](const OperatorImp& op,
-                      DiscreteFunctionImp& initial_values,
-                      const double r,
-                      const double t_0,
-                      const double tol,
-                      const double scale_factor_min,
-                      const double scale_factor_max) {
-            return new type(op, initial_values, r, t_0, tol, scale_factor_min, scale_factor_max);
-          }),
+    c.def(py::init(&AdaptiveRungeKuttaTimeStepper::make),
           "op"_a,
           "initial_values"_a,
           "r"_a = 1.0,
@@ -184,17 +190,8 @@ public:
           py::keep_alive<1, 2>(),
           py::keep_alive<1, 3>());
 
-    // NOTE: see the analogous comment in ExplicitRungeKuttaTimeStepper::bind above.
     m.def((method_id + "_time_stepper").c_str(),
-          [](const OperatorImp& op,
-             DiscreteFunctionImp& initial_values,
-             const double r,
-             const double t_0,
-             const double tol,
-             const double scale_factor_min,
-             const double scale_factor_max) {
-            return new type(op, initial_values, r, t_0, tol, scale_factor_min, scale_factor_max);
-          },
+          &AdaptiveRungeKuttaTimeStepper::make,
           "op"_a,
           "initial_values"_a,
           "r"_a = 1.0,
@@ -223,6 +220,12 @@ public:
   using type = StepperImp<base_type, base_type>;
   using bound_type = pybind11::class_<type, base_type>;
 
+  // NOTE: see the analogous comment in ExplicitRungeKuttaTimeStepper::make above.
+  static type* make(base_type& first_stepper, base_type& second_stepper)
+  {
+    return new type(first_stepper, second_stepper);
+  }
+
   static bound_type bind(pybind11::module& m, const std::string& grid_id, const std::string& class_id)
   {
     namespace py = pybind11;
@@ -231,17 +234,14 @@ public:
     const auto ClassName = XT::Common::to_camel_case(class_id + "_" + grid_id);
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
 
-    c.def(py::init([](base_type& first_stepper, base_type& second_stepper) {
-            return new type(first_stepper, second_stepper);
-          }),
+    c.def(py::init(&SplittingTimeStepper::make),
           "first_stepper"_a,
           "second_stepper"_a,
           py::keep_alive<1, 2>(),
           py::keep_alive<1, 3>());
 
-    // NOTE: see the analogous comment in ExplicitRungeKuttaTimeStepper::bind above.
     m.def((class_id + "_time_stepper").c_str(),
-          [](base_type& first_stepper, base_type& second_stepper) { return new type(first_stepper, second_stepper); },
+          &SplittingTimeStepper::make,
           "first_stepper"_a,
           "second_stepper"_a,
           py::keep_alive<0, 1>(),
@@ -327,27 +327,8 @@ struct TimeSteppers_for_all_grids<Dune::XT::Common::tuple_null_type>
 #define DUNE_GDT_BIND_TIMESTEPPER_MODULE(dim)                                                                          \
   namespace py = pybind11;                                                                                             \
   using namespace Dune;                                                                                                \
-  using namespace Dune::XT;                                                                                            \
-  using namespace Dune::GDT;                                                                                           \
                                                                                                                        \
-  py::module::import("dune.xt.common");                                                                                \
-  py::module::import("dune.xt.la");                                                                                    \
-  py::module::import("dune.xt.grid");                                                                                  \
-  py::module::import("dune.xt.functions");                                                                             \
-                                                                                                                       \
-  py::module::import("dune.gdt._spaces_interface");                                                                    \
-  py::module::import("dune.gdt._discretefunction_dof_vector");                                                         \
-  py::module::import("dune.gdt._discretefunction_discretefunction_1d");                                                \
-  py::module::import("dune.gdt._discretefunction_discretefunction_2d");                                                \
-  py::module::import("dune.gdt._discretefunction_discretefunction_3d");                                                \
-  py::module::import("dune.gdt._operators_interfaces_common");                                                         \
-  py::module::import("dune.gdt._operators_interfaces_eigen");                                                          \
-  py::module::import("dune.gdt._operators_interfaces_istl_1d");                                                        \
-  py::module::import("dune.gdt._operators_interfaces_istl_2d");                                                        \
-  py::module::import("dune.gdt._operators_interfaces_istl_3d");                                                        \
-  py::module::import("dune.gdt._operators_operator_1d");                                                               \
-  py::module::import("dune.gdt._operators_operator_2d");                                                               \
-  py::module::import("dune.gdt._operators_operator_3d");                                                               \
+  DUNE_GDT_BIND_OPERATOR_STACK_IMPORTS;                                                                                \
                                                                                                                        \
   TimeSteppers_for_all_grids<XT::Grid::bindings::Available##dim##dGridTypes>::bind(m);                                 \
   m.attr("__all__") = py::make_tuple()

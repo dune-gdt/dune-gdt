@@ -28,6 +28,8 @@
 
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 
+#include <python/gdt/dune/gdt/module_imports.hh>
+
 // Only the scalar (m == 1) case is bound (see numerical-fluxes_for_all_grids.hh for the WP6 scoping
 // rationale). For a scalar conservation law the characteristic transformation is the identity, so
 // the reconstruction is instantiated with the DummyEigenVectorWrapper (slopes are limited in
@@ -228,17 +230,7 @@ struct LinearReconstructionOperator_for_all_grids<Dune::XT::Common::tuple_null_t
   namespace py = pybind11;                                                                                             \
   using namespace Dune;                                                                                                \
                                                                                                                        \
-  py::module::import("dune.xt.common");                                                                                \
-  py::module::import("dune.xt.la");                                                                                    \
-  py::module::import("dune.xt.grid");                                                                                  \
-  py::module::import("dune.xt.functions");                                                                             \
-                                                                                                                       \
-  py::module::import("dune.gdt._operators_interfaces_common");                                                         \
-  py::module::import("dune.gdt._operators_interfaces_eigen");                                                          \
-  py::module::import("dune.gdt._operators_interfaces_istl_1d");                                                        \
-  py::module::import("dune.gdt._operators_interfaces_istl_2d");                                                        \
-  py::module::import("dune.gdt._operators_interfaces_istl_3d");                                                        \
-  py::module::import("dune.gdt._spaces_interface");                                                                    \
+  DUNE_GDT_BIND_OPERATOR_STACK_IMPORTS;                                                                                \
                                                                                                                        \
   LinearReconstructionOperator_for_all_grids<XT::Grid::bindings::Available##dim##dGridTypes>::bind(m);                 \
   m.attr("__all__") = py::make_tuple()

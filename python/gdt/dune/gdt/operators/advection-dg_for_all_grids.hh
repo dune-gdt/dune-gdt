@@ -26,6 +26,8 @@
 
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 
+#include <python/gdt/dune/gdt/module_imports.hh>
+
 #include "numerical-fluxes_for_all_grids.hh"
 #include "operator_for_all_grids.hh"
 
@@ -67,6 +69,24 @@ public:
     return class_id + "_" + grid_id;
   }
 
+  static type* make(const SpaceType& space,
+                    const NumericalFluxType& numerical_flux,
+                    const double artificial_viscosity_nu_1,
+                    const double artificial_viscosity_alpha_1)
+  {
+    // NOTE: AdvectionDgOperator stores the assembly grid view BY REFERENCE (like the plain
+    // Operator, see operator_for_all_grids.hh), so it must outlive the operator; use the
+    // space's grid view (kept alive by the callers' keep_alives) rather than a fresh, temporary
+    // grid.leaf_view().
+    return new type(space.grid_view(),
+                    numerical_flux,
+                    space,
+                    space,
+                    XT::Grid::ApplyOn::NoIntersections<GV>(),
+                    artificial_viscosity_nu_1,
+                    artificial_viscosity_alpha_1);
+  } // ... make(...)
+
   static bound_type bind(pybind11::module& m_, const std::string& grid_id)
   {
     namespace py = pybind11;
@@ -74,21 +94,7 @@ public:
 
     const auto ClassName = XT::Common::to_camel_case(class_name(grid_id));
     bound_type c(m_, ClassName.c_str(), ClassName.c_str());
-    c.def(py::init([](const SpaceType& space,
-                      const NumericalFluxType& numerical_flux,
-                      const double artificial_viscosity_nu_1,
-                      const double artificial_viscosity_alpha_1) {
-            // NOTE: AdvectionDgOperator stores the assembly grid view BY REFERENCE (like the plain
-            // Operator, see operator_for_all_grids.hh), so it must outlive the operator; use the
-            // space's grid view (kept alive below) rather than a fresh, temporary grid.leaf_view().
-            return new type(space.grid_view(),
-                            numerical_flux,
-                            space,
-                            space,
-                            XT::Grid::ApplyOn::NoIntersections<GV>(),
-                            artificial_viscosity_nu_1,
-                            artificial_viscosity_alpha_1);
-          }),
+    c.def(py::init(&AdvectionDgOperator::make),
           "space"_a,
           "numerical_flux"_a,
           "artificial_viscosity_nu_1"_a = GDT::advection_dg_artificial_viscosity_default_nu_1(),
@@ -121,26 +127,14 @@ public:
         // self transitively references this operator would otherwise be an uncollectable cycle).
         py::keep_alive<1, 2>());
 
-    m_.def(
-        "advection_dg_operator",
-        [](const SpaceType& space,
-           const NumericalFluxType& numerical_flux,
-           const double artificial_viscosity_nu_1,
-           const double artificial_viscosity_alpha_1) {
-          return new type(space.grid_view(),
-                          numerical_flux,
-                          space,
-                          space,
-                          XT::Grid::ApplyOn::NoIntersections<GV>(),
-                          artificial_viscosity_nu_1,
-                          artificial_viscosity_alpha_1);
-        },
-        "space"_a,
-        "numerical_flux"_a,
-        "artificial_viscosity_nu_1"_a = GDT::advection_dg_artificial_viscosity_default_nu_1(),
-        "artificial_viscosity_alpha_1"_a = GDT::advection_dg_artificial_viscosity_default_alpha_1(),
-        py::keep_alive<0, 1>(),
-        py::keep_alive<0, 2>());
+    m_.def("advection_dg_operator",
+           &AdvectionDgOperator::make,
+           "space"_a,
+           "numerical_flux"_a,
+           "artificial_viscosity_nu_1"_a = GDT::advection_dg_artificial_viscosity_default_nu_1(),
+           "artificial_viscosity_alpha_1"_a = GDT::advection_dg_artificial_viscosity_default_alpha_1(),
+           py::keep_alive<0, 1>(),
+           py::keep_alive<0, 2>());
 
     return c;
   } // ... bind(...)
@@ -182,28 +176,8 @@ struct AdvectionDgOperator_for_all_grids<Dune::XT::Common::tuple_null_type>
 #define DUNE_GDT_BIND_ADVECTION_DG_MODULE(dim)                                                                         \
   namespace py = pybind11;                                                                                             \
   using namespace Dune;                                                                                                \
-  using namespace Dune::XT;                                                                                            \
-  using namespace Dune::GDT;                                                                                           \
                                                                                                                        \
-  py::module::import("dune.xt.common");                                                                                \
-  py::module::import("dune.xt.la");                                                                                    \
-  py::module::import("dune.xt.grid");                                                                                  \
-  py::module::import("dune.xt.functions");                                                                             \
-                                                                                                                       \
-  py::module::import("dune.gdt._local_operators_element_interface");                                                   \
-  py::module::import("dune.gdt._local_operators_intersection_interface");                                              \
-  py::module::import("dune.gdt._operators_interfaces_common");                                                         \
-  py::module::import("dune.gdt._operators_interfaces_eigen");                                                          \
-  py::module::import("dune.gdt._operators_interfaces_istl_1d");                                                        \
-  py::module::import("dune.gdt._operators_interfaces_istl_2d");                                                        \
-  py::module::import("dune.gdt._operators_interfaces_istl_3d");                                                        \
-  py::module::import("dune.gdt._operators_operator_1d");                                                               \
-  py::module::import("dune.gdt._operators_operator_2d");                                                               \
-  py::module::import("dune.gdt._operators_operator_3d");                                                               \
-  py::module::import("dune.gdt._operators_numerical_fluxes_1d");                                                       \
-  py::module::import("dune.gdt._operators_numerical_fluxes_2d");                                                       \
-  py::module::import("dune.gdt._operators_numerical_fluxes_3d");                                                       \
-  py::module::import("dune.gdt._spaces_interface");                                                                    \
+  DUNE_GDT_BIND_OPERATOR_STACK_IMPORTS;                                                                                \
                                                                                                                        \
   AdvectionDgOperator_for_all_grids<XT::Grid::bindings::Available##dim##dGridTypes>::bind(m);                          \
   m.attr("__all__") = py::make_tuple()
