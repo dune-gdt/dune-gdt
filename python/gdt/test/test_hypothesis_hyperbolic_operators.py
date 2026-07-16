@@ -155,7 +155,12 @@ def _fv_linear_transport_setup(case):
 
 
 @pytest.mark.skipif(
-    not has_gdt_bindings("AdvectionDgOperator", "ExplicitEulerTimeStepper"),
+    not has_gdt_bindings(
+        "_operators_advection_dg_1d",
+        "_operators_advection_dg_2d",
+        "_tools_timestepper_1d",
+        "_tools_timestepper_2d",
+    ),
     reason="this build does not bind AdvectionDgOperator (#320 WP6 follow-up)",
 )
 @settings(
@@ -217,7 +222,7 @@ def test_advection_dg_preserves_constants(case, value):
 
 
 @pytest.mark.skipif(
-    not has_gdt_bindings("AdaptiveRungeKuttaTimeStepper"),
+    not has_gdt_bindings("_tools_timestepper_1d", "_tools_timestepper_2d"),
     reason="this build does not bind the adaptive time steppers (#320 WP6 follow-up)",
 )
 @settings(
@@ -251,7 +256,7 @@ def test_adaptive_rungekutta_conserves_mass(case):
 
 
 @pytest.mark.skipif(
-    not has_gdt_bindings("StrangSplittingTimeStepper", "FractionalStepTimeStepper"),
+    not has_gdt_bindings("_tools_timestepper_2d"),
     reason="this build does not bind the splitting time steppers (#320 WP6 follow-up)",
 )
 @settings(
@@ -351,7 +356,9 @@ def test_estimate_dt_matches_hand_computed_bound(case):
 
 
 @pytest.mark.skipif(
-    not has_gdt_bindings("LinearReconstructionOperator", "DiscontinuousLagrangeSpace"),
+    not has_gdt_bindings(
+        "_operators_reconstruction_1d", "_spaces_l2_discontinuous_lagrange_1d"
+    ),
     reason="this build does not bind LinearReconstructionOperator (#320 WP6 follow-up)",
 )
 @settings(

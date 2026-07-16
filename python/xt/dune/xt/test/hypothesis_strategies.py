@@ -741,14 +741,31 @@ def make_prism_grid_provider(num_refinements=0):
 
 def has_advection_fv(module=None):
     """Whether the build binds AdvectionFvOperator (#320 WP6)."""
-    gdt = module if module is not None else _import_optional("dune.gdt")
-    return gdt is not None and hasattr(gdt, "AdvectionFvOperator")
+    return has_gdt_bindings(
+        "_operators_advection_fv_1d", "_operators_advection_fv_2d", module=module
+    )
 
 
 def has_gdt_bindings(*names, module=None):
-    """Whether the build binds all of the given dune.gdt attributes (#320 WP6 follow-ups)."""
+    """Whether the build provides all of the given dune.gdt attributes/submodules (#320 WP6).
+
+    Plain names are looked up as attributes of dune.gdt; that only works for names the compiled
+    modules inject directly (e.g. "EulerTools"). Names starting with an underscore refer to
+    compiled per-dimension submodules (e.g. "_operators_advection_dg_1d") and are probed by
+    import -- necessary for anything reached through __init__.py's dimension-dispatch trampolines
+    (e.g. "AdvectionDgOperator"), which exist regardless of whether their underlying C++ modules
+    were built and would only raise ImportError once called.
+    """
     gdt = module if module is not None else _import_optional("dune.gdt")
-    return gdt is not None and all(hasattr(gdt, name) for name in names)
+    if gdt is None:
+        return False
+    for name in names:
+        if name.startswith("_"):
+            if _import_optional(f"dune.gdt.{name}") is None:
+                return False
+        elif not hasattr(gdt, name):
+            return False
+    return True
 
 
 @st.composite
