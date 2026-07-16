@@ -63,6 +63,42 @@ def _linear_transport_cases(draw, dims=(1, 2)):
     return spec, velocity
 
 
+def _gaussian_fv_initial_data(spec):
+    """Grid, FV space and interpolated Gaussian initial data for a drawn grid spec.
+
+    8 sigma of margin between the bump and the boundary (exp(-32) of the peak) with
+    _MIN_ELEMENTS_PER_DIM cells comfortably resolving that same sigma -- see the comment on
+    _MIN_ELEMENTS_PER_DIM above.
+    """
+    from dune.gdt import FiniteVolumeSpace, default_interpolation
+    from dune.xt.functions import GridFunction
+
+    grid = spec.make_grid()
+    space = FiniteVolumeSpace(grid)
+    half_extent = (
+        min(hi - lo for lo, hi in zip(spec.lower_left, spec.upper_right)) / 2.0
+    )
+    sigma = half_extent / 8.0
+    center = tuple((lo + hi) / 2.0 for lo, hi in zip(spec.lower_left, spec.upper_right))
+    bump = gaussian_bump_expression(spec.dim, center, sigma)
+    u_0 = default_interpolation(GridFunction(grid, bump), space)
+    return grid, space, bump, u_0
+
+
+def _fv_linear_transport_setup(case):
+    """Grid, FV space, interpolated Gaussian initial data and upwind FV operator for a drawn case."""
+    from dune.gdt import AdvectionFvOperator, NumericalUpwindFlux
+
+    spec, velocity = case
+    grid, space, bump, u_0 = _gaussian_fv_initial_data(spec)
+    op = AdvectionFvOperator(
+        space, NumericalUpwindFlux(grid, linear_transport_flux_expression(velocity))
+    )
+    # zero-order extrapolation, see advection-fv_for_all_grids.hh
+    op.boundary_treatment(lambda u: u)
+    return grid, space, bump, u_0, op
+
+
 @settings(
     max_examples=20,
     deadline=None,
@@ -77,39 +113,10 @@ def test_advection_fv_upwind_conserves_mass(case):
     interior numerical flux exactly cancels between neighbouring cells -- the discrete analogue of
     d/dt integral(u) = -boundary flux = 0.
     """
-    from dune.gdt import (
-        AdvectionFvOperator,
-        ExplicitEulerTimeStepper,
-        FiniteVolumeSpace,
-        NumericalUpwindFlux,
-        default_interpolation,
-    )
-    from dune.xt.functions import GridFunction
+    from dune.gdt import ExplicitEulerTimeStepper
 
     spec, velocity = case
-    grid = spec.make_grid()
-    space = FiniteVolumeSpace(grid)
-
-    half_extent = (
-        min(hi - lo for lo, hi in zip(spec.lower_left, spec.upper_right, strict=True))
-        / 2.0
-    )
-    # 8 sigma of margin to the boundary (exp(-32) of the peak) with _MIN_ELEMENTS_PER_DIM cells
-    # comfortably resolving that same sigma -- see the comment on _MIN_ELEMENTS_PER_DIM above.
-    sigma = half_extent / 8.0
-    center = tuple(
-        (lo + hi) / 2.0
-        for lo, hi in zip(spec.lower_left, spec.upper_right, strict=True)
-    )
-    bump = gaussian_bump_expression(spec.dim, center, sigma)
-    u_0 = default_interpolation(GridFunction(grid, bump), space)
-
-    numerical_flux = NumericalUpwindFlux(
-        grid, linear_transport_flux_expression(velocity)
-    )
-    op = AdvectionFvOperator(space, numerical_flux)
-    # zero-order extrapolation, see advection-fv_for_all_grids.hh
-    op.boundary_treatment(lambda u: u)
+    grid, _, _, u_0, op = _fv_linear_transport_setup(case)
 
     dt = cfl_respecting_dt(spec, velocity, cfl=0.4)
     # op.apply(u) computes +div(f(u)); u_t + div(f(u)) = 0 requires r = -1 (irrelevant to mass
@@ -123,35 +130,6 @@ def test_advection_fv_upwind_conserves_mass(case):
     mass_after = fv_mass(time_stepper.current_solution(), grid)
 
     assert mass_after == pytest.approx(mass_before, rel=1e-6, abs=1e-12)
-
-
-def _fv_linear_transport_setup(case):
-    """Grid, FV space, interpolated Gaussian initial data and upwind FV operator for a drawn case."""
-    from dune.gdt import (
-        AdvectionFvOperator,
-        FiniteVolumeSpace,
-        NumericalUpwindFlux,
-        default_interpolation,
-    )
-    from dune.xt.functions import GridFunction
-
-    spec, velocity = case
-    grid = spec.make_grid()
-    space = FiniteVolumeSpace(grid)
-    half_extent = (
-        min(hi - lo for lo, hi in zip(spec.lower_left, spec.upper_right)) / 2.0
-    )
-    sigma = (
-        half_extent / 8.0
-    )  # see the comment in test_advection_fv_upwind_conserves_mass
-    center = tuple((lo + hi) / 2.0 for lo, hi in zip(spec.lower_left, spec.upper_right))
-    bump = gaussian_bump_expression(spec.dim, center, sigma)
-    u_0 = default_interpolation(GridFunction(grid, bump), space)
-    op = AdvectionFvOperator(
-        space, NumericalUpwindFlux(grid, linear_transport_flux_expression(velocity))
-    )
-    op.boundary_treatment(lambda u: u)
-    return grid, space, bump, u_0, op
 
 
 @pytest.mark.skipif(
@@ -278,24 +256,13 @@ def test_splitting_time_steppers_conserve_mass(case, splitting):
     from dune.gdt import (
         AdvectionFvOperator,
         ExplicitEulerTimeStepper,
-        FiniteVolumeSpace,
         FractionalStepTimeStepper,
         NumericalUpwindFlux,
         StrangSplittingTimeStepper,
-        default_interpolation,
     )
-    from dune.xt.functions import GridFunction
 
     spec, velocity = case
-    grid = spec.make_grid()
-    space = FiniteVolumeSpace(grid)
-    half_extent = (
-        min(hi - lo for lo, hi in zip(spec.lower_left, spec.upper_right)) / 2.0
-    )
-    sigma = half_extent / 8.0
-    center = tuple((lo + hi) / 2.0 for lo, hi in zip(spec.lower_left, spec.upper_right))
-    bump = gaussian_bump_expression(spec.dim, center, sigma)
-    u_0 = default_interpolation(GridFunction(grid, bump), space)
+    grid, space, _, u_0 = _gaussian_fv_initial_data(spec)
 
     steppers = []
     for directional_velocity in ((velocity[0], 0.0), (0.0, velocity[1])):
