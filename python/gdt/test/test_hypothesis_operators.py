@@ -229,6 +229,12 @@ def test_laplace_matrix_matches_between_constant_and_generic_function_kappa(
     d = grid.dimension
 
     def evaluate(_x, _mu):
+        if d == 1:
+            # GenericFunction<domain_dim, 1, 1, R> is the very same C++ type whether reached via a
+            # plain Dim(1) or a (Dim(1), Dim(1)) pair dim_range tag: its RangeReturnType is a flat
+            # FieldVector<R, 1> (RangeTypeSelector<R, r, 1> covers r == 1 too), not the
+            # FieldMatrix<R, d, d> the d > 1 case below returns.
+            return [kappa]
         return [[kappa if ii == jj else 0.0 for jj in range(d)] for ii in range(d)]
 
     kappa_callable = GenericFunction(
