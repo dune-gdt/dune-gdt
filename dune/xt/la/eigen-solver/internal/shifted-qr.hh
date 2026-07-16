@@ -326,7 +326,10 @@ struct RealQrEigenSolver
   {
     assert(M::rows(A) == M::cols(A) && "Hessenberg transformation needs a square matrix!");
     VectorType u = V::create(M::rows(A), 0.);
-    for (size_t jj = 0; jj < M::rows(A) - 2; ++jj) {
+    // Not "jj < M::rows(A) - 2": for a 0x0 or 1x1 matrix, M::rows(A) - 2 underflows (size_t is
+    // unsigned), turning this into a near-infinite loop that walks off the end of A. No reduction
+    // is needed (or possible) for such matrices anyway, so this form simply skips the loop then.
+    for (size_t jj = 0; jj + 2 < M::rows(A); ++jj) {
       FieldType gamma = 0;
       for (size_t rr = jj + 1; rr < M::rows(A); ++rr)
         gamma += std::pow(A[rr][jj], 2);

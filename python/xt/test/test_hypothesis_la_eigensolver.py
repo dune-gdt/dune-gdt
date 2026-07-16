@@ -69,28 +69,28 @@ def make_eigenvalues_only_solver(solver_cls, mat):
     EigenSolverOptions defaults *both* compute_eigenvalues and compute_eigenvectors to true (see
     dune/xt/la/eigen-solver/internal/base.hh's default_eigen_solver_options()), so the plain
     solver_cls(mat) constructor silently also computes eigenvectors -- wasted work for this
-    eigenvalues-only property test, so we disable it explicitly.
-
-    Doing only that crashes, though: default_eigen_solver_options() *also* defaults
-    "assert_eigendecomposition" to a positive tolerance ("1e-10", the only assert_* key that
-    defaults enabled), so EigenSolverBase::post_checks() (called right after every compute())
-    unconditionally runs complex_eigendecomposition_check(), which dereferences the (then still
-    null, since we asked for no eigenvectors) eigenvectors_/eigenvectors_inverse_ members --
-    dune/xt/la/eigen-solver/internal/base.hh:691-705. This is a newly-discovered, previously-latent
-    defect: no existing C++ .tpl test ever constructs an EigenSolver with compute_eigenvectors=false
-    (they all take the all-true default, so eigenvectors_ is always populated and the null-deref
-    never triggers), so it was invisible before this WP's bindings made that combination reachable
-    at all -- and it reproduces regardless of solver "type" (both "lapack" and "shifted_qr" hit the
-    same post_checks() code path). Disabling the check explicitly here avoids it; see the PR
-    description for the underlying defect.
+    eigenvalues-only property test, so we disable it explicitly. default_eigen_solver_options()
+    *also* defaults "assert_eigendecomposition" to a positive tolerance ("1e-10", the only assert_*
+    key that defaults enabled), which would otherwise make EigenSolverBase::post_checks() (run
+    after every compute()) unconditionally check the eigendecomposition -- pointless work here, and
+    outright unsafe for the LAPACK-backed "lapack" type specifically, where eigenvectors_ stays null
+    when compute_eigenvectors=false (dune/xt/la/eigen-solver/internal/base.hh:691-705 dereferences
+    it regardless). We disable it explicitly to avoid depending on that.
 
     We also pin the solver type to "shifted_qr" rather than leaving it at the default (which picks
-    "lapack" whenever LAPACK is available): a separate, still-open defect (the LAPACK
-    eigenvalues-*and*-eigenvectors branch crashes; see the PR description) makes "lapack" risky here
-    even though this test itself only asks for eigenvalues. "shifted_qr" is a pure-C++ fallback with
-    none of these issues and is extensively covered by the existing C++ test suite
-    (dune/xt/test/la/eigensolver_for_real_matrix_with_real_evs_from_*.tpl, down to 1e-14 tolerances,
-    for both eigenvalues-only and full eigendecomposition calls).
+    "lapack" whenever LAPACK is available): a separate, still-open defect in the LAPACK-backed
+    eigenvalues-*and*-eigenvectors branch (see the PR description) makes "lapack" risky here even
+    though this test itself only asks for eigenvalues. "shifted_qr" is a pure-C++ fallback,
+    extensively covered by the existing C++ test suite
+    (dune/xt/test/la/eigensolver_for_real_matrix_with_real_evs_from_*.tpl, down to 1e-14
+    tolerances) -- and, since spd_matrices() below generates 1x1 matrices too (min_size=1),
+    exercising it here is also what surfaced a genuine, previously-latent bug in
+    dune/xt/la/eigen-solver/internal/shifted-qr.hh's hessenberg_transformation(): its loop bound
+    `rows(A) - 2` is unsigned and underflows for any matrix with fewer than 2 rows, turning the
+    "nothing to do for a matrix this small" case into a walk off the end of the matrix. Fixed
+    directly in shifted-qr.hh (rewritten as `jj + 2 < rows(A)`, which is well-defined and correctly
+    empty for rows(A) < 2) rather than avoided here, since real callers can construct an
+    EigenSolver for a 1x1 (or 0x0) matrix just as easily as this property test does.
     """
     opts = dict(solver_cls.options("shifted_qr"))
     opts["compute_eigenvectors"] = "false"
