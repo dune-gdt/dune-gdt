@@ -745,6 +745,12 @@ def has_advection_fv(module=None):
     return gdt is not None and hasattr(gdt, "AdvectionFvOperator")
 
 
+def has_gdt_bindings(*names, module=None):
+    """Whether the build binds all of the given dune.gdt attributes (#320 WP6 follow-ups)."""
+    gdt = module if module is not None else _import_optional("dune.gdt")
+    return gdt is not None and all(hasattr(gdt, name) for name in names)
+
+
 @st.composite
 def constant_transport_velocities(draw, dim, bound=5.0, min_speed=0.1):
     """A constant advection velocity of bounded, non-negligible speed.
