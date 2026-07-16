@@ -107,11 +107,13 @@ def test_flux_jacobian_eigendecomposition(data, state):
     jacobian_times_n = sum(n_s * jac for n_s, jac in zip(n, jacobians))
 
     eigenvalues = np.asarray(tools.eigenvalues_flux_jacobian(w, list(n)), dtype=float)
-    T = np.asarray(tools.eigenvectors_flux_jacobian(w, list(n)), dtype=float)
-    T_inv = np.asarray(tools.eigenvectors_inv_flux_jacobian(w, list(n)), dtype=float)
+    eigenvectors = np.asarray(tools.eigenvectors_flux_jacobian(w, list(n)), dtype=float)
+    eigenvectors_inv = np.asarray(
+        tools.eigenvectors_inv_flux_jacobian(w, list(n)), dtype=float
+    )
 
-    assert T @ T_inv == pytest.approx(np.eye(dim + 2), abs=1e-8)
-    assert T @ np.diag(eigenvalues) @ T_inv == pytest.approx(
+    assert eigenvectors @ eigenvectors_inv == pytest.approx(np.eye(dim + 2), abs=1e-8)
+    assert eigenvectors @ np.diag(eigenvalues) @ eigenvectors_inv == pytest.approx(
         jacobian_times_n, rel=1e-8, abs=1e-8
     )
 

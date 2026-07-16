@@ -11,6 +11,7 @@
 #define PYTHON_DUNE_GDT_OPERATORS_ADVECTION_DG_FOR_ALL_GRIDS_HH
 
 #include <functional>
+#include <memory>
 
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
@@ -69,22 +70,22 @@ public:
     return class_id + "_" + grid_id;
   }
 
-  static type* make(const SpaceType& space,
-                    const NumericalFluxType& numerical_flux,
-                    const double artificial_viscosity_nu_1,
-                    const double artificial_viscosity_alpha_1)
+  static std::unique_ptr<type> make(const SpaceType& space,
+                                    const NumericalFluxType& numerical_flux,
+                                    const double artificial_viscosity_nu_1,
+                                    const double artificial_viscosity_alpha_1)
   {
     // NOTE: AdvectionDgOperator stores the assembly grid view BY REFERENCE (like the plain
     // Operator, see operator_for_all_grids.hh), so it must outlive the operator; use the
     // space's grid view (kept alive by the callers' keep_alives) rather than a fresh, temporary
     // grid.leaf_view().
-    return new type(space.grid_view(),
-                    numerical_flux,
-                    space,
-                    space,
-                    XT::Grid::ApplyOn::NoIntersections<GV>(),
-                    artificial_viscosity_nu_1,
-                    artificial_viscosity_alpha_1);
+    return std::make_unique<type>(space.grid_view(),
+                                  numerical_flux,
+                                  space,
+                                  space,
+                                  XT::Grid::ApplyOn::NoIntersections<GV>(),
+                                  artificial_viscosity_nu_1,
+                                  artificial_viscosity_alpha_1);
   } // ... make(...)
 
   static bound_type bind(pybind11::module& m_, const std::string& grid_id)
@@ -167,7 +168,10 @@ struct AdvectionDgOperator_for_all_grids
 template <>
 struct AdvectionDgOperator_for_all_grids<Dune::XT::Common::tuple_null_type>
 {
-  static void bind(pybind11::module& /*m*/) {} // recursion base case: no grid types left to bind
+  static void bind(pybind11::module& /*m*/)
+  {
+    // recursion base case: no grid types left to bind
+  }
 };
 
 

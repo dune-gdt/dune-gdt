@@ -41,12 +41,12 @@ struct EstimateDtForHyperbolicSystem_for_all_grids
   using StateType = Dune::XT::Functions::GridFunctionInterface<E, 1, 1, double>;
   using FluxType = Dune::XT::Functions::FunctionInterface<1, d, 1, double>;
 
-  static void bind(pybind11::module& m)
+  static void bind(pybind11::module& m_)
   {
     namespace py = pybind11;
     using namespace pybind11::literals;
 
-    m.def(
+    m_.def(
         "estimate_dt_for_hyperbolic_system",
         [](GP& grid, const StateType& state, const FluxType& flux) {
           return Dune::GDT::estimate_dt_for_hyperbolic_system(grid.leaf_view(), state, flux);
@@ -56,14 +56,17 @@ struct EstimateDtForHyperbolicSystem_for_all_grids
         "flux"_a,
         py::call_guard<py::gil_scoped_release>());
 
-    EstimateDtForHyperbolicSystem_for_all_grids<Dune::XT::Common::tuple_tail_t<GridTypes>>::bind(m);
+    EstimateDtForHyperbolicSystem_for_all_grids<Dune::XT::Common::tuple_tail_t<GridTypes>>::bind(m_);
   }
 };
 
 template <>
 struct EstimateDtForHyperbolicSystem_for_all_grids<Dune::XT::Common::tuple_null_type>
 {
-  static void bind(pybind11::module& /*m*/) {} // recursion base case: no grid types left to bind
+  static void bind(pybind11::module& /*m*/)
+  {
+    // recursion base case: no grid types left to bind
+  }
 };
 
 

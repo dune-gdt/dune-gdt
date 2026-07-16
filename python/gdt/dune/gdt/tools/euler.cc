@@ -10,6 +10,7 @@
 #include "config.h"
 
 #include <array>
+#include <memory>
 #include <vector>
 
 #include <pybind11/pybind11.h>
@@ -52,7 +53,7 @@ struct EulerTools_binder
     const auto ClassName = Dune::XT::Common::to_camel_case("euler_tools_" + Dune::XT::Common::to_string(d) + "d");
     py::class_<type> c(m_, ClassName.c_str(), ClassName.c_str());
 
-    c.def(py::init([](const double gamma) { return new type(gamma); }), "gamma"_a);
+    c.def(py::init([](const double gamma) { return std::make_unique<type>(gamma); }), "gamma"_a);
 
     c.def_property_readonly("dim_domain", [](const type&) { return d; });
     c.def_property_readonly("dim_range", [](const type&) { return m; });
@@ -141,11 +142,11 @@ PYBIND11_MODULE(_tools_euler, m)
       "EulerTools",
       [](const size_t dim, const double gamma) -> py::object {
         if (dim == 1)
-          return py::cast(new Dune::GDT::EulerTools<1>(gamma));
+          return py::cast(std::make_unique<Dune::GDT::EulerTools<1>>(gamma));
         if (dim == 2)
-          return py::cast(new Dune::GDT::EulerTools<2>(gamma));
+          return py::cast(std::make_unique<Dune::GDT::EulerTools<2>>(gamma));
         if (dim == 3)
-          return py::cast(new Dune::GDT::EulerTools<3>(gamma));
+          return py::cast(std::make_unique<Dune::GDT::EulerTools<3>>(gamma));
         DUNE_THROW(Dune::XT::Common::Exceptions::wrong_input_given, "dim has to be 1, 2 or 3, is: " << dim);
         return py::none(); // unreachable, but some compilers cannot tell
       },

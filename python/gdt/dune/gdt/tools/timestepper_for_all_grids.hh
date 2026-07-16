@@ -11,6 +11,7 @@
 #define PYTHON_DUNE_GDT_TOOLS_TIMESTEPPER_FOR_ALL_GRIDS_HH
 
 #include <limits>
+#include <memory>
 #include <string>
 
 #include <pybind11/pybind11.h>
@@ -104,10 +105,11 @@ public:
   using bound_type = pybind11::class_<type, base_type>;
 
   // NOTE: no time stepper is copyable or movable (TimeStepperInterface explicitly deletes both),
-  // so this must return a pointer.
-  static type* make(const OperatorImp& op, DiscreteFunctionImp& initial_values, const double r, const double t_0)
+  // so the factories have to hand over an owning pointer.
+  static std::unique_ptr<type>
+  make(const OperatorImp& op, DiscreteFunctionImp& initial_values, const double r, const double t_0)
   {
-    return new type(op, initial_values, r, t_0);
+    return std::make_unique<type>(op, initial_values, r, t_0);
   }
 
   static bound_type bind(pybind11::module& m,
@@ -157,15 +159,15 @@ public:
   using bound_type = pybind11::class_<type, base_type>;
 
   // NOTE: see the analogous comment in ExplicitRungeKuttaTimeStepper::make above.
-  static type* make(const OperatorImp& op,
-                    DiscreteFunctionImp& initial_values,
-                    const double r,
-                    const double t_0,
-                    const double tol,
-                    const double scale_factor_min,
-                    const double scale_factor_max)
+  static std::unique_ptr<type> make(const OperatorImp& op,
+                                    DiscreteFunctionImp& initial_values,
+                                    const double r,
+                                    const double t_0,
+                                    const double tol,
+                                    const double scale_factor_min,
+                                    const double scale_factor_max)
   {
-    return new type(op, initial_values, r, t_0, tol, scale_factor_min, scale_factor_max);
+    return std::make_unique<type>(op, initial_values, r, t_0, tol, scale_factor_min, scale_factor_max);
   }
 
   static bound_type bind(pybind11::module& m,
@@ -221,9 +223,9 @@ public:
   using bound_type = pybind11::class_<type, base_type>;
 
   // NOTE: see the analogous comment in ExplicitRungeKuttaTimeStepper::make above.
-  static type* make(base_type& first_stepper, base_type& second_stepper)
+  static std::unique_ptr<type> make(base_type& first_stepper, base_type& second_stepper)
   {
-    return new type(first_stepper, second_stepper);
+    return std::make_unique<type>(first_stepper, second_stepper);
   }
 
   static bound_type bind(pybind11::module& m, const std::string& grid_id, const std::string& class_id)
@@ -318,7 +320,10 @@ struct TimeSteppers_for_all_grids
 template <>
 struct TimeSteppers_for_all_grids<Dune::XT::Common::tuple_null_type>
 {
-  static void bind(pybind11::module& /*m*/) {} // recursion base case: no grid types left to bind
+  static void bind(pybind11::module& /*m*/)
+  {
+    // recursion base case: no grid types left to bind
+  }
 };
 
 

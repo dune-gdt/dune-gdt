@@ -143,7 +143,9 @@ public:
     c.def(py::init([](const SpaceType& source_space,
                       const FluxType& flux,
                       const BoundaryValueType& boundary_values,
-                      const std::string& slope) { return new type(source_space, flux, boundary_values, slope); }),
+                      const std::string& slope) {
+            return std::make_unique<type>(source_space, flux, boundary_values, slope);
+          }),
           "space"_a,
           "flux"_a,
           "boundary_values"_a,
@@ -180,7 +182,7 @@ public:
         [](const SpaceType& source_space,
            const FluxType& flux,
            const BoundaryValueType& boundary_values,
-           const std::string& slope) { return new type(source_space, flux, boundary_values, slope); },
+           const std::string& slope) { return std::make_unique<type>(source_space, flux, boundary_values, slope); },
         "space"_a,
         "flux"_a,
         "boundary_values"_a,
@@ -220,7 +222,10 @@ struct LinearReconstructionOperator_for_all_grids
 template <>
 struct LinearReconstructionOperator_for_all_grids<Dune::XT::Common::tuple_null_type>
 {
-  static void bind(pybind11::module& /*m*/) {} // recursion base case: no grid types left to bind
+  static void bind(pybind11::module& /*m*/)
+  {
+    // recursion base case: no grid types left to bind
+  }
 };
 
 
