@@ -166,14 +166,17 @@ for ii in range(n_interior):
 
 ## computing eigenvalues via the bound eigen-solver
 
-We only need eigenvalues here, so we explicitly disable eigenvector computation:
-`EigenSolverOptions` defaults *both* on, and computing eigenvectors is unnecessary work for this
-example (and, for the LAPACK-backed solver specifically, a currently-crashing code path -- a
-newly-discovered defect, only reachable now that this WP binds the eigensolver at all; see the
-accompanying PR for details).
+We only need eigenvalues here, so we explicitly disable eigenvector computation. We also pin the
+solver type to `"shifted_qr"` rather than leaving it at the default (which picks `"lapack"`
+whenever LAPACK is available): two newly-discovered, previously-latent defects in the LAPACK-backed
+code path only reachable now that this WP binds the eigensolver at all -- crashes in both the
+eigenvalues-*and*-eigenvectors branch and, separately, the eigenvalues-*only* branch -- mean the
+`"lapack"` type is currently unsafe to use with `compute_eigenvectors=false`. `"shifted_qr"` has
+neither issue and is thoroughly covered by the existing C++ test suite; see the accompanying PR for
+details.
 
 ```{code-cell}
-eigensolver_opts = dict(la.CommonDenseMatrixEigenSolver.options())
+eigensolver_opts = dict(la.CommonDenseMatrixEigenSolver.options('shifted_qr'))
 eigensolver_opts['compute_eigenvectors'] = 'false'
 solver = la.CommonDenseMatrixEigenSolver(reduced_matrix, eigensolver_opts)
 print(f'CommonDenseMatrixEigenSolver.types() = {la.CommonDenseMatrixEigenSolver.types()}')

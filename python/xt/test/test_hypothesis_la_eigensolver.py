@@ -63,19 +63,27 @@ def eigen_solver_for(cls):
 
 
 def make_eigenvalues_only_solver(solver_cls, mat):
-    """Construct solver_cls(mat) with compute_eigenvectors explicitly disabled.
+    """Construct solver_cls(mat) with type="shifted_qr" and compute_eigenvectors explicitly disabled.
 
     EigenSolverOptions defaults *both* compute_eigenvalues and compute_eigenvectors to true (see
     dune/xt/la/eigen-solver/internal/base.hh's default_eigen_solver_options()), so the plain
-    solver_cls(mat) constructor silently also computes eigenvectors. This property test only
-    checks eigenvalues, so requesting eigenvectors is both wasted work and -- for the LAPACK-backed
-    default.hh specialization CommonDenseMatrix/CommonSparseMatrixCsr use -- currently crashes (a
-    newly-discovered defect in the eigenvector computation path's thread_local workspace caching in
-    dune/xt/la/eigen-solver/internal/lapacke.hh, only reachable now that WP5 binds this at all; see
-    the PR description). Explicitly disabling it here keeps this test scoped to what it actually
-    verifies and avoids the crash.
+    solver_cls(mat) constructor silently also computes eigenvectors -- wasted work for this
+    eigenvalues-only property test, so we disable it explicitly.
+
+    We also pin the solver type to "shifted_qr" rather than leaving it at the default (which picks
+    "lapack" whenever LAPACK is available). Two newly-discovered, previously-latent defects in the
+    LAPACK-backed code path (dune/xt/la/eigen-solver/internal/lapacke.hh), only reachable now that
+    WP5 binds this at all: the eigenvalues-*and*-eigenvectors branch crashes (see the PR
+    description), and -- found while fixing that -- the eigenvalues-*only* branch
+    (compute_eigenvalues_using_lapack) crashes too, on the very first call. Neither branch has any
+    prior test coverage anywhere in this repository (no existing C++ .tpl test ever constructs an
+    EigenSolver with compute_eigenvectors=false), so both bugs were invisible before this WP. The
+    pure-C++ "shifted_qr" fallback has none of these issues and is extensively covered by the
+    existing C++ test suite (dune/xt/test/la/eigensolver_for_real_matrix_with_real_evs_from_*.tpl,
+    down to 1e-14 tolerances, for both eigenvalues-only and full eigendecomposition calls), so it
+    is a safe, independently-verified implementation to test the Python bindings against here.
     """
-    opts = dict(solver_cls.options())
+    opts = dict(solver_cls.options("shifted_qr"))
     opts["compute_eigenvectors"] = "false"
     return solver_cls(mat, opts)
 
