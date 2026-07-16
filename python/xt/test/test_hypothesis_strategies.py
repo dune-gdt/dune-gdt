@@ -328,6 +328,32 @@ def test_dg_dof_count_on_mixed_grid_sums_per_geometry():
     assert hs.dg_dof_count_on_mixed_grid(_FakeMixedGrid(), order=0) == 4
 
 
+# --- WP4 (#320): vector-valued CG DoF-count formula ----------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("order", "num_elements", "expected"),
+    [
+        (1, (2, 2), 9),  # P_1 nodes on a 2x2 quad grid: 3 per axis
+        (2, (2, 2), 25),  # P_2: 2*2+1 = 5 per axis
+        (1, (2, 2, 2), 27),  # 3d: 3 per axis, three axes
+    ],
+)
+def test_cg_scalar_dof_count(order, num_elements, expected):
+    assert hs.cg_scalar_dof_count(order, num_elements) == expected
+
+
+@pytest.mark.parametrize("dim_range", [1, 2, 3])
+@pytest.mark.parametrize(
+    ("order", "num_elements"),
+    [(1, (2, 2)), (2, (2, 2)), (1, (2, 2, 2)), (3, (1, 1))],
+)
+def test_cg_vector_dof_count_is_dim_range_times_scalar(order, num_elements, dim_range):
+    assert hs.cg_vector_dof_count(
+        order, num_elements, dim_range
+    ) == dim_range * hs.cg_scalar_dof_count(order, num_elements)
+
+
 # --- against the real bindings, when this build actually provides them --------------------
 
 

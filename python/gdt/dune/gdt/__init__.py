@@ -54,6 +54,7 @@ for mod_name in (  # order should not matter!
     "_local_functionals_vectorized_element_integrals",
     "_local_integrands_binary_element_interface",
     "_local_integrands_binary_intersection_interface",
+    "_local_integrands_element_div",
     "_local_integrands_element_product",
     "_local_integrands_intersection_product",
     "_local_integrands_ipdg_boundary_penalty",

@@ -23,12 +23,17 @@ import subprocess
 import sys
 import textwrap
 
-import numpy as np
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from dune.xt.test.hypothesis_strategies import GRID_COMBINATIONS, grid_specs, has_grid
+from dune.xt.test.hypothesis_strategies import (
+    GRID_COMBINATIONS,
+    cg_scalar_dof_count,
+    cg_vector_dof_count,
+    grid_specs,
+    has_grid,
+)
 
 # Skip cleanly on builds that bind no grids at all; element-specific tests below add their own
 # guard so a build without, e.g., ALUGrid (no simplex grids) skips just those.
@@ -65,8 +70,27 @@ def test_cg_dof_count_on_cube_grids(spec, order):
 
     space = ContinuousLagrangeSpace(spec.make_grid(), order=order)
     # tensor-product Lagrange nodes: order*n + 1 per axis
-    assert space.num_DoFs == int(np.prod([order * n + 1 for n in spec.num_elements]))
+    assert space.num_DoFs == cg_scalar_dof_count(order, spec.num_elements)
     assert space.min_polorder == space.max_polorder == order
+
+
+@_needs_cube
+@given(spec=grid_specs(elements=("cube",), dims=(2, 3)), order=st.integers(1, 3))
+def test_vector_cg_dof_count_on_cube_grids(spec, order):
+    """WP4 (#320): ContinuousLagrangeSpace(..., dim_range=Dim(d)) gets the same factory overload
+    DiscontinuousLagrangeSpace/FiniteVolumeSpace already had; its DoF count is exactly d times the
+    scalar space's (see cg_vector_dof_count).
+    """
+    from dune.gdt import ContinuousLagrangeSpace
+    from dune.xt.grid import Dim
+
+    grid = spec.make_grid()
+    scalar_space = ContinuousLagrangeSpace(grid, order=order)
+    vector_space = ContinuousLagrangeSpace(grid, order=order, dim_range=Dim(spec.dim))
+    assert vector_space.num_DoFs == cg_vector_dof_count(
+        order, spec.num_elements, spec.dim
+    )
+    assert vector_space.num_DoFs == spec.dim * scalar_space.num_DoFs
 
 
 @_needs_simplex
@@ -100,6 +124,29 @@ def test_fv_space_has_one_dof_per_element(spec):
     space = FiniteVolumeSpace(grid)
     assert space.num_DoFs == grid.size(0)
     assert space.min_polorder == space.max_polorder == 0
+
+
+@given(spec=grid_specs(conforming_only=True))
+def test_rt_space_order_zero_works_higher_orders_are_a_documented_contract_limit(spec):
+    """WP4 (#320): unlike the CG order boundary above (a subtle, grid-dependent mapper edge case),
+    RaviartThomasSpace order > 0 is unconditionally rejected (dune/gdt/spaces/hdiv/raviart-thomas.hh):
+    the higher-order local RT finite elements simply do not exist in this codebase yet. Encoding order=0
+    as the only value exercised here keeps that contract visible to the property suite.
+
+    conforming_only=True: the class doc comment (raviart-thomas.hh) only claims order 0 works "on
+    simplices, cubes" without distinguishing conforming/nonconforming grids, so nonconforming ALU
+    draws are excluded here rather than assumed to work; all three dims are otherwise exercised
+    (1d is explicitly documented as working, unlike the CG vector test above which needs d > 1).
+    """
+    from dune.gdt import RaviartThomasSpace
+    from dune.xt.common import DuneError
+
+    grid = spec.make_grid()
+    space = RaviartThomasSpace(grid, order=0)
+    assert space.min_polorder == space.max_polorder == 0
+
+    with pytest.raises(DuneError):
+        RaviartThomasSpace(grid, order=1)
 
 
 # This property crashes the interpreter with the current bindings: destroying the

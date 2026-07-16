@@ -48,7 +48,21 @@ namespace GDT {
  * - 3d: pyramids (jacobians seem to be incorrect)
  * - 3d: mixed simplices and cubes (intersections are non-conforming)
  *
+ * \note Order > 2 on non-cube grids (in d >= 2) is a *hard*, currently unresolved contract limit, not
+ *       a missing overload: ContinuousMapper::global_index() throws Dune::NotImplemented in that case
+ *       (see the comment there). The root cause is that order >= 3 Lagrange elements place more than
+ *       one DoF on a shared sub-entity (e.g. two DoFs on one edge), and the mapper has no canonical,
+ *       grid-independent way of telling whether the local numbering of those DoFs agrees between the
+ *       two elements sharing the sub-entity; on cube grids (YaspGrid, cube-ALUGrid, UGGrid) the local
+ *       numbering happens to always agree, but not on simplicial grids in general. Fixing this needs a
+ *       consistent sub-entity orientation scheme threaded through the local finite element's DoF
+ *       numbering, which is a mapper-level feature, not something `ContinuousLagrangeSpace` itself can
+ *       route around. This boundary (order <= 2 on simplices vs. order <= 3 on cubes) is encoded as a
+ *       tested contract in `python/gdt/test/test_hypothesis_spaces.py` (`_cg_orders`), so that a future
+ *       fix in the mapper is picked up by the property tests without any test needing to change.
+ *
  * \sa make_local_lagrange_finite_element
+ * \sa ContinuousMapper
  */
 template <class GV, size_t r = 1, class R = double>
 class ContinuousLagrangeSpace : public SpaceInterface<GV, r, 1, R>

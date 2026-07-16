@@ -424,6 +424,27 @@ def polynomials(draw, dim, max_order=3, coefficient_bound=100.0, min_order=0):
     return Polynomial(dim=dim, coefficients=coefficients)
 
 
+def cg_dofs_per_axis(order, num_elements):
+    """Tensor-product Lagrange node count per axis for a scalar CG space on a structured cube grid."""
+    return [order * n + 1 for n in num_elements]
+
+
+def cg_scalar_dof_count(order, num_elements):
+    """Expected `num_DoFs` of a scalar `ContinuousLagrangeSpace` on a structured cube `GridSpec`."""
+    return int(np.prod(cg_dofs_per_axis(order, num_elements)))
+
+
+def cg_vector_dof_count(order, num_elements, dim_range):
+    """Expected `num_DoFs` of a vector-valued CG space (`dim_range=Dim(dim_range)`) on a cube grid.
+
+    The mapper attaches `dim_range` copies of every scalar Lagrange DoF to the same (sub)entity (the
+    `ContinuousMapper` is generic in the local finite element family and does not special-case `r`), so
+    the global count is exactly `dim_range` times the scalar space's count -- the vector-CG factory
+    overloads added for WP4 (#320) generalize the scalar-only DoF-count property below to this formula.
+    """
+    return dim_range * cg_scalar_dof_count(order, num_elements)
+
+
 # --- unstructured (UG) grids: mixed-element and prism meshes --------------------------------
 #
 # UGGrid is the only bound grid manager that can hold a mesh with more than one geometry type (or

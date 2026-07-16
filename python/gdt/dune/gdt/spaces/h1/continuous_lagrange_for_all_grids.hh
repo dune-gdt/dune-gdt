@@ -21,6 +21,7 @@ struct ContinuousLagrangeSpace_for_all_grids
 {
   using G = Dune::XT::Common::tuple_head_t<GridTypes>;
   using GV = typename G::LeafGridView;
+  static const constexpr size_t d = G::dimension;
 
   static void bind(pybind11::module& m)
   {
@@ -28,6 +29,8 @@ struct ContinuousLagrangeSpace_for_all_grids
     using Dune::XT::Grid::bindings::grid_name;
 
     ContinuousLagrangeSpace<GV>::bind(m, grid_name<G>::value());
+    if (d > 1)
+      ContinuousLagrangeSpace<GV, d>::bind(m, grid_name<G>::value());
     // add your extra dimensions here
     // ...
     ContinuousLagrangeSpace_for_all_grids<Dune::XT::Common::tuple_tail_t<GridTypes>>::bind(m);

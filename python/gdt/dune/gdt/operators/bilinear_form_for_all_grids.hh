@@ -29,6 +29,7 @@
 #include <python/xt/dune/xt/common/fvector.hh>
 #include <python/xt/dune/xt/common/parameter.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
+#include <python/xt/dune/xt/grid/traits.hh>
 #include <python/xt/dune/xt/grid/walker.hh>
 #include <python/xt/dune/xt/la/traits.hh>
 
@@ -126,6 +127,43 @@ public:
         py::call_guard<py::gil_scoped_release>());
   }
 
+private:
+  // Shared by bind_leaf/bind_coupling (only the "make a new instance from a grid" lambda
+  // differs between them): registers the two-overload factory below.
+  //
+  // The (ansatz_range, test_range) tags disambiguate between the (s_r, r_r) rank combinations
+  // sharing this FactoryName in the same module (all of a grid's square and rectangular bilinear
+  // forms, e.g. for a Taylor-Hood Stokes system: a d-by-d one for the velocity Laplacian and a
+  // 1-by-d one, source=pressure/range=velocity, for the divergence coupling): the plain (grid,
+  // logging_prefix) signature is identical across all four (s_r, r_r) instantiations, so pybind11
+  // would always resolve to the first-registered (here: scalar) overload without them. Only the
+  // scalar (1, 1) case gets defaults, matching the pre-existing zero-argument call sites.
+  template <class MakeInstance>
+  static void bind_factory(pybind11::module& m, const std::string& class_id, MakeInstance&& make_instance)
+  {
+    namespace py = pybind11;
+    using namespace pybind11::literals;
+
+    const auto FactoryName = XT::Common::to_camel_case(class_id);
+    if constexpr (s_r == 1 && r_r == 1)
+      m.def(FactoryName.c_str(),
+            std::forward<MakeInstance>(make_instance),
+            "grid"_a,
+            "ansatz_range"_a = XT::Grid::bindings::Dimension<s_r>(),
+            "test_range"_a = XT::Grid::bindings::Dimension<r_r>(),
+            "logging_prefix"_a = "",
+            py::keep_alive<0, 1>());
+    else
+      m.def(FactoryName.c_str(),
+            std::forward<MakeInstance>(make_instance),
+            "grid"_a,
+            "ansatz_range"_a,
+            "test_range"_a,
+            "logging_prefix"_a = "",
+            py::keep_alive<0, 1>());
+  } // ... bind_factory(...)
+
+public:
   static bound_type bind_leaf(pybind11::module& m,
                               const std::string& grid_id,
                               const std::string& layer_id = "",
@@ -151,14 +189,12 @@ public:
 
     addbind_methods(c);
 
-    // factories
-    const auto FactoryName = XT::Common::to_camel_case(class_id);
-    m.def(
-        FactoryName.c_str(),
-        [](GP& grid, const std::string& logging_prefix) { return new type(grid.leaf_view(), logging_prefix); },
-        "grid"_a,
-        "logging_prefix"_a = "",
-        py::keep_alive<0, 1>());
+    bind_factory(m,
+                 class_id,
+                 [](GP& grid,
+                    const XT::Grid::bindings::Dimension<s_r>&,
+                    const XT::Grid::bindings::Dimension<r_r>&,
+                    const std::string& logging_prefix) { return new type(grid.leaf_view(), logging_prefix); });
 
     return c;
 
@@ -190,16 +226,12 @@ public:
 
     addbind_methods(c);
 
-    // factories
-    const auto FactoryName = XT::Common::to_camel_case(class_id);
-    m.def(
-        FactoryName.c_str(),
-        [](XT::Grid::CouplingGridProvider<AGV>& grid, const std::string& logging_prefix) {
-          return new type(grid.coupling_view(), logging_prefix);
-        },
-        "grid"_a,
-        "logging_prefix"_a = "",
-        py::keep_alive<0, 1>());
+    bind_factory(m,
+                 class_id,
+                 [](XT::Grid::CouplingGridProvider<AGV>& grid,
+                    const XT::Grid::bindings::Dimension<s_r>&,
+                    const XT::Grid::bindings::Dimension<r_r>&,
+                    const std::string& logging_prefix) { return new type(grid.coupling_view(), logging_prefix); });
 
     return c;
 
