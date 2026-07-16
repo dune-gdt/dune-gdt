@@ -18,6 +18,8 @@
 #include <functional>
 #include <tuple>
 
+#include <dune/common/exceptions.hh>
+
 #include <dune/xt/common/fmatrix.hh>
 #include <dune/xt/common/math.hh>
 #include <dune/xt/la/eigen-solver.hh>
@@ -58,6 +60,9 @@ public:
 
   static FluxEigenDecompositionLambdaType default_flux_eigen_decomposition()
   {
+    DUNE_THROW(Dune::NotImplemented,
+               "The default flux eigendecomposition is currently disabled (see the commented code below), provide "
+               "your own via the respective constructor argument!");
     //! TODO: re-enable
     // return [](const LocalFluxType& local_flux,
     //           const StateType& w,
@@ -118,6 +123,7 @@ public:
                   const PhysicalDomainType& n,
                   const XT::Common::Parameter& param = {}) const override final
   {
+    DUNE_THROW(Dune::NotImplemented, "The Vijayasundaram flux is currently disabled (see the commented code below)!");
     // compute decomposition
     //! TODO: re-enable
     // this->compute_entity_coords(x);

@@ -291,7 +291,7 @@ public:
       local_basis_->evaluate(point_in_reference_element, basis_values);
       function_value = local_function(point_in_reference_element);
       for (size_t ii = 0; ii < local_basis_->size(); ++ii)
-        dofs[ii] = (basis_values[ii] * function_value) * quadrature_weight;
+        dofs[ii] += (basis_values[ii] * function_value) * quadrature_weight;
     }
   } // ... interpolate(...)
 

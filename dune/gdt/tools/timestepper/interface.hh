@@ -170,8 +170,9 @@ public:
    * \param t_end Final time.
    * \param initial_dt Initial time step length. Non-adaptive schemes will use this dt for all time steps. Adaptive
    * schemes will use initial_dt as a first guess for the time step length.
-   * \param num_save_steps Number of time points that will be stored/visualized/written Default is size_t(-1), which
-   * will store all time steps.
+   * \param num_save_steps Number of time points that will be stored/visualized/written. Default is 100; pass
+   * size_t(-1) to store all time steps (which deep-copies the solution every step, so memory grows with the number
+   * of steps).
    * \param num_output_steps Number of time points where current time and current time step length will be written to
    * std::cout. Default is size_t(-1), which will output all time steps. Set to 0 to suppress output.
    * \param save_solution If true, the discrete solution at num_save_steps equidistant time points will be stored in
@@ -291,7 +292,7 @@ public:
   // default solve, use internal solution
   virtual RangeFieldType solve(const RangeFieldType t_end,
                                const RangeFieldType initial_dt,
-                               const size_t num_save_steps = size_t(-1),
+                               const size_t num_save_steps = 100,
                                const size_t num_output_steps = size_t(-1),
                                const bool save_solution = false,
                                const bool visualize = false,

@@ -120,14 +120,14 @@ public:
     // loop over all quadrature points
     const auto integrand_order = integrand_->order(test_basis, ansatz_basis) + over_integrate_;
     const auto quadrature_rule = QuadratureRules<D, d>::rule(element.type(), integrand_order);
+    const auto geometry = element.geometry();
     for (auto [point_in_reference_element, quadrature_weight] : quadrature_rule) {
       // integration factors
-      const auto factor = element.geometry().integrationElement(point_in_reference_element) * quadrature_weight;
+      const auto factor = geometry.integrationElement(point_in_reference_element) * quadrature_weight;
       // evaluate the integrand
       LOG_(debug) << "   point_in_{reference_element|physical_space} = {" << print(point_in_reference_element) << "|"
-                  << print(element.geometry().global(point_in_reference_element))
-                  << "},\n   integration_factor = " << factor << ", quadrature_weight = " << quadrature_weight
-                  << std::endl;
+                  << print(geometry.global(point_in_reference_element)) << "},\n   integration_factor = " << factor
+                  << ", quadrature_weight = " << quadrature_weight << std::endl;
       integrand_->evaluate(test_basis, ansatz_basis, point_in_reference_element, integrand_values_, param);
       assert(integrand_values_.rows() >= rows && "This must not happen!");
       assert(integrand_values_.cols() >= cols && "This must not happen!");
@@ -234,11 +234,12 @@ public:
     const size_t integrand_order =
         integrand_->order(test_basis_inside, ansatz_basis_inside, test_basis_outside, ansatz_basis_outside)
         + over_integrate_;
+    const auto geometry = intersection.geometry();
     for (const auto& quadrature_point :
          QuadratureRules<D, d - 1>::rule(intersection.type(), XT::Common::numeric_cast<int>(integrand_order))) {
       const auto point_in_reference_intersection = quadrature_point.position();
       // integration factors
-      const auto integration_factor = intersection.geometry().integrationElement(point_in_reference_intersection);
+      const auto integration_factor = geometry.integrationElement(point_in_reference_intersection);
       const auto quadrature_weight = quadrature_point.weight();
       // evaluate the integrand
       integrand_->evaluate(test_basis_inside,
@@ -362,12 +363,13 @@ public:
     result *= 0;
     // loop over all quadrature points
     const size_t integrand_order = integrand_->order(test_basis, ansatz_basis) + over_integrate_;
+    const auto geometry = intersection.geometry();
     const auto quadrature_rule =
-        QuadratureRules<D, d - 1>::rule(intersection.geometry().type(), XT::Common::numeric_cast<int>(integrand_order));
+        QuadratureRules<D, d - 1>::rule(geometry.type(), XT::Common::numeric_cast<int>(integrand_order));
     for (const auto& quadrature_point : quadrature_rule) {
       const auto point_in_reference_intersection = quadrature_point.position();
       // integration factors
-      const auto integration_factor = intersection.geometry().integrationElement(point_in_reference_intersection);
+      const auto integration_factor = geometry.integrationElement(point_in_reference_intersection);
       const auto quadrature_weight = quadrature_point.weight();
       // evaluate the integrand
       integrand_->evaluate(test_basis, ansatz_basis, point_in_reference_intersection, integrand_values_, param);

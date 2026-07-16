@@ -251,7 +251,7 @@ public:
     for (size_t ii = 0; ii < num_stages_; ++ii) {
       u_i_->dofs().vector() = u_n.dofs().vector();
       for (size_t jj = 0; jj < ii; ++jj)
-        u_i_->dofs().vector() += stages_k_[jj]->dofs().vector() * (actual_dt * r_ * (A_[ii][jj]));
+        u_i_->dofs().vector().axpy(actual_dt * r_ * A_[ii][jj], stages_k_[jj]->dofs().vector());
       // TODO: provide actual_dt to op_. This leads to spurious oscillations in the Lax-Friedrichs flux
       // because actual_dt/dx may become very small.
       op_.apply(u_i_->dofs().vector(),
@@ -264,7 +264,7 @@ public:
 
     // calculate value of u at next time step
     for (size_t ii = 0; ii < num_stages_; ++ii)
-      u_n.dofs().vector() += stages_k_[ii]->dofs().vector() * (r_ * actual_dt * b_[ii]);
+      u_n.dofs().vector().axpy(r_ * actual_dt * b_[ii], stages_k_[ii]->dofs().vector());
 
     // augment time
     t += actual_dt;

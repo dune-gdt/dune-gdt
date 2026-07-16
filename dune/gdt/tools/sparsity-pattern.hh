@@ -217,6 +217,8 @@ XT::LA::SparsityPatternDefault make_coupling_sparsity_pattern(const SpaceInterfa
   DynamicVector<size_t> global_indices_out(test_space.mapper().max_local_size());
   for (auto&& inside : elements(grid_view)) {
     for (auto&& intersection : intersections(grid_view, inside)) {
+      if (!intersection.neighbor())
+        continue;
       const auto outside = intersection.outside();
       test_space.mapper().global_indices(inside, global_indices_in);
       ansatz_space.mapper().global_indices(outside, global_indices_out);

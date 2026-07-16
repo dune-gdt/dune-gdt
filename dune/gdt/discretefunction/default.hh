@@ -118,7 +118,7 @@ public:
 
   std::unique_ptr<ThisType> copy_as_grid_function() const
   {
-    return std::unique_ptr<ThisType>(*this);
+    return std::make_unique<ThisType>(*this);
   }
 
   /**
