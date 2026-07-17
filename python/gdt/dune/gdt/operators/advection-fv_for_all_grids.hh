@@ -11,6 +11,7 @@
 #define PYTHON_DUNE_GDT_OPERATORS_ADVECTION_FV_FOR_ALL_GRIDS_HH
 
 #include <functional>
+#include <memory>
 
 #include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
@@ -92,21 +93,28 @@ public:
     c.def(
         "boundary_treatment",
         [](type& self, std::function<double(double)> extrapolate) -> type& {
+          // Operator::apply() walks the grid with use_tbb=true (dune/gdt/operators/operator.hh), and
+          // dune/xt/grid/walker.hh's Walker gives every thread its own copy of each local operator,
+          // made lazily (Common::PerThreadValue) the first time that *worker* thread touches it -- so
+          // it is that copy, not just the call below, that can run without the GIL. A plain
+          // std::function<double(double)> capture would copy the wrapped py::function on that worker
+          // thread and touch its refcount without the GIL (crashing the whole interpreter with "Fatal
+          // Python error: Aborted"); wrapping it in a shared_ptr instead means every per-thread copy
+          // only bumps an atomic control-block refcount, and the wrapped py::function itself is
+          // constructed once here (GIL held, called from Python) and destroyed once the last
+          // shared_ptr drops -- which, since AdvectionFvOperator's prototype local operator (the one
+          // this lambda ends up stored in) is only ever destroyed together with the Python-owned
+          // operator, is always under the GIL too.
+          auto extrapolate_ptr = std::make_shared<std::function<double(double)>>(std::move(extrapolate));
           typename BoundaryTreatmentType::LambdaType lambda =
-              [extrapolate](const typename BoundaryTreatmentType::IntersectionType& /*intersection*/,
-                            const typename BoundaryTreatmentType::LocalIntersectionCoords& /*x*/,
-                            const typename BoundaryTreatmentType::FluxType& /*flux*/,
-                            const typename BoundaryTreatmentType::DynamicStateType& u,
-                            typename BoundaryTreatmentType::DynamicStateType& v,
-                            const XT::Common::Parameter& /*param*/) {
-                // Operator::apply() walks the grid with use_tbb=true (dune/gdt/operators/operator.hh),
-                // so this lambda -- and hence the call back into the bound Python `extrapolate` callable
-                // below -- can run on a TBB worker thread that never acquired the GIL. Without this,
-                // CPython aborts the whole process ("Fatal Python error: Aborted") the moment such a
-                // thread touches the C-API; py::gil_scoped_acquire is the standard pybind11 fix and is
-                // also safe (a cheap no-op re-entry) when already called from the GIL-holding thread.
+              [extrapolate_ptr](const typename BoundaryTreatmentType::IntersectionType& /*intersection*/,
+                                const typename BoundaryTreatmentType::LocalIntersectionCoords& /*x*/,
+                                const typename BoundaryTreatmentType::FluxType& /*flux*/,
+                                const typename BoundaryTreatmentType::DynamicStateType& u,
+                                typename BoundaryTreatmentType::DynamicStateType& v,
+                                const XT::Common::Parameter& /*param*/) {
                 py::gil_scoped_acquire gil;
-                v[0] = extrapolate(u[0]);
+                v[0] = (*extrapolate_ptr)(u[0]);
               };
           return self.boundary_treatment(lambda);
         },
