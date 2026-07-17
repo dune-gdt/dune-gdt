@@ -17,7 +17,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include <dune/xt/common/parallel/threadmanager.hh>
 #include <dune/xt/common/string.hh>
 #include <dune/xt/grid/grids.hh>
 #include <dune/xt/grid/type_traits.hh>
@@ -53,30 +52,6 @@ namespace GDT {
 namespace bindings {
 
 
-// RAII guard pinning the grid walk to a single thread for its lifetime, restoring the previous
-// thread count on exit (also on exception). See the usage in TimeStepperInterface::bind's step().
-class SingleThreadedWalkGuard
-{
-public:
-  SingleThreadedWalkGuard()
-    : previous_max_threads_(XT::Common::threadManager().max_threads())
-  {
-    XT::Common::threadManager().set_max_threads(1);
-  }
-
-  SingleThreadedWalkGuard(const SingleThreadedWalkGuard&) = delete;
-  SingleThreadedWalkGuard& operator=(const SingleThreadedWalkGuard&) = delete;
-
-  ~SingleThreadedWalkGuard()
-  {
-    XT::Common::threadManager().set_max_threads(previous_max_threads_);
-  }
-
-private:
-  const size_t previous_max_threads_;
-};
-
-
 template <class DiscreteFunctionImp>
 class TimeStepperInterface
 {
@@ -101,24 +76,18 @@ public:
     // the fractional-step/Strang splitting factories, whose arguments are themselves steppers)
     c.def_property_readonly("dim_domain", [](const type&) { return size_t(DiscreteFunctionImp::d); });
 
+    // NOTE: step() deliberately does NOT release the GIL. The operator applied during a step walks
+    // the grid via tbb::parallel_for (Operator::apply -> Walker::walk(use_tbb=true)); for a scalar
+    // FV/DG operator that walk invokes the Python boundary-treatment callback set via
+    // AdvectionFvOperator::boundary_treatment(lambda). Releasing the GIL here and then calling back
+    // into Python from the parallel_for body aborts the (assertion-checked) debug build. The walk is
+    // single-partition by default (XT threading.max_count defaults to 1), so tbb::parallel_for runs
+    // the body inline on this thread -- keeping the GIL held is therefore safe and cannot deadlock.
     c.def(
         "step",
-        [](type& self, const double dt, const double max_dt) {
-          // The operator applied during a step walks the grid with TBB (Operator::apply ->
-          // Walker::walk(use_tbb=true)); for a scalar FV/DG operator that walk may invoke a Python
-          // boundary-treatment callback (see AdvectionFvOperator::boundary_treatment binding). That
-          // callback is a py::function owning a Python object, and the walk hands a copy of it to
-          // every TBB partition -- touching the object's refcount off the interpreter thread, which
-          // corrupts it and aborts (the debug build's stricter checks catch it; release happens to
-          // survive). Pin the walk to a single thread for the step so the callback runs serially.
-          // The GIL is still released (below), so that single walk re-acquires it per callback
-          // without the deadlock a held GIL would cause against the TBB barrier.
-          const SingleThreadedWalkGuard single_threaded_walk_guard;
-          return self.step(dt, max_dt);
-        },
+        [](type& self, const double dt, const double max_dt) { return self.step(dt, max_dt); },
         "dt"_a,
-        "max_dt"_a = std::numeric_limits<double>::max(),
-        py::call_guard<py::gil_scoped_release>());
+        "max_dt"_a = std::numeric_limits<double>::max());
 
     c.def(
         "current_solution",
