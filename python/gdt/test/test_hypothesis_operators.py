@@ -29,7 +29,11 @@ import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
-from dune.xt.test.hypothesis_strategies import GRID_COMBINATIONS, grid_specs
+from dune.xt.test.hypothesis_strategies import (
+    GRID_COMBINATIONS,
+    grid_specs,
+    has_generic_function,
+)
 
 # Skip cleanly on builds that bind no grids at all (nothing to draw from otherwise).
 pytestmark = pytest.mark.skipif(
@@ -199,6 +203,56 @@ def test_weighted_l2_matrix_is_positive_definite(data, spec, weight, order):
     x.scal(1.0 / sup)
     # <x, Mx> == integral of (weight * u_x^2) > 0 for u_x != 0
     assert x.dot(_mv(mat, x)) > 0.0
+
+
+@pytest.mark.skipif(
+    not has_generic_function(),
+    reason="GenericFunction bindings unavailable in this build (#320 WP7)",
+)
+@given(data=st.data(), spec=GRIDS, kappa=KAPPAS, order=ORDERS)
+def test_laplace_matrix_matches_between_constant_and_generic_function_kappa(
+    data, spec, kappa, order
+):
+    """The generic-function variant of Scenario 5.
+
+    A diffusion coefficient supplied as a Python callable (dune.xt.functions.GenericFunction,
+    #320 WP7) that happens to be constant everywhere must assemble the identical Laplace matrix as
+    the same constant supplied directly -- the two code paths (native C++ value vs. a pybind11
+    callback invoked once per quadrature point) computing the same bilinear form.
+    """
+    from dune.gdt import ContinuousLagrangeSpace
+    from dune.xt.functions import GenericFunction
+    from dune.xt.grid import Dim
+
+    grid = spec.make_grid()
+    space = ContinuousLagrangeSpace(grid, order=order)
+    d = grid.dimension
+
+    def evaluate(_x, _mu):
+        if d == 1:
+            # GenericFunction<domain_dim, 1, 1, R> is the very same C++ type whether reached via a
+            # plain Dim(1) or a (Dim(1), Dim(1)) pair dim_range tag: its RangeReturnType is a flat
+            # FieldVector<R, 1> (RangeTypeSelector<R, r, 1> covers r == 1 too), not the
+            # FieldMatrix<R, d, d> the d > 1 case below returns.
+            return [kappa]
+        return [[kappa if ii == jj else 0.0 for jj in range(d)] for ii in range(d)]
+
+    kappa_callable = GenericFunction(
+        dim_domain=Dim(d),
+        dim_range=(Dim(d), Dim(d)),
+        order=0,
+        evaluate=evaluate,
+        name="kappa",
+    )
+
+    mat_direct = _laplace_matrix(grid, space, kappa)
+    mat_generic = _laplace_matrix(grid, space, kappa_callable)
+
+    (x,) = _random_probe_vectors(data, space.num_DoFs, 1)
+    ax_direct, ax_generic = _mv(mat_direct, x), _mv(mat_generic, x)
+    ax_direct.axpy(-1.0, ax_generic)
+    scale = kappa * space.num_DoFs
+    assert ax_direct.sup_norm() <= 1e-10 * max(scale, 1.0)
 
 
 if __name__ == "__main__":
