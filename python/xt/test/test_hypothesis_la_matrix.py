@@ -228,18 +228,15 @@ class TestMatrixAgainstNumpy:
         assert mat.almost_equal(mat)
         assert mat.almost_equal(mat.copy(True))
 
-    @given(
-        shapes=st.tuples(st.integers(1, 6), st.integers(1, 6), st.integers(1, 6)),
-        data=st.data(),
-    )
-    def test_has_equal_shape(self, cls, shapes, data):
-        rows, cols, extra = shapes
+    @given(shape=st.tuples(st.integers(1, 6), st.integers(1, 6)))
+    def test_has_equal_shape(self, cls, shape):
+        rows, cols = shape
         base = make_matrix(cls, np.zeros((rows, cols)))
-        same = make_matrix(cls, np.zeros((rows, cols)))
-        assert base.has_equal_shape(same)
-        if extra != cols:
-            wider = make_matrix(cls, np.zeros((rows, extra)))
-            assert not base.has_equal_shape(wider)
+        assert base.has_equal_shape(make_matrix(cls, np.zeros((rows, cols))))
+        # a differing column count and a differing row count each break shape equality,
+        # exercising both dimension comparisons in has_equal_shape
+        assert not base.has_equal_shape(make_matrix(cls, np.zeros((rows, cols + 1))))
+        assert not base.has_equal_shape(make_matrix(cls, np.zeros((rows + 1, cols))))
 
     @given(arr=matrix_arrays())
     def test_clear_row_zeros_the_row(self, cls, arr):
