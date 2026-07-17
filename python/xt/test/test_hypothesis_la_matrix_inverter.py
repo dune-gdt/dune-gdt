@@ -90,12 +90,12 @@ def diagonally_dominant(draw, dtype, min_size=1, max_size=5, bound=5.0):
 def assert_is_inverse(a, inv, context):
     n = a.shape[0]
     identity = np.eye(n, dtype=inv.dtype)
-    assert a @ inv == pytest.approx(
-        identity, rel=RTOL, abs=ATOL
-    ), f"{context}: A@inv != I"
-    assert inv @ a == pytest.approx(
-        identity, rel=RTOL, abs=ATOL
-    ), f"{context}: inv@A != I"
+    assert a @ inv == pytest.approx(identity, rel=RTOL, abs=ATOL), (
+        f"{context}: A@inv != I"
+    )
+    assert inv @ a == pytest.approx(identity, rel=RTOL, abs=ATOL), (
+        f"{context}: inv@A != I"
+    )
 
 
 @pytest.mark.skipif(not MATRIX_CLASSES, reason="no matrix-inverter binding available")

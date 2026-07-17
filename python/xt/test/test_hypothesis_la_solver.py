@@ -108,9 +108,9 @@ def spd_system(draw, min_size=1, max_size=6, bound=4.0):
 def assert_solves(a, rhs, x, context, tol=RTOL):
     residual = a @ x - rhs
     scale = float(np.linalg.norm(rhs)) + 1.0
-    assert (
-        float(np.linalg.norm(residual)) <= tol * scale
-    ), f"{context}: residual too large"
+    assert float(np.linalg.norm(residual)) <= tol * scale, (
+        f"{context}: residual too large"
+    )
 
 
 @pytest.mark.skipif(not MATRIX_CLASSES, reason="no LA solver binding available")
