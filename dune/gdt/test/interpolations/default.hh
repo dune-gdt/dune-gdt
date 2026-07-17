@@ -113,7 +113,7 @@ struct DefaultInterpolationOnLeafViewTest : public ::testing::Test
     // Additionally exercise the top-level interpolate(...) dispatcher (dune/gdt/interpolations.hh): for a non
     // Raviart-Thomas target space it forwards to default_interpolation, so the freshly created discrete function
     // must coincide with *range down to round-off.
-    const auto dispatched = interpolate<V>(*source, *space);
+    const auto dispatched = interpolate<V>(XT::Functions::make_grid_function<E>(*source), *space);
     const auto dispatch_difference = dispatched.dofs().vector() - range->dofs().vector();
     EXPECT_LT(dispatch_difference.sup_norm(), 1e-13)
         << "XT::Common::Test::get_unique_test_name() = '" << XT::Common::Test::get_unique_test_name() << "'";
