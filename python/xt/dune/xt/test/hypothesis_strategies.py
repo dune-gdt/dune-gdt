@@ -770,7 +770,7 @@ def cfl_respecting_dt(spec, velocity, cfl=0.4):
     """A time step length respecting dt * |velocity| / h <= cfl for an explicit FV upwind step."""
     h = min(
         (hi - lo) / n
-        for lo, hi, n in zip(spec.lower_left, spec.upper_right, spec.num_elements)
+        for lo, hi, n in zip(spec.lower_left, spec.upper_right, spec.num_elements, strict=True)
     )
     speed = math.sqrt(sum(c * c for c in velocity))
     return cfl * h / speed
