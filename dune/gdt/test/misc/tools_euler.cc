@@ -184,7 +184,7 @@ void check_eigendecomposition(const XT::Common::FieldVector<double, d>& n)
       EXPECT_NEAR(evs[i] * t_i[row], Pt[row], 1e-10);
   }
 
-  // T^{-1} T = I
+  // the inverse eigenvector matrix left-multiplied by the eigenvector matrix must yield the identity
   for (size_t i = 0; i < m; ++i) {
     for (size_t j = 0; j < m; ++j) {
       double entry = 0.;
