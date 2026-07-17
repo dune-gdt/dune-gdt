@@ -26,6 +26,7 @@
 
 #include <dune/gdt/operators/reconstruction/linear.hh>
 
+#include <python/xt/dune/xt/common/parameter.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 
 #include <python/gdt/dune/gdt/module_imports.hh>
