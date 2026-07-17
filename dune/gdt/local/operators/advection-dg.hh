@@ -148,9 +148,24 @@ public:
       basis.jacobians(point_in_reference_element, basis_jacobians_, param);
       const auto source_value = u_->evaluate(point_in_reference_element, param);
       const auto flux_value = local_flux_->evaluate(point_in_reference_element, source_value, param);
-      // compute
-      for (size_t ii = 0; ii < basis.size(param); ++ii)
-        local_dofs_[ii] += integration_factor * quadrature_weight * -1. * (flux_value * basis_jacobians_[ii]);
+      // compute the contraction of the flux with the basis jacobians, i.e. sum_{r, s} f(u)_{s, r}
+      // d/dx_s phi_r. NOTE: the previous spelling `flux_value * basis_jacobians_[ii]` (a
+      // FieldVector<RF, d> times a FieldMatrix<RF, 1, d> for m == 1) only ever compiled for d == 1,
+      // where FieldVector<RF, 1> converts to/from scalars -- like boundary_treatment, this operator
+      // was never instantiated for d > 1 before the Python bindings.
+      for (size_t ii = 0; ii < basis.size(param); ++ii) {
+        RF flux_dot_jacobian = 0.;
+        if constexpr (m == 1) {
+          // flux_value is a FieldVector<RF, d>, basis_jacobians_[ii] a FieldMatrix<RF, 1, d>
+          flux_dot_jacobian = flux_value * basis_jacobians_[ii][0];
+        } else {
+          // flux_value is a FieldMatrix<RF, d, m>, basis_jacobians_[ii] a FieldMatrix<RF, m, d>
+          for (size_t rr = 0; rr < m; ++rr)
+            for (size_t ss = 0; ss < d; ++ss)
+              flux_dot_jacobian += flux_value[ss][rr] * basis_jacobians_[ii][rr][ss];
+        }
+        local_dofs_[ii] += integration_factor * quadrature_weight * -1. * flux_dot_jacobian;
+      }
     }
     // apply local mass matrix, if required (not optimal, uses a temporary)
     if (local_mass_matrices_.valid())
