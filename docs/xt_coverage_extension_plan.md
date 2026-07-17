@@ -115,8 +115,8 @@ when a build binds nothing).
 | `dune/xt/la/matrix-inverter/internal/base.hh`  | 16 | 77 % (incidental) |
 | `dune/xt/la/matrix-inverter/fmatrix.hh`        | 14 | 71 % (incidental) |
 
-- **Binding:** `bind_MatrixInverter` for the Common/Eigen dense + CSR classes
-  (real and complex). **Discovery helper exists.**
+- **Binding:** `bind_MatrixInverter` for Common dense/CSR and Eigen dense
+  classes (real and complex). **Discovery helper exists.**
 - **New file:** `python/xt/test/test_hypothesis_la_matrix_inverter.py`.
 - **Property:** invert well-conditioned matrices (e.g. SPD, or `A + nI`) via
   each `type`, assert `A · A⁻¹ ≈ I` and agreement with `numpy.linalg.inv`.
