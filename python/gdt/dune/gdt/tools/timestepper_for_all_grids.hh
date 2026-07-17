@@ -70,12 +70,20 @@ public:
           py::keep_alive<1, 2>(),
           py::keep_alive<1, 3>());
 
+    // NOTE: step() must NOT release the GIL (no py::call_guard<py::gil_scoped_release> like the
+    // Operator.apply bindings use): AdvectionFvOperator's boundary_treatment stores a Python
+    // callable which the grid walk re-enters on every boundary intersection. With the GIL released,
+    // each of those re-entries round-trips pybind11's release/acquire thread-state machinery, which
+    // carries additional consistency checks in non-NDEBUG builds (PYBIND11_ASSERT_GIL_HELD_INCREF_DECREF
+    // is auto-enabled) -- the debug CI leg aborted the interpreter inside the first step() while the
+    // identical release build ran fine. Holding the GIL is also harmless for throughput: the walker
+    // runs single-threaded unless threading.max_count is raised, and no caller steps from multiple
+    // Python threads.
     c.def(
         "step",
         [](type& self, const double dt, const double max_dt) { return self.step(dt, max_dt); },
         "dt"_a,
-        "max_dt"_a = std::numeric_limits<double>::max(),
-        py::call_guard<py::gil_scoped_release>());
+        "max_dt"_a = std::numeric_limits<double>::max());
 
     c.def(
         "current_solution",
