@@ -24,6 +24,7 @@
 #include <dune/xt/functions/grid-function.hh>
 
 #include <dune/gdt/discretefunction/default.hh>
+#include <dune/gdt/interpolations.hh>
 #include <dune/gdt/interpolations/boundary.hh>
 #include <dune/gdt/local/bilinear-forms/integrals.hh>
 #include <dune/gdt/local/integrands/product.hh>
@@ -108,6 +109,13 @@ struct DefaultInterpolationOnLeafViewTest : public ::testing::Test
     default_interpolation(*source, *range, space->grid_view());
     const auto l2_error = l2_norm(space->grid_view(), XT::Functions::make_grid_function<E>(*source) - *range);
     EXPECT_LT(l2_error, expected_l2_error)
+        << "XT::Common::Test::get_unique_test_name() = '" << XT::Common::Test::get_unique_test_name() << "'";
+    // Additionally exercise the top-level interpolate(...) dispatcher (dune/gdt/interpolations.hh): for a non
+    // Raviart-Thomas target space it forwards to default_interpolation, so the freshly created discrete function
+    // must coincide with *range down to round-off.
+    const auto dispatched = interpolate<V>(XT::Functions::make_grid_function<E>(*source), *space);
+    const auto dispatch_difference = dispatched.dofs().vector() - range->dofs().vector();
+    EXPECT_LT(dispatch_difference.sup_norm(), 1e-13)
         << "XT::Common::Test::get_unique_test_name() = '" << XT::Common::Test::get_unique_test_name() << "'";
     const auto local_range = range->local_discrete_function();
     for (auto&& element : Dune::elements(space->grid_view())) {

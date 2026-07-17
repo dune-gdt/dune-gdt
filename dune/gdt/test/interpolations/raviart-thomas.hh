@@ -31,6 +31,7 @@
 #include <dune/xt/la/container/istl.hh>
 
 #include <dune/gdt/discretefunction/default.hh>
+#include <dune/gdt/interpolations.hh>
 #include <dune/gdt/interpolations/raviart-thomas.hh>
 #include <dune/gdt/spaces/hdiv/raviart-thomas.hh>
 
@@ -171,6 +172,13 @@ struct RaviartThomasInterpolationOnLeafViewTest : public ::testing::Test
     // (6) create new target with default vector type, uses target_space.grid_view()
     auto range_6 = raviart_thomas_interpolation(source, *space);
     check_reproduces_constant(range_6);
+    // (7) + (8): the top-level interpolate(...) dispatcher (dune/gdt/interpolations.hh) must route a Raviart-Thomas
+    //            target space to raviart_thomas_interpolation (the rC == 1 && r == d && type() == raviart_thomas
+    //            branch), both for an explicitly given and for the default vector type.
+    auto range_7 = interpolate<V>(source, *space);
+    check_reproduces_constant(range_7);
+    auto range_8 = interpolate(source, *space);
+    check_reproduces_constant(range_8);
   } // ... all_overloads_reproduce_constant_field(...)
 
   // interpolates a linear (non-RT0) field and asserts the resulting discrete function has continuous normal components
