@@ -131,6 +131,13 @@ def matrix_as_numpy(mat):
     )
 
 
+def real_matrix_as_numpy(mat):
+    return np.array(
+        [[mat.get_entry(ii, jj) for jj in range(mat.cols)] for ii in range(mat.rows)],
+        dtype=float,
+    )
+
+
 @pytest.mark.skipif(not MATRIX_CLASSES, reason="no eigen-solver binding available")
 @pytest.mark.parametrize("cls", MATRIX_CLASSES, ids=lambda c: c.__name__)
 class TestEigenSolverAgainstScipy:
@@ -201,6 +208,34 @@ class TestEigenSolverAgainstScipy:
         vectors = matrix_as_numpy(solver.eigenvectors())
         inverse = matrix_as_numpy(solver.eigenvectors_inverse())
         identity = np.eye(arr.shape[0], dtype=complex)
+        assert vectors @ inverse == pytest.approx(identity, rel=1e-6, abs=1e-6)
+
+    @settings(deadline=None)
+    @given(arr=spd_matrices())
+    def test_real_eigenvalues_match_scipy(self, cls, arr):
+        # real_eigenvalues() is a distinct accessor from eigenvalues() (base.hh): it returns the
+        # real-typed spectrum, valid here precisely because SPD inputs have real eigenvalues.
+        solver = make_full_solver(eigen_solver_for(cls), make_matrix(cls, arr))
+        actual = np.sort(np.array(solver.real_eigenvalues()))
+        expected = np.sort(scipy_linalg.eigvalsh(arr))
+        assert actual == pytest.approx(expected, rel=1e-6, abs=1e-8)
+
+    @settings(deadline=None)
+    @given(arr=spd_matrices())
+    def test_real_eigenvectors_satisfy_the_eigenrelation(self, cls, arr):
+        # real_eigenvectors()/real_eigenvectors_inverse() are the real-typed accessors (base.hh),
+        # separate from the complex eigenvectors() path tested above; reachable for SPD inputs whose
+        # eigenvectors are real. A*Vr == Vr*diag(real_lambda) is again the order-consistent,
+        # repeated-eigenvalue-safe check.
+        solver = make_full_solver(eigen_solver_for(cls), make_matrix(cls, arr))
+        evals = np.array(solver.real_eigenvalues())
+        vectors = real_matrix_as_numpy(solver.real_eigenvectors())
+        residual = arr @ vectors - vectors @ np.diag(evals)
+        scale = float(np.linalg.norm(arr)) + 1.0
+        assert float(np.linalg.norm(residual)) == pytest.approx(0.0, abs=1e-6 * scale)
+
+        inverse = real_matrix_as_numpy(solver.real_eigenvectors_inverse())
+        identity = np.eye(arr.shape[0])
         assert vectors @ inverse == pytest.approx(identity, rel=1e-6, abs=1e-6)
 
 
