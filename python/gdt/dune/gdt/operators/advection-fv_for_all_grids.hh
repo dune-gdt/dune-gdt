@@ -98,7 +98,16 @@ public:
                             const typename BoundaryTreatmentType::FluxType& /*flux*/,
                             const typename BoundaryTreatmentType::DynamicStateType& u,
                             typename BoundaryTreatmentType::DynamicStateType& v,
-                            const XT::Common::Parameter& /*param*/) { v[0] = extrapolate(u[0]); };
+                            const XT::Common::Parameter& /*param*/) {
+                // Operator::apply() walks the grid with use_tbb=true (dune/gdt/operators/operator.hh),
+                // so this lambda -- and hence the call back into the bound Python `extrapolate` callable
+                // below -- can run on a TBB worker thread that never acquired the GIL. Without this,
+                // CPython aborts the whole process ("Fatal Python error: Aborted") the moment such a
+                // thread touches the C-API; py::gil_scoped_acquire is the standard pybind11 fix and is
+                // also safe (a cheap no-op re-entry) when already called from the GIL-holding thread.
+                py::gil_scoped_acquire gil;
+                v[0] = extrapolate(u[0]);
+              };
           return self.boundary_treatment(lambda);
         },
         "extrapolate"_a,
