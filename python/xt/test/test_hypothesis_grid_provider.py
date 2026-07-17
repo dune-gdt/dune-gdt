@@ -91,6 +91,57 @@ def test_boundary_and_inner_intersection_indices_partition(spec):
         assert n_boundary == expected_boundary
 
 
+@given(spec=grid_specs(max_elements_per_dim=3))
+def test_apply_on_each_element_visits_every_element(spec):
+    # apply_on_each_element walks the leaf view once (gridprovider.hh), so the number of callback
+    # invocations must equal the codim-0 entity count -- exercises the element-walk path that the
+    # counting queries above reach only indirectly.
+    grid = spec.make_grid()
+    visited = []
+    grid.apply_on_each_element(lambda _element: visited.append(1))
+    assert len(visited) == grid.size(0)
+
+
+@given(spec=grid_specs(max_elements_per_dim=3))
+def test_apply_on_each_intersection_visit_count(spec):
+    # apply_on_each_intersection visits, per element, one intersection per codim-1 face. A cube
+    # element has exactly 2*dim faces regardless of position, so on an unrefined cube grid the total
+    # visit count is deterministic (inner faces are visited once from each side, boundary faces
+    # once). For simplex grids the per-element face count differs, so only assert positivity there.
+    grid = spec.make_grid()
+    visited = []
+    grid.apply_on_each_intersection(lambda _intersection: visited.append(1))
+    if spec.element == "cube":
+        assert len(visited) == spec.expected_num_elements * 2 * spec.dim
+    else:
+        assert len(visited) > 0
+
+
+@given(spec=grid_specs())
+def test_vertex_centers_lie_in_closed_bounding_box(spec):
+    # centers(codim=dim) returns the grid vertices; this drives the codim!=0 branch of centers()
+    # (the element-center test above only ever asks for codim 0). Vertices sit on the closed box,
+    # so the bounds are inclusive (unlike the strictly-interior element centroids).
+    grid = spec.make_grid()
+    vertices = np.array(grid.centers(spec.dim), copy=False)
+    assert vertices.shape == (grid.size(spec.dim), spec.dim)
+    lower = np.asarray(spec.lower_left)
+    upper = np.asarray(spec.upper_right)
+    slack = 1e-12 * np.maximum(1.0, np.abs(upper - lower) + np.abs(lower))
+    assert (vertices >= lower - slack).all()
+    assert (vertices <= upper + slack).all()
+
+
+@given(spec=grid_specs(max_elements_per_dim=3))
+def test_max_level_increases_under_global_refine(spec):
+    # a fresh grid is a single level; global_refine adds at least one (bisection grids may add more
+    # than one per step, so this is a monotonicity, not an equality, assertion).
+    grid = spec.make_grid()
+    before = grid.max_level
+    grid.global_refine(1)
+    assert grid.max_level > before
+
+
 if __name__ == "__main__":
     from dune.xt.test.base import runmodule
 
