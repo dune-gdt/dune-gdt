@@ -18,7 +18,7 @@ the ones that hold independently of the concrete mesh:
 
   * estimate_element_to_intersection_equivalence_constant is a *ratio* of element and intersection diameters, so
     it is invariant under a uniform scaling of the domain and under uniform refinement (both leave the mesh
-    self-similar), and strictly positive in dimension >= 2;
+    self-similar), and strictly positive in every dimension;
   * the eigen-solver-based estimate_inverse_inequality_constant / estimate_combined_inverse_trace_inequality_constant
     are finite and strictly positive wherever the generalized eigen-solver dependency (LAPACKE) is available.
 """
@@ -69,6 +69,7 @@ def _inverse_inequality_available():
             ContinuousLagrangeSpace,
             estimate_inverse_inequality_constant,
         )
+        from dune.xt.common import DuneError
         from dune.xt.test.hypothesis_strategies import GridSpec
 
         grid = GridSpec(
@@ -81,7 +82,7 @@ def _inverse_inequality_available():
         space = ContinuousLagrangeSpace(grid, order=1)
         estimate_inverse_inequality_constant(space)
         return True
-    except Exception:
+    except DuneError:
         return False
 
 
@@ -91,8 +92,10 @@ _needs_eigen_solver = pytest.mark.skipif(
 )
 
 
-# the equivalence constant degenerates in 1d (intersections are points of diameter 0), so only d >= 2 is exercised
-@given(spec=grid_specs(dims=(2, 3), max_elements_per_dim=3))
+# the C++ default intersection_diameter callback special-cases d == 1 (averaging the two adjacent element
+# diameters, or using the boundary element's own diameter) precisely to avoid the degenerate "intersections
+# are points of diameter 0" case, so 1d is exercised on equal footing with 2d/3d here.
+@given(spec=grid_specs(dims=(1, 2, 3), max_elements_per_dim=3))
 def test_element_to_intersection_equivalence_constant_is_positive_and_finite(spec):
     from dune.gdt import estimate_element_to_intersection_equivalence_constant
 
@@ -102,7 +105,7 @@ def test_element_to_intersection_equivalence_constant_is_positive_and_finite(spe
 
 
 @given(
-    spec=grid_specs(dims=(2, 3), max_elements_per_dim=3),
+    spec=grid_specs(dims=(1, 2, 3), max_elements_per_dim=3),
     factor=st.floats(0.25, 4.0, allow_nan=False, allow_infinity=False),
 )
 def test_equivalence_constant_is_scale_invariant(spec, factor):
@@ -118,7 +121,7 @@ def test_equivalence_constant_is_scale_invariant(spec, factor):
 
 # cube elements refine self-similarly (each element splits into 2^d congruent children); simplicial
 # bisection does not preserve element shape, so the diameter ratio is only invariant on cube grids.
-@given(spec=grid_specs(dims=(2, 3), elements=("cube",), max_elements_per_dim=2))
+@given(spec=grid_specs(dims=(1, 2, 3), elements=("cube",), max_elements_per_dim=2))
 def test_equivalence_constant_is_refinement_invariant(spec):
     """Uniform refinement keeps a cube mesh self-similar, hence keeps the (diameter-ratio) constant."""
     from dune.gdt import estimate_element_to_intersection_equivalence_constant
