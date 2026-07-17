@@ -41,7 +41,15 @@ auto bind_Solver(pybind11::module& m)
   c.def_static("types", &C::types);
   c.def_static("options", &C::options);
 
-  c.def(py::init<M>());
+  // py::keep_alive<1, 2>(): Solver<M> stores its matrix by const reference (see e.g.
+  // dune/xt/la/solver/{common,eigen,istl}.hh's `const MatrixType& matrix_;`), so without tying the
+  // constructed Solver's lifetime to its matrix argument, a caller that does not keep a separate
+  // Python reference to the matrix (e.g. `Solver(make_matrix(...))`) leaves `matrix_` dangling the
+  // moment the temporary is garbage-collected -- any later apply() then reads through freed memory.
+  // The sibling `make_solver` factory just below already gets this right via keep_alive<0, 1>; the
+  // EigenSolver/MatrixInverter constructors (solver_machinery.hh's bind_single_matrix_solver_ctor)
+  // already get this right via keep_alive<1, 2>. This constructor was the one binding that didn't.
+  c.def(py::init<M>(), py::keep_alive<1, 2>());
 
   c.def("apply", [](const C& self, const V& rhs, V& solution) { self.apply(rhs, solution); }, "rhs"_a, "solution"_a);
   c.def(

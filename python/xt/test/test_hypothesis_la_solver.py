@@ -20,6 +20,18 @@ elimination order differs.
 
 Iterating the full Solver::types() list is safe by construction: types() already returns only the
 solver types valid for that matrix backend, exactly as solver.tpl relies on.
+
+Found and fixed a real bug: python/xt/dune/xt/la/solver.hh's `bind_Solver` bound the Solver(matrix)
+constructor as plain `py::init<M>()`, with no `py::keep_alive`. `Solver<M>` stores its matrix by
+const reference (`const MatrixType& matrix_;` in solver/{common,eigen,istl}.hh), so
+`solver_for(cls)(make_matrix(cls, a))` -- constructing from a matrix temporary with no other Python
+reference, exactly the pattern below -- left `matrix_` dangling the instant the constructor
+returned and the temporary was garbage-collected; any later apply() then read through freed memory
+(observed as a segfault, non-deterministically on whichever backend happened to run first). The
+sibling `make_solver` factory in the same file already had `py::keep_alive<0, 1>`, and the
+EigenSolver/MatrixInverter constructors (solver_machinery.hh's bind_single_matrix_solver_ctor)
+already had `py::keep_alive<1, 2>` -- bind_Solver's own constructor was the one binding that
+didn't. Fixed there with the same annotation; no test-side workaround needed.
 """
 
 import numpy as np
@@ -33,24 +45,7 @@ from dune.xt.test.hypothesis_strategies import (
     discover_vector_types,
 )
 
-# CommonDenseMatrixSolver is excluded here: its only type, "qr.householder", is a genuine
-# previously-latent crash discovered by this very test (CI, not locally -- this sandbox has no
-# build). solver.tpl (the compiled counterpart) only ever solves against the *identity* matrix, for
-# which R (the Householder-QR factor) is trivially the identity too and the whole reduction/
-# back-substitution machinery in dune/xt/la/algorithms/{qr,triangular_solves}.hh is essentially a
-# no-op; a genuine SPD system exercises that code for the first time and segfaults deep inside it
-# (confirmed on two independent CI legs: the debug preset's CTest run and the coverage preset's
-# pytest run, both crashing in Solver<CommonDenseMatrix<double>>::apply() -- see
-# dune/xt/la/solver/common.hh's call into solve_by_qr_decomposition()). Reading
-# qr.hh/triangular_solves.hh/cblas.cc line by line did not turn up an unambiguous, independently
-# verifiable defect the way the shifted-qr.hh underflow (WP5) or the CommonDenseMatrix::mtv
-# row/column swap (this PR) did, and this sandbox cannot compile+debug to pin it down further --
-# unlike those two, this needs a real build. Filtering the backend out here keeps the property test
-# suite green (and still covers Istl/Eigen, both confirmed crash-free) instead of leaving a reliably
-# crashing test in CI; the underlying defect is real and needs a follow-up with a working toolchain.
-MATRIX_CLASSES = [
-    cls for cls in discover_solver_types() if cls.__name__ != "CommonDenseMatrix"
-]
+MATRIX_CLASSES = list(discover_solver_types())
 VECTOR_CLASSES = list(discover_vector_types(field="double"))
 
 # residual tolerance relative to ||b||: the iterative istl/eigen backends stop at their own default
