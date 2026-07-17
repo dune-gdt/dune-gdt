@@ -193,6 +193,14 @@
         "CMAKE_SHARED_LINKER_FLAGS": "-fprofile-instr-generate",
         "DXT_LLVM_VERSION": "22"
       }
+    },
+    {
+      "name": "clang22-debug",
+      "displayName": "Debug Config (Clang 22)",
+      "inherits": [
+        "clang22-base",
+        "debug"
+      ]
     }
   ],
   "buildPresets": [
@@ -237,6 +245,10 @@
     {
       "name": "clang22-release_coverage",
       "configurePreset": "clang22-release_coverage"
+    },
+    {
+      "name": "clang22-debug",
+      "configurePreset": "clang22-debug"
     }
   ],
   "testPresets": [
@@ -331,6 +343,14 @@
         "stopOnFailure": false,
         "timeout": 2400
       }
+    },
+    {
+      "name": "clang22-debug",
+      "displayName": "Clang 22 Debug Tests",
+      "configurePreset": "clang22-debug",
+      "inherits": [
+        "test-base"
+      ]
     }
   ]
 }
