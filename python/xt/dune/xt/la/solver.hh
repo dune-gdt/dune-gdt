@@ -41,15 +41,20 @@ auto bind_Solver(pybind11::module& m)
   c.def_static("types", &C::types);
   c.def_static("options", &C::options);
 
-  // py::keep_alive<1, 2>(): Solver<M> stores its matrix by const reference (see e.g.
-  // dune/xt/la/solver/{common,eigen,istl}.hh's `const MatrixType& matrix_;`), so without tying the
-  // constructed Solver's lifetime to its matrix argument, a caller that does not keep a separate
-  // Python reference to the matrix (e.g. `Solver(make_matrix(...))`) leaves `matrix_` dangling the
-  // moment the temporary is garbage-collected -- any later apply() then reads through freed memory.
-  // The sibling `make_solver` factory just below already gets this right via keep_alive<0, 1>; the
-  // EigenSolver/MatrixInverter constructors (solver_machinery.hh's bind_single_matrix_solver_ctor)
-  // already get this right via keep_alive<1, 2>. This constructor was the one binding that didn't.
-  c.def(py::init<M>(), py::keep_alive<1, 2>());
+  // py::init<M>() (M by *value*) is not enough here, even combined with keep_alive: pybind11's
+  // generated init factory takes its argument by the exact type listed, so it copies the Python-owned
+  // matrix into a temporary and passes *that* by const-ref into Solver's constructor; matrix_ then
+  // binds to the temporary, which is destroyed the moment the init factory returns, before any
+  // keep_alive relationship (which only ties Python object lifetimes together) can matter. Using a
+  // lambda with an explicit `const M&` parameter instead avoids the copy: the type caster hands back a
+  // reference to the actual Python-owned instance, so `C(matrix)` -- and the `matrix_` reference it
+  // stores (see dune/xt/la/solver/{common,eigen,istl}.hh's `const MatrixType& matrix_;`) -- binds to
+  // that instance directly, and keep_alive<1, 2> then correctly keeps it alive for as long as the
+  // solver lives. This is the same pattern already used by the sibling `make_solver` factory just below
+  // (keep_alive<0, 1>) and by the EigenSolver/MatrixInverter constructors in
+  // solver_machinery.hh's bind_single_matrix_solver_ctor (keep_alive<1, 2>) -- this constructor was the
+  // one binding that still used plain py::init<M>().
+  c.def(py::init([](const M& matrix) { return std::make_unique<C>(matrix); }), py::keep_alive<1, 2>());
 
   c.def("apply", [](const C& self, const V& rhs, V& solution) { self.apply(rhs, solution); }, "rhs"_a, "solution"_a);
   c.def(

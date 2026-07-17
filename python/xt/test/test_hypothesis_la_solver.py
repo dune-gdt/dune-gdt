@@ -25,13 +25,25 @@ Found and fixed a real bug: python/xt/dune/xt/la/solver.hh's `bind_Solver` bound
 constructor as plain `py::init<M>()`, with no `py::keep_alive`. `Solver<M>` stores its matrix by
 const reference (`const MatrixType& matrix_;` in solver/{common,eigen,istl}.hh), so
 `solver_for(cls)(make_matrix(cls, a))` -- constructing from a matrix temporary with no other Python
-reference, exactly the pattern below -- left `matrix_` dangling the instant the constructor
-returned and the temporary was garbage-collected; any later apply() then read through freed memory
-(observed as a segfault, non-deterministically on whichever backend happened to run first). The
-sibling `make_solver` factory in the same file already had `py::keep_alive<0, 1>`, and the
-EigenSolver/MatrixInverter constructors (solver_machinery.hh's bind_single_matrix_solver_ctor)
-already had `py::keep_alive<1, 2>` -- bind_Solver's own constructor was the one binding that
-didn't. Fixed there with the same annotation; no test-side workaround needed.
+reference, exactly the pattern below -- left `matrix_` dangling once the constructor call
+completed, and any later apply() then read/wrote through freed memory (a segfault, always on the
+first call into apply() regardless of backend).
+
+The first attempted fix, adding plain `py::keep_alive<1, 2>()` to the existing
+`py::init<M>()`, was NOT sufficient and the crash reproduced identically: `py::init<M>()` takes its
+argument by *value* (M, not `const M&`), so pybind11's generated init factory copies the
+Python-owned matrix into a temporary and passes that temporary into Solver's constructor -- matrix_
+then binds to the temporary, which is destroyed as soon as the init factory call returns, before any
+keep_alive relationship (which only ties *Python object* lifetimes together, and never applied to a
+temporary with no Python wrapper of its own) can matter. The actual fix replaces `py::init<M>()` with
+`py::init([](const M& matrix) { return std::make_unique<C>(matrix); })`: the lambda's `const M&`
+parameter makes the type caster hand back a reference to the real Python-owned instance (no copy),
+so matrix_ binds to that instance directly, and `py::keep_alive<1, 2>()` then correctly keeps it
+alive for as long as the solver lives. The sibling `make_solver` factory in the same file already
+used this reference-taking-lambda pattern (with `py::keep_alive<0, 1>`), as did the
+EigenSolver/MatrixInverter constructors (solver_machinery.hh's bind_single_matrix_solver_ctor, with
+`py::keep_alive<1, 2>`) -- bind_Solver's own constructor was the one binding using plain
+`py::init<M>()` instead. No test-side workaround needed.
 """
 
 import numpy as np
