@@ -76,8 +76,9 @@ void check_primitive_conservative_roundtrip()
     EXPECT_NEAR(v[ii], euler.velocity(w)[ii], 1e-13);
   EXPECT_NEAR(p, euler.pressure(w)[0], 1e-13);
 
-  // primitive -> conservative reproduces w
-  const auto w2 = make_state<d>(euler, rho, v, p);
+  // primitive -> conservative: feeding the *extracted* primitives back through conservative(...) must reproduce w
+  // (reconstructing from std::get<...>(rho_v_p), not from the original scalar inputs, actually exercises the inverse)
+  const auto w2 = euler.conservative(std::get<0>(rho_v_p), std::get<1>(rho_v_p), std::get<2>(rho_v_p));
   for (size_t ii = 0; ii < d + 2; ++ii)
     EXPECT_NEAR(w[ii], w2[ii], 1e-13);
 }
