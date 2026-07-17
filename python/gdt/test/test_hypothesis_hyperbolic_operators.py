@@ -90,13 +90,15 @@ def test_advection_fv_upwind_conserves_mass(case):
     space = FiniteVolumeSpace(grid)
 
     half_extent = (
-        min(hi - lo for lo, hi in zip(spec.lower_left, spec.upper_right, strict=True)) / 2.0
+        min(hi - lo for lo, hi in zip(spec.lower_left, spec.upper_right, strict=True))
+        / 2.0
     )
     # 8 sigma of margin to the boundary (exp(-32) of the peak) with _MIN_ELEMENTS_PER_DIM cells
     # comfortably resolving that same sigma -- see the comment on _MIN_ELEMENTS_PER_DIM above.
     sigma = half_extent / 8.0
     center = tuple(
-        (lo + hi) / 2.0 for lo, hi in zip(spec.lower_left, spec.upper_right, strict=True)
+        (lo + hi) / 2.0
+        for lo, hi in zip(spec.lower_left, spec.upper_right, strict=True)
     )
     bump = gaussian_bump_expression(spec.dim, center, sigma)
     u_0 = default_interpolation(GridFunction(grid, bump), space)
