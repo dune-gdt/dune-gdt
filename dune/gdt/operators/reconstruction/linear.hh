@@ -147,7 +147,12 @@ private:
     return true;
   } // void fill_stencils(...)
 
-  const GV& grid_view_;
+  // Stored BY VALUE (GV is a cheap, copyable leaf-view handle, like DiscontinuousLagrangeSpace
+  // itself stores it): LocalLinearReconstructionOperator constructs this functor from its by-value
+  // `target_space` constructor parameter's grid_view(), which is destroyed when that constructor
+  // returns -- a reference here would dangle and segfault on the first fill_stencils() access (this
+  // operator was never instantiated before it was bound to Python, which is why it went unnoticed).
+  const GV grid_view_;
   const std::vector<LocalVectorType>& source_values_;
   const BoundaryValueType& boundary_values_;
   const AnalyticalFluxType& analytical_flux_;
