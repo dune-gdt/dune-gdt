@@ -169,6 +169,73 @@ def test_discovery_ignores_non_class_attributes():
     assert [c.__name__ for c in hs.discover_vector_types(module)] == ["CommonVector"]
 
 
+# --- complex-field discovery (WP5) ---------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("name", "expected_field"),
+    [
+        ("CommonVector", "double"),
+        ("CommonComplexVector", "complex"),
+        ("EigenSparseMatrix", "double"),
+        ("EigenComplexSparseMatrix", "complex"),
+        ("CommonSparseCsrMatrix", "double"),
+        ("CommonComplexSparseCsrMatrix", "complex"),
+    ],
+)
+def test_container_field(name, expected_field):
+    cls = type(name, (), {})
+    assert hs.container_field(cls) == expected_field
+
+
+def test_discover_vector_types_defaults_to_double_and_excludes_complex():
+    module = _stub_module(["CommonVector", "CommonComplexVector", "EigenVector"])
+    names = [c.__name__ for c in hs.discover_vector_types(module)]
+    assert names == ["CommonVector", "EigenVector"]
+
+
+def test_discover_vector_types_field_complex_selects_only_complex():
+    module = _stub_module(["CommonVector", "CommonComplexVector", "EigenComplexVector"])
+    names = [c.__name__ for c in hs.discover_vector_types(module, field="complex")]
+    assert names == ["CommonComplexVector", "EigenComplexVector"]
+
+
+def test_discover_vector_types_field_none_returns_both():
+    module = _stub_module(["CommonVector", "CommonComplexVector"])
+    names = {c.__name__ for c in hs.discover_vector_types(module, field=None)}
+    assert names == {"CommonVector", "CommonComplexVector"}
+
+
+def test_discover_matrix_types_defaults_to_double_and_excludes_complex():
+    module = _stub_module(
+        ["CommonDenseMatrix", "CommonComplexDenseMatrix", "CommonSparseCsrMatrix"]
+    )
+    names = [c.__name__ for c in hs.discover_matrix_types(module)]
+    assert names == ["CommonDenseMatrix", "CommonSparseCsrMatrix"]
+
+
+def test_discover_solver_machinery_types_matches_bound_names():
+    module = _stub_module(
+        [
+            "CommonDenseMatrix",
+            "CommonDenseMatrixEigenSolver",
+            "CommonSparseCsrMatrix",  # no matching "...EigenSolver" bound for this one
+            "EigenSparseMatrix",
+            "EigenSparseMatrixEigenSolver",
+        ]
+    )
+    names = [c.__name__ for c in hs.discover_eigen_solver_types(module)]
+    assert names == ["CommonDenseMatrix", "EigenSparseMatrix"]
+
+
+def test_discover_matrix_inverter_types_matches_bound_names():
+    module = _stub_module(
+        ["CommonDenseMatrix", "CommonDenseMatrixMatrixInverter", "EigenSparseMatrix"]
+    )
+    names = [c.__name__ for c in hs.discover_matrix_inverter_types(module)]
+    assert names == ["CommonDenseMatrix"]
+
+
 # --- impl-aware GridSpec (WP1): conforming classification is pure Python ------------------
 
 
@@ -431,6 +498,38 @@ def test_real_vector_and_matrix_types_are_exposed_classes(la_module):
         assert isinstance(cls, type)
         assert getattr(la_module, cls.__name__) is cls
         assert not cls.__name__.endswith("SizeT")
+
+
+def test_real_complex_container_types_are_double_disjoint(la_module):
+    # WP5, #320: complex-field containers must be a strict, disjoint addition to the pre-existing
+    # double-valued ones -- discover_vector_types()/discover_matrix_types() (field="double" by
+    # default) must keep returning exactly what they returned before WP5 added any complex classes.
+    double_vectors = set(hs.discover_vector_types(la_module))
+    complex_vectors = set(hs.discover_vector_types(la_module, field="complex"))
+    assert double_vectors.isdisjoint(complex_vectors)
+    assert (
+        set(hs.discover_vector_types(la_module, field=None))
+        == double_vectors | complex_vectors
+    )
+    for cls in complex_vectors:
+        assert "Complex" in cls.__name__
+
+
+def test_real_eigen_solver_and_matrix_inverter_types_include_common_dense_matrix(
+    la_module,
+):
+    # CommonDenseMatrix<double> is bound unconditionally (python/xt/dune/xt/la/bindings.cc), so its
+    # EigenSolver/MatrixInverter should always be discoverable on any build with dune.xt.la.
+    eigen_solver_types = {c.__name__ for c in hs.discover_eigen_solver_types(la_module)}
+    matrix_inverter_types = {
+        c.__name__ for c in hs.discover_matrix_inverter_types(la_module)
+    }
+    assert "CommonDenseMatrix" in eigen_solver_types
+    assert "CommonDenseMatrix" in matrix_inverter_types
+    for name in eigen_solver_types:
+        assert getattr(la_module, name + "EigenSolver", None) is not None
+    for name in matrix_inverter_types:
+        assert getattr(la_module, name + "MatrixInverter", None) is not None
     for cls in hs.discover_matrix_types(la_module):
         assert isinstance(cls, type)
 

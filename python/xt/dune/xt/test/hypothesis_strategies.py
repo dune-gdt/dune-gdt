@@ -120,14 +120,92 @@ def _discover_container_types(suffix, module=None):
     return tuple(result)
 
 
-def discover_vector_types(module=None):
-    """Double-valued LA vector container classes exposed by dune.xt.la (Common/Istl/Eigen)."""
-    return _discover_container_types("Vector", module)
+# LA container classes are named `to_camel_case(backend_name + "_" + kind)`, with "Complex"
+# inserted right after the backend for std::complex<double>-valued containers (WP5, #320), e.g.
+# CommonVector (double) vs. CommonComplexVector (complex), see
+# python/xt/dune/xt/la/container.bindings.hh. This keeps field-type detection to a name check
+# instead of hard-coding which classes are complex, so it keeps working as more are bound.
+LA_FIELDS = ("double", "complex")
 
 
-def discover_matrix_types(module=None):
-    """LA matrix container classes exposed by dune.xt.la (dense Common, sparse Istl/Eigen)."""
-    return _discover_container_types("Matrix", module)
+def container_field(cls):
+    """The LA field ("double" or "complex") a dune.xt.la container class holds."""
+    return "complex" if "Complex" in cls.__name__ else "double"
+
+
+def discover_vector_types(module=None, field="double"):
+    """LA vector container classes exposed by dune.xt.la (Common/Istl/Eigen) for the given field.
+
+    field is one of LA_FIELDS ("double", the default, or "complex"); pass field=None for both.
+    """
+    types = _discover_container_types("Vector", module)
+    if field is None:
+        return types
+    return tuple(t for t in types if container_field(t) == field)
+
+
+def discover_matrix_types(module=None, field="double"):
+    """LA matrix container classes exposed by dune.xt.la (dense/sparse Common, Istl, Eigen).
+
+    field is one of LA_FIELDS ("double", the default, or "complex"); pass field=None for both.
+    """
+    types = _discover_container_types("Matrix", module)
+    if field is None:
+        return types
+    return tuple(t for t in types if container_field(t) == field)
+
+
+def _discover_solver_machinery_types(name_suffix, module=None):
+    """Matrix classes for which dune.xt.la exposes a `<ClassName><name_suffix>` binding.
+
+    Backs discover_eigen_solver_types / discover_matrix_inverter_types / ...: the eigen-solver,
+    generalized eigen-solver and matrix-inverter bindings (WP5, #320) are not added for every
+    bound matrix type (only those with matching C++ .tpl test coverage, see the WP5 PR
+    description), so this discovers exactly the subset a given build actually bound, the same way
+    discover_vector_types/discover_matrix_types do for the containers themselves.
+    """
+    la = module if module is not None else _import_optional("dune.xt.la")
+    if la is None:
+        return ()
+    result = []
+    for matrix_cls in discover_matrix_types(la, field=None):
+        if getattr(la, matrix_cls.__name__ + name_suffix, None) is not None:
+            result.append(matrix_cls)
+    return tuple(result)
+
+
+def discover_eigen_solver_types(module=None):
+    """Matrix classes for which dune.xt.la binds an EigenSolver (dune/xt/la/eigen-solver.hh)."""
+    return _discover_solver_machinery_types("EigenSolver", module)
+
+
+def discover_generalized_eigen_solver_types(module=None):
+    """Matrix classes with a bound GeneralizedEigenSolver (dune/xt/la/generalized-eigen-solver.hh)."""
+    return _discover_solver_machinery_types("GeneralizedEigenSolver", module)
+
+
+def discover_matrix_inverter_types(module=None):
+    """Matrix classes for which dune.xt.la binds a MatrixInverter (dune/xt/la/matrix-inverter.hh)."""
+    return _discover_solver_machinery_types("MatrixInverter", module)
+
+
+def dense_sparsity_pattern(rows, cols):
+    """A SparsityPatternDefault with every (i, j) entry present.
+
+    Every bound LA matrix class -- dense or sparse -- accepts a (rows, cols, SparsityPatternDefault)
+    constructor (see internal::addbind_Matrix<T, sparse> in
+    python/xt/dune/xt/la/container/matrix-interface.hh), unlike the (rows, cols, value) constructor,
+    which is dense-only. This gives property tests one matrix-construction path that works uniformly
+    across backends, needed by the WP5 (#320) complex-container and eigen-solver property suites.
+    """
+    from dune.xt.la import SparsityPatternDefault
+
+    pattern = SparsityPatternDefault(rows)
+    for ii in range(rows):
+        for jj in range(cols):
+            pattern.insert(ii, jj)
+    pattern.sort()
+    return pattern
 
 
 # Every GridProvider* the wheel exposes, at the (dim, element, impl) granularity -- so that two
