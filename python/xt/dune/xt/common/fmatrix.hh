@@ -118,6 +118,14 @@ struct type_caster<Dune::XT::Common::FieldMatrix<K, N, M>>
   PYBIND11_TYPE_CASTER(type,
                        _("List[List[") + value_conv::name + _("[") + _<COLS>() + _("]]") + _("[") + _<ROWS>()
                            + _("]]"));
+
+  // NOTE: re-invoking PYBIND11_TYPE_CASTER above (required to redeclare `value` next to the
+  // customized load) declares a pointer-taking cast overload which HIDES the base class'
+  // cast(const type&, ...) -- without this using-declaration, nothing returning a
+  // Dune::XT::Common::FieldMatrix BY VALUE can compile (the EulerTools bindings were the first
+  // to try). The FieldVector casters (fvector.hh) are not affected, their specializations have
+  // empty bodies.
+  using FieldMatrix_type_caster<type>::cast;
 };
 
 
