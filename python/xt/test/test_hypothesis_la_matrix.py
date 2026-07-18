@@ -65,6 +65,11 @@ def matrix_as_numpy(mat):
     )
 
 
+def mat_to_csr(mat):
+    # prune=False keeps every structural entry; the tiny eps only matters when prune=True
+    return mat.to_csr(False, 1e-15)
+
+
 def matching_vector_class(matrix_cls):
     """The double vector class dune.xt.la pairs matrix_cls with, by shared backend prefix.
 
@@ -206,6 +211,40 @@ class TestMatrixAgainstNumpy:
         expected[:, n - 1] = 0.0
         expected[n - 1, n - 1] = 1.0
         assert matrix_as_numpy(col_mat) == pytest.approx(expected, abs=0.0)
+
+    @given(arr=matrix_arrays())
+    def test_to_csr_reconstructs_the_matrix(self, cls, arr):
+        # to_csr walks the matrix' structural pattern (matrix-interface.hh); with prune=False every
+        # stored entry is emitted, so scattering (data, rows, cols) back reproduces the matrix.
+        data, row_indices, col_indices = mat_to_csr(make_matrix(cls, arr))
+        recon = np.zeros_like(arr)
+        for value, ii, jj in zip(data, row_indices, col_indices):
+            recon[ii, jj] = value
+        assert recon == pytest.approx(arr, abs=0.0)
+
+    @given(arr=matrix_arrays())
+    def test_almost_equal_is_reflexive_and_detects_copies(self, cls, arr):
+        mat = make_matrix(cls, arr)
+        assert mat.almost_equal(mat)
+        assert mat.almost_equal(mat.copy(True))
+
+    @given(shape=st.tuples(st.integers(1, 6), st.integers(1, 6)))
+    def test_has_equal_shape(self, cls, shape):
+        rows, cols = shape
+        base = make_matrix(cls, np.zeros((rows, cols)))
+        assert base.has_equal_shape(make_matrix(cls, np.zeros((rows, cols))))
+        # a differing column count and a differing row count each break shape equality,
+        # exercising both dimension comparisons in has_equal_shape
+        assert not base.has_equal_shape(make_matrix(cls, np.zeros((rows, cols + 1))))
+        assert not base.has_equal_shape(make_matrix(cls, np.zeros((rows + 1, cols))))
+
+    @given(arr=matrix_arrays())
+    def test_clear_row_zeros_the_row(self, cls, arr):
+        mat = make_matrix(cls, arr)
+        mat.clear_row(0)
+        expected = arr.copy()
+        expected[0, :] = 0.0
+        assert matrix_as_numpy(mat) == pytest.approx(expected, abs=0.0)
 
 
 if __name__ == "__main__":
