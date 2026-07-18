@@ -92,4 +92,8 @@ test = [
 testpaths = ["test"]
 python_files = ["test/*.py"]
 junit_family = "xunit2"
-addopts = "-p no:warnings"
+# --capture=no: this suite drives compiled bindings, and pytest's default fd-level capture swallows
+# C-level stderr (assert() messages, DUNE exception text, std::terminate notes) when a test aborts
+# the interpreter -- the captured output dies with the process before pytest can replay it, leaving
+# only faulthandler's Python stack. Uncaptured output goes straight to the CTest log instead.
+addopts = "-p no:warnings --capture=no"

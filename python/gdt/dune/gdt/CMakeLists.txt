@@ -107,6 +107,9 @@ dune_pybindxi_add_module(_local_operators_intersection_interface EXCLUDE_FROM_AL
 dune_pybindxi_add_module(_operators_bilinear_form_1d EXCLUDE_FROM_ALL ${header} operators/bilinear-form_1d.cc)
 dune_pybindxi_add_module(_operators_bilinear_form_2d EXCLUDE_FROM_ALL ${header} operators/bilinear-form_2d.cc)
 dune_pybindxi_add_module(_operators_bilinear_form_3d EXCLUDE_FROM_ALL ${header} operators/bilinear-form_3d.cc)
+dune_pybindxi_add_module(_operators_advection_fv_1d EXCLUDE_FROM_ALL ${header} operators/advection-fv_1d.cc)
+dune_pybindxi_add_module(_operators_advection_fv_2d EXCLUDE_FROM_ALL ${header} operators/advection-fv_2d.cc)
+dune_pybindxi_add_module(_operators_advection_fv_3d EXCLUDE_FROM_ALL ${header} operators/advection-fv_3d.cc)
 dune_pybindxi_add_module(_operators_interfaces_common EXCLUDE_FROM_ALL ${header} operators/interfaces_common.cc)
 dune_pybindxi_add_module(_operators_interfaces_eigen EXCLUDE_FROM_ALL ${header} operators/interfaces_eigen.cc)
 dune_pybindxi_add_module(_operators_interfaces_istl_1d EXCLUDE_FROM_ALL ${header} operators/interfaces_istl_1d.cc)
@@ -114,6 +117,9 @@ dune_pybindxi_add_module(_operators_interfaces_istl_2d EXCLUDE_FROM_ALL ${header
 dune_pybindxi_add_module(_operators_interfaces_istl_3d EXCLUDE_FROM_ALL ${header} operators/interfaces_istl_3d.cc)
 dune_pybindxi_add_module(_operators_laplace_ipdg_flux_reconstruction EXCLUDE_FROM_ALL ${header}
                          operators/laplace_ipdg_flux_reconstruction.cc)
+dune_pybindxi_add_module(_operators_numerical_fluxes_1d EXCLUDE_FROM_ALL ${header} operators/numerical-fluxes_1d.cc)
+dune_pybindxi_add_module(_operators_numerical_fluxes_2d EXCLUDE_FROM_ALL ${header} operators/numerical-fluxes_2d.cc)
+dune_pybindxi_add_module(_operators_numerical_fluxes_3d EXCLUDE_FROM_ALL ${header} operators/numerical-fluxes_3d.cc)
 dune_pybindxi_add_module(_operators_matrix_based_factory_1d EXCLUDE_FROM_ALL ${header}
                          operators/matrix-based_factory_1d.cc)
 dune_pybindxi_add_module(_operators_matrix_based_factory_2d EXCLUDE_FROM_ALL ${header}
@@ -145,6 +151,9 @@ dune_pybindxi_add_module(_tools_adaptation_helper EXCLUDE_FROM_ALL ${header} too
 dune_pybindxi_add_module(_tools_dirichlet_constraints EXCLUDE_FROM_ALL ${header} tools/dirichlet-constraints.cc)
 dune_pybindxi_add_module(_tools_grid_quality_estimates EXCLUDE_FROM_ALL ${header} tools/grid-quality-estimates.cc)
 dune_pybindxi_add_module(_tools_sparsity_pattern EXCLUDE_FROM_ALL ${header} tools/sparsity-pattern.cc)
+dune_pybindxi_add_module(_tools_timestepper_1d EXCLUDE_FROM_ALL ${header} tools/timestepper_1d.cc)
+dune_pybindxi_add_module(_tools_timestepper_2d EXCLUDE_FROM_ALL ${header} tools/timestepper_2d.cc)
+dune_pybindxi_add_module(_tools_timestepper_3d EXCLUDE_FROM_ALL ${header} tools/timestepper_3d.cc)
 configure_file(_version.py.in _version.py)
 # dune_pybindxi_add_module(gamm_2019_talk_on_conservative_rb EXCLUDE_FROM_ALL ${header} gamm-2019-talk-on-conservative-
 # rb.cc)

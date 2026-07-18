@@ -139,10 +139,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        # the stock debug build (no instrumentation), compiled with the runner's
-        # default gcc -- kept on gcc deliberately so both major compilers still
-        # build and run the full suite
-        - preset: debug
+        # the stock debug build (no instrumentation). Compiled with clang-22 (like
+        # the coverage leg below) rather than the runner's default gcc: gcc's
+        # unoptimized (-O0) template instantiation for the pybind11 binding TUs was
+        # repeatedly pushing this leg over the 16 GB runner's memory ceiling late in
+        # the build (external-looking "runner received a shutdown signal" / exit 143
+        # failures, see PR #329's discussion), while clang-22 already builds the
+        # coverage leg's equally template-heavy bindings comfortably.
+        - preset: clang22-debug
           coverage_llvm: false
         # the coverage leg: the release build compiled with clang-22's native
         # source-based coverage (-fprofile-instr-generate -fcoverage-mapping),
