@@ -145,7 +145,14 @@ jobs:
         # repeatedly pushing this leg over the 16 GB runner's memory ceiling late in
         # the build (external-looking "runner received a shutdown signal" / exit 143
         # failures, see PR #329's discussion), while clang-22 already builds the
-        # coverage leg's equally template-heavy bindings comfortably.
+        # coverage leg's equally template-heavy bindings comfortably. The preset also
+        # undefines _GLIBCXX_ASSERTIONS: ubuntu-26.04's GCC 15 libstdc++ enables that
+        # hardening check by default, and it aborts std::vector::operator[] on a
+        # pre-existing out-of-bounds access (Raviart-Thomas interpolation, EOC-table
+        # tests) that ubuntu-24.04's libstdc++ silently allowed. A libc++ switch was
+        # tried first to route around it but doesn't compile: vcpkg's dune-alugrid
+        # headers instantiate std::basic_string<signed char>, which libstdc++ allows
+        # (non-conformingly) but libc++'s char_traits primary template rejects.
         - preset: clang22-debug
           coverage_llvm: false
         # the coverage leg: the release build compiled with clang-22's native
@@ -194,20 +201,18 @@ jobs:
 
     - name: Install Clang 22
       # Only the clang22-* leg needs clang-22; skip the (slow) apt repo add elsewhere.
-      # The clang22-* presets compile the project with clang-22/clang++-22 against
-      # libc++ (the vcpkg dependencies still build with the runner's default gcc /
-      # libstdc++, exactly as the existing clang-* presets do). clang-22 is not in
-      # the stock ubuntu-26.04 apt repositories, so add the official LLVM apt repo
-      # via the upstream llvm.sh helper; llvm-22 provides the
-      # llvm-profdata-22/llvm-cov-22/llvm-objdump-22 tools the coverage_cpp_llvm
-      # target runs, and libc++-22/libc++abi-22 back the -stdlib=libc++ presets
-      # (see CMakePresets.json's clang22-base).
+      # The clang22-* presets compile the project with clang-22/clang++-22 (the vcpkg
+      # dependencies still build with the runner's default gcc, exactly as the existing
+      # clang-* presets do). clang-22 is not in the stock ubuntu-26.04 apt repositories,
+      # so add the official LLVM apt repo via the upstream llvm.sh helper; llvm-22
+      # provides the llvm-profdata-22/llvm-cov-22/llvm-objdump-22 tools the
+      # coverage_cpp_llvm target runs.
       if: startsWith(matrix.preset, 'clang22')
       run: |
         wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
         chmod +x /tmp/llvm.sh
         sudo /tmp/llvm.sh 22
-        sudo apt-get install -y clang-22 llvm-22 libc++-22-dev libc++abi-22-dev
+        sudo apt-get install -y clang-22 llvm-22
         clang-22 --version
 
     - name: Set up uv
