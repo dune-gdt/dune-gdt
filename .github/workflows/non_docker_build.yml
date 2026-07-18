@@ -194,18 +194,20 @@ jobs:
 
     - name: Install Clang 22
       # Only the clang22-* leg needs clang-22; skip the (slow) apt repo add elsewhere.
-      # The clang22-* presets compile the project with clang-22/clang++-22 (the vcpkg
-      # dependencies still build with the runner's default gcc, exactly as the existing
-      # clang-* presets do). clang-22 is not in the stock ubuntu-26.04 apt repositories,
-      # so add the official LLVM apt repo via the upstream llvm.sh helper; llvm-22
-      # provides the llvm-profdata-22/llvm-cov-22/llvm-objdump-22 tools the
-      # coverage_cpp_llvm target runs.
+      # The clang22-* presets compile the project with clang-22/clang++-22 against
+      # libc++ (the vcpkg dependencies still build with the runner's default gcc /
+      # libstdc++, exactly as the existing clang-* presets do). clang-22 is not in
+      # the stock ubuntu-26.04 apt repositories, so add the official LLVM apt repo
+      # via the upstream llvm.sh helper; llvm-22 provides the
+      # llvm-profdata-22/llvm-cov-22/llvm-objdump-22 tools the coverage_cpp_llvm
+      # target runs, and libc++-22/libc++abi-22 back the -stdlib=libc++ presets
+      # (see CMakePresets.json's clang22-base).
       if: startsWith(matrix.preset, 'clang22')
       run: |
         wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
         chmod +x /tmp/llvm.sh
         sudo /tmp/llvm.sh 22
-        sudo apt-get install -y clang-22 llvm-22
+        sudo apt-get install -y clang-22 llvm-22 libc++-22-dev libc++abi-22-dev
         clang-22 --version
 
     - name: Set up uv
