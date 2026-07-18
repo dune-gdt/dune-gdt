@@ -189,6 +189,18 @@ def discover_matrix_inverter_types(module=None):
     return _discover_solver_machinery_types("MatrixInverter", module)
 
 
+def discover_solver_types(module=None):
+    """Matrix classes for which dune.xt.la binds a linear Solver (dune/xt/la/solver.hh).
+
+    The bound class is `<MatrixClassName>Solver` (bind_Solver names it
+    to_camel_case(container_name + "_solver"), which equals the matrix's own camel-case name with a
+    "Solver" suffix). Only the double-valued CommonDense/IstlSparse/EigenDense/EigenSparse matrices
+    get a bind_Solver call in bindings.cc, so this discovers exactly that subset -- the "Solver"
+    suffix does not collide with the "EigenSolver"/"MatrixInverter" machinery bound alongside them.
+    """
+    return _discover_solver_machinery_types("Solver", module)
+
+
 def dense_sparsity_pattern(rows, cols):
     """A SparsityPatternDefault with every (i, j) entry present.
 

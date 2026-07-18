@@ -98,6 +98,39 @@ def make_eigenvalues_only_solver(solver_cls, mat):
     return solver_cls(mat, opts)
 
 
+def make_full_solver(solver_cls, mat):
+    """Construct solver_cls(mat) pinned to "shifted_qr" with eigenvector computation left on and the
+    eigendecomposition post-check enabled.
+
+    This is the counterpart of make_eigenvalues_only_solver: where that one disables everything but
+    the eigenvalues (to keep the eigenvalue-vs-scipy property cheap), this one keeps
+    compute_eigenvectors at its default_eigen_solver_options() value (on) so the eigenvector
+    accessors return populated data and EigenSolverBase::post_checks() actually runs the
+    T*lambda*T^-1 == A check internally -- the branches in dune/xt/la/eigen-solver/internal/base.hh
+    (complex_eigendecomposition_check / assert_eigendecomposition) that the eigenvalues-only path
+    skips.
+
+    assert_eigendecomposition is an *absolute* tolerance (base.hh compares |error_ij| > tolerance),
+    so its 1e-10 default would spuriously trip on the larger-magnitude SPD matrices spd_matrices()
+    generates (entries can reach the hundreds). We pin it to 1e-6, still positive -- so the
+    post-check branch is exercised -- but comfortably above the ~1e-9 worst-case reconstruction
+    error for these small, bounded, +n*I-regularized systems. "shifted_qr" (pure C++, exercised by
+    the existing eigensolver_for_real_matrix_with_real_evs*.tpl suite) is used rather than the
+    default "lapack" for the same reason documented in make_eigenvalues_only_solver: the LAPACK
+    eigenvector branch has a still-open defect.
+    """
+    opts = dict(solver_cls.options("shifted_qr"))
+    opts["assert_eigendecomposition"] = "1e-6"
+    return solver_cls(mat, opts)
+
+
+def matrix_as_numpy(mat):
+    return np.array(
+        [[mat.get_entry(ii, jj) for jj in range(mat.cols)] for ii in range(mat.rows)],
+        dtype=complex,
+    )
+
+
 @pytest.mark.skipif(not MATRIX_CLASSES, reason="no eigen-solver binding available")
 @pytest.mark.parametrize("cls", MATRIX_CLASSES, ids=lambda c: c.__name__)
 class TestEigenSolverAgainstScipy:
@@ -128,6 +161,47 @@ class TestEigenSolverAgainstScipy:
         assert solver.max_eigenvalues(1)[0] == pytest.approx(
             expected[-1], rel=1e-6, abs=1e-8
         )
+
+    @settings(deadline=None)
+    @given(arr=spd_matrices(min_size=2))
+    def test_min_and_max_eigenvalues_return_k_extremes(self, cls, arr):
+        # min/max_eigenvalues(k) for k > 1 exercises the partial-sort branch in
+        # EigenSolverBase (base.hh), which min/max_eigenvalues(1) above does not.
+        n = arr.shape[0]
+        k = min(2, n)
+        solver = make_eigenvalues_only_solver(
+            eigen_solver_for(cls), make_matrix(cls, arr)
+        )
+        expected = np.sort(scipy_linalg.eigvalsh(arr))
+
+        smallest = np.sort(np.array(solver.min_eigenvalues(k)))
+        largest = np.sort(np.array(solver.max_eigenvalues(k)))
+        assert smallest == pytest.approx(expected[:k], rel=1e-6, abs=1e-8)
+        assert largest == pytest.approx(expected[-k:], rel=1e-6, abs=1e-8)
+
+    @settings(deadline=None)
+    @given(arr=spd_matrices())
+    def test_eigenvectors_satisfy_the_eigenrelation(self, cls, arr):
+        # Enabling eigenvector computation + the eigendecomposition post-check drives the branches
+        # in base.hh that the eigenvalues-only property test skips. A*V == V*diag(lambda) is
+        # checked directly (order-consistent: eigenvalues() and eigenvectors() share a column
+        # order), which sidesteps the non-uniqueness of eigenvectors for repeated eigenvalues.
+        solver = make_full_solver(eigen_solver_for(cls), make_matrix(cls, arr))
+        evals = np.array([complex(ev) for ev in solver.eigenvalues()])
+        vectors = matrix_as_numpy(solver.eigenvectors())
+        a = arr.astype(complex)
+        residual = a @ vectors - vectors @ np.diag(evals)
+        scale = float(np.linalg.norm(a)) + 1.0
+        assert float(np.linalg.norm(residual)) == pytest.approx(0.0, abs=1e-6 * scale)
+
+    @settings(deadline=None)
+    @given(arr=spd_matrices())
+    def test_eigenvectors_inverse_is_the_inverse(self, cls, arr):
+        solver = make_full_solver(eigen_solver_for(cls), make_matrix(cls, arr))
+        vectors = matrix_as_numpy(solver.eigenvectors())
+        inverse = matrix_as_numpy(solver.eigenvectors_inverse())
+        identity = np.eye(arr.shape[0], dtype=complex)
+        assert vectors @ inverse == pytest.approx(identity, rel=1e-6, abs=1e-6)
 
 
 if __name__ == "__main__":

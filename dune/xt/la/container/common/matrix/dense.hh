@@ -413,7 +413,7 @@ public:
     for (size_t cc = 0; cc < cols(); ++cc) {
       V2::set_entry(yy, cc, 0.);
       for (size_t rr = 0; rr < rows(); ++rr)
-        V2::add_to_entry(yy, cc, get_entry(cc, rr) * V1::get_entry(xx, rr));
+        V2::add_to_entry(yy, cc, get_entry(rr, cc) * V1::get_entry(xx, rr));
     }
   }
 
