@@ -18,10 +18,11 @@ one fixed combination per .cc file.
 import dataclasses
 
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from dune.xt.test.hypothesis_strategies import (
+    GridSpec,
     cfl_respecting_dt,
     constant_transport_velocities,
     fv_mass,
@@ -336,6 +337,22 @@ def test_estimate_dt_matches_hand_computed_bound(case):
 @given(
     case=_linear_transport_cases(dims=(1,)),
     slope=st.sampled_from(["minmod", "mc", "superbee", "central", "no_reconstruction"]),
+)
+# Regression (#320 WP6): SuperbeeSlope::superbee recursed into itself (no scalar overload) and
+# overflowed the stack -> segfault. The bug is data-independent, so a fixed minimal case suffices;
+# pin slope="superbee" here so this path is always exercised regardless of what @given samples.
+@example(
+    case=(
+        GridSpec(
+            dim=1,
+            element="cube",
+            lower_left=(0.0,),
+            upper_right=(1.0,),
+            num_elements=(_MIN_ELEMENTS_PER_DIM,),
+        ),
+        (1.0,),
+    ),
+    slope="superbee",
 )
 def test_linear_reconstruction_preserves_cell_averages(case, slope):
     """The reconstructed order-1 DG function has the same cell averages, hence the same mass.
