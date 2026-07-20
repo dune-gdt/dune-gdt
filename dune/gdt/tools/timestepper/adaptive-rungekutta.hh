@@ -217,7 +217,7 @@ public:
     , tol_(tol)
     , scale_factor_min_(scale_factor_min)
     , scale_factor_max_(scale_factor_max)
-    , u_tmp_(BaseType::current_solution())
+    , u_tmp_(BaseType::current_solution().copy_as_discrete_function())
     , A_(A)
     , b_1_(b_1)
     , b_2_(b_2)
@@ -241,7 +241,7 @@ public:
     }
     // store as many discrete functions as needed for intermediate stages
     for (size_t ii = 0; ii < num_stages_; ++ii) {
-      stages_k_.emplace_back(current_solution());
+      stages_k_.emplace_back(current_solution().copy_as_discrete_function());
     }
   } // constructor AdaptiveRungeKuttaTimeStepper
 
@@ -249,6 +249,9 @@ public:
   using BaseType::current_time;
   using BaseType::solve;
 
+  // NOTE: reset_begin_time was added to TimeStepperInterface::solve after this override was written;
+  // without it this is not an override and the class does not even instantiate (this went unnoticed
+  // for as long as nothing instantiated AdaptiveRungeKuttaTimeStepper, see the Python bindings).
   RangeFieldType solve(const RangeFieldType t_end,
                        const RangeFieldType initial_dt,
                        const size_t num_save_steps,
@@ -257,6 +260,7 @@ public:
                        const bool visualize,
                        const bool write_discrete,
                        const bool write_exact,
+                       const bool reset_begin_time,
                        const std::string prefix,
                        typename BaseType::DiscreteSolutionType& sol,
                        const typename BaseType::VisualizerType& visualizer,
@@ -271,6 +275,7 @@ public:
                                      visualize,
                                      write_discrete,
                                      write_exact,
+                                     reset_begin_time,
                                      prefix,
                                      sol,
                                      visualizer,
@@ -295,24 +300,24 @@ public:
       actual_dt *= time_step_scale_factor;
       size_t first_stage_to_compute = 0;
       if (last_stage_of_previous_step_) {
-        stages_k_[0].dofs().vector() = last_stage_of_previous_step_->dofs().vector();
+        stages_k_[0]->dofs().vector() = last_stage_of_previous_step_->dofs().vector();
         first_stage_to_compute = 1;
       }
 
       for (size_t ii = first_stage_to_compute; ii < num_stages_; ++ii) {
-        std::fill(stages_k_[ii].dofs().vector().begin(), stages_k_[ii].dofs().vector().end(), RangeFieldType(0.));
-        u_tmp_.dofs().vector() = u_n.dofs().vector();
+        std::fill(stages_k_[ii]->dofs().vector().begin(), stages_k_[ii]->dofs().vector().end(), RangeFieldType(0.));
+        u_tmp_->dofs().vector() = u_n.dofs().vector();
         for (size_t jj = 0; jj < ii; ++jj)
-          u_tmp_.dofs().vector() += stages_k_[jj].dofs().vector() * (actual_dt * r_ * (A_[ii][jj]));
+          u_tmp_->dofs().vector() += stages_k_[jj]->dofs().vector() * (actual_dt * r_ * (A_[ii][jj]));
         try {
-          op_.apply(u_tmp_.dofs().vector(), stages_k_[ii].dofs().vector(), t + actual_dt * c_[ii]);
-        } catch (const Dune::MathError& e) {
+          op_.apply(u_tmp_->dofs().vector(), stages_k_[ii]->dofs().vector(), t + actual_dt * c_[ii]);
+        } catch (const Dune::MathError&) {
           mixed_error = 1e10;
           skip_error_computation = true;
           time_step_scale_factor = 0.5;
           break;
 #if HAVE_TBB && __has_include(<tbb/tbb_exception.h>)
-        } catch (const tbb::captured_exception& e) {
+        } catch (const tbb::captured_exception&) {
           mixed_error = 1e10;
           skip_error_computation = true;
           time_step_scale_factor = 0.5;
@@ -323,17 +328,17 @@ public:
 
       if (!skip_error_computation) {
         // compute error vector
-        u_tmp_.dofs().vector() = stages_k_[0].dofs().vector() * b_diff_[0];
+        u_tmp_->dofs().vector() = stages_k_[0]->dofs().vector() * b_diff_[0];
         for (size_t ii = 1; ii < num_stages_; ++ii)
-          u_tmp_.dofs().vector() += stages_k_[ii].dofs().vector() * b_diff_[ii];
-        u_tmp_.dofs().vector() *= actual_dt * r_;
+          u_tmp_->dofs().vector() += stages_k_[ii]->dofs().vector() * b_diff_[ii];
+        u_tmp_->dofs().vector() *= actual_dt * r_;
 
         // calculate u at timestep n+1
         for (size_t ii = 0; ii < num_stages_; ++ii)
-          u_n.dofs().vector() += stages_k_[ii].dofs().vector() * (actual_dt * r_ * b_1_[ii]);
+          u_n.dofs().vector() += stages_k_[ii]->dofs().vector() * (actual_dt * r_ * b_1_[ii]);
 
         // scale error, use absolute error if norm is less than 0.01 and relative error else
-        auto& diff_vector = u_tmp_.dofs().vector();
+        auto& diff_vector = u_tmp_->dofs().vector();
         for (size_t ii = 0; ii < diff_vector.size(); ++ii) {
           if (std::abs(u_n.dofs().vector()[ii]) > 0.01)
             diff_vector[ii] /= std::abs(u_n.dofs().vector()[ii]);
@@ -345,13 +350,13 @@ public:
 
         if (mixed_error > tol_) { // go back from u at timestep n+1 to timestep n
           for (size_t ii = 0; ii < num_stages_; ++ii)
-            u_n.dofs().vector() += stages_k_[ii].dofs().vector() * (-1.0 * r_ * actual_dt * b_1_[ii]);
+            u_n.dofs().vector() += stages_k_[ii]->dofs().vector() * (-1.0 * r_ * actual_dt * b_1_[ii]);
         }
       }
     } // while (mixed_error > tol_)
     if (!last_stage_of_previous_step_)
-      last_stage_of_previous_step_ = std::make_unique<DiscreteFunctionType>(u_n);
-    last_stage_of_previous_step_->dofs().vector() = stages_k_[num_stages_ - 1].dofs().vector();
+      last_stage_of_previous_step_ = u_n.copy_as_discrete_function();
+    last_stage_of_previous_step_->dofs().vector() = stages_k_[num_stages_ - 1]->dofs().vector();
 
     t += actual_dt;
 
@@ -364,13 +369,13 @@ private:
   const RangeFieldType tol_;
   const RangeFieldType scale_factor_min_;
   const RangeFieldType scale_factor_max_;
-  DiscreteFunctionType u_tmp_;
+  std::unique_ptr<DiscreteFunctionType> u_tmp_;
   const MatrixType A_;
   const VectorType b_1_;
   const VectorType b_2_;
   const VectorType c_;
   const VectorType b_diff_;
-  std::vector<DiscreteFunctionType> stages_k_;
+  std::vector<std::unique_ptr<DiscreteFunctionType>> stages_k_;
   const size_t num_stages_;
   std::unique_ptr<DiscreteFunctionType> last_stage_of_previous_step_;
 }; // class AdaptiveRungeKuttaTimeStepper

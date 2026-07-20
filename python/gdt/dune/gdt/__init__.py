@@ -75,6 +75,9 @@ for mod_name in (  # order should not matter!
     "_local_operators_element_interface",
     "_local_operators_intersection_indicator",
     "_local_operators_intersection_interface",
+    "_operators_advection_dg_1d",
+    "_operators_advection_dg_2d",
+    "_operators_advection_dg_3d",
     "_operators_advection_fv_1d",
     "_operators_advection_fv_2d",
     "_operators_advection_fv_3d",
@@ -96,6 +99,9 @@ for mod_name in (  # order should not matter!
     "_operators_operator_1d",
     "_operators_operator_2d",
     "_operators_operator_3d",
+    "_operators_reconstruction_1d",
+    "_operators_reconstruction_2d",
+    "_operators_reconstruction_3d",
     "_prolongations",
     "_spaces_bochner",
     "_spaces_h1_continuous_lagrange_1d",
@@ -110,7 +116,9 @@ for mod_name in (  # order should not matter!
     "_spaces_skeleton_finite_volume",
     "_tools_adaptation_helper",
     "_tools_dirichlet_constraints",
+    "_tools_euler",
     "_tools_grid_quality_estimates",
+    "_tools_hyperbolic",
     "_tools_sparsity_pattern",
     "_tools_timestepper_1d",
     "_tools_timestepper_2d",
@@ -206,6 +214,12 @@ IstlVectorFunctional = _make_dispatch(
 AdvectionFvOperator = _make_dispatch(
     "_operators_advection_fv", "advection_fv_operator", dim_kwarg="space"
 )
+AdvectionDgOperator = _make_dispatch(
+    "_operators_advection_dg", "advection_dg_operator", dim_kwarg="space"
+)
+LinearReconstructionOperator = _make_dispatch(
+    "_operators_reconstruction", "linear_reconstruction_operator", dim_kwarg="space"
+)
 # ExplicitRungeKuttaTimeStepper's `op` (first positional argument) has no dimension-carrying
 # attribute of its own; `initial_values` (second positional argument, a DiscreteFunction) does
 # (`.dim_domain`, see discretefunction.hh), hence dim_arg=1 instead of the usual 0.
@@ -232,6 +246,33 @@ ExplicitRungeKutta4TimeStepper = _make_dispatch(
     "explicit_rungekutta_classic_fourth_order_time_stepper",
     dim_arg=1,
     dim_kwarg="initial_values",
+)
+BogackiShampineTimeStepper = _make_dispatch(
+    "_tools_timestepper",
+    "bogacki_shampine_time_stepper",
+    dim_arg=1,
+    dim_kwarg="initial_values",
+)
+DormandPrinceTimeStepper = _make_dispatch(
+    "_tools_timestepper",
+    "dormand_prince_time_stepper",
+    dim_arg=1,
+    dim_kwarg="initial_values",
+)
+# the C++ default method of AdaptiveRungeKuttaTimeStepper is Dormand-Prince (RK45)
+AdaptiveRungeKuttaTimeStepper = DormandPrinceTimeStepper
+# The fractional-step/Strang splitting factories take two already-constructed steppers; steppers
+# expose the grid dimension via the dim_domain property of their TimeStepperInterface base, so the
+# usual dispatch works on the first stepper.
+FractionalStepTimeStepper = _make_dispatch(
+    "_tools_timestepper",
+    "fractional_step_time_stepper",
+    dim_kwarg="first_stepper",
+)
+StrangSplittingTimeStepper = _make_dispatch(
+    "_tools_timestepper",
+    "strang_splitting_time_stepper",
+    dim_kwarg="first_stepper",
 )
 
 

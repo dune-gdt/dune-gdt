@@ -37,6 +37,11 @@ for a constant velocity $v$, using a first-order finite volume (FV) upwind schem
 explicit Euler in time -- the same discretization as the C++ `linear-transport/` test suite
 (`dune/gdt/test/linear-transport/`), but assembled here from the Python bindings added for #320
 WP6: `dune.gdt.NumericalUpwindFlux`, `AdvectionFvOperator` and `ExplicitEulerTimeStepper`.
+Sections 4--8 then exercise the follow-up bindings on the same problem: automatic time step
+estimation (`estimate_dt_for_hyperbolic_system`), adaptive Runge-Kutta time stepping
+(`DormandPrinceTimeStepper`), a discontinuous Galerkin discretization (`AdvectionDgOperator`),
+slope-limited linear reconstruction of cell averages (`LinearReconstructionOperator`) and
+dimensional operator splitting (`StrangSplittingTimeStepper`).
 
 ```{admonition} No periodic grid views yet
 :class: note
@@ -257,6 +262,181 @@ for _ in range(80):
 
 _ = visualize_function(stepper_2d.current_solution())
 ```
+
+## 4: choosing `dt` automatically
+
+Instead of hand-rolling the CFL formula, `estimate_dt_for_hyperbolic_system` estimates a stable
+time step length following [Cockburn, Coquel, LeFloch, 1995] from the state's data range, the
+flux derivative on that range and the grid's worst perimeter/volume ratio. For linear transport on
+an equidistant 1d grid the estimate is exactly $h / (2 |v|)$, i.e. CFL number $0.5$:
+
+```{code-cell}
+from dune.gdt import estimate_dt_for_hyperbolic_system
+
+u_state = default_interpolation(
+    GridFunction(grid, gaussian_bump_expression(1, center, sigma)), space
+)
+dt_estimated = estimate_dt_for_hyperbolic_system(
+    grid, u_state, linear_transport_flux_expression(velocity)
+)
+print(f"estimated dt = {dt_estimated:.5f}")
+print(f"h / (2 |v|)  = {(10.0 / 64) / (2 * abs(velocity[0])):.5f}")
+print(f"hand-picked  = {dt:.5f}  (CFL number 0.4)")
+```
+
+## 5: adaptive time stepping
+
+`DormandPrinceTimeStepper` (embedded RK45; `BogackiShampineTimeStepper` is the cheaper embedded
+RK23) repeats each step until an internal error estimate meets `tol` and returns a suggested length
+for the next step, so no CFL bookkeeping is needed at all -- `dt` only seeds the first attempt.
+`AdaptiveRungeKuttaTimeStepper` is an alias for the Dormand-Prince variant, matching the C++
+default:
+
+```{code-cell}
+from dune.gdt import DormandPrinceTimeStepper
+
+u_adaptive = default_interpolation(
+    GridFunction(grid, gaussian_bump_expression(1, center, sigma)), space
+)
+op_adaptive = AdvectionFvOperator(
+    space, NumericalUpwindFlux(grid, linear_transport_flux_expression(velocity))
+)
+op_adaptive.boundary_treatment(lambda u: u)
+
+adaptive_stepper = DormandPrinceTimeStepper(op_adaptive, u_adaptive, r=-1.0, tol=1e-4)
+
+T_adaptive = 2.0
+suggested_dt = dt_estimated
+num_steps = 0
+while adaptive_stepper.current_time() < T_adaptive - 1e-10:
+    max_dt = T_adaptive - adaptive_stepper.current_time()
+    suggested_dt = adaptive_stepper.step(suggested_dt, max_dt)
+    num_steps += 1
+
+_ = visualize_function(adaptive_stepper.current_solution(), grid)
+plt.title(f"adaptive RK45: t = {adaptive_stepper.current_time():.2f} in {num_steps} steps")
+```
+
+## 6: higher order in space: discontinuous Galerkin
+
+`AdvectionDgOperator` discretizes the same conservation law with a discontinuous Galerkin scheme on
+a `DiscontinuousLagrangeSpace` (order 1 here), reusing the very same numerical flux at the element
+interfaces. Two differences to the FV operator: it has to be `assemble()`d once before use (it
+precomputes the local mass matrices it inverts in every application), and the explicit CFL
+condition is stricter by roughly $1 / (2\,\text{order} + 1)$:
+
+```{code-cell}
+from dune.gdt import (
+    AdvectionDgOperator,
+    DiscontinuousLagrangeSpace,
+    ExplicitRungeKutta2TimeStepper,
+)
+
+dg_space = DiscontinuousLagrangeSpace(grid, order=1)
+u_dg = default_interpolation(
+    GridFunction(grid, gaussian_bump_expression(1, center, sigma)), dg_space
+)
+op_dg = AdvectionDgOperator(
+    dg_space, NumericalUpwindFlux(grid, linear_transport_flux_expression(velocity))
+)
+op_dg.boundary_treatment(lambda u: u)
+op_dg.assemble()
+
+dt_dg = dt_estimated / 3.0  # 1 / (2 order + 1) for order 1
+stepper_dg = ExplicitRungeKutta2TimeStepper(op_dg, u_dg, r=-1.0)
+T_dg = 2.0
+while stepper_dg.current_time() < T_dg - 1e-10:
+    stepper_dg.step(min(dt_dg, T_dg - stepper_dg.current_time()))
+
+_ = visualize_function(stepper_dg.current_solution(), grid)
+plt.title(f"DG order 1 + SSP-RK2: t = {stepper_dg.current_time():.2f}")
+```
+
+Compared with the first-order FV solution after the same time (section 1's snapshots), the bump's
+peak is preserved noticeably better -- the expected qualitative gain of the (formally second-order)
+DG(1) scheme over FV on a smooth solution.
+
+## 7: piecewise linear reconstruction of cell averages
+
+`LinearReconstructionOperator` turns the piecewise constant FV cell averages into a slope-limited
+piecewise linear (order-1 discontinuous Lagrange) function -- the spatial reconstruction step of
+MUSCL-type second-order FV schemes. The `slope` limiter is chosen by name (`"minmod"` (default),
+`"mc"`, `"superbee"`, `"central"` or `"no_reconstruction"`); the boundary values fill the
+reconstruction stencils of the boundary cells (our bump is numerically zero there, so passing the
+initial-data expression is fine). Limiting tilts each cell average without moving it, so the cell
+averages -- and with them the total mass -- are preserved exactly:
+
+```{code-cell}
+from dune.gdt import DiscreteFunction, LinearReconstructionOperator
+
+u_fv = default_interpolation(
+    GridFunction(grid, gaussian_bump_expression(1, center, sigma)), space
+)
+reconstruction_op = LinearReconstructionOperator(
+    space,
+    linear_transport_flux_expression(velocity),
+    gaussian_bump_expression(1, center, sigma),
+    slope="minmod",
+)
+u_reconstructed = DiscreteFunction(
+    dg_space, reconstruction_op.apply(u_fv.dofs.vector), name="reconstruction"
+)
+
+h = 10.0 / 64
+mass_fv = float(np.sum(np.asarray(u_fv.dofs.vector, dtype=float)) * h)
+mass_rec = float(np.sum(np.asarray(u_reconstructed.dofs.vector, dtype=float)) * h / 2)
+print(f"mass of the cell averages:  {mass_fv:.12f}")
+print(f"mass of the reconstruction: {mass_rec:.12f}")
+
+_ = visualize_function(u_reconstructed, grid)
+plt.title("minmod-limited linear reconstruction of the FV cell averages")
+```
+
+## 8: operator splitting in 2d
+
+The fractional-step time steppers compose two (arbitrary, already-constructed) steppers: in each
+step of `FractionalStepTimeStepper` the first stepper advances the common state to $t + \Delta t$,
+then the second (Godunov splitting); `StrangSplittingTimeStepper` symmetrizes this (first to
+$t + \Delta t/2$, second to $t + \Delta t$, first again to $t + \Delta t$) to restore second-order
+accuracy in time. Here the 2d transport is split dimensionally, $v = (v_0, 0) + (0, v_1)$, with
+both substeppers evolving the *same* `DiscreteFunction`:
+
+```{code-cell}
+from dune.gdt import StrangSplittingTimeStepper
+
+u_split = default_interpolation(
+    GridFunction(grid_2d, gaussian_bump_expression(2, center_2d, sigma_2d)), space_2d
+)
+substeppers = []
+for directional_velocity in [(velocity_2d[0], 0.0), (0.0, velocity_2d[1])]:
+    op_directional = AdvectionFvOperator(
+        space_2d,
+        NumericalUpwindFlux(
+            grid_2d, linear_transport_flux_expression(directional_velocity)
+        ),
+    )
+    op_directional.boundary_treatment(lambda u: u)
+    substeppers.append(ExplicitEulerTimeStepper(op_directional, u_split, r=-1.0))
+
+splitting_stepper = StrangSplittingTimeStepper(substeppers[0], substeppers[1])
+
+volumes_2d = []
+grid_2d.apply_on_each_element(lambda e: volumes_2d.append(e.volume))
+mass = lambda u: float(  # noqa: E731
+    np.dot(np.asarray(u.dofs.vector, dtype=float), np.asarray(volumes_2d))
+)
+
+mass_before = mass(u_split)
+for _ in range(80):
+    splitting_stepper.step(dt_2d)
+print(f"mass before: {mass_before:.12f}")
+print(f"mass after:  {mass(splitting_stepper.current_solution()):.12f}")
+
+_ = visualize_function(splitting_stepper.current_solution())
+```
+
+The bump ends up in the same place as in section 3's unsplit evolution, and the discrete mass is
+conserved -- each substep is a mass-conserving FV update.
 
 Download the code:
 {download}`example__linear_transport_fv.md`

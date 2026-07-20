@@ -385,10 +385,13 @@ public:
     assert(xx.size() == cols() && yy.size() == rows());
     if (storage_layout == Common::StorageLayout::dense_row_major && V1::is_contiguous) {
       for (size_t rr = 0; rr < rows(); ++rr)
-        V2::set_entry(
-            yy,
-            rr,
-            Common::transform_reduce(&get_entry_ref(rr, 0.), &get_entry_ref(rr + 1, 0.), V1::data(xx), ScalarType(0.)));
+        // end iterator via pointer arithmetic on the row's first (valid) entry: &get_entry_ref(rr + 1, 0)
+        // forms a reference to entries_[rows * cols] on the last row -- a one-past-the-end deref that a
+        // hardened libstdc++ operator[] aborts on (harmless on unhardened stdlibs, hence CI-invisible).
+        V2::set_entry(yy,
+                      rr,
+                      Common::transform_reduce(
+                          &get_entry_ref(rr, 0.), &get_entry_ref(rr, 0.) + cols(), V1::data(xx), ScalarType(0.)));
     } else {
       assert(xx.size() == cols() && yy.size() == rows());
       yy *= ScalarType(0.);
