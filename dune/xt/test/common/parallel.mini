@@ -1,5 +1,3 @@
 __name = _{threading.max_count}-threads
 
-threads = dummy, dummy, dummy
-threading.max_count = 1, 2, 4 | expand threads
-1, TBB_FOUND, TBB_FOUND | expand threads | cmake_guard
+threading.max_count = 1, 2, 4 | expand
