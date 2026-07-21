@@ -33,15 +33,29 @@ struct TransformedGridFunctionTest : public ::testing::Test
   using ElementType = XT::Grid::extract_entity_t<GridType>;
   static constexpr size_t d = GridType::dimension;
 
-  // scalar source function: u(x) = x[0] + x[1] (evaluated in local coordinates of each element)
   using SourceType = GenericGridFunction<ElementType, 1, 1>;
   using SourceRangeType = typename SourceType::LocalFunctionType::RangeType;
+  using TransformedType = TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>>;
+
+  // transformations reused across the tests below (kept as members to avoid duplicating them per test)
+  static SourceRangeType square(const SourceRangeType& u)
+  {
+    SourceRangeType ret;
+    ret[0] = u[0] * u[0];
+    return ret;
+  }
+
+  static SourceRangeType identity(const SourceRangeType& u)
+  {
+    return u;
+  }
 
   TransformedGridFunctionTest()
     : grid_(XT::Grid::make_cube_grid<GridType>(0., 1., 4))
     , source_(/*order=*/
               1,
               /*post_bind=*/[](const ElementType&) {},
+              // scalar source function u(x) = x[0] + x[1] (in local coordinates of each element)
               /*evaluate=*/
               [](const auto& xx, const auto& /*param*/) {
                 SourceRangeType ret;
@@ -60,54 +74,35 @@ struct TransformedGridFunctionTest : public ::testing::Test
 
 TEST_F(TransformedGridFunctionTest, is_constructible)
 {
-  const auto transformation = [](const SourceRangeType& u) {
-    SourceRangeType ret;
-    ret[0] = u[0] * u[0];
-    return ret;
-  };
-  [[maybe_unused]] TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>> transformed(source_,
-                                                                                                 transformation);
+  [[maybe_unused]] TransformedType transformed(source_, &square);
 }
 
 TEST_F(TransformedGridFunctionTest, is_constructible_via_factory)
 {
-  const auto transformation = [](const SourceRangeType& u) {
-    SourceRangeType ret;
-    ret[0] = u[0] * u[0];
-    return ret;
-  };
-  [[maybe_unused]] auto transformed = make_transformed_function<1, 1, double>(source_, transformation);
+  [[maybe_unused]] auto transformed = make_transformed_function<1, 1, double>(source_, &square);
 }
 
 TEST_F(TransformedGridFunctionTest, default_name)
 {
-  const auto transformation = [](const SourceRangeType& u) { return u; };
-  TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>> transformed(source_, transformation);
+  TransformedType transformed(source_, &identity);
   EXPECT_EQ(std::string("transformed source"), transformed.name());
 }
 
 TEST_F(TransformedGridFunctionTest, custom_name)
 {
-  const auto transformation = [](const SourceRangeType& u) { return u; };
-  TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>> transformed(source_, transformation, "squared");
+  TransformedType transformed(source_, &identity, "squared");
   EXPECT_EQ(std::string("squared"), transformed.name());
 }
 
 TEST_F(TransformedGridFunctionTest, factory_default_name)
 {
-  const auto transformation = [](const SourceRangeType& u) { return u; };
-  auto transformed = make_transformed_function<1, 1, double>(source_, transformation);
+  auto transformed = make_transformed_function<1, 1, double>(source_, &identity);
   EXPECT_EQ(std::string("xt.functions.transformed"), transformed.name());
 }
 
 TEST_F(TransformedGridFunctionTest, copyable)
 {
-  const auto transformation = [](const SourceRangeType& u) {
-    SourceRangeType ret;
-    ret[0] = u[0] * u[0];
-    return ret;
-  };
-  TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>> transformed(source_, transformation, "squared");
+  TransformedType transformed(source_, &square, "squared");
 
   // copy constructor
   auto copy = transformed;
@@ -125,12 +120,7 @@ TEST_F(TransformedGridFunctionTest, copyable)
 
 TEST_F(TransformedGridFunctionTest, is_bindable)
 {
-  const auto transformation = [](const SourceRangeType& u) {
-    SourceRangeType ret;
-    ret[0] = u[0] * u[0];
-    return ret;
-  };
-  TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>> transformed(source_, transformation);
+  TransformedType transformed(source_, &square);
 
   auto local_transformed = transformed.local_function();
   const auto leaf_view = grid_.leaf_view();
@@ -140,12 +130,7 @@ TEST_F(TransformedGridFunctionTest, is_bindable)
 
 TEST_F(TransformedGridFunctionTest, local_order_matches_source)
 {
-  const auto transformation = [](const SourceRangeType& u) {
-    SourceRangeType ret;
-    ret[0] = u[0] * u[0];
-    return ret;
-  };
-  TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>> transformed(source_, transformation);
+  TransformedType transformed(source_, &square);
 
   auto local_source = source_.local_function();
   auto local_transformed = transformed.local_function();
@@ -159,12 +144,7 @@ TEST_F(TransformedGridFunctionTest, local_order_matches_source)
 
 TEST_F(TransformedGridFunctionTest, local_evaluate_applies_transformation)
 {
-  const auto transformation = [](const SourceRangeType& u) {
-    SourceRangeType ret;
-    ret[0] = u[0] * u[0];
-    return ret;
-  };
-  TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>> transformed(source_, transformation);
+  TransformedType transformed(source_, &square);
 
   auto local_source = source_.local_function();
   auto local_transformed = transformed.local_function();
@@ -183,8 +163,7 @@ TEST_F(TransformedGridFunctionTest, local_evaluate_applies_transformation)
 
 TEST_F(TransformedGridFunctionTest, local_jacobian_throws)
 {
-  const auto transformation = [](const SourceRangeType& u) { return u; };
-  TransformedGridFunction<GridFunctionInterface<ElementType, 1, 1>> transformed(source_, transformation);
+  TransformedType transformed(source_, &identity);
 
   auto local_transformed = transformed.local_function();
   const auto leaf_view = grid_.leaf_view();
