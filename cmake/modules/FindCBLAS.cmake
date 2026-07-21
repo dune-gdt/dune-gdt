@@ -15,13 +15,15 @@ include(DuneXTHints)
 message("-- checking for cblas library")
 find_library(CBLAS_LIBRARY cblas HINTS ${LIB_HINTS})
 if("${CBLAS_LIBRARY}" MATCHES "CBLAS_LIBRARY-NOTFOUND")
-  # Standalone libcblas not found; vcpkg's OpenBLAS bundles CBLAS inside libopenblas
-  # (built static to avoid AVX512 dynamic-kernel failures on gcc-13), so try that as a
-  # fallback -- the cblas_* symbols and cblas.h header are present inside it.
+  # Standalone libcblas not found; vcpkg's OpenBLAS bundles CBLAS inside libopenblas (built static to avoid AVX512
+  # dynamic-kernel failures on gcc-13), so try that as a fallback -- the cblas_* symbols and cblas.h header are present
+  # inside it.
   find_library(_cblas_openblas_fallback openblas HINTS ${LIB_HINTS})
   if(NOT "${_cblas_openblas_fallback}" MATCHES "_cblas_openblas_fallback-NOTFOUND")
     message("--   standalone CBLAS not found; using OpenBLAS as CBLAS provider")
-    set(CBLAS_LIBRARY "${_cblas_openblas_fallback}" CACHE PATH "Path to the CBLAS library" FORCE)
+    set(CBLAS_LIBRARY
+        "${_cblas_openblas_fallback}"
+        CACHE PATH "Path to the CBLAS library" FORCE)
   else()
     message("--   CBLAS library not found, make sure you have CBLAS installed")
   endif()
