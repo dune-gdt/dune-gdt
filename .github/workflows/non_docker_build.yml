@@ -145,20 +145,7 @@ jobs:
         # repeatedly pushing this leg over the 16 GB runner's memory ceiling late in
         # the build (external-looking "runner received a shutdown signal" / exit 143
         # failures, see PR #329's discussion), while clang-22 already builds the
-        # coverage leg's equally template-heavy bindings comfortably. The preset also
-        # defines _GLIBCXX_NO_ASSERTIONS: recent libstdc++ (this GCC 15 runner) auto-
-        # enables _GLIBCXX_ASSERTIONS at -O0, and its std::vector::operator[] bounds
-        # check aborts on a pre-existing out-of-bounds access (Raviart-Thomas
-        # interpolation, EOC-table tests) that went unnoticed under ubuntu-24.04's
-        # gcc (whose libstdc++ predates that auto-enable-at-O0 default). The
-        # coverage leg builds Release (optimized), so it never hits the -O0 default
-        # and needs no such flag. Undefining _GLIBCXX_ASSERTIONS itself (tried first)
-        # does not work: libstdc++ re-enables it via its own internal #ifndef guard
-        # regardless, since the escape hatch is the dedicated _GLIBCXX_NO_ASSERTIONS
-        # macro, not un-defining _GLIBCXX_ASSERTIONS. A libc++ switch was tried before
-        # that but doesn't compile: vcpkg's dune-alugrid headers instantiate
-        # std::basic_string<signed char>, which libstdc++ allows (non-conformingly)
-        # but libc++'s char_traits primary template rejects.
+        # coverage leg's equally template-heavy bindings comfortably.
         - preset: clang22-debug
           coverage_llvm: false
         # the coverage leg: the release build compiled with clang-22's native

@@ -200,10 +200,7 @@
       "inherits": [
         "clang22-base",
         "debug"
-      ],
-      "cacheVariables": {
-        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic -D_GLIBCXX_NO_ASSERTIONS"
-      }
+      ]
     }
   ],
   "buildPresets": [
