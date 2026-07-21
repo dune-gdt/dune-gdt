@@ -155,13 +155,20 @@ GTEST_TEST(VectorView, assignment)
     EXPECT_DOUBLE_EQ(double(ii) + 100., view.get_entry(ii));
 
   // assign from another view (copies contents, not the reference)
-  VectorType other_vector(3, 42.);
+  VectorType other_vector(3, 0.);
+  for (size_t ii = 0; ii < other_vector.size(); ++ii)
+    other_vector.set_entry(ii, double(ii) + 42.); // [42, 43, 44]
   MutableView other_view(other_vector, 0, 3);
   view = other_view;
   for (size_t ii = 0; ii < view.size(); ++ii)
-    EXPECT_DOUBLE_EQ(42., view.get_entry(ii));
-  // the target vector was written, the source untouched
-  EXPECT_DOUBLE_EQ(42., vector.get_entry(2));
+    EXPECT_DOUBLE_EQ(double(ii) + 42., view.get_entry(ii));
+  // the target vector was written through
+  EXPECT_DOUBLE_EQ(43., vector.get_entry(2));
+  // assignment copies values, it does not alias the source view: mutating one side leaves the other intact
+  other_view.set_entry(0, -1.);
+  EXPECT_DOUBLE_EQ(42., view.get_entry(0));
+  view.set_entry(1, -2.);
+  EXPECT_DOUBLE_EQ(43., other_vector.get_entry(1));
 }
 
 GTEST_TEST(VectorView, arithmetic)
