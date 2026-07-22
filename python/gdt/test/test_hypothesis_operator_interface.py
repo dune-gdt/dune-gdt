@@ -19,7 +19,11 @@ combination operators it returns (dune/gdt/operators/lincomb.hh), which the C++ 
   * ``apply`` is linear: ``op.apply(a*x + y) == a*op.apply(x) + op.apply(y)`` exactly (up to accumulation);
   * the linear combination ``a*L + b*M`` (an operator returned by ``L*a + M*b``) applies as
     ``a*L.apply(x) + b*M.apply(x)`` and reports ``num_ops == 2``; negation ``-L`` flips the sign of apply;
-  * every assembled matrix operator reports ``linear == True``.
+  * every assembled matrix operator reports ``linear == True``;
+  * subtraction ``A - B`` / ``A - vector`` applies as the corresponding difference (the ``"-"`` side of
+    ``make_operator_addsub``), ``jacobian_options(type)`` / ``invert_options(type)`` match a reported type
+    and reject an unknown one, and the jacobian of ``A + vector`` ignores its ConstantOperator summand
+    (the ``type == "zero"`` early return).
 
 All inputs (grid geometry, order, the two scalar coefficients and the probe vectors) are hypothesis-generated;
 only the five binding-instantiated grid types are fixed.
@@ -60,6 +64,18 @@ def _matrix_operator(grid, space, integrand):
     op.append(form)
     op.assemble()
     return op
+
+
+def _empty_matrix_operator(grid, space):
+    """A MatrixOperator with an allocated (zero) matrix, suitable as a jacobian target."""
+    from dune.gdt import MatrixOperator, make_element_sparsity_pattern
+
+    return MatrixOperator(
+        grid,
+        source_space=space,
+        range_space=space,
+        sparsity_pattern=make_element_sparsity_pattern(space),
+    )
 
 
 def _laplace_operator(grid, space, kappa):
@@ -236,6 +252,145 @@ def test_negation_flips_apply(data, spec, kappa, order):
 
     scale = kappa * n + 1.0
     assert _sup_diff(negated, expected) <= 1e-10 * scale
+
+
+# The remaining tests cover the *other* sign of the arithmetic ternaries and the option-selection
+# machinery of dune/gdt/operators/interfaces.hh, which the tests above (only +, *, unary -) never
+# reach: subtraction A - B / A - vector, jacobian_options/invert_options type match-and-mismatch,
+# and the ConstantOperator "zero" jacobian branch reached through a lincomb A + vector.
+
+
+@given(
+    data=st.data(),
+    spec=GRIDS,
+    kappa=KAPPAS,
+    weight=st.floats(1e-2, 1e2, allow_nan=False, allow_infinity=False),
+    order=ORDERS,
+)
+def test_subtraction_of_two_operators_applies_as_difference(
+    data, spec, kappa, weight, order
+):
+    from dune.gdt import ContinuousLagrangeSpace
+
+    grid = spec.make_grid()
+    space = ContinuousLagrangeSpace(grid, order=order)
+    laplace = _laplace_operator(grid, space, kappa)
+    mass = _l2_operator(grid, space, weight)
+
+    # A - B goes through make_operator_addsub(self, other, add=false), the "-" side of the
+    # ternary + the (add ? 1. : -1.) coefficient that "+" (already tested) never reaches.
+    difference = laplace - mass
+    assert difference.num_ops == 2
+
+    n = space.num_DoFs
+    x = _make_vector(n, _probe_values(data, n, "x"))
+
+    lhs = difference.apply(x)
+    rhs = laplace.apply(x)
+    rhs.axpy(-1.0, mass.apply(x))
+
+    scale = (kappa + weight) * n + 1.0
+    assert _sup_diff(lhs, rhs) <= 1e-9 * scale
+
+
+@given(data=st.data(), spec=GRIDS, kappa=KAPPAS, order=ORDERS)
+def test_subtraction_of_a_vector_applies_as_constant_shift(data, spec, kappa, order):
+    from dune.gdt import ContinuousLagrangeSpace
+
+    grid = spec.make_grid()
+    space = ContinuousLagrangeSpace(grid, order=order)
+    op = _laplace_operator(grid, space, kappa)
+
+    n = space.num_DoFs
+    # A - vector goes through make_operator_addsub(self, vector, add=false): the returned lincomb
+    # holds a ConstantOperator whose apply yields `vector` regardless of the source, subtracted here.
+    vector = _make_vector(n, _probe_values(data, n, "vector"))
+    shifted = op - vector
+    assert shifted.num_ops == 2
+
+    x = _make_vector(n, _probe_values(data, n, "x"))
+    lhs = shifted.apply(x)
+    rhs = op.apply(x)
+    rhs.axpy(-1.0, vector)
+
+    scale = kappa * n + 1.0
+    assert _sup_diff(lhs, rhs) <= 1e-9 * scale
+
+
+@given(spec=GRIDS, kappa=KAPPAS, order=ORDERS)
+def test_jacobian_options_match_a_reported_type_and_reject_an_unknown_one(
+    spec, kappa, order
+):
+    from dune.gdt import ContinuousLagrangeSpace
+    from dune.xt.common import DuneError
+
+    grid = spec.make_grid()
+    space = ContinuousLagrangeSpace(grid, order=order)
+    op = _laplace_operator(grid, space, kappa)
+
+    # A MatrixOperator reports exactly one jacobian option, "matrix" (operators/matrix.hh). The
+    # no-argument jacobian_options() list variant is deliberately not called here: its binding
+    # returns a std::vector<std::string> without the pybind11/stl.h converter registered, so it
+    # raises TypeError at the language boundary (a separate binding limitation, not exercised here).
+    # the matching branch: jacobian_options(type) returns the dict whose "type" equals `type`
+    opts = op.jacobian_options("matrix")
+    assert opts["type"] == "matrix"
+    # the non-matching branch: an unreported type is rejected (falls through the loop and throws)
+    with pytest.raises(DuneError):
+        op.jacobian_options("definitely-not-a-reported-jacobian-type")
+
+
+@given(spec=GRIDS, kappa=KAPPAS, order=ORDERS)
+def test_invert_options_match_a_reported_type_and_reject_an_unknown_one(
+    spec, kappa, order
+):
+    from dune.gdt import ContinuousLagrangeSpace
+    from dune.xt.common import DuneError
+
+    grid = spec.make_grid()
+    space = ContinuousLagrangeSpace(grid, order=order)
+    op = _laplace_operator(grid, space, kappa)
+
+    # Every MatrixOperator always reports the base "newton" invert option (operators/matrix.hh
+    # appends it to the linear-solver types via OperatorInterface::all_invert_options). As with
+    # jacobian_options above, the no-argument invert_options() list variant is skipped: its
+    # std::vector<std::string> return has no registered Python converter in this build.
+    opts = op.invert_options("newton")
+    assert opts["type"] == "newton"
+    with pytest.raises(DuneError):
+        op.invert_options("definitely-not-a-reported-invert-type")
+
+
+@given(data=st.data(), spec=GRIDS, kappa=KAPPAS, order=ORDERS)
+def test_jacobian_of_operator_plus_vector_ignores_the_constant_summand(
+    data, spec, kappa, order
+):
+    """A + vector is a lincomb of the matrix operator and a ConstantOperator.
+
+    Its jacobian delegates to each summand: the matrix operator adds its matrix, while the
+    ConstantOperator (reporting jacobian option "zero") takes the ``type == "zero"`` early return
+    and contributes nothing. Hence the assembled jacobian equals the matrix of A alone.
+    """
+    from dune.gdt import ContinuousLagrangeSpace
+
+    grid = spec.make_grid()
+    space = ContinuousLagrangeSpace(grid, order=order)
+    op = _laplace_operator(grid, space, kappa)
+
+    n = space.num_DoFs
+    vector = _make_vector(n, _probe_values(data, n, "vector"))
+    lincomb = op + vector
+    assert lincomb.num_ops == 2
+
+    jacobian_op = _empty_matrix_operator(grid, space)
+    source = _make_vector(n, _probe_values(data, n, "source"))
+    # "lincomb" is the option jacobian_options() reports for a linear combination; it drives each
+    # summand with its own reported option ("matrix" for A, "zero" for the ConstantOperator).
+    assert lincomb.jacobian(source, jacobian_op, "lincomb") is None
+
+    x = _make_vector(n, _probe_values(data, n, "x"))
+    scale = kappa * n + 1.0
+    assert _sup_diff(jacobian_op.apply(x), op.apply(x)) <= 1e-9 * scale
 
 
 if __name__ == "__main__":
