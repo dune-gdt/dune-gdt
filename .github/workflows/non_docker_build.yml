@@ -211,7 +211,7 @@ jobs:
     - name: Set up uv
       # Both legs run the Python test suite, which the ctest xt_test_python /
       # gdt_test_python tests execute via `uv run` (no manually-managed venv).
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
       with:
         # gate the uv cache to trusted runs (pushes/merge queue and same-repo
         # PRs); disable it for external-fork PRs so a fork cannot poison the cache
@@ -518,7 +518,7 @@ jobs:
     # uv provides and manages the Python interpreter itself, so there is no
     # separate actions/setup-python step; all execution below goes through uv.
     - name: Set up uv
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
       with:
         # gate the uv cache to trusted runs (pushes/merge queue and same-repo
         # PRs); disable it for external-fork PRs so a fork cannot poison the cache
