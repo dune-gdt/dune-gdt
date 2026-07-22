@@ -147,13 +147,19 @@ GTEST_TEST(sparsity_pattern, dispatcher_covers_remaining_branches)
   EXPECT_TRUE(is_row_wise_subset(rt_element, rt_auto));
   EXPECT_TRUE(is_row_wise_subset(rt_auto, rt_element));
 
-  // distinct test/ansatz spaces exercise the ansatz-side operands of the || short-circuit chain:
+  // distinct test/ansatz spaces exercise the ansatz-side operands of the || short-circuit chain; both dispatch to the
+  // element stencil, which we check for exactly (the row count alone cannot distinguish the stencils, as it is the
+  // test-space mapper size either way):
   //   ansatz.continuous(0) (a continuous-Lagrange ansatz) ...
   const auto mixed_cg_ansatz = make_sparsity_pattern(dg, cg, grid_view, Stencil::automatic);
-  EXPECT_EQ(dg.mapper().size(), mixed_cg_ansatz.size());
+  const auto mixed_cg_element = make_element_sparsity_pattern(dg, cg, grid_view);
+  EXPECT_TRUE(is_row_wise_subset(mixed_cg_element, mixed_cg_ansatz));
+  EXPECT_TRUE(is_row_wise_subset(mixed_cg_ansatz, mixed_cg_element));
   //   ... and ansatz.continuous_normal_components() (a Raviart-Thomas ansatz), with all earlier operands false
   const auto mixed_rt_ansatz = make_sparsity_pattern(dg, rt, grid_view, Stencil::automatic);
-  EXPECT_EQ(dg.mapper().size(), mixed_rt_ansatz.size());
+  const auto mixed_rt_element = make_element_sparsity_pattern(dg, rt, grid_view);
+  EXPECT_TRUE(is_row_wise_subset(mixed_rt_element, mixed_rt_ansatz));
+  EXPECT_TRUE(is_row_wise_subset(mixed_rt_ansatz, mixed_rt_element));
 
   // an unknown stencil value falls through to the terminal else and throws
   EXPECT_THROW(make_sparsity_pattern(dg, static_cast<Stencil>(99)), XT::Common::Exceptions::wrong_input_given);
