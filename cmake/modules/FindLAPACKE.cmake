@@ -15,16 +15,35 @@ include(DuneXTHints)
 
 message("-- checking for lapacke library")
 find_library(LAPACKE_LIBRARY lapacke HINTS ${LIB_HINTS})
+
+find_package(BLAS)
+find_package(LAPACK)
+
 if("${LAPACKE_LIBRARY}" MATCHES "LAPACKE_LIBRARY-NOTFOUND")
   # Standalone liblapacke not found; vcpkg's OpenBLAS bundles LAPACKE inside libopenblas (built static to avoid AVX512
   # dynamic-kernel failures on gcc-13), so try that as a fallback -- the LAPACKE_* symbols and lapacke.h header are
   # present inside it.
   find_library(_lapacke_openblas_fallback openblas HINTS ${LIB_HINTS})
   if(NOT "${_lapacke_openblas_fallback}" MATCHES "_lapacke_openblas_fallback-NOTFOUND")
-    message("--   standalone LAPACKE not found; using OpenBLAS as LAPACKE provider")
-    set(LAPACKE_LIBRARY
-        "${_lapacke_openblas_fallback}"
-        CACHE PATH "Path to the LAPACKE library" FORCE)
+    include(CheckLibraryExists)
+    # LAPACKE_dsygv wraps Fortran-compiled code; gfortran (and BLAS when available) are needed at link time.
+    set(_prev_cmake_required_libraries "${CMAKE_REQUIRED_LIBRARIES}")
+    set(CMAKE_REQUIRED_LIBRARIES gfortran)
+    if(BLAS_FOUND)
+      list(APPEND CMAKE_REQUIRED_LIBRARIES ${BLAS_LIBRARIES})
+    endif()
+    check_library_exists("${_lapacke_openblas_fallback}" LAPACKE_dsygv "" _lapacke_openblas_has_dsygv)
+    set(CMAKE_REQUIRED_LIBRARIES "${_prev_cmake_required_libraries}")
+    unset(_prev_cmake_required_libraries)
+    if(_lapacke_openblas_has_dsygv)
+      message("--   standalone LAPACKE not found; using OpenBLAS as LAPACKE provider")
+      set(LAPACKE_LIBRARY
+          "${_lapacke_openblas_fallback}"
+          CACHE PATH "Path to the LAPACKE library" FORCE)
+    else()
+      message("--   library 'LAPACKE' not found, make sure you have both LAPACK and LAPACKE installed")
+    endif()
+    unset(_lapacke_openblas_has_dsygv CACHE)
   else()
     message("--   library 'LAPACKE' not found, make sure you have both LAPACK and LAPACKE installed")
   endif()
@@ -49,12 +68,10 @@ else("${LAPACKE_INCLUDE_DIRS}" MATCHES "LAPACKE_INCLUDE_DIRS-NOTFOUND")
   include_sys_dir("${LAPACKE_INCLUDE_DIRS}")
 endif("${LAPACKE_INCLUDE_DIRS}" MATCHES "LAPACKE_INCLUDE_DIRS-NOTFOUND")
 
-find_package(BLAS)
 if(BLAS_FOUND)
   list(APPEND LAPACKE_LIBRARIES ${BLAS_LIBRARIES})
   list(APPEND LAPACKE_LIBRARIES gfortran)
 endif()
-find_package(LAPACK)
 if(LAPACK_FOUND)
   list(APPEND LAPACKE_LIBRARIES ${LAPACK_LIBRARIES})
 endif()

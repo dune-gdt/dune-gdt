@@ -20,10 +20,17 @@ if("${CBLAS_LIBRARY}" MATCHES "CBLAS_LIBRARY-NOTFOUND")
   # inside it.
   find_library(_cblas_openblas_fallback openblas HINTS ${LIB_HINTS})
   if(NOT "${_cblas_openblas_fallback}" MATCHES "_cblas_openblas_fallback-NOTFOUND")
-    message("--   standalone CBLAS not found; using OpenBLAS as CBLAS provider")
-    set(CBLAS_LIBRARY
-        "${_cblas_openblas_fallback}"
-        CACHE PATH "Path to the CBLAS library" FORCE)
+    include(CheckLibraryExists)
+    check_library_exists("${_cblas_openblas_fallback}" cblas_dgemm "" _cblas_openblas_has_dgemm)
+    if(_cblas_openblas_has_dgemm)
+      message("--   standalone CBLAS not found; using OpenBLAS as CBLAS provider")
+      set(CBLAS_LIBRARY
+          "${_cblas_openblas_fallback}"
+          CACHE PATH "Path to the CBLAS library" FORCE)
+    else()
+      message("--   CBLAS library not found, make sure you have CBLAS installed")
+    endif()
+    unset(_cblas_openblas_has_dgemm CACHE)
   else()
     message("--   CBLAS library not found, make sure you have CBLAS installed")
   endif()
