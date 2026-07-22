@@ -92,8 +92,8 @@ KAPPAS = st.floats(1e-2, 1e2, allow_nan=False, allow_infinity=False)
 ORDERS = st.integers(1, 2)
 
 
-@given(spec=GRIDS, kappa=KAPPAS, order=ORDERS)
-def test_constraints_find_boundary_dofs(spec, kappa, order):
+@given(spec=GRIDS, order=ORDERS)
+def test_constraints_find_boundary_dofs(spec, order):
     from dune.gdt import ContinuousLagrangeSpace
 
     grid = spec.make_grid()
