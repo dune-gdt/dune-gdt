@@ -44,18 +44,20 @@ def _has_lapack_backend(cls):
     """Return True iff cls's GeneralizedEigenSolver reports a usable 'lapack' type.
 
     GeneralizedEigenSolverOptions::types() (dune/xt/la/generalized-eigen-solver/default.hh)
-    throws Dune::Exception when LAPACKE is not linked (the types list would be empty). We
-    catch that here so the module-level MATRIX_CLASSES list stays empty and the test class
-    is skipped cleanly instead of failing at import time.
+    throws Dune::Exception (surfaced as DuneError in Python) when LAPACKE is not linked (the
+    types list would be empty). We catch precisely that here so the module-level
+    MATRIX_CLASSES list stays empty and the test class is skipped cleanly instead of failing
+    at import time; any other exception propagates so a real bug is not silently hidden.
     """
     import dune.xt.la as la
+    from dune.xt.common import DuneError
 
     solver_cls = getattr(la, cls.__name__ + "GeneralizedEigenSolver", None)
     if solver_cls is None:
         return False
     try:
         return "lapack" in solver_cls.types()
-    except Exception:
+    except DuneError:
         return False
 
 
