@@ -12,7 +12,9 @@
 
 Each `<Matrix>MatrixInverter` dune.xt.la binds (real and complex Common dense/sparse and Eigen
 dense, discovered via discover_matrix_inverter_types) is checked by the defining property of an
-inverse: A @ inv(A) == inv(A) @ A == I. The compiled dune/xt/test/la/matrixinverter_for_*.tpl tests
+inverse: A @ inv(A) == inv(A) @ A == I, and against numpy.linalg.inv as an independent reference
+(the two agree for a well-conditioned, full-rank system: even the "moore_penrose" pseudo-inverse
+coincides with the true inverse there). The compiled dune/xt/test/la/matrixinverter_for_*.tpl tests
 pin a few fixed matrices to a hand-computed expected inverse; hypothesis instead generates a fresh
 well-conditioned (strictly diagonally dominant, hence invertible by Levy-Desplanques) system every
 run and iterates the full MatrixInverterOptions::types() list, the same way the .tpl suite does.
@@ -95,6 +97,13 @@ def assert_is_inverse(a, inv, context):
     )
     assert inv @ a == pytest.approx(identity, rel=RTOL, abs=ATOL), (
         f"{context}: inv@A != I"
+    )
+    # Independent reference: for a well-conditioned, full-rank system the bound inverse must
+    # agree entrywise with numpy's LAPACK-backed inverse (true inverse == Moore-Penrose inverse
+    # here), so this catches a wrong-but-still-nearly-orthogonal result the A@inv==I check alone
+    # could miss.
+    assert inv == pytest.approx(np.linalg.inv(a), rel=RTOL, abs=ATOL), (
+        f"{context}: disagrees with numpy.linalg.inv"
     )
 
 
