@@ -282,6 +282,38 @@ def test_grid_spec_defaults_to_the_conforming_default_implementation():
     assert spec.conforming is True
 
 
+@pytest.mark.parametrize(
+    ("dim", "element", "num_elements", "expected"),
+    [
+        # 1d: two endpoints, independent of the resolution and of cube/simplex (P_k == Q_k in 1d)
+        (1, "cube", (3,), 2),
+        (1, "simplex", (3,), 2),
+        # 2d: the box perimeter is tiled by n_x + n_x + n_y + n_y edges; splitting each cube into
+        # two triangles leaves every boundary edge intact (only the interior diagonal is added)
+        (2, "cube", (2, 3), 10),
+        (2, "simplex", (2, 3), 10),
+        # 3d: each of the 2*(n_y*n_z + n_x*n_z + n_x*n_y) boundary squares stays one face on a cube
+        # grid, but is triangulated into two boundary triangles when the cubes become simplices
+        (3, "cube", (1, 1, 1), 6),
+        (3, "simplex", (1, 1, 1), 12),
+        (3, "cube", (2, 2, 2), 24),
+        (3, "simplex", (2, 2, 2), 48),
+    ],
+)
+def test_expected_num_boundary_intersections(dim, element, num_elements, expected):
+    spec = hs.GridSpec(
+        dim=dim,
+        element=element,
+        lower_left=(0.0,) * dim,
+        upper_right=(1.0,) * dim,
+        num_elements=num_elements,
+    )
+    assert spec.expected_num_boundary_intersections == expected
+    # a cube grid keeps one intersection per boundary cube-face; the simplex split only re-tiles them
+    if element == "cube":
+        assert spec.num_boundary_faces == expected
+
+
 def test_sampled_grid_bindings_filters_dims_elements_and_conformity(monkeypatch):
     # A stub mirroring the bindable ALUGrid build (#320 WP1): the 3d cube slice exposes both the
     # structured YASP grid and the nonconforming ALU hexahedral grid, while every simplex slice has
