@@ -31,6 +31,7 @@ from dune.xt.test.hypothesis_strategies import (
     GRID_COMBINATIONS,
     cg_scalar_dof_count,
     cg_vector_dof_count,
+    dg_dof_count_on_mixed_grid,
     grid_specs,
     has_grid,
 )
@@ -47,6 +48,10 @@ _needs_cube = pytest.mark.skipif(
 _needs_simplex = pytest.mark.skipif(
     not has_grid(element="simplex"),
     reason="no simplex grid bindings available in this build",
+)
+_needs_vector_grid = pytest.mark.skipif(
+    not (has_grid(dim=2) or has_grid(dim=3)),
+    reason="dim_range > 1 requires a 2d or 3d grid binding",
 )
 
 
@@ -114,6 +119,32 @@ def test_dg_dof_count_is_per_element(spec, order):
     else:
         dofs_per_element = _p_k_dim(order, spec.dim)  # P_k
     assert space.num_DoFs == grid.size(0) * dofs_per_element
+
+
+@_needs_vector_grid
+@given(spec=grid_specs(dims=(2, 3), max_elements_per_dim=2), order=st.integers(1, 2))
+def test_vector_dg_space_uses_the_dimwise_mapper(spec, order):
+    """A vector-valued DiscontinuousLagrangeSpace numbers its DoFs dimension-wise.
+
+    With dim_range > 1 the factory defaults dimwise_global_mapping to True, which routes the
+    DiscontinuousMapper (dune/gdt/spaces/mapper/discontinuous.hh) through its per-range-dimension
+    (else) branches -- construction/update_after_adapt and the global_indices used when a sparsity
+    pattern is built. The scalar space exercises only the other side of those branches. The global
+    DoF count is the scalar DG count replicated across the r = dim range components.
+    """
+    from dune.gdt import DiscontinuousLagrangeSpace, make_element_sparsity_pattern
+    from dune.xt.grid import Dim
+
+    r = spec.dim
+    grid = spec.make_grid()
+    space = DiscontinuousLagrangeSpace(grid, order=order, dim_range=Dim(r))
+    assert space.dimwise_global_mapping is True
+    assert space.num_DoFs == r * dg_dof_count_on_mixed_grid(grid, order)
+
+    # building the element sparsity pattern walks the grid and asks the mapper for the global
+    # indices of every element -- the dimwise (else) path of DiscontinuousMapper::global_indices.
+    pattern = make_element_sparsity_pattern(space)
+    assert pattern is not None
 
 
 @given(spec=grid_specs())
