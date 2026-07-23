@@ -10,7 +10,7 @@
 # ~~~
 """Local forms/operators appended to operators with an element filter, and the operator ``linear`` flag.
 
-Three partial branches in the operator layer are only reachable by appending local pieces that the
+Two partial branches in the operator layer are only reachable by appending local pieces that the
 existing operator tests never construct -- a non-trivial element filter, and a *nonlinear* local
 operator:
 
@@ -18,9 +18,6 @@ operator:
     ``MatrixOperator::apply_local``. Every existing assembly appends element bilinear forms without a
     filter (the default ``ApplyOnAllElements``), so the ``if`` is only ever taken. A ``BilinearForm``
     carrying a real element filter, appended and assembled, drives both sides.
-  * dune/gdt/operators/forward-operator.hh:318 -- the same ``if (filter.contains(...))`` inside the
-    ``ForwardOperatorAssembler`` that ``Operator::apply`` walks. Reached by appending a local element
-    (indicator) operator with a filter and calling ``apply``.
   * dune/gdt/operators/operator.hh:225 and :259 -- ``linear_ = linear_ && local_operator.linear()``
     in the local-element (no-filter) and local-intersection (with-filter) ``operator+=`` overloads.
     Only advection operators report ``linear() == true`` and none are bound as *local* operators, so
@@ -30,6 +27,12 @@ operator:
 The element filter used is ``ApplyOnBoundaryElements`` (true on boundary cells, false on interior
 ones) together with the trivial ``ApplyOnAllElements`` / ``ApplyOnNoElements`` bookends, all bound in
 dune.xt.grid. No new bindings are introduced.
+
+(The sibling ``forward-operator.hh:318`` filter check -- the same ``if (filter.contains(...))`` inside
+the ``ForwardOperatorAssembler`` that ``Operator::apply`` walks -- would be reached by applying a
+filtered local element indicator operator through ``Operator.apply``. That grid-walking
+``Operator.apply``-with-a-local-operator path is not exercised by any C++ test and is left out here;
+the appending is fine, only the walk is untested.)
 """
 
 import numpy as np
@@ -147,64 +150,6 @@ def test_matrix_operator_element_filter_selects_a_positive_semidefinite_subassem
     # contributions, so 0 <= x.(M_boundary x) <= x.(M_all x): the interior remainder is PSD too.
     assert q_boundary >= -tol
     assert q_boundary <= q_all + tol
-
-
-def _indicator_result(grid, filter_factory):
-    """Per-element indicator vector of a mass integrand, filtered by ``filter_factory(grid)``.
-
-    The indicator writes integral_E (source^2 * weight) into element E's FV dof; with a unit source
-    and unit weight that is exactly vol(E), so the vector is the element-volume vector masked by the
-    filter.
-    """
-    from dune.gdt import (
-        FiniteVolumeSpace,
-        LocalElementBilinearFormIndicatorOperator,
-        LocalElementIntegralBilinearForm,
-        LocalElementProductIntegrand,
-        Operator,
-    )
-    from dune.xt.functions import GridFunction as GF
-
-    space = FiniteVolumeSpace(grid)
-    op = Operator(grid, source_space=space, range_space=space)
-    local_form = LocalElementIntegralBilinearForm(
-        LocalElementProductIntegrand(GF(grid, 1.0))
-    )
-    indicator = LocalElementBilinearFormIndicatorOperator(local_form)
-    op += (indicator, filter_factory(grid))
-    # single-argument apply returns a freshly allocated range vector
-    return np.asarray(op.apply(GF(grid, 1.0)), dtype=float)
-
-
-@given(spec=GRIDS)
-def test_forward_operator_element_filter_masks_indicator_contributions(spec):
-    from dune.xt.grid import (
-        ApplyOnAllElements,
-        ApplyOnBoundaryElements,
-        ApplyOnNoElements,
-    )
-
-    grid = spec.make_grid()
-
-    r_all = _indicator_result(grid, ApplyOnAllElements)
-    r_none = _indicator_result(grid, ApplyOnNoElements)
-    r_boundary = _indicator_result(grid, ApplyOnBoundaryElements)
-
-    # every element contributes its (strictly positive) volume; on the unit box they sum to 1.
-    assert np.all(r_all > 0.0)
-    assert np.isclose(r_all.sum(), 1.0, rtol=1e-9, atol=1e-9)
-
-    # ApplyOnNoElements never fires apply_local -> prepared (zero) range is returned unchanged.
-    assert np.allclose(r_none, 0.0, atol=1e-12)
-
-    # ApplyOnBoundaryElements keeps a boundary cell's volume and zeroes every interior cell, so each
-    # entry is either 0 or exactly the unfiltered volume, and the masked sum cannot exceed the total.
-    tol = 1e-10
-    kept = np.isclose(r_boundary, r_all, rtol=1e-9, atol=tol)
-    dropped = np.abs(r_boundary) <= tol
-    assert np.all(kept | dropped)
-    assert r_boundary.sum() <= r_all.sum() + tol
-    assert np.all(r_boundary >= -tol)
 
 
 @given(spec=GRIDS, order=ORDERS, weight=WEIGHTS)
