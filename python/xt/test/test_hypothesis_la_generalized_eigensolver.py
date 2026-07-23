@@ -8,10 +8,11 @@
 # Authors:
 #   René Fritze (2026)
 # ~~~
-"""Property test for the bound LA::GeneralizedEigenSolver (WP5, #349): generalized eigenvalues
-of random real symmetric positive-definite (SPD) matrix pairs must match scipy.linalg.eigh,
-exercising the LAPACKE dsygv code path that the cmake fix in issue #349 makes reachable in
-the coverage build.
+"""Property test for the bound LA::GeneralizedEigenSolver (coverage work package #342, part of
+the #341 Codecov-driven effort): generalized eigenvalues of random real symmetric
+positive-definite (SPD) matrix pairs must match scipy.linalg.eigh, taking the 0%-covered
+generalized-eigen-solver headers (internal/base.hh, default.hh, generalized-eigen-solver.hh)
+off zero by driving the LAPACKE dsygv code path from Python.
 
 Each `<Matrix>GeneralizedEigenSolver` dune.xt.la binding (see python/xt/dune/xt/la/bindings.cc)
 is exercised for every matrix class
@@ -23,8 +24,15 @@ by _has_lapack_backend() at module load time).
 The generalized eigensolver has no pure-C++ fallback: the only available type is "lapack"
 (dune/xt/la/generalized-eigen-solver/default.hh), which calls LAPACKE_dsygv through
 Dune::XT::Common::Lapacke::dsygv (dune/xt/common/lapacke.cc). Linking LAPACKE (via the
-OpeBLAS fallback added to cmake/modules/FindLAPACKE.cmake) therefore unlocks both this test
-and the C++ coverage it measures.
+OpenBLAS fallback added to cmake/modules/FindLAPACKE.cmake under #349) therefore unlocks both
+this test and the C++ coverage it measures.
+
+Beyond the eigenvalue accessors, the assertion-option tests below drive the
+GeneralizedEigenSolverBase::post_checks() branches in internal/base.hh -- the largest 0% block
+#342 targets -- that the accessors alone never reach: "assert_positive_eigenvalues" and
+"assert_real_eigenvalues" are both satisfiable for SPD pairs (real, strictly positive
+eigenvalues), so the branch bodies (and the compute_real_eigenvalues() assert-tolerance path
+they trigger) run without tripping.
 """
 
 import numpy as np
@@ -112,6 +120,19 @@ def generalized_solver_for(cls):
     return getattr(la, cls.__name__ + "GeneralizedEigenSolver")
 
 
+def solver_with_asserts(cls, lhs_arr, rhs_arr, **assert_opts):
+    """Build a solver on the "lapack" defaults, overriding the given (string-valued) option keys.
+
+    Mirrors the option-tweaking pattern of the sibling eigensolver test: start from the bound
+    static options() for the pinned type (the only type here is "lapack") and overwrite specific
+    keys, so post_checks() branches gated on assert_* tolerances can be switched on from Python.
+    """
+    solver_cls = generalized_solver_for(cls)
+    opts = dict(solver_cls.options("lapack"))
+    opts.update(assert_opts)
+    return solver_cls(make_matrix(cls, lhs_arr), make_matrix(cls, rhs_arr), opts)
+
+
 @pytest.mark.skipif(
     not MATRIX_CLASSES,
     reason="no generalized eigen-solver with lapack backend available",
@@ -181,6 +202,39 @@ class TestGeneralizedEigenSolverAgainstScipy:
         largest = np.sort(np.array(solver.max_eigenvalues(k)))
         assert smallest == pytest.approx(expected[:k], rel=1e-6, abs=1e-8)
         assert largest == pytest.approx(expected[-k:], rel=1e-6, abs=1e-8)
+
+    @settings(deadline=None)
+    @given(pair=spd_matrix_pair())
+    def test_assert_positive_eigenvalues_option(self, cls, pair):
+        # A generalized eigenvalue lhs*v = lambda*rhs*v with SPD lhs and SPD rhs is bounded below
+        # by lambda_min(lhs)/lambda_max(rhs) > 0, so every eigenvalue is strictly positive. Setting
+        # "assert_positive_eigenvalues" to a small positive tolerance therefore drives the
+        # positive-eigenvalue post-check branch in GeneralizedEigenSolverBase::post_checks()
+        # (base.hh) -- and the compute_real_eigenvalues() path it triggers -- without tripping the
+        # assertion. The tolerance is far below the smallest reachable eigenvalue (>~ 1/151 for the
+        # generated bound/size), so the check always passes.
+        lhs_arr, rhs_arr = pair
+        solver = solver_with_asserts(
+            cls, lhs_arr, rhs_arr, assert_positive_eigenvalues="1e-8"
+        )
+        actual = np.sort(np.array(solver.real_eigenvalues()))
+        expected = np.sort(scipy_linalg.eigh(lhs_arr, rhs_arr, eigvals_only=True))
+        assert actual[0] > 0
+        assert actual == pytest.approx(expected, rel=1e-6, abs=1e-8)
+
+    @settings(deadline=None)
+    @given(pair=spd_matrix_pair())
+    def test_assert_real_eigenvalues_option(self, cls, pair):
+        # "assert_real_eigenvalues" > 0 drives the imaginary-part tolerance check inside
+        # compute_real_eigenvalues() (base.hh). dsygv fills the imaginary part with an exact 0
+        # (internal/lapacke.hh), so the check passes for every SPD pair regardless of tolerance.
+        lhs_arr, rhs_arr = pair
+        solver = solver_with_asserts(
+            cls, lhs_arr, rhs_arr, assert_real_eigenvalues="1e-8"
+        )
+        actual = np.sort(np.array([ev.real for ev in solver.eigenvalues()]))
+        expected = np.sort(scipy_linalg.eigh(lhs_arr, rhs_arr, eigvals_only=True))
+        assert actual == pytest.approx(expected, rel=1e-6, abs=1e-8)
 
 
 if __name__ == "__main__":
