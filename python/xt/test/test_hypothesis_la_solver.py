@@ -21,6 +21,13 @@ elimination order differs.
 Iterating the full Solver::types() list is safe by construction: types() already returns only the
 solver types valid for that matrix backend, exactly as solver.tpl relies on.
 
+Beyond the default and per-type residual checks, three further properties widen the reached
+branches: a direct x ~ numpy.linalg.solve(A, b) comparison for the default solve (the issue's
+stated acceptance criterion); a per-type sweep with the internal post-solve checks disabled, which
+reaches the "check off" branches of solver/{common,eigen,istl}.hh that the always-enabled defaults
+never do; and a single Solver reused across several right-hand sides, guarding the matrix-reference
+lifetime (the keep_alive fix below) past the one apply() the other tests make.
+
 Found and fixed a real bug: python/xt/dune/xt/la/solver.hh's `bind_Solver` bound the Solver(matrix)
 constructor as plain `py::init<M>()`, with no `py::keep_alive`. `Solver<M>` stores its matrix by
 const reference (`const MatrixType& matrix_;` in solver/{common,eigen,istl}.hh), so
@@ -137,6 +144,23 @@ def assert_solves(a, rhs, x, context, tol=RTOL):
     )
 
 
+def options_with_checks_disabled(solver_cls, solver_type):
+    """The default options for solver_type, with every optional internal correctness check off.
+
+    Both post-solve checks default to *enabled* in Solver::options(): "post_check_solves_system"
+    (all backends, "1e-5") and "check_for_inf_nan" (the Eigen backend, "1"). Every default-apply
+    path above therefore only ever runs the "check is on" branch of solver/{common,eigen,istl}.hh
+    -- and so does solver.tpl. Setting them to a non-positive value drives the complementary
+    "check disabled" branch instead. Keys a given backend does not have are left untouched, so the
+    same helper works uniformly across Common/Istl/Eigen.
+    """
+    opts = dict(solver_cls.options(solver_type))
+    opts["post_check_solves_system"] = "-1"
+    if "check_for_inf_nan" in opts:
+        opts["check_for_inf_nan"] = "0"
+    return opts
+
+
 @pytest.mark.skipif(not MATRIX_CLASSES, reason="no LA solver binding available")
 @pytest.mark.parametrize("cls", MATRIX_CLASSES, ids=lambda c: c.__name__)
 class TestSolverResidual:
@@ -193,6 +217,81 @@ class TestSolverResidual:
                 f"apply(options={solver_type!r})",
                 per_type_tol,
             )
+
+    @settings(deadline=None)
+    @given(system=spd_system())
+    def test_default_solution_matches_numpy(self, cls, system):
+        # The issue's stated acceptance property, x ~ numpy.linalg.solve(A, b), as a direct
+        # solution-vector comparison. It is checked only for the *default* solve, which every
+        # backend resolves to a direct type (types()[0] is qr.householder / lu.partialpiv / a
+        # direct ISTL solver), so the solution is well-determined and the comparison does not
+        # couple its tolerance to an iterative type's stopping criterion the way a per-type vector
+        # comparison would -- which is exactly why test_every_solver_type_solves checks the
+        # residual instead. On these well-conditioned SPD systems (smallest eigenvalue >= n, entries
+        # bounded) a direct factorization reproduces numpy to well within the tolerance below.
+        a, rhs = system
+        n = len(rhs)
+        vec_cls = matching_vector_class(cls)
+        solver = solver_for(cls)(make_matrix(cls, a))
+        solution = make_vector(vec_cls, [0.0] * n)
+        solver.apply(make_vector(vec_cls, rhs), solution)
+
+        expected = np.linalg.solve(a, rhs)
+        scale = float(np.linalg.norm(expected)) + 1.0
+        assert as_numpy(solution, n) == pytest.approx(
+            expected, rel=1e-6, abs=1e-8 * scale
+        )
+
+    @settings(deadline=None)
+    @given(system=spd_system())
+    def test_every_type_solves_with_checks_disabled(self, cls, system):
+        # Same per-type sweep as test_every_solver_type_solves, but with the internal post-solve
+        # checks turned off (see options_with_checks_disabled): this reaches the "check disabled"
+        # branches of solver/{common,eigen,istl}.hh that neither the default apply nor solver.tpl
+        # exercise, since those checks default to enabled. The solve itself is unchanged, so a
+        # correct backend still returns a solving x -- verified from the outside by residual here.
+        a, rhs = system
+        n = len(rhs)
+        vec_cls = matching_vector_class(cls)
+        solver_cls = solver_for(cls)
+        solver = solver_cls(make_matrix(cls, a))
+
+        types = solver_cls.types()
+        assert types, "Solver advertises no types"
+        for solver_type in types:
+            solution = make_vector(vec_cls, [0.0] * n)
+            solver.apply(
+                make_vector(vec_cls, rhs),
+                solution,
+                options_with_checks_disabled(solver_cls, solver_type),
+            )
+            assert_solves(
+                a,
+                rhs,
+                as_numpy(solution, n),
+                f"apply(checks-off, {solver_type!r})",
+                1e-4,
+            )
+
+    @settings(deadline=None)
+    @given(system=spd_system())
+    def test_solver_reuse_across_right_hand_sides(self, cls, system):
+        # One Solver instance, several different right-hand sides. This guards the matrix-reference
+        # lifetime documented in this module's docstring (the keep_alive fix) past the single
+        # apply() the other tests make: if matrix_ dangled, the second or later apply() -- long after
+        # the constructor returned -- would read freed memory. It also confirms the backends that
+        # cache a factorization keep solving correctly when only the rhs changes.
+        a, rhs = system
+        n = len(rhs)
+        vec_cls = matching_vector_class(cls)
+        solver = solver_for(cls)(make_matrix(cls, a))
+
+        # deterministic, genuinely distinct rhs directions derived from the drawn one
+        right_hand_sides = [rhs, -rhs, 2.0 * rhs, rhs[::-1] + 1.0]
+        for index, b in enumerate(right_hand_sides):
+            solution = make_vector(vec_cls, [0.0] * n)
+            solver.apply(make_vector(vec_cls, b), solution)
+            assert_solves(a, b, as_numpy(solution, n), f"reuse #{index}")
 
 
 if __name__ == "__main__":
