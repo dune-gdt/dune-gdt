@@ -43,6 +43,7 @@ from hypothesis import strategies as st
 from dune.xt.test.hypothesis_strategies import (
     GRID_COMBINATIONS,
     grid_specs,
+    has_grid,
 )
 
 pytestmark = pytest.mark.skipif(
@@ -150,6 +151,55 @@ def test_matrix_operator_element_filter_selects_a_positive_semidefinite_subassem
     # contributions, so 0 <= x.(M_boundary x) <= x.(M_all x): the interior remainder is PSD too.
     assert q_boundary >= -tol
     assert q_boundary <= q_all + tol
+
+
+@pytest.mark.skipif(
+    not has_grid(dim=2, element="cube"),
+    reason="no 2d cube grid bindings available in this build",
+)
+def test_boundary_element_filter_is_a_strict_subset_with_interior_elements():
+    """A grid with interior cells gives x.(M_boundary x) strictly below x.(M_all x).
+
+    The non-strict bounds in the property test above are also satisfied by a (hypothetical) broken
+    ``ApplyOnBoundaryElements`` that selected *every* element (then M_boundary == M_all) or *no*
+    element (then M_boundary == 0). This deterministic 4x4 unit-box grid has a 2x2 block of interior
+    cells (none touching the boundary), so with the all-ones probe -- for which ``x.(M x)`` equals the
+    integral of the assembled weight, the scalar CG basis being a partition of unity -- the boundary
+    assembly must drop a strictly positive area: ``0 < q_boundary < q_all``.
+    """
+    from dune.gdt import ContinuousLagrangeSpace
+    from dune.xt.grid import (
+        ApplyOnAllElements,
+        ApplyOnBoundaryElements,
+        ApplyOnNoElements,
+        Cube,
+        Dim,
+        make_cube_grid,
+    )
+
+    grid = make_cube_grid(
+        Dim(2), Cube(), lower_left=[0, 0], upper_right=[1, 1], num_elements=[4, 4]
+    )
+    space = ContinuousLagrangeSpace(grid, order=1)
+    x_vals = np.ones(space.num_DoFs)
+
+    q_all = _quadratic_form(
+        _mass_matrix_operator(grid, space, 1.0, ApplyOnAllElements(grid)), x_vals
+    )
+    q_none = _quadratic_form(
+        _mass_matrix_operator(grid, space, 1.0, ApplyOnNoElements(grid)), x_vals
+    )
+    q_boundary = _quadratic_form(
+        _mass_matrix_operator(grid, space, 1.0, ApplyOnBoundaryElements(grid)), x_vals
+    )
+
+    # q_all is the whole unit-box area (== 1); the boundary cells cover 12/16, the interior 4/16.
+    assert abs(q_all - 1.0) <= 1e-9
+    assert abs(q_none) <= 1e-12
+    # strictly between: a filter selecting all elements would give q_boundary == q_all, one selecting
+    # none would give q_boundary == 0 -- both are excluded here.
+    assert q_boundary > 1e-6
+    assert q_boundary < q_all - 1e-6
 
 
 @given(spec=GRIDS, order=ORDERS, weight=WEIGHTS)
