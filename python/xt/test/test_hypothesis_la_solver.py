@@ -22,8 +22,8 @@ Iterating the full Solver::types() list is safe by construction: types() already
 solver types valid for that matrix backend, exactly as solver.tpl relies on.
 
 Beyond the default and per-type residual checks, three further properties widen the reached
-branches: a direct x ~ numpy.linalg.solve(A, b) comparison for the default solve (the issue's
-stated acceptance criterion); a per-type sweep with the internal post-solve checks disabled, which
+branches: an x ~ numpy.linalg.solve(A, b) comparison using an explicit direct solver type (the
+issue's stated acceptance criterion); a per-type sweep with the internal post-solve checks disabled, which
 reaches the "check off" branches of solver/{common,eigen,istl}.hh that the always-enabled defaults
 never do; and a single Solver reused across several right-hand sides, guarding the matrix-reference
 lifetime (the keep_alive fix below) past the one apply() the other tests make.
@@ -144,6 +144,21 @@ def assert_solves(a, rhs, x, context, tol=RTOL):
     )
 
 
+def direct_solver_types(solver_cls):
+    """The direct (non-iterative) types among solver_cls.types().
+
+    A direct factorization solves to ~machine precision, so its solution vector may be compared to
+    numpy.linalg.solve directly; the iterative "bicgstab.*" / "cg.*" families instead stop at their
+    own residual criterion (coupled to cond(A)), which is why test_every_solver_type_solves checks
+    those by residual rather than against a solution vector. Direct types are identified by *not*
+    belonging to an iterative family -- a negative prefix test, which (unlike a positive substring
+    match on "lu"/"qr"/...) does not misclassify names like "bicgstab.ilut" or "bicgstab.amg.ilu0",
+    whose ILU(T) preconditioner spelling happens to contain "lu". A backend may expose no direct type
+    at all (ISTL's list is all-iterative unless the build compiled SuperLU/UMFPACK).
+    """
+    return [tp for tp in solver_cls.types() if not (tp.startswith(("bicgstab", "cg")))]
+
+
 def options_with_checks_disabled(solver_cls, solver_type):
     """The default options for solver_type, with every optional internal correctness check off.
 
@@ -220,21 +235,28 @@ class TestSolverResidual:
 
     @settings(deadline=None)
     @given(system=spd_system())
-    def test_default_solution_matches_numpy(self, cls, system):
-        # The issue's stated acceptance property, x ~ numpy.linalg.solve(A, b), as a direct
-        # solution-vector comparison. It is checked only for the *default* solve, which every
-        # backend resolves to a direct type (types()[0] is qr.householder / lu.partialpiv / a
-        # direct ISTL solver), so the solution is well-determined and the comparison does not
-        # couple its tolerance to an iterative type's stopping criterion the way a per-type vector
-        # comparison would -- which is exactly why test_every_solver_type_solves checks the
-        # residual instead. On these well-conditioned SPD systems (smallest eigenvalue >= n, entries
-        # bounded) a direct factorization reproduces numpy to well within the tolerance below.
+    def test_direct_solution_matches_numpy(self, cls, system):
+        # The issue's stated acceptance property, x ~ numpy.linalg.solve(A, b), as a solution-vector
+        # comparison. A direct solve is well-determined to ~machine precision, so its solution can be
+        # compared to numpy at a tight tolerance without coupling to an iterative type's stopping
+        # criterion (that coupling, amplified by cond(A), is exactly why test_every_solver_type_solves
+        # checks the residual instead). We therefore pin an *explicit* direct type rather than the
+        # default, which is direct only for the dense backends -- the sparse backends default to an
+        # iterative type (bicgstab.ssor for ISTL, bicgstab.ilut for Eigen). If a backend exposes no
+        # direct type at all (e.g. ISTL built without SuperLU/UMFPACK), the comparison does not apply
+        # and is skipped rather than run against an iterative solve.
         a, rhs = system
         n = len(rhs)
         vec_cls = matching_vector_class(cls)
-        solver = solver_for(cls)(make_matrix(cls, a))
+        solver_cls = solver_for(cls)
+        direct = direct_solver_types(solver_cls)
+        if not direct:
+            pytest.skip(
+                "backend exposes no direct solver type to compare against numpy"
+            )
+        solver = solver_cls(make_matrix(cls, a))
         solution = make_vector(vec_cls, [0.0] * n)
-        solver.apply(make_vector(vec_cls, rhs), solution)
+        solver.apply(make_vector(vec_cls, rhs), solution, direct[0])
 
         expected = np.linalg.solve(a, rhs)
         scale = float(np.linalg.norm(expected)) + 1.0
