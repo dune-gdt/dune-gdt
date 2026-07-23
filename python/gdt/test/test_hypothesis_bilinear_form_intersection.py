@@ -60,7 +60,10 @@ def _penalty_forms(grid, penalty):
 
     boundary-only exercises the single-sided ``intersection_data()`` loop (bilinear-form.hh:460),
     inner-only the two-sided ``coupling_intersection_data()`` loop (bilinear-form.hh:434); combined
-    holds both.
+    holds both. Each term is restricted to the intersections it belongs on (boundary penalty on
+    boundary facets, inner penalty on inner facets) via an explicit filter, so the two loops
+    decompose additively and the ``boundary_only`` name is accurate -- an unfiltered single-sided
+    form would default to ``ApplyOnAllIntersections`` and accumulate over inner facets too.
     """
     from dune.gdt import (
         BilinearForm,
@@ -70,7 +73,11 @@ def _penalty_forms(grid, penalty):
         LocalIPDGInnerPenaltyIntegrand,
     )
     from dune.xt.functions import GridFunction as GF
-    from dune.xt.grid import ApplyOnInnerIntersectionsOnce, Dim
+    from dune.xt.grid import (
+        ApplyOnBoundaryIntersections,
+        ApplyOnInnerIntersectionsOnce,
+        Dim,
+    )
 
     d = grid.dimension
     # IPDG penalty integrands take a matrix-valued (d x d) weight grid function.
@@ -89,14 +96,16 @@ def _penalty_forms(grid, penalty):
         )
 
     boundary_only = BilinearForm(grid)
-    boundary_only += boundary_term()
+    # restrict the boundary penalty to boundary facets (an IPDG boundary term belongs there); this
+    # also drives the single-sided intersection_data() loop's per-intersection filter check
+    boundary_only += (boundary_term(), ApplyOnBoundaryIntersections(grid))
 
     inner_only = BilinearForm(grid)
     # the quaternary integrand needs a valid outside element -> restrict to inner intersections
     inner_only += (inner_term(), ApplyOnInnerIntersectionsOnce(grid))
 
     combined = BilinearForm(grid)
-    combined += boundary_term()
+    combined += (boundary_term(), ApplyOnBoundaryIntersections(grid))
     combined += (inner_term(), ApplyOnInnerIntersectionsOnce(grid))
 
     return boundary_only, inner_only, combined
