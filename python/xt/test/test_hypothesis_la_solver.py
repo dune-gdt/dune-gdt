@@ -21,6 +21,13 @@ elimination order differs.
 Iterating the full Solver::types() list is safe by construction: types() already returns only the
 solver types valid for that matrix backend, exactly as solver.tpl relies on.
 
+Beyond the default and per-type residual checks, three further properties widen the reached
+branches: an x ~ numpy.linalg.solve(A, b) comparison using an explicit direct solver type (the
+issue's stated acceptance criterion); a per-type sweep with the internal post-solve checks disabled, which
+reaches the "check off" branches of solver/{common,eigen,istl}.hh that the always-enabled defaults
+never do; and a single Solver reused across several right-hand sides, guarding the matrix-reference
+lifetime (the keep_alive fix below) past the one apply() the other tests make.
+
 Found and fixed a real bug: python/xt/dune/xt/la/solver.hh's `bind_Solver` bound the Solver(matrix)
 constructor as plain `py::init<M>()`, with no `py::keep_alive`. `Solver<M>` stores its matrix by
 const reference (`const MatrixType& matrix_;` in solver/{common,eigen,istl}.hh), so
@@ -137,6 +144,38 @@ def assert_solves(a, rhs, x, context, tol=RTOL):
     )
 
 
+def direct_solver_types(solver_cls):
+    """The direct (non-iterative) types among solver_cls.types().
+
+    A direct factorization solves to ~machine precision, so its solution vector may be compared to
+    numpy.linalg.solve directly; the iterative "bicgstab.*" / "cg.*" families instead stop at their
+    own residual criterion (coupled to cond(A)), which is why test_every_solver_type_solves checks
+    those by residual rather than against a solution vector. Direct types are identified by *not*
+    belonging to an iterative family -- a negative prefix test, which (unlike a positive substring
+    match on "lu"/"qr"/...) does not misclassify names like "bicgstab.ilut" or "bicgstab.amg.ilu0",
+    whose ILU(T) preconditioner spelling happens to contain "lu". A backend may expose no direct type
+    at all (ISTL's list is all-iterative unless the build compiled SuperLU/UMFPACK).
+    """
+    return [tp for tp in solver_cls.types() if not (tp.startswith(("bicgstab", "cg")))]
+
+
+def options_with_checks_disabled(solver_cls, solver_type):
+    """The default options for solver_type, with every optional internal correctness check off.
+
+    Both post-solve checks default to *enabled* in Solver::options(): "post_check_solves_system"
+    (all backends, "1e-5") and "check_for_inf_nan" (the Eigen backend, "1"). Every default-apply
+    path above therefore only ever runs the "check is on" branch of solver/{common,eigen,istl}.hh
+    -- and so does solver.tpl. Setting them to a non-positive value drives the complementary
+    "check disabled" branch instead. Keys a given backend does not have are left untouched, so the
+    same helper works uniformly across Common/Istl/Eigen.
+    """
+    opts = dict(solver_cls.options(solver_type))
+    opts["post_check_solves_system"] = "-1"
+    if "check_for_inf_nan" in opts:
+        opts["check_for_inf_nan"] = "0"
+    return opts
+
+
 @pytest.mark.skipif(not MATRIX_CLASSES, reason="no LA solver binding available")
 @pytest.mark.parametrize("cls", MATRIX_CLASSES, ids=lambda c: c.__name__)
 class TestSolverResidual:
@@ -193,6 +232,88 @@ class TestSolverResidual:
                 f"apply(options={solver_type!r})",
                 per_type_tol,
             )
+
+    @settings(deadline=None)
+    @given(system=spd_system())
+    def test_direct_solution_matches_numpy(self, cls, system):
+        # The issue's stated acceptance property, x ~ numpy.linalg.solve(A, b), as a solution-vector
+        # comparison. A direct solve is well-determined to ~machine precision, so its solution can be
+        # compared to numpy at a tight tolerance without coupling to an iterative type's stopping
+        # criterion (that coupling, amplified by cond(A), is exactly why test_every_solver_type_solves
+        # checks the residual instead). We therefore pin an *explicit* direct type rather than the
+        # default, which is direct only for the dense backends -- the sparse backends default to an
+        # iterative type (bicgstab.ssor for ISTL, bicgstab.ilut for Eigen). If a backend exposes no
+        # direct type at all (e.g. ISTL built without SuperLU/UMFPACK), the comparison does not apply
+        # and is skipped rather than run against an iterative solve.
+        a, rhs = system
+        n = len(rhs)
+        vec_cls = matching_vector_class(cls)
+        solver_cls = solver_for(cls)
+        direct = direct_solver_types(solver_cls)
+        if not direct:
+            pytest.skip(
+                "backend exposes no direct solver type to compare against numpy"
+            )
+        solver = solver_cls(make_matrix(cls, a))
+        solution = make_vector(vec_cls, [0.0] * n)
+        solver.apply(make_vector(vec_cls, rhs), solution, direct[0])
+
+        expected = np.linalg.solve(a, rhs)
+        scale = float(np.linalg.norm(expected)) + 1.0
+        assert as_numpy(solution, n) == pytest.approx(
+            expected, rel=1e-6, abs=1e-8 * scale
+        )
+
+    @settings(deadline=None)
+    @given(system=spd_system())
+    def test_every_type_solves_with_checks_disabled(self, cls, system):
+        # Same per-type sweep as test_every_solver_type_solves, but with the internal post-solve
+        # checks turned off (see options_with_checks_disabled): this reaches the "check disabled"
+        # branches of solver/{common,eigen,istl}.hh that neither the default apply nor solver.tpl
+        # exercise, since those checks default to enabled. The solve itself is unchanged, so a
+        # correct backend still returns a solving x -- verified from the outside by residual here.
+        a, rhs = system
+        n = len(rhs)
+        vec_cls = matching_vector_class(cls)
+        solver_cls = solver_for(cls)
+        solver = solver_cls(make_matrix(cls, a))
+
+        types = solver_cls.types()
+        assert types, "Solver advertises no types"
+        for solver_type in types:
+            solution = make_vector(vec_cls, [0.0] * n)
+            solver.apply(
+                make_vector(vec_cls, rhs),
+                solution,
+                options_with_checks_disabled(solver_cls, solver_type),
+            )
+            assert_solves(
+                a,
+                rhs,
+                as_numpy(solution, n),
+                f"apply(checks-off, {solver_type!r})",
+                1e-4,
+            )
+
+    @settings(deadline=None)
+    @given(system=spd_system())
+    def test_solver_reuse_across_right_hand_sides(self, cls, system):
+        # One Solver instance, several different right-hand sides. This guards the matrix-reference
+        # lifetime documented in this module's docstring (the keep_alive fix) past the single
+        # apply() the other tests make: if matrix_ dangled, the second or later apply() -- long after
+        # the constructor returned -- would read freed memory. It also confirms the backends that
+        # cache a factorization keep solving correctly when only the rhs changes.
+        a, rhs = system
+        n = len(rhs)
+        vec_cls = matching_vector_class(cls)
+        solver = solver_for(cls)(make_matrix(cls, a))
+
+        # deterministic, genuinely distinct rhs directions derived from the drawn one
+        right_hand_sides = [rhs, -rhs, 2.0 * rhs, rhs[::-1] + 1.0]
+        for index, b in enumerate(right_hand_sides):
+            solution = make_vector(vec_cls, [0.0] * n)
+            solver.apply(make_vector(vec_cls, b), solution)
+            assert_solves(a, b, as_numpy(solution, n), f"reuse #{index}")
 
 
 if __name__ == "__main__":
