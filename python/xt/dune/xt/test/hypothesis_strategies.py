@@ -314,6 +314,31 @@ class GridSpec:
         # vertices (Freudenthal/Kuhn triangulation), so this holds for both element types.
         return int(np.prod([n + 1 for n in self.num_elements]))
 
+    @property
+    def num_boundary_faces(self):
+        """Codim-1 faces of the structured cube skeleton lying on the domain boundary.
+
+        Two faces are perpendicular to each axis (the low and high side of the box); the face
+        perpendicular to axis k is tiled by the ``prod_{j != k} num_elements[j]`` cells touching it.
+        """
+        return 2 * sum(
+            int(np.prod([n for jj, n in enumerate(self.num_elements) if jj != kk]))
+            for kk in range(self.dim)
+        )
+
+    @property
+    def expected_num_boundary_intersections(self):
+        """Number of leaf boundary intersections of the (unrefined) grid.
+
+        A cube grid keeps every boundary cube-face as one intersection. Splitting the cubes into
+        simplices triangulates each *boundary* cube-face into ``SIMPLICES_PER_CUBE[dim - 1]``
+        sub-faces (a 2d square boundary face -> 2 triangles in 3d; a 1d edge stays one edge in 2d,
+        a 0d vertex stays one point in 1d), while the diagonals introduced by the split are interior.
+        """
+        if self.element == "cube":
+            return self.num_boundary_faces
+        return SIMPLICES_PER_CUBE.get(self.dim - 1, 1) * self.num_boundary_faces
+
 
 @st.composite
 def bounding_boxes(draw, dim, coordinate_range=100.0, min_extent=0.1, max_extent=100.0):
