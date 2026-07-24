@@ -25,9 +25,7 @@
 #include <array>
 #include <vector>
 
-#include <dune/xt/grid/grids.hh>
-#include <dune/xt/grid/gridprovider/cube.hh>
-#include <dune/xt/grid/type_traits.hh>
+#include <dune/xt/test/functions/interface_fixture.hh>
 
 #include <dune/xt/functions/exceptions.hh>
 #include <dune/xt/functions/interfaces/element-functions.hh>
@@ -35,42 +33,24 @@
 using namespace Dune;
 using namespace Dune::XT;
 using namespace Dune::XT::Functions;
+using namespace Dune::XT::Test;
 
 namespace {
 
 
-using GridType = CUBEGRID_2D;
-using ElementType = XT::Grid::extract_entity_t<GridType>;
-constexpr size_t dim_domain = GridType::dimension;
+using ElementType = FunctionInterfaceTestBase::ElementType;
+constexpr size_t dim_domain = FunctionInterfaceTestBase::dim_domain;
 
-// the reference element of a YaspGrid cube is [0, 1]^d
-const FieldVector<double, dim_domain> inside_point(0.25);
-const FieldVector<double, dim_domain> outside_point(1.5);
-
-
-/// \brief Deterministic, pairwise distinct values, so every accessed component can be identified in an assertion.
-double expected_value(const size_t function_index, const size_t row, const size_t col)
-{
-  return 100. * function_index + 10. * row + col + 1.;
-}
-
-double expected_derivative(const size_t function_index, const size_t row, const size_t col, const size_t dd)
-{
-  return 1000. * function_index + 100. * row + 10. * col + dd + 1.;
-}
-
+/// \brief The all-ones multi-index, which the interface defaults forward to jacobian(s)().
 std::array<size_t, dim_domain> first_derivative_multiindex()
 {
-  std::array<size_t, dim_domain> alpha;
-  alpha.fill(1);
-  return alpha;
+  return multiindex(1);
 }
 
+/// \brief Any other multi-index, which the interface defaults reject.
 std::array<size_t, dim_domain> higher_derivative_multiindex()
 {
-  std::array<size_t, dim_domain> alpha;
-  alpha.fill(2);
-  return alpha;
+  return multiindex(2);
 }
 
 
@@ -136,15 +116,10 @@ public:
     this->assert_inside_reference_element(point_in_reference_element);
     if (result.size() < set_size)
       result.resize(set_size);
+    // the set's ii-th function reports the values of function_index ii
     for (size_t ii = 0; ii < set_size; ++ii)
-      for (size_t row = 0; row < r; ++row) {
-        if constexpr (rC == 1)
-          result[ii][row] = expected_value(ii, row, 0);
-        else
-          for (size_t col = 0; col < rC; ++col)
-            result[ii][row][col] = expected_value(ii, row, col);
-      }
-  } // ... evaluate(...)
+      result[ii] = filled_range<r, rC, RangeType>(ii);
+  }
 
   void jacobians(const DomainType& point_in_reference_element,
                  std::vector<DerivativeRangeType>& result,
@@ -154,17 +129,8 @@ public:
     if (result.size() < set_size)
       result.resize(set_size);
     for (size_t ii = 0; ii < set_size; ++ii)
-      for (size_t row = 0; row < r; ++row) {
-        if constexpr (rC == 1) {
-          for (size_t dd = 0; dd < d; ++dd)
-            result[ii][row][dd] = expected_derivative(ii, row, 0, dd);
-        } else {
-          for (size_t col = 0; col < rC; ++col)
-            for (size_t dd = 0; dd < d; ++dd)
-              result[ii][row][col][dd] = expected_derivative(ii, row, col, dd);
-        }
-      }
-  } // ... jacobians(...)
+      result[ii] = filled_derivative<r, rC, d, DerivativeRangeType>(ii);
+  }
 };
 
 
@@ -211,22 +177,14 @@ public:
                            const Common::Parameter& /*param*/ = {}) const override
   {
     this->assert_inside_reference_element(point_in_reference_element);
-    RangeReturnType result;
-    for (size_t row = 0; row < r; ++row) {
-      if constexpr (rC == 1)
-        result[row] = expected_value(0, row, 0);
-      else
-        for (size_t col = 0; col < rC; ++col)
-          result[row][col] = expected_value(0, row, col);
-    }
-    return result;
-  } // ... evaluate(...)
+    return filled_range<r, rC, RangeReturnType>(0);
+  }
 
   DerivativeRangeReturnType jacobian(const DomainType& point_in_reference_element,
                                      const Common::Parameter& /*param*/ = {}) const override
   {
     this->assert_inside_reference_element(point_in_reference_element);
-    return filled_derivative(jacobian_index);
+    return filled_derivative<r, rC, d, DerivativeRangeReturnType>(jacobian_index);
   }
 
   DerivativeRangeReturnType derivative(const std::array<size_t, d>& /*alpha*/,
@@ -234,61 +192,13 @@ public:
                                        const Common::Parameter& /*param*/ = {}) const override
   {
     this->assert_inside_reference_element(point_in_reference_element);
-    return filled_derivative(derivative_index);
+    return filled_derivative<r, rC, d, DerivativeRangeReturnType>(derivative_index);
   }
-
-  static DerivativeRangeReturnType filled_derivative(const size_t function_index)
-  {
-    DerivativeRangeReturnType result;
-    for (size_t row = 0; row < r; ++row) {
-      if constexpr (rC == 1) {
-        for (size_t dd = 0; dd < d; ++dd)
-          result[row][dd] = expected_derivative(function_index, row, 0, dd);
-      } else {
-        for (size_t col = 0; col < rC; ++col)
-          for (size_t dd = 0; dd < d; ++dd)
-            result[row][col][dd] = expected_derivative(function_index, row, col, dd);
-      }
-    }
-    return result;
-  } // ... filled_derivative(...)
 };
 
 
-/// \brief Component-wise check of a (set of) DerivativeRangeType against expected_derivative().
-template <size_t r, size_t rC, class DerivativeType>
-void expect_derivative_eq(const DerivativeType& actual, const size_t function_index)
-{
-  for (size_t row = 0; row < r; ++row) {
-    if constexpr (rC == 1) {
-      for (size_t dd = 0; dd < dim_domain; ++dd)
-        EXPECT_DOUBLE_EQ(expected_derivative(function_index, row, 0, dd), actual[row][dd]);
-    } else {
-      for (size_t col = 0; col < rC; ++col)
-        for (size_t dd = 0; dd < dim_domain; ++dd)
-          EXPECT_DOUBLE_EQ(expected_derivative(function_index, row, col, dd), actual[row][col][dd]);
-    }
-  }
-} // ... expect_derivative_eq(...)
-
-
-struct ElementFunctionInterfaceTest : public ::testing::Test
-{
-  using GridProviderType = XT::Grid::GridProvider<GridType>;
-
-  ElementFunctionInterfaceTest()
-    : grid_(XT::Grid::make_cube_grid<GridType>(0., 1., 2))
-    , leaf_view_(grid_.leaf_view())
-    // which element we bind to is irrelevant: everything under test here is element independent, it merely requires
-    // the object to be bound at all
-    , element_(*elements(leaf_view_).begin())
-  {
-  }
-
-  const GridProviderType grid_;
-  const typename GridProviderType::LeafGridViewType leaf_view_;
-  const ElementType element_;
-}; // struct ElementFunctionInterfaceTest
+struct ElementFunctionInterfaceTest : public FunctionInterfaceTestBase
+{};
 
 
 // ============================================================================ ElementFunctionSetInterface
@@ -303,12 +213,12 @@ void check_set_defaults_throw(const ElementType& element)
   std::vector<typename ThrowingSet<r, rC>::RangeType> values;
   std::vector<typename ThrowingSet<r, rC>::DerivativeRangeType> derivatives;
 
-  EXPECT_THROW(set.evaluate(inside_point, values), Dune::NotImplemented);
-  EXPECT_THROW(set.jacobians(inside_point, derivatives), Dune::NotImplemented);
+  EXPECT_THROW(set.evaluate(inside_point(), values), Dune::NotImplemented);
+  EXPECT_THROW(set.jacobians(inside_point(), derivatives), Dune::NotImplemented);
   // the default derivatives() forwards the all-ones multi-index to jacobians(), which throws in turn ...
-  EXPECT_THROW(set.derivatives(first_derivative_multiindex(), inside_point, derivatives), Dune::NotImplemented);
+  EXPECT_THROW(set.derivatives(first_derivative_multiindex(), inside_point(), derivatives), Dune::NotImplemented);
   // ... and rejects any other multi-index itself
-  EXPECT_THROW(set.derivatives(higher_derivative_multiindex(), inside_point, derivatives), Dune::NotImplemented);
+  EXPECT_THROW(set.derivatives(higher_derivative_multiindex(), inside_point(), derivatives), Dune::NotImplemented);
 } // ... check_set_defaults_throw(...)
 
 
@@ -318,28 +228,22 @@ void check_set_of_set_wrappers(const ElementType& element)
   FixedSet<r, rC> set;
   set.bind(element);
 
-  const auto values = set.evaluate_set(inside_point);
+  const auto values = set.evaluate_set(inside_point());
   ASSERT_EQ(FixedSet<r, rC>::set_size, values.size());
   for (size_t ii = 0; ii < values.size(); ++ii)
-    for (size_t row = 0; row < r; ++row) {
-      if constexpr (rC == 1)
-        EXPECT_DOUBLE_EQ(expected_value(ii, row, 0), values[ii][row]);
-      else
-        for (size_t col = 0; col < rC; ++col)
-          EXPECT_DOUBLE_EQ(expected_value(ii, row, col), values[ii][row][col]);
-    }
+    expect_range_eq<r, rC>(values[ii], ii);
 
-  const auto jacobians = set.jacobians_of_set(inside_point);
+  const auto jacobians = set.jacobians_of_set(inside_point());
   ASSERT_EQ(FixedSet<r, rC>::set_size, jacobians.size());
   for (size_t ii = 0; ii < jacobians.size(); ++ii)
-    expect_derivative_eq<r, rC>(jacobians[ii], ii);
+    expect_derivative_eq<r, rC, dim_domain>(jacobians[ii], ii);
 
   // derivatives_of_set() sizes the result from size() and forwards to derivatives(), whose default forwards the
   // all-ones multi-index to jacobians() -- so this has to reproduce the jacobian values
-  const auto derivatives = set.derivatives_of_set(first_derivative_multiindex(), inside_point);
+  const auto derivatives = set.derivatives_of_set(first_derivative_multiindex(), inside_point());
   ASSERT_EQ(FixedSet<r, rC>::set_size, derivatives.size());
   for (size_t ii = 0; ii < derivatives.size(); ++ii)
-    expect_derivative_eq<r, rC>(derivatives[ii], ii);
+    expect_derivative_eq<r, rC, dim_domain>(derivatives[ii], ii);
 } // ... check_set_of_set_wrappers(...)
 
 
@@ -354,24 +258,24 @@ void check_set_single_component_accessors(const ElementType& element)
     for (size_t col = 0; col < rC; ++col) {
       // all three results are deliberately left empty, to also cover the interface's resize path
       std::vector<double> values;
-      set.evaluate(inside_point, values, row, col);
+      set.evaluate(inside_point(), values, row, col);
       ASSERT_EQ(FixedSet<r, rC>::set_size, values.size());
       for (size_t ii = 0; ii < values.size(); ++ii)
         EXPECT_DOUBLE_EQ(expected_value(ii, row, col), values[ii]);
 
       std::vector<SingleDerivativeRangeType> jacobians;
-      set.jacobians(inside_point, jacobians, row, col);
+      set.jacobians(inside_point(), jacobians, row, col);
       ASSERT_EQ(FixedSet<r, rC>::set_size, jacobians.size());
-      for (size_t ii = 0; ii < jacobians.size(); ++ii)
-        for (size_t dd = 0; dd < dim_domain; ++dd)
-          EXPECT_DOUBLE_EQ(expected_derivative(ii, row, col, dd), jacobians[ii][dd]);
 
       std::vector<SingleDerivativeRangeType> derivatives;
-      set.derivatives(first_derivative_multiindex(), inside_point, derivatives, row, col);
+      set.derivatives(first_derivative_multiindex(), inside_point(), derivatives, row, col);
       ASSERT_EQ(FixedSet<r, rC>::set_size, derivatives.size());
-      for (size_t ii = 0; ii < derivatives.size(); ++ii)
-        for (size_t dd = 0; dd < dim_domain; ++dd)
+
+      for (size_t ii = 0; ii < jacobians.size(); ++ii)
+        for (size_t dd = 0; dd < dim_domain; ++dd) {
+          EXPECT_DOUBLE_EQ(expected_derivative(ii, row, col, dd), jacobians[ii][dd]);
           EXPECT_DOUBLE_EQ(expected_derivative(ii, row, col, dd), derivatives[ii][dd]);
+        }
     }
 } // ... check_set_single_component_accessors(...)
 
@@ -386,40 +290,22 @@ void check_set_dynamic_overloads(const ElementType& element)
 
   // all results are deliberately left empty, so the interface has to resize and ensure_size the entries
   std::vector<DynamicRangeType> values;
-  set.evaluate(inside_point, values);
+  set.evaluate(inside_point(), values);
   ASSERT_EQ(FixedSet<r, rC>::set_size, values.size());
   for (size_t ii = 0; ii < values.size(); ++ii)
-    for (size_t row = 0; row < r; ++row) {
-      if constexpr (rC == 1)
-        EXPECT_DOUBLE_EQ(expected_value(ii, row, 0), values[ii][row]);
-      else
-        for (size_t col = 0; col < rC; ++col)
-          EXPECT_DOUBLE_EQ(expected_value(ii, row, col), values[ii].get_entry(row, col));
-    }
+    expect_dynamic_range_eq<r, rC>(values[ii], ii);
 
   std::vector<DynamicDerivativeRangeType> jacobians;
-  set.jacobians(inside_point, jacobians);
+  set.jacobians(inside_point(), jacobians);
   ASSERT_EQ(FixedSet<r, rC>::set_size, jacobians.size());
+  for (size_t ii = 0; ii < jacobians.size(); ++ii)
+    expect_dynamic_derivative_eq<r, rC, dim_domain>(jacobians[ii], ii);
 
   std::vector<DynamicDerivativeRangeType> derivatives;
-  set.derivatives(first_derivative_multiindex(), inside_point, derivatives);
+  set.derivatives(first_derivative_multiindex(), inside_point(), derivatives);
   ASSERT_EQ(FixedSet<r, rC>::set_size, derivatives.size());
-
-  for (size_t ii = 0; ii < jacobians.size(); ++ii)
-    for (size_t row = 0; row < r; ++row) {
-      if constexpr (rC == 1) {
-        for (size_t dd = 0; dd < dim_domain; ++dd) {
-          EXPECT_DOUBLE_EQ(expected_derivative(ii, row, 0, dd), jacobians[ii].get_entry(row, dd));
-          EXPECT_DOUBLE_EQ(expected_derivative(ii, row, 0, dd), derivatives[ii].get_entry(row, dd));
-        }
-      } else {
-        for (size_t col = 0; col < rC; ++col)
-          for (size_t dd = 0; dd < dim_domain; ++dd) {
-            EXPECT_DOUBLE_EQ(expected_derivative(ii, row, col, dd), jacobians[ii][row].get_entry(col, dd));
-            EXPECT_DOUBLE_EQ(expected_derivative(ii, row, col, dd), derivatives[ii][row].get_entry(col, dd));
-          }
-      }
-    }
+  for (size_t ii = 0; ii < derivatives.size(); ++ii)
+    expect_dynamic_derivative_eq<r, rC, dim_domain>(derivatives[ii], ii);
 } // ... check_set_dynamic_overloads(...)
 
 
@@ -433,15 +319,15 @@ void check_set_argument_checks(const ElementType& element)
   std::vector<double> values;
   std::vector<SingleDerivativeRangeType> derivatives;
 
-  EXPECT_THROW(set.evaluate(inside_point, values, /*row=*/r, /*col=*/0), Common::Exceptions::shapes_do_not_match);
-  EXPECT_THROW(set.jacobians(inside_point, derivatives, /*row=*/0, /*col=*/rC),
+  EXPECT_THROW(set.evaluate(inside_point(), values, /*row=*/r, /*col=*/0), Common::Exceptions::shapes_do_not_match);
+  EXPECT_THROW(set.jacobians(inside_point(), derivatives, /*row=*/0, /*col=*/rC),
                Common::Exceptions::shapes_do_not_match);
-  EXPECT_THROW(set.derivatives(first_derivative_multiindex(), inside_point, derivatives, /*row=*/r, /*col=*/0),
+  EXPECT_THROW(set.derivatives(first_derivative_multiindex(), inside_point(), derivatives, /*row=*/r, /*col=*/0),
                Common::Exceptions::shapes_do_not_match);
 
   // assert_inside_reference_element() is what FixedSet calls at the top of evaluate()/jacobians()
   std::vector<typename FixedSet<r, rC>::RangeType> range_values;
-  EXPECT_THROW(set.evaluate(outside_point, range_values), Functions::Exceptions::wrong_input_given);
+  EXPECT_THROW(set.evaluate(outside_point(), range_values), Functions::Exceptions::wrong_input_given);
 } // ... check_set_argument_checks(...)
 
 
@@ -485,9 +371,9 @@ void check_function_defaults_throw(const ElementType& element)
   ThrowingFunction<r, rC> func;
   func.bind(element);
 
-  EXPECT_THROW(func.evaluate(inside_point), Dune::NotImplemented);
-  EXPECT_THROW(func.jacobian(inside_point), Dune::NotImplemented);
-  EXPECT_THROW(func.derivative(first_derivative_multiindex(), inside_point), Dune::NotImplemented);
+  EXPECT_THROW(func.evaluate(inside_point()), Dune::NotImplemented);
+  EXPECT_THROW(func.jacobian(inside_point()), Dune::NotImplemented);
+  EXPECT_THROW(func.derivative(first_derivative_multiindex(), inside_point()), Dune::NotImplemented);
 } // ... check_function_defaults_throw(...)
 
 
@@ -504,26 +390,20 @@ void check_function_set_bridge(const ElementType& element)
 
   // the set-flavoured methods have to forward to the single-valued ones; all results are deliberately left empty
   std::vector<typename FunctionType::RangeType> values;
-  func.evaluate(inside_point, values);
+  func.evaluate(inside_point(), values);
   ASSERT_EQ(1u, values.size());
-  for (size_t row = 0; row < r; ++row) {
-    if constexpr (rC == 1)
-      EXPECT_DOUBLE_EQ(expected_value(0, row, 0), values[0][row]);
-    else
-      for (size_t col = 0; col < rC; ++col)
-        EXPECT_DOUBLE_EQ(expected_value(0, row, col), values[0][row][col]);
-  }
+  expect_range_eq<r, rC>(values[0], 0);
 
   std::vector<typename FunctionType::DerivativeRangeType> jacobians;
-  func.jacobians(inside_point, jacobians);
+  func.jacobians(inside_point(), jacobians);
   ASSERT_EQ(1u, jacobians.size());
-  expect_derivative_eq<r, rC>(jacobians[0], FunctionType::jacobian_index);
+  expect_derivative_eq<r, rC, dim_domain>(jacobians[0], FunctionType::jacobian_index);
 
   std::vector<typename FunctionType::DerivativeRangeType> derivatives;
-  func.derivatives(first_derivative_multiindex(), inside_point, derivatives);
+  func.derivatives(first_derivative_multiindex(), inside_point(), derivatives);
   ASSERT_EQ(1u, derivatives.size());
   // derivative() reports different values than jacobian(), so this confirms which one was dispatched to
-  expect_derivative_eq<r, rC>(derivatives[0], FunctionType::derivative_index);
+  expect_derivative_eq<r, rC, dim_domain>(derivatives[0], FunctionType::derivative_index);
 } // ... check_function_set_bridge(...)
 
 
@@ -536,15 +416,14 @@ void check_function_single_component_accessors(const ElementType& element)
 
   for (size_t row = 0; row < r; ++row)
     for (size_t col = 0; col < rC; ++col) {
-      EXPECT_DOUBLE_EQ(expected_value(0, row, col), func.evaluate(inside_point, row, col));
+      EXPECT_DOUBLE_EQ(expected_value(0, row, col), func.evaluate(inside_point(), row, col));
 
-      const auto jacobian = func.jacobian(inside_point, row, col);
-      for (size_t dd = 0; dd < dim_domain; ++dd)
+      const auto jacobian = func.jacobian(inside_point(), row, col);
+      const auto derivative = func.derivative(first_derivative_multiindex(), inside_point(), row, col);
+      for (size_t dd = 0; dd < dim_domain; ++dd) {
         EXPECT_DOUBLE_EQ(expected_derivative(FunctionType::jacobian_index, row, col, dd), jacobian[dd]);
-
-      const auto derivative = func.derivative(first_derivative_multiindex(), inside_point, row, col);
-      for (size_t dd = 0; dd < dim_domain; ++dd)
         EXPECT_DOUBLE_EQ(expected_derivative(FunctionType::derivative_index, row, col, dd), derivative[dd]);
+      }
     }
 } // ... check_function_single_component_accessors(...)
 
@@ -558,36 +437,16 @@ void check_function_dynamic_overloads(const ElementType& element)
 
   // all results are default constructed, so the interface has to ensure_size them
   typename FunctionType::DynamicRangeType values;
-  func.evaluate(inside_point, values);
-  for (size_t row = 0; row < r; ++row) {
-    if constexpr (rC == 1)
-      EXPECT_DOUBLE_EQ(expected_value(0, row, 0), values[row]);
-    else
-      for (size_t col = 0; col < rC; ++col)
-        EXPECT_DOUBLE_EQ(expected_value(0, row, col), values.get_entry(row, col));
-  }
+  func.evaluate(inside_point(), values);
+  expect_dynamic_range_eq<r, rC>(values, 0);
 
   typename FunctionType::DynamicDerivativeRangeType jacobian;
-  func.jacobian(inside_point, jacobian);
+  func.jacobian(inside_point(), jacobian);
+  expect_dynamic_derivative_eq<r, rC, dim_domain>(jacobian, FunctionType::jacobian_index);
+
   typename FunctionType::DynamicDerivativeRangeType derivative;
-  func.derivative(first_derivative_multiindex(), inside_point, derivative);
-  for (size_t row = 0; row < r; ++row) {
-    if constexpr (rC == 1) {
-      for (size_t dd = 0; dd < dim_domain; ++dd) {
-        EXPECT_DOUBLE_EQ(expected_derivative(FunctionType::jacobian_index, row, 0, dd), jacobian.get_entry(row, dd));
-        EXPECT_DOUBLE_EQ(expected_derivative(FunctionType::derivative_index, row, 0, dd),
-                         derivative.get_entry(row, dd));
-      }
-    } else {
-      for (size_t col = 0; col < rC; ++col)
-        for (size_t dd = 0; dd < dim_domain; ++dd) {
-          EXPECT_DOUBLE_EQ(expected_derivative(FunctionType::jacobian_index, row, col, dd),
-                           jacobian[row].get_entry(col, dd));
-          EXPECT_DOUBLE_EQ(expected_derivative(FunctionType::derivative_index, row, col, dd),
-                           derivative[row].get_entry(col, dd));
-        }
-    }
-  }
+  func.derivative(first_derivative_multiindex(), inside_point(), derivative);
+  expect_dynamic_derivative_eq<r, rC, dim_domain>(derivative, FunctionType::derivative_index);
 } // ... check_function_dynamic_overloads(...)
 
 
@@ -597,12 +456,12 @@ void check_function_argument_checks(const ElementType& element)
   FixedFunction<r, rC> func;
   func.bind(element);
 
-  EXPECT_THROW(func.evaluate(inside_point, /*row=*/r, /*col=*/0), Common::Exceptions::shapes_do_not_match);
-  EXPECT_THROW(func.jacobian(inside_point, /*row=*/0, /*col=*/rC), Common::Exceptions::shapes_do_not_match);
-  EXPECT_THROW(func.derivative(first_derivative_multiindex(), inside_point, /*row=*/r, /*col=*/0),
+  EXPECT_THROW(func.evaluate(inside_point(), /*row=*/r, /*col=*/0), Common::Exceptions::shapes_do_not_match);
+  EXPECT_THROW(func.jacobian(inside_point(), /*row=*/0, /*col=*/rC), Common::Exceptions::shapes_do_not_match);
+  EXPECT_THROW(func.derivative(first_derivative_multiindex(), inside_point(), /*row=*/r, /*col=*/0),
                Common::Exceptions::shapes_do_not_match);
 
-  EXPECT_THROW(func.evaluate(outside_point), Functions::Exceptions::wrong_input_given);
+  EXPECT_THROW(func.evaluate(outside_point()), Functions::Exceptions::wrong_input_given);
 } // ... check_function_argument_checks(...)
 
 
