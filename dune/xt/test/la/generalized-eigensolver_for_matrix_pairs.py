@@ -12,35 +12,25 @@
 from dune.xt.codegen import have_eigen
 from dune.xt.codegen import typeid_to_typedef_name as safe_name
 
-matrix = [
-    "EigenDenseMatrix<double>",
-    "FieldMatrix<double, 2, 2>",
-    "CommonDenseMatrix<double>",
-    "CommonSparseMatrix<double>",
-]
-field = ["double", "double", "double", "double"]
-complex_matrix = [
-    "EigenDenseMatrix<std::complex<double>>",
-    "FieldMatrix<std::complex<double>, 2, 2>",
-    "CommonDenseMatrix<std::complex<double>>",
-    "CommonSparseMatrix<std::complex<double>>",
-]
-real_matrix = [
-    "EigenDenseMatrix<double>",
-    "FieldMatrix<double, 2, 2>",
-    "CommonDenseMatrix<double>",
-    "CommonSparseMatrix<double>",
+# One entry per matrix backend under test: how to spell the type for a given scalar, and whether it needs eigen.
+# Spelled as format strings rather than as the four parallel real/field/complex/real lists the sibling eigensolver
+# configurations use, so that the real and the complex spelling of a backend cannot drift apart.
+MATRIX_TEMPLATES = [
+    ("EigenDenseMatrix<{scalar}>", True),
+    ("FieldMatrix<{scalar}, 2, 2>", False),
+    ("CommonDenseMatrix<{scalar}>", False),
+    ("CommonSparseMatrix<{scalar}>", False),
 ]
 
 
-def _ok(ft):
-    if "Eigen" in ft[0]:
-        return have_eigen(cache)  # noqa: F821
-    return True
+def _test_type(template):
+    """(matrix, field, complex matrix, real matrix), the tuple the templates expect."""
+    real = template.format(scalar="double")
+    return real, "double", template.format(scalar="std::complex<double>"), real
 
 
 testtypes = [
-    (safe_name("_".join(ft)), *ft)
-    for ft in zip(matrix, field, complex_matrix, real_matrix, strict=True)
-    if _ok(ft)
+    (safe_name("_".join(_test_type(template))), *_test_type(template))
+    for template, needs_eigen in MATRIX_TEMPLATES
+    if not needs_eigen or have_eigen(cache)  # noqa: F821
 ]
