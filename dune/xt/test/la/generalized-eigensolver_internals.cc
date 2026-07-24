@@ -117,6 +117,9 @@ void check_backend_failure_is_reported()
  * and made lapack write past its end for every larger problem afterwards. That overwrote unrelated heap memory
  * without changing any of the values checked here, so this is a regression check that bites in a sanitizer build;
  * the growing-then-shrinking sequence is what a single test binary looks like to the shared buffer.
+ *
+ * Run for const and for mutable inputs alike: those select different MatrixDataProvider specializations, hence
+ * different instantiations of the implementation, each with its own function-local buffer.
  */
 template <class MatrixType>
 void check_varying_problem_sizes()
@@ -130,11 +133,16 @@ void check_varying_problem_sizes()
     }
     const auto lhs = make_matrix<MatrixType>(size, size, lhs_entries);
     const auto rhs = make_matrix<MatrixType>(size, size, rhs_entries);
-    const auto eigenvalues = internal::compute_generalized_eigenvalues_using_lapack(lhs, rhs);
-    ASSERT_EQ(size, eigenvalues.size()) << "size: " << size;
-    for (size_t ii = 0; ii < size; ++ii)
-      EXPECT_TRUE(Common::FloatCmp::eq(std::complex<double>(double(ii + 1), 0.), eigenvalues[ii], {1e-14, 1e-14}))
-          << "size: " << size << ", eigenvalue: " << eigenvalues[ii];
+    // dsygv overwrites both of its inputs, so the mutable variant needs matrices of its own
+    auto mutable_lhs = make_matrix<MatrixType>(size, size, lhs_entries);
+    auto mutable_rhs = make_matrix<MatrixType>(size, size, rhs_entries);
+    for (const auto& eigenvalues : {internal::compute_generalized_eigenvalues_using_lapack(lhs, rhs),
+                                    internal::compute_generalized_eigenvalues_using_lapack(mutable_lhs, mutable_rhs)}) {
+      ASSERT_EQ(size, eigenvalues.size()) << "size: " << size;
+      for (size_t ii = 0; ii < size; ++ii)
+        EXPECT_TRUE(Common::FloatCmp::eq(std::complex<double>(double(ii + 1), 0.), eigenvalues[ii], {1e-14, 1e-14}))
+            << "size: " << size << ", eigenvalue: " << eigenvalues[ii];
+    }
   }
 } // ... check_varying_problem_sizes(...)
 

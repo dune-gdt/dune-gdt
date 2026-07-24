@@ -633,6 +633,10 @@ struct GeneralizedEigenSolverTestForMatricesWithRealEigenvaluesAndVectors
     const size_t size = Common::get_matrix_rows(matrix_);
     RealEigenValuesType sorted_expected_eigenvalues = expected_real_eigenvalues_;
     std::sort(sorted_expected_eigenvalues.begin(), sorted_expected_eigenvalues.end());
+    // the whole spectrum is indexed below, so an incompletely filled expectation has to fail here rather than run
+    // past the end of the vector
+    ASSERT_EQ(size, sorted_expected_eigenvalues.size())
+        << "expected_real_eigenvalues_ has to hold one entry per row of matrix_!";
     for (const auto& tp : GeneralizedEigenSolverOpts::types()) {
       const double tolerance = tolerances.get(tp, 1e-15);
       if (tolerance <= 0)
