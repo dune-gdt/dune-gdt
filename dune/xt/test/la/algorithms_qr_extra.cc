@@ -114,13 +114,12 @@ void expect_is_qr_factorization_of(const MatrixType& QR,
   for (size_t ii = 0; ii < dim; ++ii)
     for (size_t jj = 0; jj < dim; ++jj) {
       ScalarType QT_Q_ij(0.);
-      ScalarType Q_R_ij(0.);
-      for (size_t kk = 0; kk < dim; ++kk) {
+      for (size_t kk = 0; kk < dim; ++kk)
         QT_Q_ij += Common::conj(MQ::get_entry(Q, kk, ii)) * MQ::get_entry(Q, kk, jj);
-        // R is the upper triangular part of QR
-        if (kk <= jj)
-          Q_R_ij += MQ::get_entry(Q, ii, kk) * M::get_entry(QR, kk, jj);
-      }
+      // R is the upper triangular part of QR, so only its first jj + 1 rows contribute to (Q R)_ij
+      ScalarType Q_R_ij(0.);
+      for (size_t kk = 0; kk <= jj; ++kk)
+        Q_R_ij += MQ::get_entry(Q, ii, kk) * M::get_entry(QR, kk, jj);
       EXPECT_LT(std::abs(QT_Q_ij - ScalarType(ii == jj ? 1. : 0.)), tolerance) << "ii = " << ii << ", jj = " << jj;
       EXPECT_LT(std::abs(Q_R_ij - M::get_entry(A, ii, size_t(permutations[jj]))), tolerance)
           << "ii = " << ii << ", jj = " << jj;
