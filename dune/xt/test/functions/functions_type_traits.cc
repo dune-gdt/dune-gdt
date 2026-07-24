@@ -37,6 +37,14 @@ using G = YASP_2D_EQUIDISTANT_OFFSET;
 using E = XT::Grid::extract_entity_t<G>;
 static constexpr size_t d = G::dimension;
 
+// Aliases for everything used inside an EXPECT_* macro: the preprocessor does not know about angle
+// brackets, so `Foo<E, 2, 3, double>` would be split into several macro arguments.
+using ElementFunctionInterfaceType = ElementFunctionInterface<E, 2, 3, double>;
+using FunctionInterfaceType = FunctionInterface<d, 2, 3, double>;
+using GridFunctionInterfaceType = GridFunctionInterface<E, 2, 3, double>;
+using GenericFunctionType = GenericFunction<d, 2, 3, double>;
+using GenericGridFunctionType = GenericGridFunction<E, 2, 3, double>;
+
 
 // RangeTypeSelector, general case (rC > 1)
 
@@ -95,6 +103,24 @@ GTEST_TEST(RangeTypeSelector, matrix_valued_convert)
       EXPECT_DOUBLE_EQ(double(ii * rC + jj), out.get_entry(ii, jj));
 }
 
+GTEST_TEST(RangeTypeSelector, matrix_valued_convert_into_larger_target)
+{
+  static constexpr size_t r = 2;
+  static constexpr size_t rC = 3;
+  using S = RangeTypeSelector<double, r, rC>;
+  S::type in;
+  for (size_t ii = 0; ii < r; ++ii)
+    for (size_t jj = 0; jj < rC; ++jj)
+      in[ii][jj] = double(ii * rC + jj) + 1.;
+  // convert only fills the upper left block and leaves the rest alone
+  S::dynamic_type out(r + 1, rC + 1, 0.);
+  S::convert(in, out);
+  for (size_t ii = 0; ii < r; ++ii)
+    for (size_t jj = 0; jj < rC; ++jj)
+      EXPECT_DOUBLE_EQ(double(ii * rC + jj) + 1., out.get_entry(ii, jj));
+  EXPECT_DOUBLE_EQ(0., out.get_entry(r, rC));
+}
+
 
 // RangeTypeSelector, rC == 1 specialization
 
@@ -118,7 +144,8 @@ GTEST_TEST(RangeTypeSelector, vector_valued_ensure_size_grows)
 GTEST_TEST(RangeTypeSelector, vector_valued_ensure_size_keeps_larger)
 {
   using S = RangeTypeSelector<double, 3, 1>;
-  S::dynamic_type vec(5, 0.);
+  S::dynamic_type vec;
+  vec.resize(5);
   S::ensure_size(vec);
   EXPECT_EQ(size_t(5), vec.size());
 }
@@ -135,6 +162,14 @@ GTEST_TEST(RangeTypeSelector, vector_valued_convert)
   S::convert(in, out);
   for (size_t ii = 0; ii < r; ++ii)
     EXPECT_DOUBLE_EQ(double(ii) + 1., out[ii]);
+  // converting into a larger target leaves the tail alone
+  S::dynamic_type larger_out;
+  larger_out.resize(r + 2);
+  S::convert(in, larger_out);
+  for (size_t ii = 0; ii < r; ++ii)
+    EXPECT_DOUBLE_EQ(double(ii) + 1., larger_out[ii]);
+  EXPECT_DOUBLE_EQ(0., larger_out[r]);
+  EXPECT_DOUBLE_EQ(0., larger_out[r + 1]);
 }
 
 
@@ -167,14 +202,36 @@ GTEST_TEST(DerivativeRangeTypeSelector, matrix_valued_ensure_size_grows_empty)
   }
 }
 
+GTEST_TEST(DerivativeRangeTypeSelector, matrix_valued_ensure_size_grows_if_only_cols_too_small)
+{
+  // the outer vector is large enough and the matrices have enough rows, so this covers the second
+  // operand of the `arg[ii].rows() < rC || arg[ii].cols() < d` short circuit
+  static constexpr size_t r = 2;
+  static constexpr size_t rC = 3;
+  using S = DerivativeRangeTypeSelector<d, double, r, rC>;
+  S::dynamic_type jac;
+  jac.resize(r);
+  for (size_t ii = 0; ii < r; ++ii)
+    jac[ii].resize(rC + 1, 1);
+  S::ensure_size(jac);
+  ASSERT_EQ(r, jac.size());
+  for (size_t ii = 0; ii < r; ++ii) {
+    EXPECT_EQ(rC, jac[ii].rows());
+    EXPECT_EQ(d, jac[ii].cols());
+  }
+}
+
 GTEST_TEST(DerivativeRangeTypeSelector, matrix_valued_ensure_size_keeps_larger)
 {
   static constexpr size_t r = 2;
   static constexpr size_t rC = 3;
   using S = DerivativeRangeTypeSelector<d, double, r, rC>;
-  S::dynamic_type jac(r + 1, XT::LA::CommonDenseMatrix<double>(rC + 1, d + 1, 0.));
+  S::dynamic_type jac;
+  jac.resize(r + 1);
+  for (size_t ii = 0; ii < jac.size(); ++ii)
+    jac[ii].resize(rC + 1, d + 1);
   S::ensure_size(jac);
-  EXPECT_EQ(r + 1, jac.size());
+  ASSERT_EQ(r + 1, jac.size());
   for (size_t ii = 0; ii < jac.size(); ++ii) {
     EXPECT_EQ(rC + 1, jac[ii].rows());
     EXPECT_EQ(d + 1, jac[ii].cols());
@@ -194,6 +251,7 @@ GTEST_TEST(DerivativeRangeTypeSelector, matrix_valued_convert)
   S::dynamic_type out;
   S::ensure_size(out);
   S::convert(in, out);
+  ASSERT_EQ(r, out.size());
   for (size_t ii = 0; ii < r; ++ii)
     for (size_t jj = 0; jj < rC; ++jj)
       for (size_t kk = 0; kk < d; ++kk)
@@ -211,6 +269,7 @@ GTEST_TEST(DerivativeRangeTypeSelector, vector_valued_types)
   EXPECT_TRUE((std::is_same_v<S::type, FieldMatrix<double, 3, d>>));
   EXPECT_TRUE((std::is_same_v<S::return_type, XT::Common::FieldMatrix<double, 3, d>>));
   EXPECT_TRUE((std::is_same_v<S::dynamic_type, XT::LA::CommonDenseMatrix<double>>));
+  EXPECT_TRUE((std::is_same_v<S::dynamic_type, S::dynamic_row_derivative_type>));
 }
 
 GTEST_TEST(DerivativeRangeTypeSelector, vector_valued_ensure_size_grows_empty)
@@ -263,37 +322,39 @@ GTEST_TEST(DerivativeRangeTypeSelector, vector_valued_convert)
 
 GTEST_TEST(functions_type_traits, is_element_function)
 {
-  using ElementFunctionType = ElementFunctionInterface<E, 2, 3, double>;
-  EXPECT_TRUE(is_element_function<ElementFunctionType>::value);
+  EXPECT_TRUE(is_element_function<ElementFunctionInterfaceType>::value);
   // not a candidate at all (no E, R, r, rC)
   EXPECT_FALSE(is_element_function<double>::value);
   EXPECT_FALSE(is_element_function<int>::value);
-  EXPECT_FALSE(is_element_function<FunctionInterface<d, 2, 3, double>>::value);
+  EXPECT_FALSE(is_element_function<FunctionInterfaceType>::value);
+  EXPECT_FALSE(is_element_function<GenericFunctionType>::value);
   // a candidate (provides E, R, r and rC), but not derived from a matching ElementFunctionInterface
-  EXPECT_FALSE(is_element_function<GridFunctionInterface<E, 2, 3, double>>::value);
+  EXPECT_FALSE(is_element_function<GridFunctionInterfaceType>::value);
+  EXPECT_FALSE(is_element_function<GenericGridFunctionType>::value);
 }
 
 GTEST_TEST(functions_type_traits, is_function)
 {
-  EXPECT_TRUE((is_function<FunctionInterface<d, 2, 3, double>>::value));
-  EXPECT_TRUE((is_function<GenericFunction<d, 2, 3, double>>::value));
+  EXPECT_TRUE(is_function<FunctionInterfaceType>::value);
+  EXPECT_TRUE(is_function<GenericFunctionType>::value);
   // not a candidate at all (no R, d, r, rC)
   EXPECT_FALSE(is_function<double>::value);
   EXPECT_FALSE(is_function<int>::value);
   // a candidate (provides R, d, r and rC), but not derived from a matching FunctionInterface
-  EXPECT_FALSE((is_function<GridFunctionInterface<E, 2, 3, double>>::value));
+  EXPECT_FALSE(is_function<GridFunctionInterfaceType>::value);
+  EXPECT_FALSE(is_function<ElementFunctionInterfaceType>::value);
 }
 
 GTEST_TEST(functions_type_traits, is_grid_function)
 {
-  EXPECT_TRUE((is_grid_function<GridFunctionInterface<E, 2, 3, double>>::value));
-  EXPECT_TRUE((is_grid_function<GenericGridFunction<E, 2, 3, double>>::value));
+  EXPECT_TRUE(is_grid_function<GridFunctionInterfaceType>::value);
+  EXPECT_TRUE(is_grid_function<GenericGridFunctionType>::value);
   // not a candidate at all (no E, R, r, rC)
   EXPECT_FALSE(is_grid_function<double>::value);
   EXPECT_FALSE(is_grid_function<int>::value);
-  EXPECT_FALSE((is_grid_function<FunctionInterface<d, 2, 3, double>>::value));
+  EXPECT_FALSE(is_grid_function<FunctionInterfaceType>::value);
   // a candidate (provides E, R, r and rC), but not derived from a matching GridFunctionInterface
-  EXPECT_FALSE((is_grid_function<ElementFunctionInterface<E, 2, 3, double>>::value));
+  EXPECT_FALSE(is_grid_function<ElementFunctionInterfaceType>::value);
 }
 
 
@@ -301,23 +362,27 @@ GTEST_TEST(functions_type_traits, is_grid_function)
 
 GTEST_TEST(functions_type_traits, as_element_function_interface)
 {
-  using ElementFunctionType = ElementFunctionInterface<E, 2, 3, double>;
-  EXPECT_TRUE((std::is_same_v<as_element_function_interface_t<ElementFunctionType>, ElementFunctionType>));
-  EXPECT_TRUE((std::is_same_v<as_element_function_interface<ElementFunctionType>::type, ElementFunctionType>));
+  EXPECT_TRUE(
+      (std::is_same_v<as_element_function_interface_t<ElementFunctionInterfaceType>, ElementFunctionInterfaceType>));
+  EXPECT_TRUE((
+      std::is_same_v<as_element_function_interface<ElementFunctionInterfaceType>::type, ElementFunctionInterfaceType>));
+  // the local function of a grid function is an element function of matching dimensions
+  EXPECT_TRUE((std::is_same_v<as_element_function_interface_t<GridFunctionInterfaceType::LocalFunctionType>,
+                              ElementFunctionInterfaceType>));
 }
 
 GTEST_TEST(functions_type_traits, as_function_interface)
 {
-  using InterfaceType = FunctionInterface<d, 2, 3, double>;
-  EXPECT_TRUE((std::is_same_v<as_function_interface_t<GenericFunction<d, 2, 3, double>>, InterfaceType>));
-  EXPECT_TRUE((std::is_same_v<as_function_interface<InterfaceType>::type, InterfaceType>));
+  EXPECT_TRUE((std::is_same_v<as_function_interface_t<GenericFunctionType>, FunctionInterfaceType>));
+  EXPECT_TRUE((std::is_same_v<as_function_interface_t<FunctionInterfaceType>, FunctionInterfaceType>));
+  EXPECT_TRUE((std::is_same_v<as_function_interface<FunctionInterfaceType>::type, FunctionInterfaceType>));
 }
 
 GTEST_TEST(functions_type_traits, as_grid_function_interface)
 {
-  using InterfaceType = GridFunctionInterface<E, 2, 3, double>;
-  EXPECT_TRUE((std::is_same_v<as_grid_function_interface_t<GenericGridFunction<E, 2, 3, double>>, InterfaceType>));
-  EXPECT_TRUE((std::is_same_v<as_grid_function_interface<InterfaceType>::type, InterfaceType>));
+  EXPECT_TRUE((std::is_same_v<as_grid_function_interface_t<GenericGridFunctionType>, GridFunctionInterfaceType>));
+  EXPECT_TRUE((std::is_same_v<as_grid_function_interface_t<GridFunctionInterfaceType>, GridFunctionInterfaceType>));
+  EXPECT_TRUE((std::is_same_v<as_grid_function_interface<GridFunctionInterfaceType>::type, GridFunctionInterfaceType>));
 }
 
 
