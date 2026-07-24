@@ -36,7 +36,7 @@ jobs:
       docs: ${{ steps.filter.outputs.docs }}
       non_docs: ${{ steps.filter.outputs.non_docs }}
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         persist-credentials: false
         # full history so the action can diff against the base for push/merge_group
@@ -166,7 +166,7 @@ jobs:
       CCACHE_MAXSIZE: "2G"
 
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         # this checkout's token is not used for any later git push/API call
         persist-credentials: false
@@ -388,7 +388,7 @@ jobs:
         python-version: ["3.13"] #, "3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         # this checkout's token is not used for any later git push/API call
         persist-credentials: false
@@ -508,7 +508,7 @@ jobs:
       PYTHON_VERSION: "3.13"
 
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         # this checkout's token is not used for any later git push/API call
         persist-credentials: false
