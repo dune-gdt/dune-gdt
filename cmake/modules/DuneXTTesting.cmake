@@ -139,7 +139,11 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
   #
   # * `uv run --no-project --with ...` supplies jinja2/pyparsing without a manually-managed venv, the same way the
   #   coverage targets in dxt_add_python_tests() pull gcovr/coverage.py, and `--python ${Python_EXECUTABLE}` pins the
-  #   interpreter the rest of the build resolved (see the uv block in the top-level CMakeLists.txt).
+  #   interpreter the rest of the build resolved (see the uv block in the top-level CMakeLists.txt). Both are bounded to
+  #   their current major version: template expansion is build-critical, and both libraries have broken across a major
+  #   bump before (jinja2 2->3, pyparsing 2->3). They are deliberately *not* pinned exactly here -- python/xt/uv.lock
+  #   already resolves them (jinja2 3.1.6, pyparsing 3.3.2) and is what the dependency tooling updates, so an exact
+  #   version repeated in CMake would be a second source of truth that silently drifts from it.
   # * PYTHONPATH points at the binary-dir assembly of the `dune.xt` package -- the symlinked sources plus the configured
   #   _version.py that dune_pybindxi_install_python_package() and python/xt/dune/xt/CMakeLists.txt put there. The
   #   per-suite .py configs import dune.xt.codegen / dune.xt.test.grid_types, and the source tree on its own is not
@@ -150,8 +154,9 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
   # was dropped (its find_program is commented out in CMakeLists.txt), and the ${PROJECT_SOURCE_DIR}/python/ scripts/
   # path, which has never existed -- the script lives in python/xt/scripts/.
   set(dxt_codegen_command
-      ${CMAKE_COMMAND} -E env "PYTHONPATH=${CMAKE_BINARY_DIR}/python/xt" uv run --no-project --with jinja2 --with
-      pyparsing --python ${Python_EXECUTABLE} python ${PROJECT_SOURCE_DIR}/python/xt/scripts/dxt_code_generation.py)
+      ${CMAKE_COMMAND} -E env "PYTHONPATH=${CMAKE_BINARY_DIR}/python/xt" uv run --no-project --with "jinja2>=3,<4"
+      --with "pyparsing>=3,<4" --python ${Python_EXECUTABLE} python
+      ${PROJECT_SOURCE_DIR}/python/xt/scripts/dxt_code_generation.py)
 
   foreach(template ${test_templates})
     set(ranks "1")
