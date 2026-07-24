@@ -167,22 +167,18 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
     string(REPLACE ".tpl" ".py" config_fn "${template}")
     string(REPLACE ".tpl" ".tpl.cc" out_fn "${template}")
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" out_fn "${out_fn}")
-    # get the last completed cache for the codegen execution during configure time
-    foreach(mod ${ALL_DEPENDENCIES})
-      dune_module_path(MODULE ${mod} RESULT ${mod}_binary_dir BUILD_DIR)
-      if(IS_DIRECTORY ${${mod}_binary_dir})
-        set(last_dep_bindir ${${mod}_binary_dir})
-      endif()
-    endforeach(mod DEPENDENCIES)
-
+    # Third and fifth argument are the primary and fallback directory to read a CMakeCache.txt from; both are the
+    # snapshot dxt_write_codegen_cache() wrote (see finalize_test_setup()). This used to pass ${CMAKE_BINARY_DIR} with
+    # the binary dir of the last dependency module as fallback, and neither holds a cache when it is needed -- see the
+    # comment on the snapshot for why.
     dune_execute_process(
       COMMAND
       ${dxt_codegen_command}
       "${config_fn}"
       "${template}"
-      "${CMAKE_BINARY_DIR}"
+      "${dxt_codegen_cache_dir}"
       "${out_fn}"
-      "${last_dep_bindir}"
+      "${dxt_codegen_cache_dir}"
       OUTPUT_VARIABLE
       codegen_output
       ERROR_MESSAGE
@@ -194,7 +190,8 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
     endif()
     add_custom_command(
       OUTPUT "${generated_sources}"
-      COMMAND ${dxt_codegen_command} "${config_fn}" "${template}" "${CMAKE_BINARY_DIR}" "${out_fn}" "${last_dep_bindir}"
+      COMMAND ${dxt_codegen_command} "${config_fn}" "${template}" "${dxt_codegen_cache_dir}" "${out_fn}"
+              "${dxt_codegen_cache_dir}"
       DEPENDS "${config_fn}" "${template}"
       VERBATIM USES_TERMINAL)
     foreach(gen_source ${generated_sources})
@@ -255,8 +252,49 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
   endforeach()
 endmacro(_PROCESS_SUBDIR_TESTS)
 
+# Snapshot the live CMake cache for the templated-test codegen.
+#
+# The .tpl suites are expanded by python/xt/scripts/dxt_code_generation.py, which reads a CMakeCache.txt (via
+# dune.xt.cmake.parse_cache) to decide which grid managers and LA backends to instantiate for -- see
+# dune/xt/test/functions/grids.py, python/xt/dune/xt/test/grid_types.py and dune.xt.codegen. But CMake only writes
+# ${CMAKE_BINARY_DIR}/CMakeCache.txt at the END of a successful configure, so on a cold build dir there is no cache to
+# read at the point the codegen has to run. That is what the script's fallback argument was for: the binary dir of the
+# last configured dependency module, which under dunecontrol was a completed CMake build with its own cache. It no
+# longer is -- the dune modules come from vcpkg now, and vcpkg_installed/<triplet>/share/dune-common holds no
+# CMakeCache.txt -- so both the primary and the fallback path were dead (issue #370).
+#
+# Writing our own snapshot sidesteps the ordering problem entirely: by the time finalize_test_setup() runs, every
+# find_package() whose result the configs consult has already populated the cache, and we can serialise it on demand in
+# the format parse_cache expects.
+macro(DXT_WRITE_CODEGEN_CACHE)
+  set(dxt_codegen_cache_dir ${CMAKE_BINARY_DIR}/dxt-codegen-cache)
+  file(MAKE_DIRECTORY ${dxt_codegen_cache_dir})
+  set(dxt_cache_dump "# Snapshot of the live CMake cache, written by finalize_test_setup() for the .tpl codegen.\n")
+  get_cmake_property(dxt_cache_vars CACHE_VARIABLES)
+  foreach(dxt_cache_var IN LISTS dxt_cache_vars)
+    # parse_cache tokenises names with Word(alphanums + "/_- .") and parses with parseAll=True, so a single name it
+    # cannot tokenise would fail the whole file. Skip those rather than risk the configure; nothing the configs read has
+    # such a name.
+    if(NOT dxt_cache_var MATCHES "^[A-Za-z0-9/_.-]+$")
+      continue()
+    endif()
+    get_property(
+      dxt_cache_var_type
+      CACHE ${dxt_cache_var}
+      PROPERTY TYPE)
+    if(NOT dxt_cache_var_type)
+      set(dxt_cache_var_type "UNINITIALIZED")
+    endif()
+    # A real CMakeCache.txt cannot hold an embedded newline, and parse_cache is line-based; flatten defensively.
+    string(REPLACE "\n" " " dxt_cache_var_value "${${dxt_cache_var}}")
+    string(APPEND dxt_cache_dump "${dxt_cache_var}:${dxt_cache_var_type}=${dxt_cache_var_value}\n")
+  endforeach()
+  file(WRITE ${dxt_codegen_cache_dir}/CMakeCache.txt "${dxt_cache_dump}")
+endmacro()
+
 macro(FINALIZE_TEST_SETUP)
   get_headercheck_targets()
+  dxt_write_codegen_cache()
   get_property(dxt_test_dirs GLOBAL PROPERTY dxt_test_dirs_prop)
   set(combine_targets test_templates test_binaries check recheck)
 
