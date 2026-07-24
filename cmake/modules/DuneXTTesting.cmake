@@ -124,7 +124,35 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
 
   _process_sources("${test_sources}" "${subdir}")
 
-  file(GLOB_RECURSE test_templates "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.tpl")
+  # Glob the templated suites relative to ${fullpath} (the full path add_subdir_tests() recorded), exactly as the .cc
+  # glob above does. This used to splice ${subdir} onto ${CMAKE_CURRENT_SOURCE_DIR}, which is dune/ here (this macro
+  # runs from finalize_test_setup(), invoked in dune/CMakeLists.txt), so it looked for dune/functions/*.tpl,
+  # dune/la/*.tpl, ... -- directories that do not exist. All 49 templated suites were silently skipped (issue #370).
+  file(GLOB_RECURSE test_templates "${fullpath}/*.tpl")
+  # Record what was picked up so finalize_test_setup() can cross-check it against the whole tree (see the guard there).
+  get_property(dxt_seen_templates GLOBAL PROPERTY dxt_seen_test_templates_prop)
+  list(APPEND dxt_seen_templates ${test_templates})
+  set_property(GLOBAL PROPERTY dxt_seen_test_templates_prop "${dxt_seen_templates}")
+
+  # Both the configure-time expansion below (CMake needs the generated file list to declare the targets) and the
+  # build-time regeneration in add_custom_command run the same command:
+  #
+  # * `uv run --no-project --with ...` supplies jinja2/pyparsing without a manually-managed venv, the same way the
+  #   coverage targets in dxt_add_python_tests() pull gcovr/coverage.py, and `--python ${Python_EXECUTABLE}` pins the
+  #   interpreter the rest of the build resolved (see the uv block in the top-level CMakeLists.txt).
+  # * PYTHONPATH points at the binary-dir assembly of the `dune.xt` package -- the symlinked sources plus the configured
+  #   _version.py that dune_pybindxi_install_python_package() and python/xt/dune/xt/CMakeLists.txt put there. The
+  #   per-suite .py configs import dune.xt.codegen / dune.xt.test.grid_types, and the source tree on its own is not
+  #   importable because dune/xt/__init__.py imports the generated _version. add_subdirectory(python) precedes
+  #   add_subdirectory(dune) in the top-level CMakeLists.txt, so the assembly exists by the time we get here.
+  #
+  # This replaces the former ${RUN_IN_ENV_SCRIPT} wrapper, which has been unset ever since the dune-testtools virtualenv
+  # was dropped (its find_program is commented out in CMakeLists.txt), and the ${PROJECT_SOURCE_DIR}/python/ scripts/
+  # path, which has never existed -- the script lives in python/xt/scripts/.
+  set(dxt_codegen_command
+      ${CMAKE_COMMAND} -E env "PYTHONPATH=${CMAKE_BINARY_DIR}/python/xt" uv run --no-project --with jinja2 --with
+      pyparsing --python ${Python_EXECUTABLE} python ${PROJECT_SOURCE_DIR}/python/xt/scripts/dxt_code_generation.py)
+
   foreach(template ${test_templates})
     set(ranks "1")
     if(template MATCHES "mpi")
@@ -142,27 +170,26 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
       endif()
     endforeach(mod DEPENDENCIES)
 
-    # TODO dxt_code_geneartion.py should be avail in the venv when called from this target
     dune_execute_process(
       COMMAND
-      ${RUN_IN_ENV_SCRIPT}
-      ${PROJECT_SOURCE_DIR}/python/scripts/dxt_code_generation.py
+      ${dxt_codegen_command}
       "${config_fn}"
       "${template}"
       "${CMAKE_BINARY_DIR}"
       "${out_fn}"
       "${last_dep_bindir}"
       OUTPUT_VARIABLE
-      codegen_output)
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/codegen.${testbase}.log" ${codegen_output})
+      codegen_output
+      ERROR_MESSAGE
+      "failed to expand the templated test suite ${template}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/codegen.${testbase}.log" "${codegen_output}")
     file(GLOB generated_sources "${out_fn}.*")
     if("" STREQUAL "${generated_sources}")
       set(generated_sources ${out_fn})
     endif()
     add_custom_command(
       OUTPUT "${generated_sources}"
-      COMMAND ${RUN_IN_ENV_SCRIPT} ${PROJECT_SOURCE_DIR}/python/scripts/dxt_code_generation.py "${config_fn}"
-              "${template}" "${CMAKE_BINARY_DIR}" "${out_fn}" "${last_dep_bindir}"
+      COMMAND ${dxt_codegen_command} "${config_fn}" "${template}" "${CMAKE_BINARY_DIR}" "${out_fn}" "${last_dep_bindir}"
       DEPENDS "${config_fn}" "${template}"
       VERBATIM USES_TERMINAL)
     foreach(gen_source ${generated_sources})
@@ -184,29 +211,27 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
         ${COMMON_LIBS}
         ${GRID_LIBS}
         gtest_dune_xt
-        COMMAND
-        ${RUN_IN_ENV_SCRIPT}
         CMD_ARGS
-        ${CMAKE_CURRENT_BINARY_DIR}/${target}
         --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${target}.xml
         TIMEOUT
         ${DXT_TEST_TIMEOUT}
         MPI_RANKS
-        ${ranks})
+        ${ranks}
+        LABELS
+        dune-gdt-test
+        subdir_${subdir})
       list(APPEND ${subdir}_dxt_test_binaries ${target})
       set(dxt_test_names_${target} ${target})
-      set_tests_properties(${target} PROPERTIES LABELS subdir_${subdir})
     endforeach()
   endforeach(template ${test_templates})
   add_custom_target(${subdir}_test_templates SOURCES ${test_templates})
 
-  # this excludes meta-ini variation test cases because there binary name != test name
-  foreach(test ${${subdir}_dxt_test_binaries})
-    if(TEST test)
-      set_tests_properties(${test} PROPERTIES TIMEOUT ${DXT_TEST_TIMEOUT})
-      set_tests_properties(${test} PROPERTIES LABELS subdir_${subdir})
-    endif(TEST test)
-  endforeach()
+  # A loop used to re-apply TIMEOUT and LABELS to every ${subdir}_dxt_test_binaries entry here, guarded by `if(TEST
+  # test)` -- the unexpanded literal `test`, so it asked whether a ctest test named "test" exists and the body never
+  # ran. It is gone rather than repaired: both branches above now pass TIMEOUT and the full label set (dune-gdt-test
+  # plus subdir_${subdir}) straight to dune_add_test/dune_add_system_test, and re-setting LABELS here would clobber
+  # dune-gdt-test -- the label every ctest preset filters on -- which is precisely the bug this loop's sibling at the
+  # .tpl branch caused (issue #370).
 
   add_custom_target(${subdir}_test_binaries DEPENDS ${${subdir}_dxt_test_binaries})
 
@@ -244,6 +269,22 @@ macro(FINALIZE_TEST_SETUP)
 
     list(APPEND dxt_test_binaries "${${subdir}_dxt_test_binaries}")
   endforeach()
+
+  # Regression guard for issue #370: the per-subdir *.tpl glob resolved to a non-existent path for years, so all 49
+  # templated suites were skipped without a word -- there was no counterpart to the empty-test_sources AUTHOR_WARNING in
+  # _process_subdir_tests(). Warning per subdir would fire for every dune/gdt/test subdir (none of which has templates),
+  # so the check is made once, here: every *.tpl file in the module must have been picked up by one of the per-subdir
+  # globs. This also catches a suite added under a directory nobody passed to add_subdir_tests().
+  file(GLOB_RECURSE dxt_all_templates "${PROJECT_SOURCE_DIR}/dune/*.tpl")
+  get_property(dxt_seen_templates GLOBAL PROPERTY dxt_seen_test_templates_prop)
+  list(LENGTH dxt_all_templates dxt_all_templates_count)
+  list(LENGTH dxt_seen_templates dxt_seen_templates_count)
+  if(NOT dxt_all_templates_count EQUAL dxt_seen_templates_count)
+    message(
+      AUTHOR_WARNING
+        "found ${dxt_all_templates_count} templated (*.tpl) test suites under dune/, but add_subdir_tests() picked up "
+        "only ${dxt_seen_templates_count} -- the rest generate no tests and contribute no coverage")
+  endif()
 
   if(Alberta_FOUND)
     foreach(test ${dxt_test_binaries})
