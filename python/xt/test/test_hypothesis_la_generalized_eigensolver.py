@@ -284,7 +284,8 @@ class TestGeneralizedEigenSolverBindings:
             (solver.lhs_matrix, self.LHS),
             (solver.rhs_matrix, self.RHS),
         ):
-            assert (prop.rows, prop.cols) == expected.shape
+            assert prop.rows == expected.shape[0]
+            assert prop.cols == expected.shape[1]
             for ii in range(expected.shape[0]):
                 for jj in range(expected.shape[1]):
                     assert prop.get_entry(ii, jj) == pytest.approx(expected[ii, jj])
@@ -344,14 +345,19 @@ class TestGeneralizedEigenSolverBindings:
     def test_violated_sign_assertions_are_reported(self, cls):
         from dune.xt.common import DuneError
 
+        # Constructed outside the raises block on purpose: the assertion is a post check, so
+        # construction has to succeed and only the eigenvalue access may fail.
+        negative_on_positive_spectrum = solver_with_asserts(
+            cls, self.LHS, self.RHS, assert_negative_eigenvalues="1e-10"
+        )
         with pytest.raises(DuneError):
-            solver_with_asserts(
-                cls, self.LHS, self.RHS, assert_negative_eigenvalues="1e-10"
-            ).eigenvalues()
+            negative_on_positive_spectrum.eigenvalues()
+
+        positive_on_negative_spectrum = solver_with_asserts(
+            cls, -self.LHS, self.RHS, assert_positive_eigenvalues="1e-10"
+        )
         with pytest.raises(DuneError):
-            solver_with_asserts(
-                cls, -self.LHS, self.RHS, assert_positive_eigenvalues="1e-10"
-            ).eigenvalues()
+            positive_on_negative_spectrum.eigenvalues()
 
     def test_indefinite_rhs_is_reported(self, cls):
         # lapack's dsygv requires a positive definite rhs; a zero one passes all of our own checks
