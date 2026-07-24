@@ -56,6 +56,11 @@ solve_tridiag_ldlt(const FirstVectorType& diag, const SecondVectorType& subdiag,
   size_t size = vec.size();
   thread_local auto L =
       eye_matrix<CommonSparseMatrix<ScalarType>>(size, diagonal_pattern(size, size) + diagonal_pattern(size, size, -1));
+  // the thread local matrix above is only created once per thread, so it has to be recreated whenever this thread
+  // solves a system of a different size
+  if (L.rows() != size)
+    L = eye_matrix<CommonSparseMatrix<ScalarType>>(size,
+                                                   diagonal_pattern(size, size) + diagonal_pattern(size, size, -1));
   for (size_t ii = 0; ii < size - 1; ++ii)
     L.set_entry(ii + 1, ii, V2::get_entry(subdiag, ii));
   // solve LDL^T x = rhs;
