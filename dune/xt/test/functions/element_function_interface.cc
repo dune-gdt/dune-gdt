@@ -227,21 +227,24 @@ void check_set_of_set_wrappers(const ElementType& element)
 {
   FixedSet<r, rC> set;
   set.bind(element);
+  // hoisted into a local: passing FixedSet<r, rC>::set_size straight to ASSERT_EQ would let the preprocessor
+  // split the macro arguments at the comma inside the template argument list
+  constexpr size_t set_size = FixedSet<r, rC>::set_size;
 
   const auto values = set.evaluate_set(inside_point());
-  ASSERT_EQ(FixedSet<r, rC>::set_size, values.size());
+  ASSERT_EQ(set_size, values.size());
   for (size_t ii = 0; ii < values.size(); ++ii)
     expect_range_eq<r, rC>(values[ii], ii);
 
   const auto jacobians = set.jacobians_of_set(inside_point());
-  ASSERT_EQ(FixedSet<r, rC>::set_size, jacobians.size());
+  ASSERT_EQ(set_size, jacobians.size());
   for (size_t ii = 0; ii < jacobians.size(); ++ii)
     expect_derivative_eq<r, rC, dim_domain>(jacobians[ii], ii);
 
   // derivatives_of_set() sizes the result from size() and forwards to derivatives(), whose default forwards the
   // all-ones multi-index to jacobians() -- so this has to reproduce the jacobian values
   const auto derivatives = set.derivatives_of_set(first_derivative_multiindex(), inside_point());
-  ASSERT_EQ(FixedSet<r, rC>::set_size, derivatives.size());
+  ASSERT_EQ(set_size, derivatives.size());
   for (size_t ii = 0; ii < derivatives.size(); ++ii)
     expect_derivative_eq<r, rC, dim_domain>(derivatives[ii], ii);
 } // ... check_set_of_set_wrappers(...)
@@ -252,6 +255,9 @@ void check_set_single_component_accessors(const ElementType& element)
 {
   FixedSet<r, rC> set;
   set.bind(element);
+  // hoisted into a local: passing FixedSet<r, rC>::set_size straight to ASSERT_EQ would let the preprocessor
+  // split the macro arguments at the comma inside the template argument list
+  constexpr size_t set_size = FixedSet<r, rC>::set_size;
   using SingleDerivativeRangeType = typename FixedSet<r, rC>::SingleDerivativeRangeType;
 
   for (size_t row = 0; row < r; ++row)
@@ -259,17 +265,17 @@ void check_set_single_component_accessors(const ElementType& element)
       // all three results are deliberately left empty, to also cover the interface's resize path
       std::vector<double> values;
       set.evaluate(inside_point(), values, row, col);
-      ASSERT_EQ(FixedSet<r, rC>::set_size, values.size());
+      ASSERT_EQ(set_size, values.size());
       for (size_t ii = 0; ii < values.size(); ++ii)
         EXPECT_DOUBLE_EQ(expected_value(ii, row, col), values[ii]);
 
       std::vector<SingleDerivativeRangeType> jacobians;
       set.jacobians(inside_point(), jacobians, row, col);
-      ASSERT_EQ(FixedSet<r, rC>::set_size, jacobians.size());
+      ASSERT_EQ(set_size, jacobians.size());
 
       std::vector<SingleDerivativeRangeType> derivatives;
       set.derivatives(first_derivative_multiindex(), inside_point(), derivatives, row, col);
-      ASSERT_EQ(FixedSet<r, rC>::set_size, derivatives.size());
+      ASSERT_EQ(set_size, derivatives.size());
 
       for (size_t ii = 0; ii < jacobians.size(); ++ii)
         for (size_t dd = 0; dd < dim_domain; ++dd) {
@@ -285,25 +291,28 @@ void check_set_dynamic_overloads(const ElementType& element)
 {
   FixedSet<r, rC> set;
   set.bind(element);
+  // hoisted into a local: passing FixedSet<r, rC>::set_size straight to ASSERT_EQ would let the preprocessor
+  // split the macro arguments at the comma inside the template argument list
+  constexpr size_t set_size = FixedSet<r, rC>::set_size;
   using DynamicRangeType = typename FixedSet<r, rC>::DynamicRangeType;
   using DynamicDerivativeRangeType = typename FixedSet<r, rC>::DynamicDerivativeRangeType;
 
   // all results are deliberately left empty, so the interface has to resize and ensure_size the entries
   std::vector<DynamicRangeType> values;
   set.evaluate(inside_point(), values);
-  ASSERT_EQ(FixedSet<r, rC>::set_size, values.size());
+  ASSERT_EQ(set_size, values.size());
   for (size_t ii = 0; ii < values.size(); ++ii)
     expect_dynamic_range_eq<r, rC>(values[ii], ii);
 
   std::vector<DynamicDerivativeRangeType> jacobians;
   set.jacobians(inside_point(), jacobians);
-  ASSERT_EQ(FixedSet<r, rC>::set_size, jacobians.size());
+  ASSERT_EQ(set_size, jacobians.size());
   for (size_t ii = 0; ii < jacobians.size(); ++ii)
     expect_dynamic_derivative_eq<r, rC, dim_domain>(jacobians[ii], ii);
 
   std::vector<DynamicDerivativeRangeType> derivatives;
   set.derivatives(first_derivative_multiindex(), inside_point(), derivatives);
-  ASSERT_EQ(FixedSet<r, rC>::set_size, derivatives.size());
+  ASSERT_EQ(set_size, derivatives.size());
   for (size_t ii = 0; ii < derivatives.size(); ++ii)
     expect_dynamic_derivative_eq<r, rC, dim_domain>(derivatives[ii], ii);
 } // ... check_set_dynamic_overloads(...)
