@@ -24,6 +24,8 @@ except ImportError as e:
 
 from collections import namedtuple
 
+from dune.xt.codegen import is_found
+
 arguments = {
     "alu": namedtuple("alu_args", "dim element_type refinement"),
     "yasp": namedtuple("yasp_args", "dim"),
@@ -36,6 +38,10 @@ templates = {
     "ug": "Dune::UGGrid<{dim}>",
     "alberta": "Dune::AlbertaGrid<{dim},{dim}>",
 }
+# Keys looked up in the CMake cache snapshot the codegen reads. The dune-* ones are the boolean
+# companions parse_cache derives from the modules' *_DIR cache paths; ALBERTA_FOUND is not a cache
+# variable at all and is appended to the snapshot by dxt_write_codegen_cache() (DuneXTTesting.cmake)
+# from find_package(Alberta)'s normal variable -- keep the two names in sync.
 guards = {
     "alu": "dune-alugrid",
     "yasp": "dune-grid",
@@ -45,10 +51,7 @@ guards = {
 
 
 def _is_usable(grid, cache):
-    try:
-        return cache[guards[grid]]
-    except KeyError:
-        return False
+    return is_found(cache, guards[grid])
 
 
 def all_args(dims):

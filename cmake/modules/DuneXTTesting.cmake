@@ -289,7 +289,41 @@ macro(DXT_WRITE_CODEGEN_CACHE)
     string(REPLACE "\n" " " dxt_cache_var_value "${${dxt_cache_var}}")
     string(APPEND dxt_cache_dump "${dxt_cache_var}:${dxt_cache_var_type}=${dxt_cache_var_value}\n")
   endforeach()
+
+  # Synthetic entries: guards the codegen configs ask for that are NOT cache variables.
+  #
+  # A find_package() result such as Alberta_FOUND is a *normal* variable, so it is not in CACHE_VARIABLES and the loop
+  # above cannot see it -- no matter how it is spelled. The configs guard on such names by string (the `guards` dict in
+  # python/xt/dune/xt/test/grid_types.py, _if_active() in dune/xt/test/functions/grids.py), and both fail closed and
+  # silently on a key that is not in the snapshot. This block is the CMake -> codegen contract for those: keep it in
+  # sync with the guard names on the Python side, which is the only thing tying the two together.
+  #
+  # The sibling grid guards (`dune-alugrid`, `dune-uggrid`, `dune-grid`) need no entry here: they are the *_DIR cache
+  # paths of the dune modules, for which parse_cache synthesizes a boolean companion key itself.
+  #
+  # Issue #374: `ALBERTA_FOUND` was never published and is also cased differently from the `Alberta_FOUND` that
+  # find_package(Alberta) sets (CMake variables are case-sensitive), so the guard could never match and both Alberta
+  # grid variants -- 2d_simplex_albertagrid and 3d_simplex_albertagrid -- were dropped from every templated suite that
+  # fans out over grid types. Publish under the name the configs ask for, and take the value from either casing so a
+  # dune-grid that only sets the find_package_handle_standard_args upper-case alias still counts.
+  if(Alberta_FOUND OR ALBERTA_FOUND)
+    set(dxt_alberta_found "TRUE")
+  else()
+    set(dxt_alberta_found "FALSE")
+  endif()
+  string(APPEND dxt_cache_dump "ALBERTA_FOUND:BOOL=${dxt_alberta_found}\n")
+
   file(WRITE ${dxt_codegen_cache_dir}/CMakeCache.txt "${dxt_cache_dump}")
+
+  # Every preset requests the alberta vcpkg feature, so a build that has it enabled but did not find Alberta is losing
+  # ~47 ctest entries for a reason worth naming rather than rediscovering (issue #374 was exactly that gap, measured as
+  # 594 registered tests against ~641 expected).
+  if("alberta" IN_LIST VCPKG_MANIFEST_FEATURES AND NOT dxt_alberta_found)
+    message(
+      AUTHOR_WARNING
+        "the alberta vcpkg feature is enabled, but find_package(Alberta) did not succeed -- the Alberta grid variants "
+        "of the templated (*.tpl) test suites will not be generated and contribute no coverage")
+  endif()
 endmacro()
 
 macro(FINALIZE_TEST_SETUP)

@@ -13,6 +13,8 @@
 
 import itertools
 
+from dune.xt.codegen import is_found
+
 
 def _make_alu(dimDomain):
     tmpl = "Dune::ALUGrid<{d},{d},Dune::{g},Dune::{r}>"
@@ -29,14 +31,6 @@ def _if_active(val, guard, cache):
     return val if is_found(cache, guard) else []
 
 
-def is_found(cache, name):
-    if name in cache.keys():
-        if isinstance(cache[name], bool):
-            return cache[name]
-        return "notfound" not in cache[name].lower()
-    return False
-
-
 def type_and_dim(cache, dimDomain):
     grid_alu = _if_active(_make_alu(dimDomain), "dune-alugrid", cache)
     grid_yasp = [
@@ -51,6 +45,8 @@ def type_and_dim(cache, dimDomain):
     grid_ug = _if_active(
         [(f"Dune::UGGrid<{d}>", d) for d in dimDomain if d != 1], "dune-uggrid", cache
     )
+    # ALBERTA_FOUND is not a cache variable: dxt_write_codegen_cache() appends it to the snapshot
+    # from find_package(Alberta)'s normal variable, under this name (see DuneXTTesting.cmake).
     grid_alberta = _if_active(
         [("Dune::AlbertaGrid<{d},{d}>".format(d=d), d) for d in dimDomain if d != 1],
         "ALBERTA_FOUND",
