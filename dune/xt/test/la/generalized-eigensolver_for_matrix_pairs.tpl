@@ -91,7 +91,6 @@ struct GeneralizedEigenSolverForMatrixPairWithNegativeEigenvalues_{{T_NAME}}
 }; // struct GeneralizedEigenSolverForMatrixPairWithNegativeEigenvalues_{{T_NAME}}
 
 
-#if HAVE_MKL || HAVE_LAPACKE
 TEST_F(GeneralizedEigenSolverForMatrixPairWithPositiveEigenvalues_{{T_NAME}}, is_constructible)
 {
   is_constructible();
@@ -185,14 +184,5 @@ TEST_F(GeneralizedEigenSolverForMatrixPairWithNegativeEigenvalues_{{T_NAME}},
 {
   computes_eigenvalues_required_for_assertions();
 }
-#else // HAVE_MKL || HAVE_LAPACKE
-TEST_F(GeneralizedEigenSolverForMatrixPairWithPositiveEigenvalues_{{T_NAME}}, disabled_due_to_missing_lapacke)
-{
-}
-
-TEST_F(GeneralizedEigenSolverForMatrixPairWithNegativeEigenvalues_{{T_NAME}}, disabled_due_to_missing_lapacke)
-{
-}
-#endif
 
 {% endfor %}

@@ -1,0 +1,51 @@
+{
+  "$comment": "Overlay of the upstream port, diverging only in that it builds the in-tree LAPACKE (see portfile.cmake). Version and port-version are kept at the upstream values on purpose: overlay ports bypass version resolution, and matching upstream keeps the refresh diff readable.",
+  "name": "lapack-reference",
+  "version": "3.12.1",
+  "port-version": 3,
+  "description": "LAPACK - Linear Algebra PACKage (with LAPACKE, see portfile.cmake)",
+  "homepage": "https://netlib.org/lapack/",
+  "license": "BSD-3-Clause-Open-MPI",
+  "dependencies": [
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    },
+    {
+      "name": "vcpkg-gfortran",
+      "platform": "windows & !mingw"
+    }
+  ],
+  "default-features": [
+    "blas-select"
+  ],
+  "features": {
+    "blas-select": {
+      "description": "Use external optimized BLAS",
+      "dependencies": [
+        {
+          "name": "lapack-reference",
+          "default-features": false,
+          "features": [
+            "noblas"
+          ],
+          "platform": "!windows | !static | mingw"
+        }
+      ]
+    },
+    "cblas": {
+      "description": "Build CBLAS"
+    },
+    "noblas": {
+      "description": "Use external optimized BLAS",
+      "supports": "!windows | !static | mingw",
+      "dependencies": [
+        "blas"
+      ]
+    }
+  }
+}

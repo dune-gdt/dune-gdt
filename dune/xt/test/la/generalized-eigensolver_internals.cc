@@ -32,9 +32,6 @@ using namespace Dune::XT;
 using namespace Dune::XT::LA;
 
 
-#if HAVE_MKL || HAVE_LAPACKE
-
-
 /// \brief Creates a rows x cols matrix from a row-wise list of entries.
 template <class MatrixType>
 MatrixType make_matrix(const size_t rows, const size_t cols, const std::vector<double>& entries)
@@ -172,7 +169,7 @@ GTEST_TEST(GeneralizedEigenSolverInternals, field_matrix)
   check_backend_failure_is_reported<MatrixType>();
 }
 
-#  if HAVE_EIGEN
+#if HAVE_EIGEN
 GTEST_TEST(GeneralizedEigenSolverInternals, eigen_dense_matrix)
 {
   using MatrixType = EigenDenseMatrix<double>; // <- column-major and contiguous
@@ -181,13 +178,4 @@ GTEST_TEST(GeneralizedEigenSolverInternals, eigen_dense_matrix)
   check_backend_failure_is_reported<MatrixType>();
   check_varying_problem_sizes<MatrixType>();
 }
-#  endif // HAVE_EIGEN
-
-
-#else // HAVE_MKL || HAVE_LAPACKE
-
-
-GTEST_TEST(GeneralizedEigenSolverInternals, disabled_due_to_missing_lapacke) {}
-
-
-#endif // HAVE_MKL || HAVE_LAPACKE
+#endif // HAVE_EIGEN
