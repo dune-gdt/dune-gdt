@@ -6,9 +6,10 @@ repos:
   rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
   hooks:
   - id: trailing-whitespace
-    # mpfr is a verbatim copy of the upstream vcpkg port; do not rewrite its
-    # patches (stripping context-line whitespace corrupts the diffs).
-    exclude: "^\\.vcpkg-overlays/ports/mpfr/"
+    # mpfr and lapack-reference are verbatim copies of the upstream vcpkg ports;
+    # do not rewrite their patches (stripping context-line whitespace corrupts
+    # the diffs -- a blank context line is a single space).
+    exclude: "^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
   - id: check-yaml
     args: [--allow-multiple-documents]
   - id: check-added-large-files
@@ -37,11 +38,11 @@ repos:
   hooks:
   - id: cmake-format
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/mpfr/"
+    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
     args: ["-i", "--config-files=.cmake_format.py"]
   - id: cmake-lint
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/mpfr/"
+    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
     args: ["--config-files=.cmake_format.py"]
 - repo: https://github.com/python-jsonschema/check-jsonschema
   rev: 1a4bb160cab6417b3045e1b37b6b72449243e658 # frozen: 0.37.4
