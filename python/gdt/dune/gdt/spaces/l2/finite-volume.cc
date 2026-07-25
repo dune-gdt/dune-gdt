@@ -10,120 +10,10 @@
 #include "config.h"
 
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-#include <dune/xt/grid/gridprovider/provider.hh>
 
 #include <dune/gdt/spaces/l2/finite-volume.hh>
 
-#include <python/xt/dune/xt/common/configuration.hh>
-#include <python/xt/dune/xt/common/fvector.hh>
-#include <python/xt/dune/xt/grid/grids.bindings.hh>
-#include <python/xt/dune/xt/grid/traits.hh>
-
-namespace Dune {
-namespace GDT {
-namespace bindings {
-
-
-/**
- * \note Assumes that GV is the leaf view!
- */
-template <class GV, size_t r = 1, class R = double>
-class FiniteVolumeSpace
-{
-  using G = typename GV::Grid;
-  static const size_t d = G::dimension;
-
-public:
-  using type = GDT::FiniteVolumeSpace<GV, r, 1, R>;
-  using base_type = GDT::SpaceInterface<GV, r, 1, R>;
-  using bound_type = pybind11::class_<type, base_type>;
-
-  static bound_type
-  bind(pybind11::module& m, const std::string& grid_id, const std::string& class_id = "finite_volume_space")
-  {
-    namespace py = pybind11;
-    using namespace pybind11::literals;
-
-    std::string class_name = class_id + "_" + grid_id;
-    if (r > 1)
-      class_name += "_to_" + XT::Common::to_string(r) + "d";
-    if (!std::is_same<R, double>::value)
-      class_name += "_" + XT::Common::Typename<R>::value(/*fail_wo_typeid=*/true);
-    const auto ClassName = XT::Common::to_camel_case(class_name);
-    bound_type c(m, ClassName.c_str(), ClassName.c_str());
-    c.def(py::init([](XT::Grid::GridProvider<G>& grid_provider) {
-            return new type(grid_provider.leaf_view()); // Otherwise we get an error here!
-          }),
-          // A space holds the grid *view*, which points into the grid the provider owns: without this, a space
-          // built from a temporary provider outlives its grid and every later use is a use-after-free (#378).
-          py::keep_alive<1, 2>(),
-          "grid_provider"_a);
-    c.def("__repr__", [](const type& self) {
-      std::stringstream ss;
-      ss << self;
-      return ss.str();
-    });
-
-    std::string space_type_name = class_id;
-    if (!std::is_same<R, double>::value)
-      space_type_name += "_" + XT::Common::Typename<R>::value(/*fail_wo_typeid=*/true);
-    if (r == 1)
-      m.def(
-          XT::Common::to_camel_case(space_type_name).c_str(),
-          [](XT::Grid::GridProvider<G>& grid, const XT::Grid::bindings::Dimension<r>&) {
-            return new type(grid.leaf_view()); // Otherwise we get an error here!
-          },
-          py::keep_alive<0, 1>(), // see the init above
-          "grid"_a,
-          "dim_range"_a = XT::Grid::bindings::Dimension<r>());
-    else
-      m.def(
-          XT::Common::to_camel_case(space_type_name).c_str(),
-          [](XT::Grid::GridProvider<G>& grid, const XT::Grid::bindings::Dimension<r>&) {
-            return new type(grid.leaf_view()); // Otherwise we get an error here!
-          },
-          py::keep_alive<0, 1>(), // see the init above
-          "grid"_a,
-          "dim_range"_a);
-
-    return c;
-  } // ... bind(...)
-}; // class FiniteVolumeSpace
-
-
-} // namespace bindings
-} // namespace GDT
-} // namespace Dune
-
-
-template <class GridTypes = Dune::XT::Grid::bindings::AvailableGridTypes>
-struct FiniteVolumeSpace_for_all_grids
-{
-  using G = Dune::XT::Common::tuple_head_t<GridTypes>;
-  using GV = typename G::LeafGridView;
-  static const constexpr size_t d = G::dimension;
-
-  static void bind(pybind11::module& m)
-  {
-    using Dune::GDT::bindings::FiniteVolumeSpace;
-    using Dune::XT::Grid::bindings::grid_name;
-
-    FiniteVolumeSpace<GV>::bind(m, grid_name<G>::value());
-    if (d > 1)
-      FiniteVolumeSpace<GV, d>::bind(m, grid_name<G>::value());
-    // add your extra dimensions here
-    // ...
-    FiniteVolumeSpace_for_all_grids<Dune::XT::Common::tuple_tail_t<GridTypes>>::bind(m);
-  }
-};
-
-template <>
-struct FiniteVolumeSpace_for_all_grids<Dune::XT::Common::tuple_null_type>
-{
-  static void bind(pybind11::module& /*m*/) {}
-};
+#include <python/gdt/dune/gdt/spaces/finite_volume_binding.hh>
 
 
 PYBIND11_MODULE(_spaces_l2_finite_volume, m)
@@ -140,5 +30,8 @@ PYBIND11_MODULE(_spaces_l2_finite_volume, m)
 
   py::module::import("dune.gdt._spaces_interface");
 
-  FiniteVolumeSpace_for_all_grids<XT::Grid::bindings::AvailableGridTypes>::bind(m);
+  bindings::FiniteVolumeSpaceBinding_for_all_grids<GDT::FiniteVolumeSpace,
+                                                   /*bind_vector_valued=*/true,
+                                                   XT::Grid::bindings::AvailableGridTypes>::bind(m,
+                                                                                                 "finite_volume_space");
 }
