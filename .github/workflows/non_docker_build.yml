@@ -91,7 +91,7 @@ jobs:
         (( linux_cpu >= 2 )) || { echo "::error::linux_cpu must be >= 2 (got $linux_cpu)"; exit 1; }
         {
           # Cap compile concurrency by RAM: the GitHub-hosted runner has only
-          # 16 GB. Ordinary TUs (the library and the ~400 test binaries) peak
+          # 16 GB. Ordinary TUs (the library and the ~520 test binaries) peak
           # ~2 GB each, so cpu-1 keeps their peak RAM well under the box while
           # using all but one vCPU.
           echo "linux_build_jobs=$((linux_cpu - 1))"
@@ -99,7 +99,7 @@ jobs:
           # peak far higher (well above 4 GB each) -- building them at the shared
           # cpu-1 OOM-killed the 16 GB runner -- so give them a tighter cap.
           echo "bindings_jobs=$((linux_cpu / 2))"
-          # Tests are ~400 short, IO-light executables: oversubscribe at 2x vCPU.
+          # Tests are ~640 short, IO-light ctest entries: oversubscribe at 2x vCPU.
           echo "ctest_parallel=$((linux_cpu * 2))"
         } >> "$GITHUB_OUTPUT"
 
@@ -121,7 +121,7 @@ jobs:
     # /tmp ltrans explosion like build_wheels.
     runs-on: ubuntu-26.04
     # A fully cold leg (no build cache) compiles every vcpkg dependency as a shared
-    # library, the project, the ~400 test binaries and the Python bindings from
+    # library, the project, the ~520 test binaries and the Python bindings from
     # scratch; on the 4 vCPU hosted runner with the memory-bounded -j caps above
     # that is slower than the old self-hosted fleet, so the timeout is generous.
     # Warm runs restore the ccache and finish much faster.
@@ -161,7 +161,7 @@ jobs:
     env:
       # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
       # hash), the ccache survives manifest changes and partial rebuilds, so the
-      # 400+ test-binary translation units stay warm across runs.
+      # ~520 test-binary translation units stay warm across runs.
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_MAXSIZE: "2G"
 
@@ -246,8 +246,9 @@ jobs:
 
     - name: Build test binaries
       run: |
-        # test_binaries is ~400 separate executables, several of which are
-        # template-heavy TUs that peak around ~2 GB RAM each. Cap concurrency by
+        # test_binaries is ~520 separate executables (breakdown under "Test with
+        # CTest" below), several of which are template-heavy TUs that peak around
+        # ~2 GB RAM each. Cap concurrency by
         # memory: -j cpu-1 (linux_build_jobs from the config job) keeps peak RAM
         # (~2 GB * (cpu-1)) well under the GitHub-hosted runner (16 GB) while using
         # all but one of its vCPUs. With a warm ccache most of these are cache hits.
@@ -269,7 +270,15 @@ jobs:
       # visualisation-backed binding test has a headless display. The pytest tests
       # write coverage.py data files (coverage-xt, coverage-gdt) into the build dir
       # for the coverage_python target below. ctest_parallel (2x vCPU, from the
-      # config job) oversubscribes the ~400 short/IO-light C++ executables.
+      # config job) oversubscribes the short/IO-light C++ executables.
+      #
+      # Sizing, counted from the tree in issue #370 (the previous "~400" matched
+      # nothing countable): 123 plain hand-written .cc suites -> 123 binaries; 29
+      # meta-ini (.mini) suites -> 112 binaries and 235 ctest entries; 49 templated
+      # (.tpl) suites -> 283 generated binaries. Total ~518 executables and ~641
+      # ctest entries, before the Python suites. The .tpl share was zero until the
+      # glob bug diagnosed in that issue was fixed, so the figure this replaces
+      # predates the dune-xt/dune-gdt merge at best.
       run: |
         xvfb-run -a ctest --preset=${{ matrix.preset }} --parallel ${{ needs.config.outputs.ctest_parallel }}
 

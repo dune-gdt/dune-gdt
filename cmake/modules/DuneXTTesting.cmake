@@ -124,7 +124,40 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
 
   _process_sources("${test_sources}" "${subdir}")
 
-  file(GLOB_RECURSE test_templates "${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/*.tpl")
+  # Glob the templated suites relative to ${fullpath} (the full path add_subdir_tests() recorded), exactly as the .cc
+  # glob above does. This used to splice ${subdir} onto ${CMAKE_CURRENT_SOURCE_DIR}, which is dune/ here (this macro
+  # runs from finalize_test_setup(), invoked in dune/CMakeLists.txt), so it looked for dune/functions/*.tpl,
+  # dune/la/*.tpl, ... -- directories that do not exist. All 49 templated suites were silently skipped (issue #370).
+  file(GLOB_RECURSE test_templates "${fullpath}/*.tpl")
+  # Record what was picked up so finalize_test_setup() can cross-check it against the whole tree (see the guard there).
+  get_property(dxt_seen_templates GLOBAL PROPERTY dxt_seen_test_templates_prop)
+  list(APPEND dxt_seen_templates ${test_templates})
+  set_property(GLOBAL PROPERTY dxt_seen_test_templates_prop "${dxt_seen_templates}")
+
+  # Both the configure-time expansion below (CMake needs the generated file list to declare the targets) and the
+  # build-time regeneration in add_custom_command run the same command:
+  #
+  # * `uv run --no-project --with ...` supplies jinja2/pyparsing without a manually-managed venv, the same way the
+  #   coverage targets in dxt_add_python_tests() pull gcovr/coverage.py, and `--python ${Python_EXECUTABLE}` pins the
+  #   interpreter the rest of the build resolved (see the uv block in the top-level CMakeLists.txt). Both are bounded to
+  #   their current major version: template expansion is build-critical, and both libraries have broken across a major
+  #   bump before (jinja2 2->3, pyparsing 2->3). They are deliberately *not* pinned exactly here -- python/xt/uv.lock
+  #   already resolves them (jinja2 3.1.6, pyparsing 3.3.2) and is what the dependency tooling updates, so an exact
+  #   version repeated in CMake would be a second source of truth that silently drifts from it.
+  # * PYTHONPATH points at the binary-dir assembly of the `dune.xt` package -- the symlinked sources plus the configured
+  #   _version.py that dune_pybindxi_install_python_package() and python/xt/dune/xt/CMakeLists.txt put there. The
+  #   per-suite .py configs import dune.xt.codegen / dune.xt.test.grid_types, and the source tree on its own is not
+  #   importable because dune/xt/__init__.py imports the generated _version. add_subdirectory(python) precedes
+  #   add_subdirectory(dune) in the top-level CMakeLists.txt, so the assembly exists by the time we get here.
+  #
+  # This replaces the former ${RUN_IN_ENV_SCRIPT} wrapper, which has been unset ever since the dune-testtools virtualenv
+  # was dropped (its find_program is commented out in CMakeLists.txt), and the ${PROJECT_SOURCE_DIR}/python/ scripts/
+  # path, which has never existed -- the script lives in python/xt/scripts/.
+  set(dxt_codegen_command
+      ${CMAKE_COMMAND} -E env "PYTHONPATH=${CMAKE_BINARY_DIR}/python/xt" uv run --no-project --with "jinja2>=3,<4"
+      --with "pyparsing>=3,<4" --python ${Python_EXECUTABLE} python
+      ${PROJECT_SOURCE_DIR}/python/xt/scripts/dxt_code_generation.py)
+
   foreach(template ${test_templates})
     set(ranks "1")
     if(template MATCHES "mpi")
@@ -134,35 +167,31 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
     string(REPLACE ".tpl" ".py" config_fn "${template}")
     string(REPLACE ".tpl" ".tpl.cc" out_fn "${template}")
     string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" out_fn "${out_fn}")
-    # get the last completed cache for the codegen execution during configure time
-    foreach(mod ${ALL_DEPENDENCIES})
-      dune_module_path(MODULE ${mod} RESULT ${mod}_binary_dir BUILD_DIR)
-      if(IS_DIRECTORY ${${mod}_binary_dir})
-        set(last_dep_bindir ${${mod}_binary_dir})
-      endif()
-    endforeach(mod DEPENDENCIES)
-
-    # TODO dxt_code_geneartion.py should be avail in the venv when called from this target
+    # Third and fifth argument are the primary and fallback directory to read a CMakeCache.txt from; both are the
+    # snapshot dxt_write_codegen_cache() wrote (see finalize_test_setup()). This used to pass ${CMAKE_BINARY_DIR} with
+    # the binary dir of the last dependency module as fallback, and neither holds a cache when it is needed -- see the
+    # comment on the snapshot for why.
     dune_execute_process(
       COMMAND
-      ${RUN_IN_ENV_SCRIPT}
-      ${PROJECT_SOURCE_DIR}/python/scripts/dxt_code_generation.py
+      ${dxt_codegen_command}
       "${config_fn}"
       "${template}"
-      "${CMAKE_BINARY_DIR}"
+      "${dxt_codegen_cache_dir}"
       "${out_fn}"
-      "${last_dep_bindir}"
+      "${dxt_codegen_cache_dir}"
       OUTPUT_VARIABLE
-      codegen_output)
-    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/codegen.${testbase}.log" ${codegen_output})
+      codegen_output
+      ERROR_MESSAGE
+      "failed to expand the templated test suite ${template}")
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/codegen.${testbase}.log" "${codegen_output}")
     file(GLOB generated_sources "${out_fn}.*")
     if("" STREQUAL "${generated_sources}")
       set(generated_sources ${out_fn})
     endif()
     add_custom_command(
       OUTPUT "${generated_sources}"
-      COMMAND ${RUN_IN_ENV_SCRIPT} ${PROJECT_SOURCE_DIR}/python/scripts/dxt_code_generation.py "${config_fn}"
-              "${template}" "${CMAKE_BINARY_DIR}" "${out_fn}" "${last_dep_bindir}"
+      COMMAND ${dxt_codegen_command} "${config_fn}" "${template}" "${dxt_codegen_cache_dir}" "${out_fn}"
+              "${dxt_codegen_cache_dir}"
       DEPENDS "${config_fn}" "${template}"
       VERBATIM USES_TERMINAL)
     foreach(gen_source ${generated_sources})
@@ -184,29 +213,27 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
         ${COMMON_LIBS}
         ${GRID_LIBS}
         gtest_dune_xt
-        COMMAND
-        ${RUN_IN_ENV_SCRIPT}
         CMD_ARGS
-        ${CMAKE_CURRENT_BINARY_DIR}/${target}
         --gtest_output=xml:${CMAKE_CURRENT_BINARY_DIR}/${target}.xml
         TIMEOUT
         ${DXT_TEST_TIMEOUT}
         MPI_RANKS
-        ${ranks})
+        ${ranks}
+        LABELS
+        dune-gdt-test
+        subdir_${subdir})
       list(APPEND ${subdir}_dxt_test_binaries ${target})
       set(dxt_test_names_${target} ${target})
-      set_tests_properties(${target} PROPERTIES LABELS subdir_${subdir})
     endforeach()
   endforeach(template ${test_templates})
   add_custom_target(${subdir}_test_templates SOURCES ${test_templates})
 
-  # this excludes meta-ini variation test cases because there binary name != test name
-  foreach(test ${${subdir}_dxt_test_binaries})
-    if(TEST test)
-      set_tests_properties(${test} PROPERTIES TIMEOUT ${DXT_TEST_TIMEOUT})
-      set_tests_properties(${test} PROPERTIES LABELS subdir_${subdir})
-    endif(TEST test)
-  endforeach()
+  # A loop used to re-apply TIMEOUT and LABELS to every ${subdir}_dxt_test_binaries entry here, guarded by `if(TEST
+  # test)` -- the unexpanded literal `test`, so it asked whether a ctest test named "test" exists and the body never
+  # ran. It is gone rather than repaired: both branches above now pass TIMEOUT and the full label set (dune-gdt-test
+  # plus subdir_${subdir}) straight to dune_add_test/dune_add_system_test, and re-setting LABELS here would clobber
+  # dune-gdt-test -- the label every ctest preset filters on -- which is precisely the bug this loop's sibling at the
+  # .tpl branch caused (issue #370).
 
   add_custom_target(${subdir}_test_binaries DEPENDS ${${subdir}_dxt_test_binaries})
 
@@ -225,8 +252,49 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
   endforeach()
 endmacro(_PROCESS_SUBDIR_TESTS)
 
+# Snapshot the live CMake cache for the templated-test codegen.
+#
+# The .tpl suites are expanded by python/xt/scripts/dxt_code_generation.py, which reads a CMakeCache.txt (via
+# dune.xt.cmake.parse_cache) to decide which grid managers and LA backends to instantiate for -- see
+# dune/xt/test/functions/grids.py, python/xt/dune/xt/test/grid_types.py and dune.xt.codegen. But CMake only writes
+# ${CMAKE_BINARY_DIR}/CMakeCache.txt at the END of a successful configure, so on a cold build dir there is no cache to
+# read at the point the codegen has to run. That is what the script's fallback argument was for: the binary dir of the
+# last configured dependency module, which under dunecontrol was a completed CMake build with its own cache. It no
+# longer is -- the dune modules come from vcpkg now, and vcpkg_installed/<triplet>/share/dune-common holds no
+# CMakeCache.txt -- so both the primary and the fallback path were dead (issue #370).
+#
+# Writing our own snapshot sidesteps the ordering problem entirely: by the time finalize_test_setup() runs, every
+# find_package() whose result the configs consult has already populated the cache, and we can serialise it on demand in
+# the format parse_cache expects.
+macro(DXT_WRITE_CODEGEN_CACHE)
+  set(dxt_codegen_cache_dir ${CMAKE_BINARY_DIR}/dxt-codegen-cache)
+  file(MAKE_DIRECTORY ${dxt_codegen_cache_dir})
+  set(dxt_cache_dump "# Snapshot of the live CMake cache, written by finalize_test_setup() for the .tpl codegen.\n")
+  get_cmake_property(dxt_cache_vars CACHE_VARIABLES)
+  foreach(dxt_cache_var IN LISTS dxt_cache_vars)
+    # parse_cache tokenises names with Word(alphanums + "/_- .") and parses with parseAll=True, so a single name it
+    # cannot tokenise would fail the whole file. Skip those rather than risk the configure; nothing the configs read has
+    # such a name.
+    if(NOT dxt_cache_var MATCHES "^[A-Za-z0-9/_.-]+$")
+      continue()
+    endif()
+    get_property(
+      dxt_cache_var_type
+      CACHE ${dxt_cache_var}
+      PROPERTY TYPE)
+    if(NOT dxt_cache_var_type)
+      set(dxt_cache_var_type "UNINITIALIZED")
+    endif()
+    # A real CMakeCache.txt cannot hold an embedded newline, and parse_cache is line-based; flatten defensively.
+    string(REPLACE "\n" " " dxt_cache_var_value "${${dxt_cache_var}}")
+    string(APPEND dxt_cache_dump "${dxt_cache_var}:${dxt_cache_var_type}=${dxt_cache_var_value}\n")
+  endforeach()
+  file(WRITE ${dxt_codegen_cache_dir}/CMakeCache.txt "${dxt_cache_dump}")
+endmacro()
+
 macro(FINALIZE_TEST_SETUP)
   get_headercheck_targets()
+  dxt_write_codegen_cache()
   get_property(dxt_test_dirs GLOBAL PROPERTY dxt_test_dirs_prop)
   set(combine_targets test_templates test_binaries check recheck)
 
@@ -244,6 +312,22 @@ macro(FINALIZE_TEST_SETUP)
 
     list(APPEND dxt_test_binaries "${${subdir}_dxt_test_binaries}")
   endforeach()
+
+  # Regression guard for issue #370: the per-subdir *.tpl glob resolved to a non-existent path for years, so all 49
+  # templated suites were skipped without a word -- there was no counterpart to the empty-test_sources AUTHOR_WARNING in
+  # _process_subdir_tests(). Warning per subdir would fire for every dune/gdt/test subdir (none of which has templates),
+  # so the check is made once, here: every *.tpl file in the module must have been picked up by one of the per-subdir
+  # globs. This also catches a suite added under a directory nobody passed to add_subdir_tests().
+  file(GLOB_RECURSE dxt_all_templates "${PROJECT_SOURCE_DIR}/dune/*.tpl")
+  get_property(dxt_seen_templates GLOBAL PROPERTY dxt_seen_test_templates_prop)
+  list(LENGTH dxt_all_templates dxt_all_templates_count)
+  list(LENGTH dxt_seen_templates dxt_seen_templates_count)
+  if(NOT dxt_all_templates_count EQUAL dxt_seen_templates_count)
+    message(
+      AUTHOR_WARNING
+        "found ${dxt_all_templates_count} templated (*.tpl) test suites under dune/, but add_subdir_tests() picked up "
+        "only ${dxt_seen_templates_count} -- the rest generate no tests and contribute no coverage")
+  endif()
 
   if(Alberta_FOUND)
     foreach(test ${dxt_test_binaries})
