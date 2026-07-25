@@ -133,15 +133,9 @@ def test_equivalence_constant_is_refinement_invariant(spec):
     assert refined == pytest.approx(coarse, rel=1e-12, abs=1e-12)
 
 
-# Quarantined, not deleted: this property is the reason the estimators are bound at all, and it should run again as
-# soon as #378 is fixed. Until then it cannot be an xfail -- estimate_combined_inverse_trace_inequality_constant
-# segfaults on a 3d ALUGrid cube, which takes the whole pytest process down with it (and with it every test that
-# would have run after it), so the only way to keep the suite reporting is to not draw the crashing product at all.
-# The crash predates the LAPACKE requirement; it was simply unreachable while HAVE_LAPACKE was 0 and this test
-# skipped itself via _needs_eigen_solver. See #378 for the traceback and the failing configuration.
-@pytest.mark.skip(
-    reason="#378: estimate_combined_inverse_trace_inequality_constant segfaults on a 3d ALUGrid cube"
-)
+# Un-quarantined: #376 disabled this property because it segfaulted the whole pytest process on a 3d ALUGrid cube.
+# The cause was never the estimator -- the space was left holding a grid view whose grid had already been freed (see
+# the py::keep_alive in python/gdt/dune/gdt/spaces/), so it draws the crashing product again.
 @_needs_eigen_solver
 @given(spec=grid_specs(max_elements_per_dim=3), order=st.integers(1, 2))
 def test_inverse_inequality_constants_are_positive_and_finite(spec, order):
