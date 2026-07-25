@@ -95,6 +95,11 @@ endif()
 
 vcpkg_fixup_pkgconfig()
 
+# The renames below exist to avoid collisions: openblas installs lapack.pc, blas.pc and cblas.pc too, so this port
+# gives its own the "-reference" suffix. LAPACKE/CMakeLists.txt installs a lapacke.pc as well (upstream v3.12.1, line
+# 126ff), which is deliberately left under its own name -- openblas builds with -DBUILD_WITHOUT_LAPACK=ON and ships no
+# lapacke.pc, so there is nothing to collide with. It is validated by vcpkg_fixup_pkgconfig() above but not consumed
+# here either way: cmake/modules/FindLAPACKE.cmake locates LAPACKE with find_library/find_path, not via pkg-config.
 file(RENAME "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/lapack.pc" "${CURRENT_PACKAGES_DIR}/lib/pkgconfig/lapack-reference.pc")
 if(NOT VCPKG_BUILD_TYPE)
     file(RENAME "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/lapack.pc" "${CURRENT_PACKAGES_DIR}/debug/lib/pkgconfig/lapack-reference.pc")
