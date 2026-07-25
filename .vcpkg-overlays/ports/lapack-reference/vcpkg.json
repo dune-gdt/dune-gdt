@@ -1,9 +1,11 @@
 {
-  "$comment": "Overlay of the upstream port, diverging only in that it builds the in-tree LAPACKE (see portfile.cmake). Version and port-version are kept at the upstream values on purpose: overlay ports bypass version resolution, and matching upstream keeps the refresh diff readable.",
+  "$comment":
+    "Overlay of the upstream port, diverging only in that it builds the in-tree LAPACKE (see portfile.cmake). Version and port-version are kept at the upstream values on purpose: overlay ports bypass version resolution, and matching upstream keeps the refresh diff readable.",
   "name": "lapack-reference",
   "version": "3.12.1",
   "port-version": 3,
-  "description": "LAPACK - Linear Algebra PACKage (with LAPACKE, see portfile.cmake)",
+  "description":
+    "LAPACK - Linear Algebra PACKage (with LAPACKE, see portfile.cmake)",
   "homepage": "https://netlib.org/lapack/",
   "license": "BSD-3-Clause-Open-MPI",
   "dependencies": [
