@@ -76,3 +76,10 @@ def test_la_backends_skips_missing_istl():
 
 def test_la_backends_empty_cache():
     assert la_backends({}) == []
+
+
+def test_is_found_accepts_boolean_values():
+    # parse_cache reduces BOOL entries (and the *_DIR companions) to real booleans; the guard has
+    # to read those as-is instead of looking for "notfound" in a string.
+    assert is_found({"ALBERTA_FOUND": True}, "ALBERTA_FOUND") is True
+    assert is_found({"ALBERTA_FOUND": False}, "ALBERTA_FOUND") is False

@@ -14,6 +14,20 @@
 import os
 import pprint
 
+# The constants CMake's own `if()` treats as false; everything else (a non-zero number, any other
+# word) is true. See https://cmake.org/cmake/help/latest/command/if.html#constant.
+_CMAKE_FALSE_CONSTANTS = frozenset(
+    ("", "0", "OFF", "NO", "FALSE", "N", "IGNORE", "NOTFOUND")
+)
+
+
+def is_cmake_true(value):
+    """Evaluate a CMake constant the way `if()` would."""
+    if isinstance(value, bool):
+        return value
+    value = value.strip().upper()
+    return not (value in _CMAKE_FALSE_CONSTANTS or value.endswith("-NOTFOUND"))
+
 
 def parse_cache(filepath):
     import pyparsing as p
@@ -29,8 +43,15 @@ def parse_cache(filepath):
     kv = {}
     types = {}
     for key, type, value in grammar.parseFile(filepath, parseAll=True):
-        kv[key] = value.strip()
+        value = value.strip()
         types[key] = type
+        if type == "BOOL":
+            # Hand BOOL entries to the configs as actual booleans. The guards read them either by
+            # truthiness (grid_types._is_usable) or by looking for "notfound" in the string
+            # (codegen.is_found), and both of those would take the string "FALSE" for a yes.
+            kv[key] = is_cmake_true(value)
+            continue
+        kv[key] = value
         if key.endswith("_DIR"):
             kv[key[:-4]] = os.path.isdir(value)
     return kv, types

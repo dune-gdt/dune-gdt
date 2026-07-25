@@ -67,3 +67,20 @@ def test_all_types_alu_formatting():
     types = grid_types.all_types(cache=cache, dims=(2,), gridnames=["alu"])
     assert "Dune::ALUGrid<2,2,Dune::simplex,Dune::nonconforming>" in types
     assert "Dune::ALUGrid<2,2,Dune::cube,Dune::nonconforming>" in types
+
+
+def test_alberta_guard_toggles_the_alberta_types():
+    # Regression test for issue #374: nothing published ALBERTA_FOUND into the cache snapshot the
+    # codegen reads, so this guard never matched and the Alberta grid variants were dropped from
+    # every templated suite. dxt_write_codegen_cache() now appends it (see DuneXTTesting.cmake).
+    assert grid_types.guards["alberta"] == "ALBERTA_FOUND"
+    enabled = grid_types.all_types(
+        cache={"ALBERTA_FOUND": True}, dims=(2, 3), gridnames=["alberta"]
+    )
+    assert enabled == ["Dune::AlbertaGrid<2,2>", "Dune::AlbertaGrid<3,3>"]
+    assert (
+        grid_types.all_types(
+            cache={"ALBERTA_FOUND": False}, dims=(2, 3), gridnames=["alberta"]
+        )
+        == []
+    )
