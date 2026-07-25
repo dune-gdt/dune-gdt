@@ -61,7 +61,11 @@ public:
           }),
           "grid_provider"_a,
           "order"_a,
-          "dimwise_global_mapping"_a = (r == 1) ? false : true);
+          "dimwise_global_mapping"_a = (r == 1) ? false : true,
+          // the space only holds the grid *view*, which points into the grid the provider owns, so the provider has to
+          // outlive it: without this, `space = DiscontinuousLagrangeSpace(make_grid(), order=1)` frees the grid at the
+          // end of the statement and every later use of the space is a use-after-free
+          py::keep_alive<1, 2>());
     c.def(
         "interpolation_points",
         [](type& self) {
@@ -107,7 +111,8 @@ public:
           "grid"_a,
           "order"_a,
           "dimwise_global_mapping"_a = (r == 1) ? false : true,
-          "dim_range"_a = XT::Grid::bindings::Dimension<r>());
+          "dim_range"_a = XT::Grid::bindings::Dimension<r>(),
+          py::keep_alive<0, 1>()); // see the comment on the init above
     else
       m.def(
           XT::Common::to_camel_case(space_type_name).c_str(),
@@ -120,7 +125,8 @@ public:
           "grid"_a,
           "order"_a,
           "dimwise_global_mapping"_a = (r == 1) ? false : true,
-          "dim_range"_a);
+          "dim_range"_a,
+          py::keep_alive<0, 1>()); // see the comment on the init above
 
     return c;
   } // ... bind(...)

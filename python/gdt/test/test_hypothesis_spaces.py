@@ -28,6 +28,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from dune.xt.test.hypothesis_strategies import (
+    GRID_BINDINGS,
     GRID_COMBINATIONS,
     cg_scalar_dof_count,
     cg_vector_dof_count,
@@ -234,6 +235,78 @@ def test_cg_interpolation_points_match_dofs_and_lie_in_domain(dim, element, orde
             f"matrix (signal {-result.returncode}); known upstream binding bug found by this test"
         )
     assert result.returncode == 0, result.stderr
+
+
+# Regression test for #378. A space stores only the grid *view*, which points into the grid its
+# GridProvider owns, so every space factory needs a py::keep_alive tying the two together. Without
+# it the idiomatic
+#   space = ContinuousLagrangeSpace(spec.make_grid(), order=1)
+# drops the last reference to the provider at the end of the statement, frees the grid, and leaves
+# the space dangling -- every later use is a use-after-free, which happens to survive on YaspGrid
+# and segfaults the whole interpreter on a 3d ALUGrid cube. Run in a subprocess for the same reason
+# as the property above: a regression fails this test instead of killing the pytest process.
+_SPACE_OUTLIVES_GRID_PROPERTY = textwrap.dedent(
+    """
+    import gc
+
+    from dune.xt.test.hypothesis_strategies import GridSpec
+    from dune.gdt import (
+        ContinuousLagrangeSpace,
+        DiscontinuousLagrangeSpace,
+        FiniteVolumeSkeletonSpace,
+        FiniteVolumeSpace,
+        RaviartThomasSpace,
+    )
+
+    spec = GridSpec(dim={dim}, element={element!r}, lower_left={lower!r}, upper_right={upper!r},
+                    num_elements={num_elements!r}, impl={impl!r})
+    expected_elements = spec.expected_num_elements
+
+    # every factory is handed a *temporary* grid provider, exactly as a caller would write it
+    spaces = [
+        ContinuousLagrangeSpace(spec.make_grid(), order=1),
+        DiscontinuousLagrangeSpace(spec.make_grid(), order=0),
+        FiniteVolumeSpace(spec.make_grid()),
+        FiniteVolumeSkeletonSpace(spec.make_grid()),
+    ]
+    if spec.conforming:
+        # order 0 RT is only claimed for conforming leaf views, see
+        # test_rt_space_order_zero_works_higher_orders_are_a_documented_contract_limit
+        spaces.append(RaviartThomasSpace(spec.make_grid(), order=0))
+    gc.collect()
+
+    # walking the mapper touches the grid view, so a freed grid shows up here
+    assert FiniteVolumeSpace(spec.make_grid()).num_DoFs == expected_elements
+    for space in spaces:
+        assert space.num_DoFs > 0
+        assert space.min_polorder <= space.max_polorder
+        repr(space)
+    """
+)
+
+
+# one case per compiled grid implementation; the nonconforming ALU grids matter most here, the 3d
+# ALU cube being the one #378 crashed on
+@pytest.mark.parametrize(
+    "dim, element, impl",
+    [(b.dim, b.element, b.impl) for b in GRID_BINDINGS],
+)
+def test_a_space_keeps_its_grid_alive(dim, element, impl):
+    code = _SPACE_OUTLIVES_GRID_PROPERTY.format(
+        dim=dim,
+        element=element,
+        impl=impl,
+        lower=(0.0,) * dim,
+        upper=(1.0,) * dim,
+        num_elements=(2,) * dim,
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code], capture_output=True, text=True
+    )
+    assert result.returncode == 0, (
+        f"exit code {result.returncode} (negative means the interpreter was killed by that "
+        f"signal, i.e. the space outlived its grid)\n{result.stderr}"
+    )
 
 
 @given(data=st.data(), spec=grid_specs(max_elements_per_dim=3))

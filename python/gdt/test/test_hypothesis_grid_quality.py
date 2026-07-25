@@ -142,6 +142,11 @@ def test_inverse_inequality_constants_are_positive_and_finite(spec, order):
         estimate_inverse_inequality_constant,
     )
 
+    # The grid provider is deliberately left as a temporary here: the space keeps only the grid
+    # *view*, so the binding has to hold the provider alive on its behalf (#378; the dedicated
+    # regression test for that contract is test_a_space_keeps_its_grid_alive in
+    # test_hypothesis_spaces.py). Binding the provider to a local would paper over a dangling
+    # grid, which is what made the 3d ALUGrid cube draw below segfault the pytest process.
     space = ContinuousLagrangeSpace(spec.make_grid(), order=order)
     inverse = estimate_inverse_inequality_constant(space)
     combined = estimate_combined_inverse_trace_inequality_constant(space)

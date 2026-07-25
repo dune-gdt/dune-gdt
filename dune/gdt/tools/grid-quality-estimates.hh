@@ -27,6 +27,7 @@
 #include <dune/xt/grid/intersection.hh>
 #include <dune/xt/grid/type_traits.hh>
 
+#include <dune/gdt/exceptions.hh>
 #include <dune/gdt/local/bilinear-forms/integrals.hh>
 #include <dune/gdt/local/integrands/laplace.hh>
 #include <dune/gdt/local/integrands/product.hh>
@@ -64,6 +65,13 @@ double estimate_inverse_inequality_constant(const SpaceInterface<GV, r>& space)
     for (auto&& ev : evs)
       if (std::abs(ev) > 1e-7) // TODO: find a better tolerance here!
         min_ev = std::min(min_ev, ev);
+    // Without this we would silently return h * sqrt(max double) = inf for an element whose eigenvalues all fall below
+    // the tolerance above (the H1 product matrix is only positive semi-definite: the constants are in its kernel).
+    DUNE_THROW_IF(min_ev == std::numeric_limits<double>::max(),
+                  Exceptions::tools_error,
+                  "No eigenvalue of the H1/L2 product matrix pair exceeds the 1e-7 cutoff on the element at "
+                      << element.geometry().center() << " (diameter " << h
+                      << "), so no inverse inequality constant can be estimated!");
     // the smalles nonzero eigenvalue is (C_I / h)^2
     result = std::max(result, h * std::sqrt(min_ev));
   }
@@ -108,6 +116,14 @@ double estimate_combined_inverse_trace_inequality_constant(const SpaceInterface<
     for (auto&& ev : evs)
       if (std::abs(ev) > 1e-7) // TODO: find a better tolerance here!
         min_ev = std::min(min_ev, ev);
+    // Without this we would silently return h * max double = inf for an element whose eigenvalues all fall below the
+    // tolerance above (the face product matrix is only positive semi-definite: an order 2 Lagrange basis on a cube has
+    // an interior node whose basis function vanishes on the whole element boundary).
+    DUNE_THROW_IF(min_ev == std::numeric_limits<double>::max(),
+                  Exceptions::tools_error,
+                  "No eigenvalue of the face/element L2 product matrix pair exceeds the 1e-7 cutoff on the element at "
+                      << element.geometry().center() << " (diameter " << h
+                      << "), so no combined inverse trace inequality constant can be estimated!");
     // the smalles nonzero eigenvalue is (C_M (1 + C_I)) / h
     result = std::max(result, h * min_ev);
   }

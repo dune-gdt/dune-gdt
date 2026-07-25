@@ -59,7 +59,11 @@ public:
           }),
           "grid_provider"_a,
           "order"_a,
-          "logging_prefix"_a = "");
+          "logging_prefix"_a = "",
+          // the space only holds the grid *view*, which points into the grid the provider owns, so the provider has to
+          // outlive it: without this, `space = ContinuousLagrangeSpace(make_grid(), order=1)` frees the grid at the end
+          // of the statement and every later use of the space is a use-after-free
+          py::keep_alive<1, 2>());
     c.def("__repr__", [](const type& self) {
       std::stringstream ss;
       ss << self;
@@ -79,7 +83,8 @@ public:
           "grid"_a,
           "order"_a,
           "dim_range"_a = XT::Grid::bindings::Dimension<r>(),
-          "logging_prefix"_a = "");
+          "logging_prefix"_a = "",
+          py::keep_alive<0, 1>()); // see the comment on the init above
     else
       m.def(
           XT::Common::to_camel_case(space_type_name).c_str(),
@@ -90,7 +95,8 @@ public:
           "grid"_a,
           "order"_a,
           "dim_range"_a,
-          "logging_prefix"_a = "");
+          "logging_prefix"_a = "",
+          py::keep_alive<0, 1>()); // see the comment on the init above
 
     return c;
   } // ... bind(...)
