@@ -20,6 +20,7 @@
 #include <python/xt/dune/xt/common/fvector.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 #include <python/xt/dune/xt/grid/traits.hh>
+#include <python/gdt/dune/gdt/spaces/binding_helpers.hh>
 
 namespace Dune {
 namespace GDT {
@@ -46,11 +47,7 @@ public:
     namespace py = pybind11;
     using namespace pybind11::literals;
 
-    std::string class_name = class_id + "_" + grid_id;
-    class_name += "_to_" + XT::Common::to_string(size_t(d)) + "d";
-    if (!std::is_same<R, double>::value)
-      class_name += "_" + XT::Common::Typename<R>::value(/*fail_wo_typeid=*/true);
-    const auto ClassName = XT::Common::to_camel_case(class_name);
+    const auto ClassName = space_class_name<d, R>(class_id, grid_id, /*always_append_range_dim=*/true);
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
     c.def(py::init([](XT::Grid::GridProvider<G>& grid_provider, const int order, const std::string& logging_prefix) {
             return new type(grid_provider.leaf_view(), order, logging_prefix); // Otherwise we get an error here!
@@ -61,17 +58,11 @@ public:
           "grid_provider"_a,
           "order"_a,
           "logging_prefix"_a = "");
-    c.def("__repr__", [](const type& self) {
-      std::stringstream ss;
-      ss << self;
-      return ss.str();
-    });
+    add_space_repr(c);
 
-    std::string space_type_name = class_id;
-    if (!std::is_same<R, double>::value)
-      space_type_name += "_" + XT::Common::Typename<R>::value(/*fail_wo_typeid=*/true);
+    const auto FactoryName = space_factory_name<R>(class_id);
     m.def(
-        XT::Common::to_camel_case(space_type_name).c_str(),
+        FactoryName.c_str(),
         [](XT::Grid::GridProvider<G>& grid, const int order, const std::string& logging_prefix) {
           return new type(grid.leaf_view(), order, logging_prefix); // Otherwise we get an error here!
         },

@@ -21,6 +21,7 @@
 #include <python/xt/dune/xt/common/fvector.hh>
 #include <python/xt/dune/xt/grid/grids.bindings.hh>
 #include <python/xt/dune/xt/grid/traits.hh>
+#include <python/gdt/dune/gdt/spaces/binding_helpers.hh>
 
 namespace Dune {
 namespace GDT {
@@ -47,12 +48,7 @@ public:
     namespace py = pybind11;
     using namespace pybind11::literals;
 
-    std::string class_name = class_id + "_" + grid_id;
-    if (r > 1)
-      class_name += "_to_" + XT::Common::to_string(r) + "d";
-    if (!std::is_same<R, double>::value)
-      class_name += "_" + XT::Common::Typename<R>::value(/*fail_wo_typeid=*/true);
-    const auto ClassName = XT::Common::to_camel_case(class_name);
+    const auto ClassName = space_class_name<r, R>(class_id, grid_id);
     bound_type c(m, ClassName.c_str(), ClassName.c_str());
     c.def_property_readonly("dimwise_global_mapping", [](type& self) { return self.dimwise_global_mapping; });
     c.def(py::init([](XT::Grid::GridProvider<G>& grid_provider, const int order, const bool dimwise_global_mapping) {
@@ -89,18 +85,12 @@ public:
           return std::move(points);
         },
         py::call_guard<py::gil_scoped_release>());
-    c.def("__repr__", [](const type& self) {
-      std::stringstream ss;
-      ss << self;
-      return ss.str();
-    });
+    add_space_repr(c);
 
-    std::string space_type_name = class_id;
-    if (!std::is_same<R, double>::value)
-      space_type_name += "_" + XT::Common::Typename<R>::value(/*fail_wo_typeid=*/true);
+    const auto FactoryName = space_factory_name<R>(class_id);
     if (r == 1)
       m.def(
-          XT::Common::to_camel_case(space_type_name).c_str(),
+          FactoryName.c_str(),
           [](XT::Grid::GridProvider<G>& grid,
              const int order,
              const bool dimwise_global_mapping,
@@ -114,7 +104,7 @@ public:
           "dim_range"_a = XT::Grid::bindings::Dimension<r>());
     else
       m.def(
-          XT::Common::to_camel_case(space_type_name).c_str(),
+          FactoryName.c_str(),
           [](XT::Grid::GridProvider<G>& grid,
              const int order,
              const bool dimwise_global_mapping,
