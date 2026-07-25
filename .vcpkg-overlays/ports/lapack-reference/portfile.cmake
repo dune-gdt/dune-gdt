@@ -2,6 +2,10 @@
 # arrangement the mpfr overlay in this directory uses). Refresh it against upstream when the vcpkg baseline in
 # ../../../vcpkg.json moves; it was taken from baseline d015e31e90838a4c9dfa3eed45979bc70d9357fc.
 #
+# This file and vcpkg.json are the only ones that differ from that baseline. FindLAPACK.cmake,
+# vcpkg-cmake-wrapper.cmake.in, usage and the three patches are byte-identical copies, so a refresh can replace them
+# outright; only the changes marked below have to be re-applied by hand.
+#
 # Why we carry it: dune-xt needs LAPACKE (Dune::XT::Common::Lapacke, dune/xt/common/lapacke.{hh,cc}), and nothing in
 # the manifest provides it. Upstream leaves LAPACKE off ("LAPACKE should be its own PORT" in the TODO below) and
 # installs no headers at all, and the other BLAS/LAPACK provider we depend on -- openblas -- is configured

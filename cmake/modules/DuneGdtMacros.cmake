@@ -83,7 +83,9 @@ if(NOT HAVE_MKL AND NOT HAVE_LAPACKE)
   set(_lapacke_hint
       "Install a LAPACKE development package (liblapacke-dev on Debian/Ubuntu, lapack-devel on"
       " Fedora/RHEL) or the Intel MKL. vcpkg builds already get it from the lapack-reference overlay"
-      " port in .vcpkg-overlays/ports/.")
+      " port in .vcpkg-overlays/ports/.\nNote that LAPACKE_LIBRARY and LAPACKE_INCLUDE_DIRS are cached"
+      " variables, so a build directory configured before LAPACKE was available keeps its stale"
+      " -NOTFOUND and never re-searches: unset those two (or delete CMakeCache.txt) before retrying.")
   string(REPLACE ";" "" _lapacke_hint "${_lapacke_hint}")
   if(LAPACKE_NOT_FOUND_REASONS)
     string(REPLACE ";" "\n  - " _lapacke_reasons ";${LAPACKE_NOT_FOUND_REASONS}")
