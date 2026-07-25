@@ -13,45 +13,29 @@
 
 include(DuneXTHints)
 
-message("-- checking for lapacke library")
-find_library(LAPACKE_LIBRARY lapacke HINTS ${LIB_HINTS})
+# Locating LAPACKE means finding three independent things: the library, the lapacke.h header, and a usable LAPACK (the
+# LAPACKE_* entry points are thin C wrappers around LAPACK's Fortran symbols). Each is recorded separately below, so
+# that a partial installation produces an actionable message rather than a bare "not found" -- see the mandatory check
+# in DuneGdtMacros.cmake, which turns any of these into a configure error.
+set(LAPACKE_NOT_FOUND_REASONS "")
 
 find_package(BLAS)
 find_package(LAPACK)
 
+message("-- checking for lapacke library")
+# PATH_SUFFIXES rather than only HINTS: vcpkg (and some distributions) keep LAPACKE next to its BLAS provider, e.g. in
+# <prefix>/lib/openblas or <prefix>/lib/lapack, and those prefixes reach us through CMAKE_PREFIX_PATH rather than
+# through the /usr-and-friends LIB_HINTS from DuneXTHints.
+find_library(
+  LAPACKE_LIBRARY
+  NAMES lapacke liblapacke
+  HINTS ${LIB_HINTS}
+  PATH_SUFFIXES lapacke lapack openblas)
 if("${LAPACKE_LIBRARY}" MATCHES "LAPACKE_LIBRARY-NOTFOUND")
-  # Standalone liblapacke not found; vcpkg's OpenBLAS bundles LAPACKE inside libopenblas (built static to avoid AVX512
-  # dynamic-kernel failures on gcc-13), so try that as a fallback -- the LAPACKE_* symbols and lapacke.h header are
-  # present inside it.
-  find_library(_lapacke_openblas_fallback openblas HINTS ${LIB_HINTS})
-  if(NOT "${_lapacke_openblas_fallback}" MATCHES "_lapacke_openblas_fallback-NOTFOUND")
-    include(CheckLibraryExists)
-    # LAPACKE_dsygv wraps Fortran-compiled code; gfortran (and BLAS when available) are needed at link time.
-    set(_prev_cmake_required_libraries "${CMAKE_REQUIRED_LIBRARIES}")
-    set(CMAKE_REQUIRED_LIBRARIES gfortran)
-    if(BLAS_FOUND)
-      list(APPEND CMAKE_REQUIRED_LIBRARIES ${BLAS_LIBRARIES})
-    endif()
-    check_library_exists("${_lapacke_openblas_fallback}" LAPACKE_dsygv "" _lapacke_openblas_has_dsygv)
-    set(CMAKE_REQUIRED_LIBRARIES "${_prev_cmake_required_libraries}")
-    unset(_prev_cmake_required_libraries)
-    if(_lapacke_openblas_has_dsygv)
-      message("--   standalone LAPACKE not found; using OpenBLAS as LAPACKE provider")
-      set(LAPACKE_LIBRARY
-          "${_lapacke_openblas_fallback}"
-          CACHE PATH "Path to the LAPACKE library" FORCE)
-    else()
-      message("--   library 'LAPACKE' not found, make sure you have both LAPACK and LAPACKE installed")
-    endif()
-    unset(_lapacke_openblas_has_dsygv CACHE)
-  else()
-    message("--   library 'LAPACKE' not found, make sure you have both LAPACK and LAPACKE installed")
-  endif()
-  unset(_lapacke_openblas_fallback CACHE)
+  message("--   library 'LAPACKE' not found")
+  list(APPEND LAPACKE_NOT_FOUND_REASONS "no LAPACKE library found (looked for 'lapacke')")
 else()
-  message("--   found LAPACKE library")
-endif()
-if(NOT "${LAPACKE_LIBRARY}" MATCHES "LAPACKE_LIBRARY-NOTFOUND")
+  message("--   found LAPACKE library: ${LAPACKE_LIBRARY}")
   set(LAPACKE_LIBRARIES "${LAPACKE_LIBRARY}")
 endif()
 
@@ -60,13 +44,22 @@ set(LAPACKE_HEADER_INCLUDE_HINTS "")
 append_to_each("${INCLUDE_HINTS}" "lapacke/" LAPACKE_HEADER_INCLUDE_HINTS)
 append_to_each("${INCLUDE_HINTS}" "openblas/" LAPACKE_HEADER_INCLUDE_HINTS)
 list(APPEND LAPACKE_HEADER_INCLUDE_HINTS ${INCLUDE_HINTS})
-find_path(LAPACKE_INCLUDE_DIRS lapacke.h HINTS ${LAPACKE_HEADER_INCLUDE_HINTS})
+find_path(
+  LAPACKE_INCLUDE_DIRS lapacke.h
+  HINTS ${LAPACKE_HEADER_INCLUDE_HINTS}
+  PATH_SUFFIXES lapacke openblas)
 if("${LAPACKE_INCLUDE_DIRS}" MATCHES "LAPACKE_INCLUDE_DIRS-NOTFOUND")
   message("--   lapacke.h header not found")
-else("${LAPACKE_INCLUDE_DIRS}" MATCHES "LAPACKE_INCLUDE_DIRS-NOTFOUND")
-  message("--   found lapacke.h header")
+  list(APPEND LAPACKE_NOT_FOUND_REASONS "no lapacke.h header found")
+else()
+  message("--   found lapacke.h header: ${LAPACKE_INCLUDE_DIRS}")
   include_sys_dir("${LAPACKE_INCLUDE_DIRS}")
-endif("${LAPACKE_INCLUDE_DIRS}" MATCHES "LAPACKE_INCLUDE_DIRS-NOTFOUND")
+endif()
+
+if(NOT LAPACK_FOUND)
+  list(APPEND LAPACKE_NOT_FOUND_REASONS
+       "find_package(LAPACK) failed, so the Fortran symbols behind the LAPACKE wrappers cannot resolve")
+endif()
 
 if(BLAS_FOUND)
   list(APPEND LAPACKE_LIBRARIES ${BLAS_LIBRARIES})
@@ -76,16 +69,13 @@ if(LAPACK_FOUND)
   list(APPEND LAPACKE_LIBRARIES ${LAPACK_LIBRARIES})
 endif()
 
-if(NOT DEFINED LAPACKE_FOUND)
+list(LENGTH LAPACKE_NOT_FOUND_REASONS _lapacke_missing_count)
+if(_lapacke_missing_count EQUAL 0)
+  set(LAPACKE_FOUND 1)
+else()
   set(LAPACKE_FOUND 0)
-endif(NOT DEFINED LAPACKE_FOUND)
-if(LAPACK_FOUND)
-  if(NOT "${LAPACKE_LIBRARY}" MATCHES "LAPACKE_LIBRARY-NOTFOUND")
-    if(NOT "${LAPACKE_INCLUDE_DIRS}" MATCHES "LAPACKE_INCLUDE_DIRS-NOTFOUND")
-      set(LAPACKE_FOUND 1)
-    endif(NOT "${LAPACKE_INCLUDE_DIRS}" MATCHES "LAPACKE_INCLUDE_DIRS-NOTFOUND")
-  endif(NOT "${LAPACKE_LIBRARY}" MATCHES "LAPACKE_LIBRARY-NOTFOUND")
-endif(LAPACK_FOUND)
+endif()
+unset(_lapacke_missing_count)
 
 set(HAVE_LAPACKE ${LAPACKE_FOUND})
 

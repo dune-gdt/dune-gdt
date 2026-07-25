@@ -47,7 +47,6 @@ struct GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}
 }; // struct GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}
 
 
-#if HAVE_MKL || HAVE_LAPACKE
 TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, exports_correct_types)
 {
   exports_correct_types();
@@ -172,10 +171,5 @@ TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, computes_eigenvalue
 {
   computes_eigenvalues_required_for_assertions();
 }
-#else // HAVE_MKL || HAVE_LAPACKE
-TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, disabled_due_to_missing_lapacke)
-{
-}
-#endif
 
 {% endfor %}
