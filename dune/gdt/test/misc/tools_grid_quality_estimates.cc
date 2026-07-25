@@ -42,11 +42,11 @@ struct Constants
   double combined;
 };
 
-/// \brief Both eigen-solver-based estimates on a continuous Lagrange space over a structured cube box.
+/// \brief Both eigen-solver-based estimates on a continuous Lagrange space over the cube box [0, extent]^d.
 template <class GridType>
-Constants estimates(const int order, const unsigned int num_elements)
+Constants estimates(const int order, const unsigned int num_elements, const double extent = 1.)
 {
-  auto grid = XT::Grid::make_cube_grid<GridType>(/*lower_left=*/0., /*upper_right=*/1., num_elements);
+  auto grid = XT::Grid::make_cube_grid<GridType>(/*lower_left=*/0., /*upper_right=*/extent, num_elements);
   auto grid_view = grid.leaf_view();
   const auto space = make_continuous_lagrange_space(grid_view, order);
   return {estimate_inverse_inequality_constant(space), estimate_combined_inverse_trace_inequality_constant(space)};
@@ -73,6 +73,27 @@ void check_mesh_width_independence(const int order)
         << "order = " << order << ", num_elements = " << num_elements;
   }
 } // ... check_mesh_width_independence(...)
+
+/// \brief Both estimates are invariant under scaling the whole domain, over a wide range of domain sizes.
+///
+/// Both constants are dimensionless (a length times an eigenvalue that scales as the inverse of that length), so
+/// [0, s]^d has to give the same answer as the unit box for every s. This is the property that a fixed absolute
+/// cutoff on "which eigenvalues count as zero" silently breaks: the H1/L2 spectrum is O(h^-2), so on a big enough
+/// box it drops below any fixed cutoff (no constant computable at all), and on a small enough box the O(eps * max)
+/// noise of the zero modes rises above it - and a negative one of those, taken through sqrt, yields a NaN that
+/// std::max drops on the floor, leaving the estimate at its seed value.
+template <class GridType>
+void check_scale_invariance(const int order)
+{
+  const auto reference = estimates<GridType>(order, 2);
+  for (double extent : {1.e-5, 1.e-3, 1.e3, 1.e5, 1.e6}) {
+    const auto scaled = estimates<GridType>(order, 2, extent);
+    EXPECT_NEAR(reference.inverse, scaled.inverse, tolerance * reference.inverse)
+        << "order = " << order << ", extent = " << extent;
+    EXPECT_NEAR(reference.combined, scaled.combined, tolerance * reference.combined)
+        << "order = " << order << ", extent = " << extent;
+  }
+} // ... check_scale_invariance(...)
 
 
 } // namespace
@@ -125,6 +146,8 @@ GTEST_TEST(grid_quality_estimates, inverse_inequality_constants_on_2d_cube_grid)
 
   check_mesh_width_independence<YASP_2D_EQUIDISTANT_OFFSET>(1);
   check_mesh_width_independence<YASP_2D_EQUIDISTANT_OFFSET>(2);
+  check_scale_invariance<YASP_2D_EQUIDISTANT_OFFSET>(1);
+  check_scale_invariance<YASP_2D_EQUIDISTANT_OFFSET>(2);
 }
 
 
@@ -137,6 +160,7 @@ GTEST_TEST(grid_quality_estimates, inverse_inequality_constants_on_3d_cube_grid)
     EXPECT_NEAR(6., constants.inverse, tolerance * 6.) << "order = " << order;
     EXPECT_NEAR(6. * std::sqrt(3.), constants.combined, tolerance * 6. * std::sqrt(3.)) << "order = " << order;
     check_mesh_width_independence<YASP_3D_EQUIDISTANT_OFFSET>(order);
+    check_scale_invariance<YASP_3D_EQUIDISTANT_OFFSET>(order);
   }
 }
 
@@ -156,6 +180,7 @@ GTEST_TEST(grid_quality_estimates, inverse_inequality_constants_on_3d_alu_cube_g
     EXPECT_NEAR(6., constants.inverse, tolerance * 6.) << "order = " << order;
     EXPECT_NEAR(6. * std::sqrt(3.), constants.combined, tolerance * 6. * std::sqrt(3.)) << "order = " << order;
     check_mesh_width_independence<ALU_3D_CUBE>(order);
+    check_scale_invariance<ALU_3D_CUBE>(order);
   }
 }
 

@@ -39,7 +39,7 @@ namespace internal {
 
 
 /**
- * \brief The smallest eigenvalue of `lhs x = lambda rhs x` that is not numerically zero.
+ * \brief The smallest strictly positive eigenvalue of `lhs x = lambda rhs x`, ignoring the numerically zero ones.
  *
  * Shared by both estimators below: each of them is the maximum over all elements of the mesh width times (a power of)
  * this eigenvalue, they only differ in which pair of local product matrices they feed in.
@@ -48,6 +48,16 @@ namespace internal {
  *       and a cube's order 2 Lagrange basis has an interior node whose basis function vanishes on the whole
  *       element boundary. That is why the zero eigenvalues are filtered out here instead of simply taking the
  *       minimum. Only the rhs has to be positive definite, which is all dsygv requires.
+ *
+ * \note The cutoff separating "numerically zero" from "genuinely nonzero" is *relative* to the spectrum, and rejects
+ *       negative eigenvalues outright. Both matter, because the spectrum scales with the element: the eigenvalues of
+ *       the H1/L2 pair are O(h^-2), those of the face/element L2 pair O(h^-1).
+ *       - An absolute cutoff is a mesh-size-dependent statement about which modes count. On a 10^5 x 10^5 x 10^5 box
+ *         the whole H1/L2 spectrum sits below 1e-7, so *every* mode reads as zero and no constant can be computed at
+ *         all -- even though the mesh is perfectly well behaved and the constant is the same 6 as on the unit cube.
+ *       - The zero modes come out of lapack as +-eps * max|lambda|, so on a fine mesh (a large spectrum) the negative
+ *         ones clear any fixed cutoff. Taking `abs(ev) > cutoff` then lets a negative mode through as the minimum,
+ *         and `sqrt` of it is NaN -- which `std::max` silently discards, leaving the estimate at its `min()` seed.
  */
 template <class E>
 double smallest_nonzero_generalized_eigenvalue(const XT::LA::CommonDenseMatrix<double>& lhs,
@@ -61,15 +71,22 @@ double smallest_nonzero_generalized_eigenvalue(const XT::LA::CommonDenseMatrix<d
                                                           {"compute_eigenvectors", "false"},
                                                           {"assert_real_eigenvalues", "1e-15"}})
                        .real_eigenvalues();
+  double largest_ev = 0.;
+  for (auto&& ev : evs)
+    largest_ev = std::max(largest_ev, std::abs(ev));
+  // Comfortably above the O(eps) = O(1e-16) noise the zero modes carry, and comfortably below the smallest genuine
+  // mode, which is the largest one divided by a mesh-independent constant of order 10 to 100.
+  const double zero_cutoff = 1e-7 * largest_ev;
   double min_ev = std::numeric_limits<double>::max();
   for (auto&& ev : evs)
-    if (std::abs(ev) > 1e-7) // TODO: find a better tolerance here!
+    if (ev > zero_cutoff)
       min_ev = std::min(min_ev, ev);
-  // Without this the callers would silently hand out h * (max double) = inf for an element whose eigenvalues all fall
-  // below the tolerance above.
+  // Without this the callers would silently hand out h * (max double) = inf for an element with no positive mode at
+  // all (a degenerate element, or an lhs that is numerically the zero matrix).
   DUNE_THROW_IF(min_ev == std::numeric_limits<double>::max(),
                 Exceptions::tools_error,
-                "No eigenvalue of the " << matrix_pair << " matrix pair exceeds the 1e-7 cutoff on the element at "
+                "No eigenvalue of the " << matrix_pair << " matrix pair exceeds the cutoff " << zero_cutoff
+                                        << " (largest eigenvalue " << largest_ev << ") on the element at "
                                         << element.geometry().center() << " (diameter " << XT::Grid::diameter(element)
                                         << "), so no constant can be estimated!");
   return min_ev;
