@@ -56,11 +56,10 @@ public:
     c.def(py::init([](XT::Grid::GridProvider<G>& grid_provider) {
             return new type(grid_provider.leaf_view()); // Otherwise we get an error here!
           }),
-          "grid_provider"_a,
-          // the space only holds the grid *view*, which points into the grid the provider owns, so the provider has to
-          // outlive it: without this, `space = FiniteVolumeSkeletonSpace(make_grid())` frees the grid at the end of the
-          // statement and every later use of the space is a use-after-free
-          py::keep_alive<1, 2>());
+          // A space holds the grid *view*, which points into the grid the provider owns: without this, a space
+          // built from a temporary provider outlives its grid and every later use is a use-after-free (#378).
+          py::keep_alive<1, 2>(),
+          "grid_provider"_a);
     c.def("__repr__", [](const type& self) {
       std::stringstream ss;
       ss << self;
@@ -76,18 +75,18 @@ public:
           [](XT::Grid::GridProvider<G>& grid, const XT::Grid::bindings::Dimension<r>&) {
             return new type(grid.leaf_view()); // Otherwise we get an error here!
           },
+          py::keep_alive<0, 1>(), // see the init above
           "grid"_a,
-          "dim_range"_a = XT::Grid::bindings::Dimension<r>(),
-          py::keep_alive<0, 1>()); // see the comment on the init above
+          "dim_range"_a = XT::Grid::bindings::Dimension<r>());
     else
       m.def(
           XT::Common::to_camel_case(space_type_name).c_str(),
           [](XT::Grid::GridProvider<G>& grid, const XT::Grid::bindings::Dimension<r>&) {
             return new type(grid.leaf_view()); // Otherwise we get an error here!
           },
+          py::keep_alive<0, 1>(), // see the init above
           "grid"_a,
-          "dim_range"_a,
-          py::keep_alive<0, 1>()); // see the comment on the init above
+          "dim_range"_a);
 
     return c;
   } // ... bind(...)

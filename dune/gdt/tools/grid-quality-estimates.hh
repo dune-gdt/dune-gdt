@@ -35,6 +35,48 @@
 
 namespace Dune {
 namespace GDT {
+namespace internal {
+
+
+/**
+ * \brief The smallest eigenvalue of `lhs x = lambda rhs x` that is not numerically zero.
+ *
+ * Shared by both estimators below: each of them is the maximum over all elements of the mesh width times (a power of)
+ * this eigenvalue, they only differ in which pair of local product matrices they feed in.
+ *
+ * \note The lhs of both pairs is only positive *semi*-definite: the constants are in the kernel of the H1 product,
+ *       and a cube's order 2 Lagrange basis has an interior node whose basis function vanishes on the whole
+ *       element boundary. That is why the zero eigenvalues are filtered out here instead of simply taking the
+ *       minimum. Only the rhs has to be positive definite, which is all dsygv requires.
+ */
+template <class E>
+double smallest_nonzero_generalized_eigenvalue(const XT::LA::CommonDenseMatrix<double>& lhs,
+                                               const XT::LA::CommonDenseMatrix<double>& rhs,
+                                               const E& element,
+                                               const std::string& matrix_pair)
+{
+  const auto evs = XT::LA::make_generalized_eigen_solver(lhs,
+                                                         rhs,
+                                                         {{"type", XT::LA::generalized_eigen_solver_types(lhs)[0]},
+                                                          {"compute_eigenvectors", "false"},
+                                                          {"assert_real_eigenvalues", "1e-15"}})
+                       .real_eigenvalues();
+  double min_ev = std::numeric_limits<double>::max();
+  for (auto&& ev : evs)
+    if (std::abs(ev) > 1e-7) // TODO: find a better tolerance here!
+      min_ev = std::min(min_ev, ev);
+  // Without this the callers would silently hand out h * (max double) = inf for an element whose eigenvalues all fall
+  // below the tolerance above.
+  DUNE_THROW_IF(min_ev == std::numeric_limits<double>::max(),
+                Exceptions::tools_error,
+                "No eigenvalue of the " << matrix_pair << " matrix pair exceeds the 1e-7 cutoff on the element at "
+                                        << element.geometry().center() << " (diameter " << XT::Grid::diameter(element)
+                                        << "), so no constant can be estimated!");
+  return min_ev;
+} // ... smallest_nonzero_generalized_eigenvalue(...)
+
+
+} // namespace internal
 
 
 /**
@@ -54,25 +96,9 @@ double estimate_inverse_inequality_constant(const SpaceInterface<GV, r>& space)
         LocalElementIntegralBilinearForm<E, r>(LocalLaplaceIntegrand<E, r>()).apply2(*basis, *basis));
     auto L2_product_matrix = XT::LA::convert_to<XT::LA::CommonDenseMatrix<double>>(
         LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>()).apply2(*basis, *basis));
-    auto evs =
-        XT::LA::make_generalized_eigen_solver(H1_product_matrix,
-                                              L2_product_matrix,
-                                              {{"type", XT::LA::generalized_eigen_solver_types(H1_product_matrix)[0]},
-                                               {"compute_eigenvectors", "false"},
-                                               {"assert_real_eigenvalues", "1e-15"}})
-            .real_eigenvalues();
-    double min_ev = std::numeric_limits<double>::max();
-    for (auto&& ev : evs)
-      if (std::abs(ev) > 1e-7) // TODO: find a better tolerance here!
-        min_ev = std::min(min_ev, ev);
-    // Without this we would silently return h * sqrt(max double) = inf for an element whose eigenvalues all fall below
-    // the tolerance above (the H1 product matrix is only positive semi-definite: the constants are in its kernel).
-    DUNE_THROW_IF(min_ev == std::numeric_limits<double>::max(),
-                  Exceptions::tools_error,
-                  "No eigenvalue of the H1/L2 product matrix pair exceeds the 1e-7 cutoff on the element at "
-                      << element.geometry().center() << " (diameter " << h
-                      << "), so no inverse inequality constant can be estimated!");
     // the smalles nonzero eigenvalue is (C_I / h)^2
+    const double min_ev = internal::smallest_nonzero_generalized_eigenvalue(
+        H1_product_matrix, L2_product_matrix, element, "H1/L2 element product");
     result = std::max(result, h * std::sqrt(min_ev));
   }
   return result;
@@ -105,26 +131,9 @@ double estimate_combined_inverse_trace_inequality_constant(const SpaceInterface<
     }
     auto L2_element_product_matrix = XT::LA::convert_to<XT::LA::CommonDenseMatrix<double>>(
         LocalElementIntegralBilinearForm<E, r>(LocalProductIntegrand<E, r>(1.)).apply2(*basis, *basis));
-    auto evs = XT::LA::make_generalized_eigen_solver(
-                   L2_face_product_matrix,
-                   L2_element_product_matrix,
-                   {{"type", XT::LA::generalized_eigen_solver_types(L2_face_product_matrix)[0]},
-                    {"compute_eigenvectors", "false"},
-                    {"assert_real_eigenvalues", "1e-15"}})
-                   .real_eigenvalues();
-    double min_ev = std::numeric_limits<double>::max();
-    for (auto&& ev : evs)
-      if (std::abs(ev) > 1e-7) // TODO: find a better tolerance here!
-        min_ev = std::min(min_ev, ev);
-    // Without this we would silently return h * max double = inf for an element whose eigenvalues all fall below the
-    // tolerance above (the face product matrix is only positive semi-definite: an order 2 Lagrange basis on a cube has
-    // an interior node whose basis function vanishes on the whole element boundary).
-    DUNE_THROW_IF(min_ev == std::numeric_limits<double>::max(),
-                  Exceptions::tools_error,
-                  "No eigenvalue of the face/element L2 product matrix pair exceeds the 1e-7 cutoff on the element at "
-                      << element.geometry().center() << " (diameter " << h
-                      << "), so no combined inverse trace inequality constant can be estimated!");
     // the smalles nonzero eigenvalue is (C_M (1 + C_I)) / h
+    const double min_ev = internal::smallest_nonzero_generalized_eigenvalue(
+        L2_face_product_matrix, L2_element_product_matrix, element, "L2 face/element product");
     result = std::max(result, h * min_ev);
   }
   return result;

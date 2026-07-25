@@ -57,13 +57,13 @@ public:
     c.def(py::init([](XT::Grid::GridProvider<G>& grid_provider, const int order, const std::string& logging_prefix) {
             return new type(grid_provider.leaf_view(), order, logging_prefix);
           }),
+          // A space holds the grid *view*, which points into the grid the provider owns: without this, a space built
+          // from a temporary provider (`ContinuousLagrangeSpace(make_grid(), order=1)`) outlives its grid and every
+          // later use of it is a use-after-free (#378).
+          py::keep_alive<1, 2>(),
           "grid_provider"_a,
           "order"_a,
-          "logging_prefix"_a = "",
-          // the space only holds the grid *view*, which points into the grid the provider owns, so the provider has to
-          // outlive it: without this, `space = ContinuousLagrangeSpace(make_grid(), order=1)` frees the grid at the end
-          // of the statement and every later use of the space is a use-after-free
-          py::keep_alive<1, 2>());
+          "logging_prefix"_a = "");
     c.def("__repr__", [](const type& self) {
       std::stringstream ss;
       ss << self;
@@ -80,11 +80,11 @@ public:
              const int order,
              const XT::Grid::bindings::Dimension<r>&,
              const std::string& logging_prefix) { return new type(grid.leaf_view(), order, logging_prefix); },
+          py::keep_alive<0, 1>(), // see the init above
           "grid"_a,
           "order"_a,
           "dim_range"_a = XT::Grid::bindings::Dimension<r>(),
-          "logging_prefix"_a = "",
-          py::keep_alive<0, 1>()); // see the comment on the init above
+          "logging_prefix"_a = "");
     else
       m.def(
           XT::Common::to_camel_case(space_type_name).c_str(),
@@ -92,11 +92,11 @@ public:
              const int order,
              const XT::Grid::bindings::Dimension<r>&,
              const std::string& logging_prefix) { return new type(grid.leaf_view(), order, logging_prefix); },
+          py::keep_alive<0, 1>(), // see the init above
           "grid"_a,
           "order"_a,
           "dim_range"_a,
-          "logging_prefix"_a = "",
-          py::keep_alive<0, 1>()); // see the comment on the init above
+          "logging_prefix"_a = "");
 
     return c;
   } // ... bind(...)
