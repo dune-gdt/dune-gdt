@@ -239,29 +239,6 @@ jobs:
       run: >
         cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
-    - name: Test install
-      # Regression test for issue #388: nothing else in this workflow ever runs
-      # `cmake --install`, so a broken install(FILES) list (e.g. referencing a
-      # nonexistent file, or omitting a file another installed module
-      # `include()`s) stayed unnoticed until a downstream consumer's configure
-      # failed. None of this project's install() rules depend on built targets
-      # (only headers/cmake modules are installed), so this can run right after
-      # configure. The second check reproduces the exact failure mode from the
-      # issue: FindMKL/FindCBLAS/FindLAPACKE all `include(DuneXTHints)`, so an
-      # installed tree that is missing DuneXTHints.cmake would leave
-      # LIB_HINTS/INCLUDE_HINTS/append_to_each/include_sys_dir undefined for
-      # downstream consumers.
-      run: |
-        prefix="$(mktemp -d)"
-        cmake --install "build/${{ matrix.preset }}" --prefix "${prefix}"
-        module="$(find "${prefix}" -type f -name DuneXTHints.cmake -print -quit)"
-        if [[ ! -f "${module}" ]]; then
-          echo "::error::DuneXTHints.cmake was not installed"
-          exit 1
-        fi
-        moduledir="$(dirname "${module}")"
-        cmake "-DCMAKE_MODULE_PATH=${moduledir}" -P /dev/stdin <<< 'include(DuneXTHints)'
-
     - name: Build
       # Cap the library build at the memory-bounded -j too: ninja would otherwise
       # default to nproc+2, and the heavy template TUs can exhaust the 16 GB runner.
@@ -285,6 +262,30 @@ jobs:
       # bindings_jobs (cpu/2) caps these memory-heavy pybind11 TUs below the wider
       # linux_build_jobs used elsewhere, to stay under the 16 GB runner.
       run: cmake --build --preset=${{ matrix.preset }} --target bindings --parallel -- -j ${{ needs.config.outputs.bindings_jobs }}
+
+    - name: Test install
+      # Regression test for issue #388: nothing else in this workflow ever runs
+      # `cmake --install`, so a broken install(FILES) list (e.g. referencing a
+      # nonexistent file, or omitting a file another installed module
+      # `include()`s) stayed unnoticed until a downstream consumer's configure
+      # failed. Runs after every build step (not right after configure): some
+      # install() rules -- e.g. dune/xt/test/CMakeLists.txt's gtest_dune_xt
+      # library -- install built target files, which do not exist yet earlier
+      # in the job. The second check reproduces the exact failure mode from the
+      # issue: FindMKL/FindCBLAS/FindLAPACKE all `include(DuneXTHints)`, so an
+      # installed tree that is missing DuneXTHints.cmake would leave
+      # LIB_HINTS/INCLUDE_HINTS/append_to_each/include_sys_dir undefined for
+      # downstream consumers.
+      run: |
+        prefix="$(mktemp -d)"
+        cmake --install "build/${{ matrix.preset }}" --prefix "${prefix}"
+        module="$(find "${prefix}" -type f -name DuneXTHints.cmake -print -quit)"
+        if [[ ! -f "${module}" ]]; then
+          echo "::error::DuneXTHints.cmake was not installed"
+          exit 1
+        fi
+        moduledir="$(dirname "${module}")"
+        cmake "-DCMAKE_MODULE_PATH=${moduledir}" -P /dev/stdin <<< 'include(DuneXTHints)'
 
     - name: Test with CTest
       # Runs both the C++ suite and the Python (pytest) suite — the latter is now
