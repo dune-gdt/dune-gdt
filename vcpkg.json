@@ -54,7 +54,6 @@
     "exprtk",
     "gtest",
     "nanobench",
-    "pybind11",
     "eigen3",
     "tbb",
     "openblas",

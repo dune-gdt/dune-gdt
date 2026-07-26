@@ -58,7 +58,7 @@ TEST_F(Spe10Model1Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, is_construct
       {0, 0},
       {Dune::XT::Functions::Spe10::internal::model_1_length_x, Dune::XT::Functions::Spe10::internal::model_1_length_z});
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -68,7 +68,7 @@ TEST_F(Spe10Model1Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, has_default_
   auto cfg = FunctionType::defaults();
   EXPECT_EQ(cfg.get<std::string>("name"), FunctionType::static_id());
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -96,7 +96,7 @@ TEST_F(Spe10Model1Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, is_visualiza
   const auto leaf_view = grid_.leaf_view();
   visualize(default_function, leaf_view, "test__Spe10Model1Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}__is_visualizable");
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -114,7 +114,7 @@ TEST_F(Spe10Model1Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, is_bindable)
     local_f->bind(element);
   }
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -135,7 +135,7 @@ TEST_F(Spe10Model1Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, local_order)
     EXPECT_EQ(expected_order, actual_order);
   }
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -163,7 +163,7 @@ TEST_F(Spe10Model1Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, local_evalua
     }
   }
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -188,7 +188,7 @@ TEST_F(Spe10Model1Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, local_jacobi
     }
   }
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
