@@ -640,7 +640,12 @@ jobs:
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/docs_html"
         # --no-project: ignore the repo-root pyproject stub; run in the venv built above
-        xvfb-run -a uv run --no-project \
+        # -e: Xvfb's own stderr is a separate process from the notebook kernel, so it
+        # survives a kernel death that would otherwise lose whatever the X server saw
+        # (a crashed VTK render is a plausible non-signal way to kill the kernel: Xlib's
+        # default fatal-IO-error handler calls exit() directly, which faulthandler cannot
+        # trap and dmesg never sees since it is a userspace X11 event, not a kernel one).
+        xvfb-run -a -e "${RUNNER_TEMP}/xvfb-error.log" uv run --no-project \
           --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
           python -m sphinx --keep-going -j 1 -b html \
           "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
@@ -669,6 +674,12 @@ jobs:
       # is unavailable or empty (e.g. a signal faulthandler already caught).
       if: failure()
       run: sudo dmesg --time-format iso | tail -n 200 || true
+
+    - name: Dump Xvfb error log on docs failure
+      # See the -e flag above: this is the X server's own stderr, independent of whatever
+      # the notebook kernel process managed (or failed) to report on its own.
+      if: failure()
+      run: cat "${RUNNER_TEMP}/xvfb-error.log" 2>/dev/null || echo "(no xvfb-error.log, or it is empty)"
 
     - name: Upload built docs HTML
       if: always()
