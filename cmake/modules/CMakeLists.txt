@@ -26,8 +26,8 @@ install(
         FindMKL.cmake
         FindMPI4PY.cmake
         FindSpe10Data.cmake
+        DuneXTHints.cmake
         GridUtils.cmake
-        Hints.cmake
         XtCompilerSupport.cmake
         XtTooling.cmake
   DESTINATION ${DUNE_INSTALL_MODULEDIR})

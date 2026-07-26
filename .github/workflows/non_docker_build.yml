@@ -239,6 +239,40 @@ jobs:
       run: >
         cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
+    - name: Test install
+      # Regression test for issue #388: nothing else in this workflow ever runs
+      # `cmake --install`, so a broken install(FILES) list (e.g. referencing a
+      # nonexistent file, or omitting a file another installed module
+      # `include()`s) stayed unnoticed until a downstream consumer's configure
+      # failed. The second check reproduces the exact failure mode from the
+      # issue: FindMKL/FindCBLAS/FindLAPACKE all `include(DuneXTHints)`, so an
+      # installed tree that is missing DuneXTHints.cmake would leave
+      # LIB_HINTS/INCLUDE_HINTS/append_to_each/include_sys_dir undefined for
+      # downstream consumers.
+      #
+      # This deliberately installs only the cmake/modules subtree (its
+      # generated per-directory script, which needs no built targets and so can
+      # run right after configure) rather than the whole build tree with a
+      # plain `cmake --install`: the latter also runs
+      # DunePybindxiInstallPythonPackage.cmake's install(CODE) rule for the
+      # Python wheel, which calls dune-common's `dune_execute_process` -- a
+      # macro that is not available in the standalone `cmake -P` process an
+      # install script runs in, so it always fails with "Unknown CMake
+      # command". That is a pre-existing bug in the Python packaging install
+      # path, unrelated to and out of scope for issue #388's cmake/modules
+      # manifest fix (tracked separately in #401); scoping the smoke test to
+      # cmake/modules keeps it testing what the issue is actually about.
+      run: |
+        prefix="$(mktemp -d)"
+        cmake "-DCMAKE_INSTALL_PREFIX=${prefix}" -P "build/${{ matrix.preset }}/cmake/modules/cmake_install.cmake"
+        module="$(find "${prefix}" -type f -name DuneXTHints.cmake -print -quit)"
+        if [[ ! -f "${module}" ]]; then
+          echo "::error::DuneXTHints.cmake was not installed"
+          exit 1
+        fi
+        moduledir="$(dirname "${module}")"
+        cmake "-DCMAKE_MODULE_PATH=${moduledir}" -P /dev/stdin <<< 'include(DuneXTHints)'
+
     - name: Build
       # Cap the library build at the memory-bounded -j too: ninja would otherwise
       # default to nproc+2, and the heavy template TUs can exhaust the 16 GB runner.
