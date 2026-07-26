@@ -624,8 +624,18 @@ jobs:
       # emits one page per class/function (group_by="namespace"), a far larger document
       # set whose per-worker environment copies under "-j auto" OOM-killed the 16 GB box
       # mid-write. Single-threaded keeps peak RAM bounded; the 60 min timeout is ample.
+      #
+      # PYTHONFAULTHANDLER: a notebook kernel that dies from a deadly signal (segfault,
+      # abort) surfaces to sphinx only as nbclient.exceptions.DeadKernelError: Kernel died,
+      # with no traceback -- nb_execution_raise_on_error=False only covers python-level
+      # cell errors, never a killed kernel process. faulthandler installs handlers for
+      # SIGSEGV/SIGABRT/SIGFPE/SIGBUS that dump the C-level Python stack to the kernel's
+      # inherited stderr (this job's own log) before the process dies, turning an
+      # otherwise undiagnosable failure into one with an actual traceback. It cannot catch
+      # SIGKILL (the OOM-killer's signal); "Dump dmesg on docs failure" below covers that.
       env:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
+        PYTHONFAULTHANDLER: "1"
       run: |
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/docs_html"
@@ -651,6 +661,14 @@ jobs:
           cat "${f}"
           echo "::endgroup::"
         done
+
+    - name: Dump dmesg on docs failure
+      # A notebook kernel killed by SIGKILL (the OOM-killer) leaves no report above and no
+      # faulthandler output either (PYTHONFAULTHANDLER only catches signals a process can
+      # trap); the kernel log is the only place that death is recorded. Non-fatal if dmesg
+      # is unavailable or empty (e.g. a signal faulthandler already caught).
+      if: failure()
+      run: sudo dmesg --time-format iso | tail -n 200 || true
 
     - name: Upload built docs HTML
       if: always()
