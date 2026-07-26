@@ -135,6 +135,9 @@ test = [
   # oracle for the eigen-solver property test (WP5, #320): test/test_hypothesis_la_eigensolver.py
   # compares dune.xt.la's bound EigenSolver against scipy.linalg.eigvalsh on random SPD matrices.
   "scipy",
+  # only in the `visualisation` extra otherwise (#393), so HAVE_K3D was permanently False under ctest and every
+  # k3d-gated branch (dune.xt.functions/grid, common.vtk.plot) went untested. CI already runs ctest under xvfb-run.
+  "k3d>=2.15.2",
 ]
 
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.

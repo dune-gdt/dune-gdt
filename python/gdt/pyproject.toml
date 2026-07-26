@@ -71,6 +71,9 @@ test = [
   "pytest-regressions",
   "hypothesis",
   "hatchling",
+  # only in dune.xt's `visualisation` extra otherwise (#393), so HAVE_K3D was permanently False under ctest and
+  # visualize_function (dune/gdt/__init__.py) went untested. CI already runs ctest under xvfb-run.
+  "k3d>=2.15.2",
 ]
 
 # uv runs the gdt suite in project mode (cmake/modules/DuneXTTesting.cmake) and resolves the project's
