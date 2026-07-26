@@ -254,11 +254,12 @@ jobs:
       run: |
         prefix="$(mktemp -d)"
         cmake --install "build/${{ matrix.preset }}" --prefix "${prefix}"
-        moduledir="$(dirname "$(find "${prefix}" -name DuneXTHints.cmake -print -quit)")"
-        if [[ -z "${moduledir}" ]]; then
+        module="$(find "${prefix}" -type f -name DuneXTHints.cmake -print -quit)"
+        if [[ ! -f "${module}" ]]; then
           echo "::error::DuneXTHints.cmake was not installed"
           exit 1
         fi
+        moduledir="$(dirname "${module}")"
         cmake "-DCMAKE_MODULE_PATH=${moduledir}" -P /dev/stdin <<< 'include(DuneXTHints)'
 
     - name: Build
