@@ -679,7 +679,12 @@ jobs:
       # See the -e flag above: this is the X server's own stderr, independent of whatever
       # the notebook kernel process managed (or failed) to report on its own.
       if: failure()
-      run: cat "${RUNNER_TEMP}/xvfb-error.log" 2>/dev/null || echo "(no xvfb-error.log, or it is empty)"
+      run: |
+        if [[ -s "${RUNNER_TEMP}/xvfb-error.log" ]]; then
+          cat "${RUNNER_TEMP}/xvfb-error.log"
+        else
+          echo "(no xvfb-error.log, or it is empty)"
+        fi
 
     - name: Upload built docs HTML
       if: always()
