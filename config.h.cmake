@@ -27,24 +27,8 @@
 /* Define to the revision of dune-gdt */
 #define DUNE_GDT_VERSION_REVISION ${DUNE_GDT_GIT_VERSION_REVISION}
 
-#ifndef HAVE_CBLAS
-#cmakedefine01 HAVE_CBLAS
-#endif
-
 #ifndef HAVE_EIGEN
 #define HAVE_EIGEN ENABLE_EIGEN
-#endif
-
-#ifndef HAVE_CLP
-#cmakedefine01 HAVE_CLP
-#endif
-
-#ifndef HAVE_QHULL
-#cmakedefine01 HAVE_QHULL
-#endif
-
-#ifndef HAVE_LPSOLVE
-#cmakedefine01 HAVE_LPSOLVE
 #endif
 
 #ifndef HAVE_LAPACKE
@@ -53,10 +37,6 @@
 
 #ifndef HAVE_MKL
 #cmakedefine01 HAVE_MKL
-#endif
-
-#ifndef HAVE_MATEXP
-#cmakedefine01 HAVE_MATEXP
 #endif
 
 #ifndef HAVE_TBB
@@ -87,10 +67,6 @@
 #define DS_MAX_MIC_THREADS ${DS_MAX_MIC_THREADS}
 #endif
 
-#ifndef HAVE_DUNE_FEM_PARAMETER_REPLACE
-#define HAVE_DUNE_FEM_PARAMETER_REPLACE 0
-#endif
-
 #cmakedefine01 HAVE_SPE10_DATA
 #define SPE10_MODEL1_FILENAME "${SPE10_MODEL1_FILENAME}"
 #define SPE10_MODEL2_FILENAME "${SPE10_MODEL2_FILENAME}"
@@ -103,14 +79,6 @@
 #cmakedefine01 DUNE_XT_WITH_PYTHON_BINDINGS
 
 /*** Silence implicitly False evaluation of undefined macro warnings ****/
-#ifndef HAVE_DUNE_FEM
-#define HAVE_DUNE_FEM 0
-#endif
-
-#ifndef HAVE_DUNE_GRID_MULTISCALE
-#define HAVE_DUNE_GRID_MULTISCALE 0
-#endif
-
 #ifndef HAVE_DUNE_GRID_GLUE
 #define HAVE_DUNE_GRID_GLUE 0
 #endif
@@ -129,10 +97,6 @@
 
 #ifndef HAVE_DUNE_SPGRID
 #define HAVE_DUNE_SPGRID 0
-#endif
-
-#ifndef HAVE_EMPLACE
-#define HAVE_EMPLACE 0
 #endif
 
 #ifndef HAVE_FASP
@@ -163,28 +127,12 @@
 #define ENABLE_BOOST 0
 #endif
 
-#ifndef ENABLE_PETSC
-#define ENABLE_PETSC 0
-#endif
-
 #ifndef ENABLE_MPI
 #define ENABLE_MPI 0
 #endif
 
 #ifndef HAVE_MPI
 #define HAVE_MPI 0
-#endif
-
-#ifndef HAVE_CONSTEXPR
-#define HAVE_CONSTEXPR 0
-#endif
-
-#ifndef HAVE_PETSC
-#define HAVE_PETSC 0
-#endif
-
-#ifndef DUNE_FEM_COMPATIBILITY
-#define DUNE_FEM_COMPATIBILITY 0
 #endif
 
 /*** End: Silence implicitly False evaluation of undefined macro warnings ****/
@@ -218,14 +166,6 @@
 
 // This is an unfortunate hack, see the header for an explanation.
 #include <dune/xt/common/fix-ambiguous-std-math-overloads.hh>
-
-// alberta and lpsolve both define a clashing get_max_level
-#ifdef HAVE_LPSOLVE
-#if HAVE_ALBERTA
-#undef HAVE_LPSOLVE
-#endif // HAVE_ALBERTA
-#endif // HAVE_LPSOLVE
-
 
 /* end dune-gdt */
 // NEVER delete/alter above comment, dune's cmake relies on it
