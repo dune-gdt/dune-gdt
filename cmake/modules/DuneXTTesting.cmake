@@ -266,6 +266,23 @@ endmacro(_PROCESS_SUBDIR_TESTS)
 # Writing our own snapshot sidesteps the ordering problem entirely: by the time finalize_test_setup() runs, every
 # find_package() whose result the configs consult has already populated the cache, and we can serialise it on demand in
 # the format parse_cache expects.
+
+# Warn when an optional grid vcpkg feature is enabled but the dependency it pulls in was not actually found -- the
+# generalized form of the alberta-only check issue #374 added. `found_var` is a CMake variable/cache-entry name (not a
+# value): it is expanded with `${found_var}` so it works for both an ordinary variable (`dxt_alberta_found`) and a
+# *_DIR cache path (`dune-uggrid_DIR`, which CMake's if() already treats as false when it ends in "-NOTFOUND").
+# Issue #390 notes this is the one other optional grid feature left ungeneralized: `dune-alugrid`/`dune-grid` are
+# mandatory vcpkg dependencies (always installed), not optional features, so `uggrid` is the only sibling case to
+# `alberta` among the guards that shrink a templated (*.tpl) test suite's `::testing::Types<...>` list.
+macro(DXT_WARN_IF_OPTIONAL_GRID_FEATURE_UNMET feature found_var description)
+  if("${feature}" IN_LIST VCPKG_MANIFEST_FEATURES AND NOT ${found_var})
+    message(
+      AUTHOR_WARNING
+        "the ${feature} vcpkg feature is enabled, but ${description} -- the corresponding grid variants "
+        "of the templated (*.tpl) test suites will not be generated and contribute no coverage")
+  endif()
+endmacro()
+
 macro(DXT_WRITE_CODEGEN_CACHE)
   set(dxt_codegen_cache_dir ${CMAKE_BINARY_DIR}/dxt-codegen-cache)
   file(MAKE_DIRECTORY ${dxt_codegen_cache_dir})
@@ -317,13 +334,10 @@ macro(DXT_WRITE_CODEGEN_CACHE)
 
   # Every preset requests the alberta vcpkg feature, so a build that has it enabled but did not find Alberta is losing
   # ~47 ctest entries for a reason worth naming rather than rediscovering (issue #374 was exactly that gap, measured as
-  # 594 registered tests against ~641 expected).
-  if("alberta" IN_LIST VCPKG_MANIFEST_FEATURES AND NOT dxt_alberta_found)
-    message(
-      AUTHOR_WARNING
-        "the alberta vcpkg feature is enabled, but find_package(Alberta) did not succeed -- the Alberta grid variants "
-        "of the templated (*.tpl) test suites will not be generated and contribute no coverage")
-  endif()
+  # 594 registered tests against ~641 expected). `uggrid` is the other optional grid feature with the same failure
+  # mode (issue #390).
+  dxt_warn_if_optional_grid_feature_unmet(alberta dxt_alberta_found "find_package(Alberta) did not succeed")
+  dxt_warn_if_optional_grid_feature_unmet(uggrid dune-uggrid_DIR "find_package(dune-uggrid) did not succeed")
 endmacro()
 
 macro(FINALIZE_TEST_SETUP)
