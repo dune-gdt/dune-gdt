@@ -62,7 +62,7 @@ TEST_F(Spe10Model2Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, is_construct
                          Dune::XT::Functions::Spe10::internal::model_2_length_z},
                         {6, 22, 8});
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -96,7 +96,7 @@ TEST_F(Spe10Model2Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, is_visualiza
   const auto leaf_view = grid_.leaf_view();
   visualize(function, leaf_view, "test__Spe10Model2Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}__is_visualizable", /*subsampling=*/false);
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -116,7 +116,7 @@ TEST_F(Spe10Model2Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, is_bindable)
     local_f->bind(element);
   }
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -138,7 +138,7 @@ TEST_F(Spe10Model2Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, local_order)
     EXPECT_EQ(expected_order, actual_order);
   }
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -162,7 +162,7 @@ TEST_F(Spe10Model2Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, local_evalua
     }
   }
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
@@ -188,7 +188,7 @@ TEST_F(Spe10Model2Function_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, local_jacobi
     }
   }
 #else
-  std::cout << "Test disabled, missing spe10 data files!" << std::endl;
+  GTEST_SKIP() << "spe10 data files are missing";
 #endif
 }
 
