@@ -907,6 +907,7 @@ visualisation = [
 test = [
     { name = "hatchling" },
     { name = "hypothesis" },
+    { name = "k3d" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-regressions" },
@@ -932,6 +933,7 @@ provides-extras = ["all", "docs", "examples", "infrastructure", "parallel", "vis
 test = [
     { name = "hatchling" },
     { name = "hypothesis" },
+    { name = "k3d", specifier = ">=2.15.2" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-regressions" },
@@ -1110,11 +1112,13 @@ test = [
     { name = "hatchling" },
     { name = "hypothesis" },
     { name = "jinja2" },
+    { name = "k3d", specifier = ">=2.15.2" },
     { name = "lxml" },
     { name = "pyparsing" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-regressions" },
+    { name = "scipy" },
     { name = "vtk" },
     { name = "xmljson" },
 ]
