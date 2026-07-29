@@ -499,39 +499,9 @@ namespace {
 
 
 using ScopedTestDir = Dune::XT::Common::Test::ScopedTestDir;
-
-/**
- * \brief Changes the working directory for the duration of a scope and restores it afterwards.
- *
- * Needed by the tests around the default logfile: that path ("data/log/dxtc_parameter.log") is relative, so the only
- * way to keep those tests off the shared build directory is to move the working directory itself.
- *
- * \note Declare this *after* the ScopedTestDir it moves into, so that it is destroyed first and the directory's own
- *       (relative) cleanup still resolves against the original working directory.
- */
-class CurrentPathGuard
-{
-public:
-  explicit CurrentPathGuard(const std::string& path)
-  {
-    boost::filesystem::create_directories(path);
-    boost::filesystem::current_path(path);
-  }
-
-  CurrentPathGuard(const CurrentPathGuard&) = delete;
-  CurrentPathGuard(CurrentPathGuard&&) = delete;
-  CurrentPathGuard& operator=(const CurrentPathGuard&) = delete;
-  CurrentPathGuard& operator=(CurrentPathGuard&&) = delete;
-
-  ~CurrentPathGuard()
-  {
-    boost::system::error_code ignored;
-    boost::filesystem::current_path(previous_, ignored);
-  }
-
-private:
-  const boost::filesystem::path previous_{boost::filesystem::current_path()};
-};
+// Needed by the tests around the default logfile: that path ("data/log/dxtc_parameter.log") is relative, so the only
+// way to keep those tests off the shared build directory is to move the working directory itself.
+using CurrentPathGuard = Dune::XT::Common::Test::CurrentPathGuard;
 
 //! Writes content to a file below dir and returns its path.
 std::string write_ini(const ScopedTestDir& dir, const std::string& name, const std::string& content)

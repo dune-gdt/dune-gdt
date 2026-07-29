@@ -67,6 +67,41 @@ private:
 };
 
 
+/**
+ * \brief Switches the working directory for the duration of the scope, creating it if need be.
+ *
+ * Some of the code under test writes to hardcoded relative paths ("data/log/..." for instance). Running such a test
+ * from inside a directory of its own keeps those files off the shared build directory, where a stale copy or a
+ * concurrently running test binary could otherwise interfere.
+ *
+ * \note Declare this *after* the ScopedTestDir it moves into, so that it is destroyed first and the directory's own
+ *       (relative) cleanup still resolves against the original working directory.
+ */
+class CurrentPathGuard
+{
+public:
+  explicit CurrentPathGuard(const std::string& path)
+  {
+    boost::filesystem::create_directories(path);
+    boost::filesystem::current_path(path);
+  }
+
+  CurrentPathGuard(const CurrentPathGuard&) = delete;
+  CurrentPathGuard(CurrentPathGuard&&) = delete;
+  CurrentPathGuard& operator=(const CurrentPathGuard&) = delete;
+  CurrentPathGuard& operator=(CurrentPathGuard&&) = delete;
+
+  ~CurrentPathGuard()
+  {
+    boost::system::error_code ignored;
+    boost::filesystem::current_path(previous_, ignored);
+  }
+
+private:
+  const boost::filesystem::path previous_{boost::filesystem::current_path()};
+};
+
+
 } // namespace Dune::XT::Common::Test
 
 #endif // DUNE_XT_TEST_COMMON_SCOPED_TEST_DIR_HH

@@ -214,6 +214,26 @@ GTEST_TEST(ConvergenceStudy, run_returns_the_data_of_every_level)
 }
 
 
+GTEST_TEST(ConvergenceStudy, a_quantity_name_which_does_not_fit_is_wrapped_over_the_header_rows)
+{
+  // "time to solution" is longer than the column, so run() distributes its words over the three header rows. This is
+  // the branch which used to read past the end of the word vector: erase() invalidates the iterator and already
+  // yields the next one, so advancing the loop on top of it skipped a word and, once the last word had been erased,
+  // stepped past end() -- after which the loop condition never held again. Depending on what happened to lie behind
+  // the vector that either dropped a word silently or segfaulted.
+  QuadraticStudy study;
+  std::stringstream out;
+  study.run({}, out);
+  const auto table = out.str();
+  // Every word of the name survives, in order and none of them dropped.
+  const auto first_row = table.find("time to");
+  const auto second_row = table.find("solution");
+  ASSERT_NE(std::string::npos, first_row) << table;
+  ASSERT_NE(std::string::npos, second_row) << table;
+  EXPECT_LT(first_row, second_row) << table;
+}
+
+
 GTEST_TEST(ConvergenceStudy, run_only_reports_what_was_asked_for)
 {
   QuadraticStudy study;

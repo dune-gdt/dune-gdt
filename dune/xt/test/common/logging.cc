@@ -14,6 +14,8 @@
 #include <dune/xt/common/logging.hh>
 #include <dune/xt/common/logstreams.hh>
 
+#include <dune/xt/test/common/scoped_test_dir.hh>
+
 void balh(std::ostream& out)
 {
   static int c = 0;
@@ -168,6 +170,14 @@ GTEST_TEST(LoggerTest, suspend_and_resume_all_streams)
 GTEST_TEST(LoggerTest, set_prefix_reopens_the_logfile)
 {
   using namespace Dune::XT::Common;
+  // Both logfiles below are written to relative paths, the second one to the hardcoded default "data/log". Running
+  // from inside a directory of our own keeps them off the shared build directory and removes them along with the
+  // whole tree, which -- unlike an explicit remove() at the end of the test -- also happens if an assertion above
+  // aborts the test early.
+  // Fully qualified: inside the test body "Test" would resolve to the ::testing::Test base class.
+  const Dune::XT::Common::Test::ScopedTestDir dir("test_logging_");
+  const Dune::XT::Common::Test::CurrentPathGuard cwd(dir.path());
+
   Logger().create(LOG_FILE | LOG_INFO | LOG_ERROR, "test_common_logger_prefix_before", "", "");
   Logger().info() << "before the prefix change" << std::endl;
   Logger().flush();
@@ -180,11 +190,12 @@ GTEST_TEST(LoggerTest, set_prefix_reopens_the_logfile)
   Logger().info() << "after the prefix change" << std::endl;
   Logger().flush();
   EXPECT_TRUE(boost::filesystem::is_regular_file("data/log/test_common_logger_prefix_after.log"));
+  // Note: no assertion on the "before" logfile. create() opens its ofstream without closing a previously opened one
+  // first, so whether it was actually created depends on what an earlier test in this binary left behind; only
+  // set_prefix() (which deinit()s first) is guaranteed to reopen. That is pre-existing behaviour of Logging::create()
+  // and not what this test is about.
 
-  boost::system::error_code ignored;
-  boost::filesystem::remove("test_common_logger_prefix_before.log", ignored);
-  boost::filesystem::remove("data/log/test_common_logger_prefix_after.log", ignored);
-
-  // Leave the global Logger in the state main.hxx set it up in.
+  // Leave the global Logger in the state main.hxx set it up in. This has to happen before the guards run, since it
+  // closes the logfiles which are about to be removed along with the directory.
   Logger().create(LOG_CONSOLE | LOG_ERROR, "", "", "");
 }
