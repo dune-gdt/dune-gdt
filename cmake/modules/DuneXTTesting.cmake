@@ -454,10 +454,10 @@ macro(DXT_ADD_PYTHON_TESTS)
   # forever. Reuse the xt assembly point purely to resolve the `docs_test` dependency group (python/xt/pyproject.toml);
   # the target is the specific in-source test file (unlike xt/gdt, docs/ has no per-package binary-dir mirror), so a
   # future non-test file dropped into docs/ is never accidentally swept into this suite.
-  add_test(NAME docs_test_python
-           COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group docs_test python -m pytest
-                   ${CMAKE_SOURCE_DIR}/docs/test_benchmark_plots.py
-                   --junitxml=${CMAKE_BINARY_DIR}/pytest_results_docs.xml)
+  add_test(
+    NAME docs_test_python
+    COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group docs_test python -m pytest
+            ${CMAKE_SOURCE_DIR}/docs/test_benchmark_plots.py --junitxml=${CMAKE_BINARY_DIR}/pytest_results_docs.xml)
   set_tests_properties(docs_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/xt LABELS
                                                    "dune-gdt-test;python_test")
 
