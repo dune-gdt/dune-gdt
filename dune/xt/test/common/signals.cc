@@ -38,15 +38,21 @@ void counting_handler(int signal)
   last_signal = signal;
 }
 
-//! Restores SIG_DFL for the given signal, whatever the test did to it.
+/**
+ * \brief Restores the disposition a signal had before the test touched it.
+ *
+ * Note that this saves and restores the actual previous disposition rather than resetting to SIG_DFL: the test runner
+ * may well have a handler of its own installed (SIGINT in particular), and a test has no business dropping it.
+ */
 struct SignalGuard
 {
   explicit SignalGuard(int signal)
     : signal_(signal)
   {
+    ::sigaction(signal_, nullptr, &previous_);
   }
 
-  // Resetting the same signal twice would clobber a handler installed in between, so this guard is neither copyable
+  // Restoring the same signal twice would clobber a handler installed in between, so this guard is neither copyable
   // nor movable.
   SignalGuard(const SignalGuard&) = delete;
   SignalGuard(SignalGuard&&) = delete;
@@ -55,10 +61,11 @@ struct SignalGuard
 
   ~SignalGuard()
   {
-    reset_signal(signal_);
+    ::sigaction(signal_, &previous_, nullptr);
   }
 
   const int signal_;
+  struct sigaction previous_{};
 };
 
 

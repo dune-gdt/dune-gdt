@@ -76,9 +76,12 @@ TEST_F(FilesystemTest, test_create_directory_strips_the_filename)
 
   // Calling it again on an existing directory is fine ...
   EXPECT_NO_THROW(test_create_directory(nested + "/some_file.txt"));
-  // ... and a path without any directory component is a no-op.
-  EXPECT_NO_THROW(test_create_directory("some_file.txt"));
-  EXPECT_FALSE(boost::filesystem::exists("some_file.txt"));
+  // ... and a path without any directory component is a no-op. This one has to stay a bare filename (that is the
+  // case under test), so it is made unique to keep it from colliding with anything else in the working directory.
+  const auto bare_filename = Dune::XT::Common::Test::get_unique_test_name() + ".txt";
+  ASSERT_FALSE(boost::filesystem::exists(bare_filename));
+  EXPECT_NO_THROW(test_create_directory(bare_filename));
+  EXPECT_FALSE(boost::filesystem::exists(bare_filename));
 }
 
 

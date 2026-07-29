@@ -14,6 +14,8 @@
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/tupleutility.hh>
 
+#include <limits>
+
 #include <dune/xt/common/math.hh>
 #include <dune/xt/common/float_cmp.hh>
 #include <dune/xt/common/ranges.hh>
@@ -155,10 +157,15 @@ GTEST_TEST(OtherMath, AbsoluteValueOfChars)
   // There is no std::abs(char), so dune-xt provides its own in order to avoid the narrowing conversion.
   EXPECT_EQ(char(0), Dune::XT::Common::abs(char(0)));
   EXPECT_EQ(char(1), Dune::XT::Common::abs(char(1)));
-  EXPECT_EQ(char(1), Dune::XT::Common::abs(char(-1)));
   EXPECT_EQ(char(127), Dune::XT::Common::abs(char(127)));
-  EXPECT_EQ(char(3), Dune::XT::Common::internal::abs(char(-3)));
   EXPECT_EQ(char(3), Dune::XT::Common::internal::abs(char(3)));
+  // Whether plain char is signed is implementation defined (it is unsigned on e.g. arm and power). Where it is not,
+  // char(-1) is simply the value 255 and abs() has nothing to do -- so only assert on negative inputs where there
+  // are any.
+  if constexpr (std::numeric_limits<char>::is_signed) {
+    EXPECT_EQ(char(1), Dune::XT::Common::abs(char(-1)));
+    EXPECT_EQ(char(3), Dune::XT::Common::internal::abs(char(-3)));
+  }
 }
 
 GTEST_TEST(OtherMath, EpsilonOfStrings)

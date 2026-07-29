@@ -36,7 +36,7 @@ GTEST_TEST(fix_ambiguous_std_math_overloads, abs_of_unsigned_integers_is_the_ide
 #  pragma clang diagnostic push
 #  pragma clang diagnostic ignored "-Wabsolute-value"
 #endif
-  const long unsigned int zero = 0ul;
+  const long unsigned int zero = 0UL;
   const long unsigned int large = std::numeric_limits<long unsigned int>::max();
   EXPECT_EQ(zero, std::abs(zero));
   EXPECT_EQ(42UL, std::abs(42UL));

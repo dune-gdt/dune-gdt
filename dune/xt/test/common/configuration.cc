@@ -500,6 +500,40 @@ namespace {
 
 using ScopedTestDir = Dune::XT::Common::Test::ScopedTestDir;
 
+/**
+ * \brief Changes the working directory for the duration of a scope and restores it afterwards.
+ *
+ * Needed by the tests around the default logfile: that path ("data/log/dxtc_parameter.log") is relative, so the only
+ * way to keep those tests off the shared build directory is to move the working directory itself.
+ *
+ * \note Declare this *after* the ScopedTestDir it moves into, so that it is destroyed first and the directory's own
+ *       (relative) cleanup still resolves against the original working directory.
+ */
+class CurrentPathGuard
+{
+public:
+  explicit CurrentPathGuard(const std::string& path)
+    : previous_(boost::filesystem::current_path())
+  {
+    boost::filesystem::create_directories(path);
+    boost::filesystem::current_path(path);
+  }
+
+  CurrentPathGuard(const CurrentPathGuard&) = delete;
+  CurrentPathGuard(CurrentPathGuard&&) = delete;
+  CurrentPathGuard& operator=(const CurrentPathGuard&) = delete;
+  CurrentPathGuard& operator=(CurrentPathGuard&&) = delete;
+
+  ~CurrentPathGuard()
+  {
+    boost::system::error_code ignored;
+    boost::filesystem::current_path(previous_, ignored);
+  }
+
+private:
+  const boost::filesystem::path previous_;
+};
+
 //! Writes content to a file below dir and returns its path.
 std::string write_ini(const ScopedTestDir& dir, const std::string& name, const std::string& content)
 {
@@ -756,34 +790,33 @@ GTEST_TEST(Configuration, set_logfile_rejects_an_empty_name)
 
 GTEST_TEST(Configuration, log_on_exit_writes_the_configuration)
 {
-  // set_logfile() does not move the target (see below), so this test asserts on the default location. Remove a
-  // stale copy first, or a leftover from an earlier run would satisfy the assertion on its own.
-  const auto default_logfile = std::string("data/log/dxtc_parameter.log");
-  boost::system::error_code ignored;
-  boost::filesystem::remove(default_logfile, ignored);
-
+  // set_logfile() does not move the target (see below), so this test has to assert on the *default*, relative
+  // location. Working from inside a directory of our own keeps that off the shared build directory, where a stale
+  // copy or a concurrently running test binary could otherwise interfere.
   const ScopedTestDir dir("test_configuration_");
-  const auto logfile = dir.file("log/dxtc_parameter.log");
+  const CurrentPathGuard cwd(dir.path());
+  const auto default_logfile = std::string("data/log/dxtc_parameter.log");
+  ASSERT_FALSE(boost::filesystem::exists(default_logfile));
+
   {
     Configuration config;
-    config.set_logfile(logfile);
+    config.set_logfile("elsewhere/dxtc_parameter.log");
     config.set_log_on_exit(true);
     // Switching it on again does not create the directory a second time.
     config.set_log_on_exit(true);
     config["key"] = "value";
   }
   // set_logfile() does not actually change where the Configuration logs to (it only validates its argument and
-  // makes sure the directory of the current logfile exists), so the report ends up below the default logfile.
+  // makes sure the directory of the current logfile exists), so the report ends up at the default location.
   EXPECT_TRUE(boost::filesystem::is_regular_file(default_logfile));
-
-  boost::filesystem::remove(default_logfile, ignored);
+  EXPECT_FALSE(boost::filesystem::exists("elsewhere/dxtc_parameter.log"));
 }
 
 
 GTEST_TEST(Configuration, an_empty_configuration_is_not_logged_on_exit)
 {
-  boost::system::error_code ignored;
-  boost::filesystem::remove("data/log/dxtc_parameter.log", ignored);
+  const ScopedTestDir dir("test_configuration_");
+  const CurrentPathGuard cwd(dir.path());
   {
     Configuration config;
     config.set_log_on_exit(true);
