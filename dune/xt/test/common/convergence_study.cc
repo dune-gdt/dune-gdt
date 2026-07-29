@@ -131,6 +131,39 @@ private:
 };
 
 
+//! Reports a single quantity under a given name, to drive run()'s header wrapping with different word layouts.
+class NamedQuantityStudy : public MinimalStudy
+{
+public:
+  explicit NamedQuantityStudy(std::string quantity)
+    : quantity_(std::move(quantity))
+  {
+  }
+
+  std::vector<std::string> quantities() const override
+  {
+    return {quantity_};
+  }
+
+  std::map<std::string, std::map<std::string, double>>
+  compute(const size_t refinement_level,
+          const std::vector<std::string>& /*actual_norms*/,
+          const std::vector<std::pair<std::string, std::string>>&
+          /*actual_estimates*/,
+          const std::vector<std::string>& actual_quantities) override
+  {
+    std::map<std::string, std::map<std::string, double>> ret;
+    ret["target"]["h"] = std::pow(0.5, double(refinement_level));
+    for (const auto& id : actual_quantities)
+      ret["quantity"][id] = 1.;
+    return ret;
+  }
+
+private:
+  const std::string quantity_;
+};
+
+
 //! Reports a discretization without any target, which run() has to reject.
 class TargetlessStudy : public MinimalStudy
 {
@@ -231,6 +264,24 @@ GTEST_TEST(ConvergenceStudy, a_quantity_name_which_does_not_fit_is_wrapped_over_
   ASSERT_NE(std::string::npos, first_row) << table;
   ASSERT_NE(std::string::npos, second_row) << table;
   EXPECT_LT(first_row, second_row) << table;
+}
+
+
+GTEST_TEST(ConvergenceStudy, a_quantity_name_whose_words_do_not_all_fit_falls_back_to_slicing)
+{
+  // Four words of four characters: the first fills row one, the second row two and the third row three, after which
+  // the fourth fits nowhere. That last one is the branch which consumes nothing and merely advances the iterator --
+  // the "else" arm added along with the erase() fix, and the only thing keeping the loop moving in that case.
+  // A word left over means the word-by-word attempt failed, so run() falls back to slicing the name into chunks of
+  // the column width.
+  NamedQuantityStudy study("aaaa bbbb cccc dddd");
+  std::stringstream out;
+  EXPECT_NO_THROW(study.run({}, out));
+  const auto table = out.str();
+  // 19 characters over three rows of 8: "aaaa bbb" / "b cccc d" / "     ddd".
+  EXPECT_NE(std::string::npos, table.find("aaaa bbb")) << table;
+  EXPECT_NE(std::string::npos, table.find("b cccc d")) << table;
+  EXPECT_NE(std::string::npos, table.find("ddd")) << table;
 }
 
 
