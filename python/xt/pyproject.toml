@@ -59,8 +59,6 @@ infrastructure = [
     "cmake_format==0.4.1",
     "codecov",
     "yapf==0.32",
-    "pytest-notebook==0.8.0",
-    "notebook",
     "jinja2",
     "docutils",
     "hypothesis",
@@ -138,6 +136,17 @@ test = [
   # only in the `visualisation` extra otherwise (#393), so HAVE_K3D was permanently False under ctest and every
   # k3d-gated branch (dune.xt.functions/grid, common.vtk.plot) went untested. CI already runs ctest under xvfb-run.
   "k3d>=2.15.2",
+]
+# Deps for docs_test_python (cmake/modules/DuneXTTesting.cmake), which runs docs/test_benchmark_plots.py -- a
+# pure-Python unit test suite for the benchmark-plots Sphinx extension (docs/source/_ext/benchmark_plots.py) that
+# needs neither the dune-gdt bindings nor a full docs build. docutils/sphinx are the extension's own imports; plotly
+# is what test_plot_html_renders_plotly's `pytest.importorskip("plotly")` guards on (#392: previously present only in
+# the `docs` extra, which nothing installed for testing, so that guard silently skipped forever).
+docs_test = [
+  "pytest",
+  "docutils",
+  "sphinx",
+  "plotly",
 ]
 
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.
