@@ -12,48 +12,15 @@
 
 #include <dune/xt/test/main.hxx>
 
-#include <cstdlib>
 #include <string>
 
 #include <dune/xt/common/color.hh>
 
+#include <dune/xt/test/common/term_guard.hh>
+
 using namespace Dune::XT::Common;
+using Dune::XT::Common::Test::TermGuard;
 
-namespace {
-
-
-//! Sets TERM for the duration of a test and restores whatever was there before.
-class TermGuard
-{
-public:
-  explicit TermGuard(const char* term)
-  {
-    const char* previous = std::getenv("TERM");
-    if (previous != nullptr) {
-      had_term_ = true;
-      previous_ = previous;
-    }
-    if (term == nullptr)
-      ::unsetenv("TERM");
-    else
-      ::setenv("TERM", term, 1);
-  }
-
-  ~TermGuard()
-  {
-    if (had_term_)
-      ::setenv("TERM", previous_.c_str(), 1);
-    else
-      ::unsetenv("TERM");
-  }
-
-private:
-  bool had_term_{false};
-  std::string previous_;
-};
-
-
-} // namespace
 
 GTEST_TEST(Color, All)
 {

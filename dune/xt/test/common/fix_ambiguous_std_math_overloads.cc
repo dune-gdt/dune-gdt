@@ -39,7 +39,7 @@ GTEST_TEST(fix_ambiguous_std_math_overloads, abs_of_unsigned_integers_is_the_ide
   const long unsigned int zero = 0ul;
   const long unsigned int large = std::numeric_limits<long unsigned int>::max();
   EXPECT_EQ(zero, std::abs(zero));
-  EXPECT_EQ(42ul, std::abs(42ul));
+  EXPECT_EQ(42UL, std::abs(42UL));
   EXPECT_EQ(large, std::abs(large));
 
   const unsigned char small = 0;

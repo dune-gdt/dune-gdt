@@ -46,6 +46,13 @@ struct SignalGuard
   {
   }
 
+  // Resetting the same signal twice would clobber a handler installed in between, so this guard is neither copyable
+  // nor movable.
+  SignalGuard(const SignalGuard&) = delete;
+  SignalGuard(SignalGuard&&) = delete;
+  SignalGuard& operator=(const SignalGuard&) = delete;
+  SignalGuard& operator=(SignalGuard&&) = delete;
+
   ~SignalGuard()
   {
     reset_signal(signal_);

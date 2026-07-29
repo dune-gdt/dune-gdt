@@ -26,11 +26,14 @@
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/common/timedlogging.hh>
 
+#include <dune/xt/test/common/term_guard.hh>
+
 #include <dune/xt/test/common.hh>
 
 using namespace Dune;
 using namespace Dune::XT;
 using namespace Dune::XT::Common;
+using Dune::XT::Common::Test::TermGuard;
 
 void before_create()
 {
@@ -121,6 +124,12 @@ public:
   {
   }
 
+  // Restoring the stream buffers twice would restore the wrong ones, so this guard is neither copyable nor movable.
+  CapturedOutput(const CapturedOutput&) = delete;
+  CapturedOutput(CapturedOutput&&) = delete;
+  CapturedOutput& operator=(const CapturedOutput&) = delete;
+  CapturedOutput& operator=(CapturedOutput&&) = delete;
+
   ~CapturedOutput()
   {
     std::cout.rdbuf(cout_buffer_);
@@ -143,10 +152,12 @@ private:
 class DefaultLoggerStateGuard
 {
 public:
-  DefaultLoggerStateGuard()
-    : previous_(default_logger_state())
-  {
-  }
+  DefaultLoggerStateGuard() = default;
+
+  DefaultLoggerStateGuard(const DefaultLoggerStateGuard&) = delete;
+  DefaultLoggerStateGuard(DefaultLoggerStateGuard&&) = delete;
+  DefaultLoggerStateGuard& operator=(const DefaultLoggerStateGuard&) = delete;
+  DefaultLoggerStateGuard& operator=(DefaultLoggerStateGuard&&) = delete;
 
   ~DefaultLoggerStateGuard()
   {
@@ -154,38 +165,7 @@ public:
   }
 
 private:
-  const std::array<bool, 3> previous_;
-};
-
-
-//! Sets TERM for the duration of a test and restores whatever was there before.
-class TermGuard
-{
-public:
-  explicit TermGuard(const char* term)
-  {
-    const char* previous = std::getenv("TERM");
-    if (previous != nullptr) {
-      had_term_ = true;
-      previous_ = previous;
-    }
-    if (term == nullptr)
-      ::unsetenv("TERM");
-    else
-      ::setenv("TERM", term, 1);
-  }
-
-  ~TermGuard()
-  {
-    if (had_term_)
-      ::setenv("TERM", previous_.c_str(), 1);
-    else
-      ::unsetenv("TERM");
-  }
-
-private:
-  bool had_term_{false};
-  std::string previous_;
+  const std::array<bool, 3> previous_{default_logger_state()};
 };
 
 

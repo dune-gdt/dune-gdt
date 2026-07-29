@@ -12,6 +12,7 @@
 #include <dune/xt/test/main.hxx>
 
 #include <cstring>
+#include <memory>
 #include <string>
 
 #include <dune/xt/common/debug.hh>
@@ -50,20 +51,19 @@ GTEST_TEST(debug, the_assertion_message_names_the_condition)
 
 GTEST_TEST(debug, charcopy)
 {
+  // charcopy() hands out ownership of a new[]-allocated buffer, so the caller has to free it.
   const char* original = "some string";
-  char* copy = charcopy(original);
+  const std::unique_ptr<char[]> copy(charcopy(original));
   ASSERT_NE(nullptr, copy);
   // A copy, not an alias ...
-  EXPECT_NE(original, copy);
+  EXPECT_NE(original, copy.get());
   // ... which is null terminated and holds the same characters.
-  EXPECT_STREQ(original, copy);
+  EXPECT_STREQ(original, copy.get());
   EXPECT_EQ('\0', copy[std::strlen(original)]);
-  delete[] copy;
 
-  char* empty = charcopy("");
+  const std::unique_ptr<char[]> empty(charcopy(""));
   ASSERT_NE(nullptr, empty);
   EXPECT_EQ('\0', empty[0]);
-  delete[] empty;
 }
 
 GTEST_TEST(debug, DXTC_DEBUG_AUTO)

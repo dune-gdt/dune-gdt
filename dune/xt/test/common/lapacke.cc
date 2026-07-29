@@ -73,7 +73,10 @@ GTEST_TEST(lapacke, the_layout_constants_differ_or_throw)
 GTEST_TEST(lapacke, dgeev)
 {
   auto a = spd_matrix();
-  std::vector<double> wr(2, 0.), wi(2, 0.), vl(4, 0.), vr(4, 0.);
+  std::vector<double> wr(2, 0.);
+  std::vector<double> wi(2, 0.);
+  std::vector<double> vl(4, 0.);
+  std::vector<double> vr(4, 0.);
   if (!Lapacke::available()) {
     EXPECT_THROW(Lapacke::dgeev(0, 'V', 'V', 2, a.data(), 2, wr.data(), wi.data(), vl.data(), 2, vr.data(), 2),
                  Exceptions::dependency_missing);
@@ -94,7 +97,13 @@ GTEST_TEST(lapacke, dgeev)
 GTEST_TEST(lapacke, dgeevx)
 {
   auto a = spd_matrix();
-  std::vector<double> wr(2, 0.), wi(2, 0.), vl(4, 0.), vr(4, 0.), scale(2, 0.), rconde(2, 0.), rcondv(2, 0.);
+  std::vector<double> wr(2, 0.);
+  std::vector<double> wi(2, 0.);
+  std::vector<double> vl(4, 0.);
+  std::vector<double> vr(4, 0.);
+  std::vector<double> scale(2, 0.);
+  std::vector<double> rconde(2, 0.);
+  std::vector<double> rcondv(2, 0.);
   int ilo = 0;
   int ihi = 0;
   double abnrm = 0.;
@@ -162,7 +171,13 @@ GTEST_TEST(lapacke, dgeevx_work)
   // The _work variant leaves the workspace allocation to the caller; we obtain its size from the usual lwork = -1
   // query. Column major is used here so that the query is passed straight through to LAPACK.
   auto a = spd_matrix();
-  std::vector<double> wr(2, 0.), wi(2, 0.), vl(4, 0.), vr(4, 0.), scale(2, 0.), rconde(2, 0.), rcondv(2, 0.);
+  std::vector<double> wr(2, 0.);
+  std::vector<double> wi(2, 0.);
+  std::vector<double> vl(4, 0.);
+  std::vector<double> vr(4, 0.);
+  std::vector<double> scale(2, 0.);
+  std::vector<double> rconde(2, 0.);
+  std::vector<double> rcondv(2, 0.);
   std::vector<int> iwork(4, 0);
   int ilo = 0;
   int ihi = 0;
@@ -296,7 +311,10 @@ GTEST_TEST(lapacke, dgeqp3_dorgqr_and_dormqr)
 GTEST_TEST(lapacke, dgesvd)
 {
   auto a = spd_matrix();
-  std::vector<double> s(2, 0.), u(4, 0.), vt(4, 0.), superb(1, 0.);
+  std::vector<double> s(2, 0.);
+  std::vector<double> u(4, 0.);
+  std::vector<double> vt(4, 0.);
+  std::vector<double> superb(1, 0.);
   if (!Lapacke::available()) {
     EXPECT_THROW(Lapacke::dgesvd(0, 'A', 'A', 2, 2, a.data(), 2, s.data(), u.data(), 2, vt.data(), 2, superb.data()),
                  Exceptions::dependency_missing);
