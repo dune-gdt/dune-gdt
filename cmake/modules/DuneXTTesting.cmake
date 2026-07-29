@@ -452,10 +452,12 @@ macro(DXT_ADD_PYTHON_TESTS)
   # without needing the dune-gdt bindings or a full docs build, but was registered with no runner and so never actually
   # ran (#392) -- in particular test_plot_html_renders_plotly's `pytest.importorskip("plotly")` guard silently skipped
   # forever. Reuse the xt assembly point purely to resolve the `docs_test` dependency group (python/xt/pyproject.toml);
-  # the target path is the in-source docs/ directory, since (unlike xt/gdt) it has no per-package binary-dir mirror.
+  # the target is the specific in-source test file (unlike xt/gdt, docs/ has no per-package binary-dir mirror), so a
+  # future non-test file dropped into docs/ is never accidentally swept into this suite.
   add_test(NAME docs_test_python
            COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group docs_test python -m pytest
-                   ${CMAKE_SOURCE_DIR}/docs --junitxml=${CMAKE_BINARY_DIR}/pytest_results_docs.xml)
+                   ${CMAKE_SOURCE_DIR}/docs/test_benchmark_plots.py
+                   --junitxml=${CMAKE_BINARY_DIR}/pytest_results_docs.xml)
   set_tests_properties(docs_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/xt LABELS
                                                    "dune-gdt-test;python_test")
 
