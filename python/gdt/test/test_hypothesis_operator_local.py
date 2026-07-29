@@ -269,6 +269,10 @@ def test_forward_operator_element_filter_masks_indicator_contributions(spec):
     assert np.all(kept | dropped)
     assert r_boundary.sum() <= r_all.sum() + tol
     assert np.all(r_boundary >= -tol)
+    # every grid here has at least one boundary cell, so the filter must retain something; without
+    # this the assertions above would also pass for a filter that behaved like ApplyOnNoElements
+    # (an all-zero r_boundary is trivially "all dropped").
+    assert np.any(kept)
 
 
 @pytest.mark.skipif(
@@ -299,8 +303,13 @@ def test_forward_operator_boundary_filter_drops_the_interior_cells():
 
     assert len(r_all) == 16
     assert np.allclose(r_all, 1.0 / 16.0, rtol=1e-9, atol=1e-12)
-    # 12 of the 16 cells touch the boundary, the remaining 4 are dropped by the filter
-    assert np.count_nonzero(r_boundary > 1e-12) == 12
+    # Every entry is either the full cell volume or exactly zero -- the filter masks whole cells,
+    # it never scales one. 12 of the 16 cells touch the boundary, the remaining 4 are dropped.
+    kept = np.isclose(r_boundary, 1.0 / 16.0, rtol=1e-9, atol=1e-12)
+    dropped = np.abs(r_boundary) <= 1e-12
+    assert np.all(kept | dropped)
+    assert np.count_nonzero(kept) == 12
+    assert np.count_nonzero(dropped) == 4
     assert np.isclose(r_boundary.sum(), 12.0 / 16.0, rtol=1e-9, atol=1e-12)
 
 
