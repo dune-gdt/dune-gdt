@@ -11,11 +11,20 @@
 
 #include <dune/xt/test/main.hxx>
 
+#include <string>
+
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+
 #include <dune/common/dynmatrix.hh>
 #include <dune/common/tupleutility.hh>
 
+#include <dune/xt/common/configuration.hh>
 #include <dune/xt/common/memory.hh>
 #include <dune/xt/common/fvector.hh>
+#include <dune/xt/common/string.hh>
+
+#include <dune/xt/test/common.hh>
 
 using namespace Dune::XT::Common;
 
@@ -71,4 +80,61 @@ TEST_F(ScopeTest, All)
 {
   this->check_shared();
   this->check_const();
+}
+
+
+namespace {
+
+
+//! Reads the two-line CSV mem_usage() writes and returns {header, values}.
+std::pair<std::string, std::string> read_memory_csv(const std::string& filename)
+{
+  boost::filesystem::ifstream in(filename);
+  EXPECT_TRUE(in.is_open()) << "could not open " << filename;
+  std::string header;
+  std::string values;
+  std::getline(in, header);
+  std::getline(in, values);
+  return {header, values};
+}
+
+
+} // namespace
+
+
+GTEST_TEST(mem_usage, writes_the_peak_consumption_to_the_given_file)
+{
+  const auto dir = "test_memory_" + Dune::XT::Common::Test::get_unique_test_name();
+  const auto file = dir + "/memory.csv";
+  ASSERT_FALSE(boost::filesystem::exists(file));
+
+  mem_usage(file);
+
+  ASSERT_TRUE(boost::filesystem::is_regular_file(file));
+  const auto [header, values] = read_memory_csv(file);
+  EXPECT_EQ("global.maxPeakMemoryConsumption,global.meanPeakMemoryConsumption", header);
+  const auto tokens = tokenize(values, ",");
+  ASSERT_EQ(2u, tokens.size()) << "values were: " << values;
+  // getrusage reports this process' peak resident set size, which is certainly positive; on a single rank the
+  // maximum and the mean over all ranks coincide.
+  const auto max_peak = from_string<long>(tokens[0]);
+  const auto mean_peak = from_string<long>(tokens[1]);
+  EXPECT_GT(max_peak, 0);
+  EXPECT_EQ(max_peak, mean_peak);
+
+  boost::system::error_code ignored;
+  boost::filesystem::remove_all(dir, ignored);
+}
+
+
+GTEST_TEST(mem_usage, defaults_to_memory_csv_below_the_configured_datadir)
+{
+  const auto datadir = "test_memory_" + Dune::XT::Common::Test::get_unique_test_name();
+  DXTC_CONFIG.set("global.datadir", datadir, /*overwrite=*/true);
+
+  mem_usage();
+
+  EXPECT_TRUE(boost::filesystem::is_regular_file(datadir + "/memory.csv"));
+  boost::system::error_code ignored;
+  boost::filesystem::remove_all(datadir, ignored);
 }

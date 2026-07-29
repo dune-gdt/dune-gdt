@@ -33,3 +33,27 @@ GTEST_TEST(MpiCommWrapper, Local)
   const auto convert = implicit_convert(orig);
   ASSERT_EQ(orig, convert);
 }
+
+GTEST_TEST(MpiCommWrapper, DefaultCtor)
+{
+  // The default is the global communicator.
+  MPI_Comm_Wrapper wrapper;
+  ASSERT_EQ(MPIHelper::getCommunicator(), wrapper.get());
+}
+
+GTEST_TEST(MpiCommWrapper, AssignmentFromWrappedComm)
+{
+  MPI_Comm_Wrapper wrapper(MPIHelper::getCommunicator());
+  ASSERT_EQ(MPIHelper::getCommunicator(), wrapper.get());
+
+  const auto local = MPIHelper::getLocalCommunicator();
+  // operator= returns *this, so assignments can be chained.
+  MPI_Comm_Wrapper other;
+  other = wrapper = local;
+  ASSERT_EQ(local, wrapper.get());
+  ASSERT_EQ(local, other.get());
+
+  // Assigning the same communicator again does not change anything.
+  wrapper = local;
+  ASSERT_EQ(local, wrapper.get());
+}

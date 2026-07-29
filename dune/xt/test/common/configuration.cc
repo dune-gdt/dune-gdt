@@ -13,7 +13,13 @@
 #include <dune/xt/test/main.hxx>
 
 #include <array>
+#include <map>
 #include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+#include <boost/filesystem.hpp>
 
 #include <boost/assign/list_of.hpp>
 #include <boost/array.hpp>
@@ -31,6 +37,9 @@
 #include <dune/xt/common/type_traits.hh>
 #include <dune/xt/common/validation.hh>
 
+#include <dune/xt/common/filesystem.hh>
+
+#include <dune/xt/test/common.hh>
 #include <dune/xt/test/common/float_cmp.hh>
 
 // uncomment this for output
@@ -479,4 +488,386 @@ TYPED_TEST_SUITE(ConfigurationTest, ConfigurationCreators);
 TYPED_TEST(ConfigurationTest, behaves_correctly)
 {
   this->behaves_correctly();
+}
+
+
+// The tests below complement the type driven ones above: they cover the ctors which parse external input, the
+// reporting code paths, the setters and the free comparison/ordering operators.
+
+namespace {
+
+
+//! A directory unique to the calling test, removed again by remove_test_dir().
+std::string test_dir()
+{
+  return "test_configuration_" + Dune::XT::Common::Test::get_unique_test_name();
+}
+
+void remove_test_dir()
+{
+  boost::system::error_code ignored;
+  boost::filesystem::remove_all(test_dir(), ignored);
+}
+
+//! Writes content to a file below test_dir() and returns its path.
+std::string write_ini(const std::string& name, const std::string& content)
+{
+  const auto path = test_dir() + "/" + name;
+  auto out = Dune::XT::Common::make_ofstream(path);
+  *out << content;
+  out->close();
+  return path;
+}
+
+
+} // namespace
+
+
+GTEST_TEST(ConfigurationCtors, from_an_istream)
+{
+  std::stringstream ini;
+  ini << "key = value\n"
+      << "[sub]\n"
+      << "other = 42\n";
+  const Configuration config(ini);
+  EXPECT_EQ("value", config.get<std::string>("key"));
+  EXPECT_EQ(42, config.get<int>("sub.other"));
+}
+
+
+GTEST_TEST(ConfigurationCtors, from_a_filename)
+{
+  const auto file = write_ini("from_a_filename.ini", "key = value\n[sub]\nother = 42\n");
+  const Configuration config(file);
+  EXPECT_EQ("value", config.get<std::string>("key"));
+  EXPECT_EQ(42, config.get<int>("sub.other"));
+  remove_test_dir();
+}
+
+
+GTEST_TEST(ConfigurationCtors, from_the_command_line)
+{
+  const auto file = write_ini("from_the_command_line.ini", "key = from_the_file\n");
+
+  // A single argument is read as the name of a parameter file ...
+  {
+    std::vector<std::string> args{"program", file};
+    std::vector<char*> argv{args[0].data(), args[1].data()};
+    const Configuration config(2, argv.data());
+    EXPECT_EQ("from_the_file", config.get<std::string>("key"));
+  }
+  // ... several ones as key/value pairs ...
+  {
+    std::vector<std::string> args{"program", "-key", "from_the_command_line", "-other", "17"};
+    std::vector<char*> argv;
+    for (auto& arg : args)
+      argv.push_back(arg.data());
+    const Configuration config(int(argv.size()), argv.data());
+    EXPECT_EQ("from_the_command_line", config.get<std::string>("key"));
+    EXPECT_EQ(17, config.get<int>("other"));
+  }
+  // ... and a "paramfile" key pulls in that file on top (without overwriting what was given explicitly).
+  {
+    std::vector<std::string> args{"program", "-paramfile", file, "-other", "17"};
+    std::vector<char*> argv;
+    for (auto& arg : args)
+      argv.push_back(arg.data());
+    const Configuration config(int(argv.size()), argv.data());
+    EXPECT_EQ("from_the_file", config.get<std::string>("key"));
+    EXPECT_EQ(17, config.get<int>("other"));
+  }
+  // A lone program name leaves the Configuration empty.
+  {
+    std::vector<std::string> args{"program"};
+    std::vector<char*> argv{args[0].data()};
+    const Configuration config(1, argv.data());
+    EXPECT_TRUE(config.empty());
+  }
+  remove_test_dir();
+}
+
+
+GTEST_TEST(Configuration, read_command_line)
+{
+  const auto file = write_ini("read_command_line.ini", "key = from_the_file\n");
+  {
+    std::vector<std::string> args{"program", file, "-other", "17"};
+    std::vector<char*> argv;
+    for (auto& arg : args)
+      argv.push_back(arg.data());
+    Configuration config;
+    config.read_command_line(int(argv.size()), argv.data());
+    EXPECT_EQ("from_the_file", config.get<std::string>("key"));
+    EXPECT_EQ(17, config.get<int>("other"));
+  }
+  // Without any argument there is nothing to read, which is reported as an error including a usage hint.
+  {
+    std::vector<std::string> args{"program"};
+    std::vector<char*> argv{args[0].data()};
+    Configuration config;
+    EXPECT_THROW(config.read_command_line(1, argv.data()), Dune::Exception);
+  }
+  remove_test_dir();
+}
+
+
+GTEST_TEST(Configuration, read_options)
+{
+  std::vector<std::string> args{"program", "-key", "value", "-sub.other", "42"};
+  std::vector<char*> argv;
+  for (auto& arg : args)
+    argv.push_back(arg.data());
+  Configuration config;
+  config.read_options(int(argv.size()), argv.data());
+  EXPECT_EQ("value", config.get<std::string>("key"));
+  EXPECT_EQ(42, config.get<int>("sub.other"));
+}
+
+
+GTEST_TEST(Configuration, sub)
+{
+  const Configuration config({{"sub.key", "value"}});
+  EXPECT_TRUE(config.has_sub("sub"));
+  EXPECT_EQ("value", config.sub("sub").get<std::string>("key"));
+
+  // A missing sub is an error by default ...
+  EXPECT_THROW(config.sub("missing"), Exceptions::configuration_error);
+  // ... unless a default is accepted, in which case it is handed back unchanged.
+  const Configuration fallback({{"fallback", "yes"}});
+  EXPECT_EQ(fallback, config.sub("missing", false, fallback));
+  EXPECT_TRUE(config.sub("missing", false).empty());
+
+  // An empty Configuration has nothing to hand out at all ...
+  const Configuration empty;
+  EXPECT_THROW(empty.sub("anything"), Exceptions::configuration_error);
+  EXPECT_EQ(fallback, empty.sub("anything", false, fallback));
+  // ... and an empty sub_id is never a valid request.
+  EXPECT_THROW(config.sub(""), Exceptions::configuration_error);
+}
+
+
+GTEST_TEST(Configuration, operator_plus_does_not_modify_its_operands)
+{
+  const Configuration left({{"left", "1"}});
+  const Configuration right({{"right", "2"}});
+
+  const Configuration sum = left + right;
+  EXPECT_EQ(1, sum.get<int>("left"));
+  EXPECT_EQ(2, sum.get<int>("right"));
+  EXPECT_FALSE(left.has_key("right"));
+  EXPECT_FALSE(right.has_key("left"));
+
+  // operator+= does modify the left hand side.
+  Configuration accumulated(left);
+  accumulated += right;
+  EXPECT_EQ(1, accumulated.get<int>("left"));
+  EXPECT_EQ(2, accumulated.get<int>("right"));
+}
+
+
+GTEST_TEST(Configuration, adding_a_conflicting_tree_reports_both_trees)
+{
+  Configuration config({{"key", "1"}});
+  const Configuration conflicting({{"key", "2"}});
+
+  try {
+    config.add(conflicting);
+    FAIL() << "add() did not throw!";
+  } catch (const Exceptions::configuration_error& ee) {
+    const std::string what(ee.what());
+    EXPECT_NE(std::string::npos, what.find("There was an error adding other")) << what;
+    EXPECT_NE(std::string::npos, what.find("key = 2")) << what;
+  }
+  // The conflicting value was not taken over.
+  EXPECT_EQ(1, config.get<int>("key"));
+
+  // With overwrite it is.
+  config.add(conflicting, "", true);
+  EXPECT_EQ(2, config.get<int>("key"));
+}
+
+
+GTEST_TEST(Configuration, report_of_an_empty_configuration_is_empty)
+{
+  const Configuration empty;
+  EXPECT_EQ("", empty.report_string());
+  std::stringstream out;
+  empty.report(out);
+  EXPECT_EQ("", out.str());
+}
+
+
+GTEST_TEST(Configuration, report_collapses_a_common_prefix)
+{
+  // A tree whose root holds nothing but a single chain of subs is reported under that chain as a section header.
+  Configuration config;
+  config["a.b.c"] = "1";
+  config["a.b.d"] = "2";
+  const auto report = config.report_string();
+  EXPECT_NE(std::string::npos, report.find("[a.b]")) << report;
+  EXPECT_NE(std::string::npos, report.find("c = 1")) << report;
+  EXPECT_NE(std::string::npos, report.find("d = 2")) << report;
+  // The collapsed keys are not repeated with their full path.
+  EXPECT_EQ(std::string::npos, report.find("a.b.c = ")) << report;
+}
+
+
+GTEST_TEST(Configuration, report_prefixes_nested_subs_below_the_common_prefix)
+{
+  Configuration config;
+  config["a.b.c.d.e"] = "1";
+  config["a.b.f"] = "2";
+  const auto report = config.report_string();
+  EXPECT_NE(std::string::npos, report.find("[a.b]")) << report;
+  EXPECT_NE(std::string::npos, report.find("f = 2")) << report;
+  EXPECT_NE(std::string::npos, report.find("c.d.e = 1")) << report;
+}
+
+
+GTEST_TEST(Configuration, report_without_a_common_prefix_falls_back_to_sections)
+{
+  Configuration config;
+  config["a.x"] = "1";
+  config["b.y"] = "2";
+  const auto report = config.report_string();
+  EXPECT_NE(std::string::npos, report.find("[a]")) << report;
+  EXPECT_NE(std::string::npos, report.find("[b]")) << report;
+  EXPECT_NE(std::string::npos, report.find("x = 1")) << report;
+  EXPECT_NE(std::string::npos, report.find("y = 2")) << report;
+
+  // The prefix is prepended to every line.
+  const auto prefixed = config.report_string("# ");
+  EXPECT_NE(std::string::npos, prefixed.find("# [a]")) << prefixed;
+  EXPECT_NE(std::string::npos, prefixed.find("# x = 1")) << prefixed;
+}
+
+
+GTEST_TEST(Configuration, set_warn_on_default_access)
+{
+  Configuration config;
+  // Only observable through the warning it prints on stderr, so this merely checks that it is accepted and that
+  // reading a missing key still yields the default.
+  config.set_warn_on_default_access(true);
+  EXPECT_EQ(42, config.get("missing", 42));
+  config.set_warn_on_default_access(false);
+  EXPECT_EQ(42, config.get("missing", 42));
+}
+
+
+GTEST_TEST(Configuration, set_logfile_rejects_an_empty_name)
+{
+  Configuration config;
+  EXPECT_THROW(config.set_logfile(""), Exceptions::wrong_input_given);
+  EXPECT_NO_THROW(config.set_logfile(test_dir() + "/some.log"));
+  remove_test_dir();
+}
+
+
+GTEST_TEST(Configuration, log_on_exit_writes_the_configuration)
+{
+  const auto logfile = test_dir() + "/log/dxtc_parameter.log";
+  {
+    Configuration config;
+    config.set_logfile(logfile);
+    config.set_log_on_exit(true);
+    // Switching it on again does not create the directory a second time.
+    config.set_log_on_exit(true);
+    config["key"] = "value";
+  }
+  // set_logfile() does not actually change where the Configuration logs to (it only validates its argument and
+  // makes sure the directory of the current logfile exists), so the report ends up below the default logfile.
+  EXPECT_TRUE(boost::filesystem::is_regular_file("data/log/dxtc_parameter.log"));
+
+  boost::system::error_code ignored;
+  boost::filesystem::remove("data/log/dxtc_parameter.log", ignored);
+  remove_test_dir();
+}
+
+
+GTEST_TEST(Configuration, an_empty_configuration_is_not_logged_on_exit)
+{
+  boost::system::error_code ignored;
+  boost::filesystem::remove("data/log/dxtc_parameter.log", ignored);
+  {
+    Configuration config;
+    config.set_log_on_exit(true);
+  }
+  EXPECT_FALSE(boost::filesystem::exists("data/log/dxtc_parameter.log"));
+}
+
+
+GTEST_TEST(Configuration, a_failure_while_logging_on_exit_is_swallowed)
+{
+  // The dtor must not let exceptions escape. Pointing the logfile below an existing regular file makes the
+  // directory creation in the dtor fail, which has to be reported on stderr instead of terminating the process.
+  const auto blocking_file = write_ini("not_a_directory", "");
+  ASSERT_TRUE(boost::filesystem::is_regular_file(blocking_file));
+  EXPECT_NO_THROW({
+    Configuration config(Dune::ParameterTree(),
+                         ConfigurationDefaults(false, true, blocking_file + "/dxtc_parameter.log"));
+    config["key"] = "value";
+  });
+  remove_test_dir();
+}
+
+
+GTEST_TEST(Configuration, the_logfile_follows_datadir_and_logging_dir)
+{
+  // setup_() derives the logfile from global.datadir and logging.dir whenever both are present. It only runs in the
+  // ctors which take a tree (the copy ctor keeps whatever the source was set up with), so the keys have to be in
+  // place before the Configuration is built.
+  Dune::ParameterTree tree;
+  tree["global.datadir"] = test_dir();
+  tree["logging.dir"] = "logs";
+  {
+    Configuration config(tree);
+    config.set_log_on_exit(true);
+  }
+  EXPECT_TRUE(boost::filesystem::is_regular_file(test_dir() + "/logs/dxtc_parameter.log"));
+  remove_test_dir();
+}
+
+
+GTEST_TEST(ParameterTreeOperators, equality)
+{
+  Dune::ParameterTree first;
+  first["key"] = "value";
+  Dune::ParameterTree second;
+  second["key"] = "value";
+  Dune::ParameterTree third;
+  third["key"] = "other";
+
+  EXPECT_TRUE(first == second);
+  EXPECT_FALSE(first != second);
+  EXPECT_TRUE(first != third);
+  EXPECT_FALSE(first == third);
+
+  // The same for Configuration, which compares its flattened contents.
+  EXPECT_TRUE(Configuration(first) == Configuration(second));
+  EXPECT_TRUE(Configuration(first) != Configuration(third));
+}
+
+
+GTEST_TEST(ParameterTreeOperators, ordering)
+{
+  Dune::ParameterTree lower;
+  lower["key"] = "a";
+  Dune::ParameterTree upper;
+  upper["key"] = "b";
+
+  const std::less<Dune::ParameterTree> tree_less{};
+  EXPECT_TRUE(tree_less(lower, upper));
+  EXPECT_FALSE(tree_less(upper, lower));
+  EXPECT_FALSE(tree_less(lower, lower));
+
+  const std::less<Configuration> config_less{};
+  EXPECT_TRUE(config_less(Configuration(lower), Configuration(upper)));
+  EXPECT_FALSE(config_less(Configuration(upper), Configuration(lower)));
+
+  // Which is what makes them usable as keys in associative containers.
+  std::map<Configuration, int> map;
+  map[Configuration(lower)] = 1;
+  map[Configuration(upper)] = 2;
+  EXPECT_EQ(2u, map.size());
+  EXPECT_EQ(1, map.at(Configuration(lower)));
 }

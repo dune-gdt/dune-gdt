@@ -131,6 +131,59 @@ GTEST_TEST(OtherMath, MinAndMax)
   EXPECT_EQ(maxmod(-2., -1.), -2.);
 }
 
+GTEST_TEST(OtherMath, BinomialCoefficient)
+{
+  // The classical cases: n over 0 is 1, n over 1 is n, and n over k is symmetric in k <-> n - k.
+  EXPECT_DOUBLE_EQ(1., binomial_coefficient(5., 0));
+  EXPECT_DOUBLE_EQ(5., binomial_coefficient(5., 1));
+  EXPECT_DOUBLE_EQ(10., binomial_coefficient(5., 2));
+  EXPECT_DOUBLE_EQ(10., binomial_coefficient(5., 3));
+  EXPECT_DOUBLE_EQ(1., binomial_coefficient(5., 5));
+  // k > n vanishes, since the factor (n + 1 - k) becomes zero for k == n + 1.
+  EXPECT_DOUBLE_EQ(0., binomial_coefficient(5., 6));
+  EXPECT_DOUBLE_EQ(0., binomial_coefficient(5., 7));
+  // "for arbitrary n": the generalized coefficient is defined for non-integral (and negative) n as well.
+  EXPECT_DOUBLE_EQ(1., binomial_coefficient(0.5, 0));
+  EXPECT_DOUBLE_EQ(0.5, binomial_coefficient(0.5, 1));
+  EXPECT_DOUBLE_EQ(0.5 * (-0.5) / 2., binomial_coefficient(0.5, 2));
+  EXPECT_DOUBLE_EQ(-1., binomial_coefficient(-1., 1));
+  EXPECT_DOUBLE_EQ(1., binomial_coefficient(-1., 2));
+}
+
+GTEST_TEST(OtherMath, AbsoluteValueOfChars)
+{
+  // There is no std::abs(char), so dune-xt provides its own in order to avoid the narrowing conversion.
+  EXPECT_EQ(char(0), Dune::XT::Common::abs(char(0)));
+  EXPECT_EQ(char(1), Dune::XT::Common::abs(char(1)));
+  EXPECT_EQ(char(1), Dune::XT::Common::abs(char(-1)));
+  EXPECT_EQ(char(127), Dune::XT::Common::abs(char(127)));
+  EXPECT_EQ(char(3), Dune::XT::Common::internal::abs(char(-3)));
+  EXPECT_EQ(char(3), Dune::XT::Common::internal::abs(char(3)));
+}
+
+GTEST_TEST(OtherMath, EpsilonOfStrings)
+{
+  // The std::string specialization exists so that generic code (float_cmp, bisect, ...) can be instantiated for
+  // strings as well; its "smallest increment" is a single character.
+  EXPECT_EQ("_", (Epsilon<std::string, false>::value));
+  EXPECT_EQ("_", Epsilon<std::string>::value);
+  EXPECT_EQ(1u, Epsilon<std::string>::value.size());
+  // The integral and floating point specializations, for contrast.
+  EXPECT_EQ(1, Epsilon<int>::value);
+  EXPECT_DOUBLE_EQ(std::numeric_limits<double>::epsilon(), Epsilon<double>::value);
+}
+
+GTEST_TEST(OtherMath, AbsoluteDifference)
+{
+  EXPECT_EQ(1, absolute_difference(2, 1));
+  EXPECT_EQ(1, absolute_difference(1, 2));
+  EXPECT_EQ(0u, absolute_difference(3u, 3u));
+  EXPECT_DOUBLE_EQ(1.5, absolute_difference(0.5, 2.0));
+  // The char specialization casts back to char instead of returning the promoted int.
+  EXPECT_EQ(char(2), absolute_difference(char(1), char(3)));
+  EXPECT_EQ(char(2), absolute_difference(char(3), char(1)));
+}
+
 GTEST_TEST(OtherMath, FloatCmp)
 {
   std::vector<double> ones{1., 1.};
