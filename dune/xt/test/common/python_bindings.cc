@@ -14,6 +14,11 @@
 // The registrar is a plain std::function, so the error messages pybind11 would produce can be reproduced here
 // without actually going through pybind11 (and without needing a running interpreter).
 
+// NOTE: this file must NOT be called python.cc. DuneXTTesting.cmake derives the test target name from the file's
+// basename ("test_" + basename), and a target named test_python already exists: dune-common creates it in
+// DunePythonCommonMacros.cmake, and cmake/modules/DuneXTTesting.cmake keeps it as an aggregate target for backwards
+// compatibility. The duplicate name makes add_executable() -- and therefore the whole CMake configure step -- fail.
+
 #include <dune/xt/test/main.hxx> // <- This one has to come first, includes config.h!
 
 #include <stdexcept>

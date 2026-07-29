@@ -513,7 +513,6 @@ class CurrentPathGuard
 {
 public:
   explicit CurrentPathGuard(const std::string& path)
-    : previous_(boost::filesystem::current_path())
   {
     boost::filesystem::create_directories(path);
     boost::filesystem::current_path(path);
@@ -531,7 +530,7 @@ public:
   }
 
 private:
-  const boost::filesystem::path previous_;
+  const boost::filesystem::path previous_{boost::filesystem::current_path()};
 };
 
 //! Writes content to a file below dir and returns its path.
