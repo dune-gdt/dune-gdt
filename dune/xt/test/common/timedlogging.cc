@@ -26,14 +26,14 @@
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/common/timedlogging.hh>
 
-#include <dune/xt/test/common/term_guard.hh>
+#include <dune/xt/test/common/env_guard.hh>
 
 #include <dune/xt/test/common.hh>
 
 using namespace Dune;
 using namespace Dune::XT;
 using namespace Dune::XT::Common;
-using Dune::XT::Common::Test::TermGuard;
+using Dune::XT::Common::Test::ScopedEnvVar;
 
 void before_create()
 {
@@ -297,7 +297,7 @@ GTEST_TEST(DefaultLogger, an_enabled_stream_prints_with_its_prefix)
 {
   // A color capable terminal would wrap the prefix into escape sequences, which would make the assertions below
   // depend on the environment the test is run in.
-  TermGuard term("dumb");
+  ScopedEnvVar term("TERM", "dumb");
   std::string captured;
   {
     CapturedOutput capture;
@@ -315,7 +315,7 @@ GTEST_TEST(DefaultLogger, an_enabled_stream_prints_with_its_prefix)
 
 GTEST_TEST(DefaultLogger, an_empty_prefix_falls_back_to_the_stream_name)
 {
-  TermGuard term("dumb");
+  ScopedEnvVar term("TERM", "dumb");
   std::string captured;
   {
     CapturedOutput capture;
@@ -358,7 +358,7 @@ GTEST_TEST(TimedLogging, the_level_is_tracked_across_nested_managers)
 {
   // TimedLogging::create() only overwrites the color prefixes, not the suffixes the ctor derived from the terminal,
   // so pin the terminal down to keep the assertions below independent of the environment.
-  TermGuard term("dumb");
+  ScopedEnvVar term("TERM", "dumb");
   std::string captured;
   {
     CapturedOutput capture;
@@ -393,7 +393,7 @@ GTEST_TEST(TimedLogging, the_level_is_tracked_across_nested_managers)
 
 GTEST_TEST(TimedLogging, an_empty_id_falls_back_to_the_stream_name)
 {
-  TermGuard term("dumb");
+  ScopedEnvVar term("TERM", "dumb");
   std::string captured;
   {
     CapturedOutput capture;
@@ -413,7 +413,7 @@ GTEST_TEST(TimedLogging, an_empty_id_falls_back_to_the_stream_name)
 GTEST_TEST(TimedLogging, colors_are_only_used_on_a_color_capable_terminal)
 {
   {
-    TermGuard guard("xterm");
+    ScopedEnvVar guard("TERM", "xterm");
     // The ctor already runs update_colors(), which turns the color names into escape sequences.
     TimedLogging colored;
     std::string captured;
@@ -440,7 +440,7 @@ GTEST_TEST(TimedLogging, colors_are_only_used_on_a_color_capable_terminal)
     EXPECT_EQ(std::string::npos, uncolored_capture.find(StreamModifiers::bold)) << uncolored_capture;
   }
   {
-    TermGuard guard("dumb");
+    ScopedEnvVar guard("TERM", "dumb");
     TimedLogging uncolored;
     std::string captured;
     {
@@ -457,7 +457,7 @@ GTEST_TEST(TimedLogging, colors_are_only_used_on_a_color_capable_terminal)
 
 GTEST_TEST(TimedLogging, warnings_can_be_switched_off)
 {
-  TermGuard term("dumb");
+  ScopedEnvVar term("TERM", "dumb");
   std::string captured;
   {
     CapturedOutput capture;

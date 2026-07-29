@@ -107,7 +107,9 @@ GTEST_TEST(signals, install_signal_handler_defaults_to_handle_interrupt_on_SIGIN
 
   struct sigaction current{};
   ASSERT_EQ(0, sigaction(SIGINT, nullptr, &current));
-  EXPECT_EQ(reinterpret_cast<void*>(&handle_interrupt), reinterpret_cast<void*>(current.sa_handler));
+  // Both sides are of type void(*)(int), so they compare directly -- no cast to void* (which is not something a
+  // function pointer may portably be converted to) is needed.
+  EXPECT_EQ(&handle_interrupt, current.sa_handler);
   // install_signal_handler() clears sa_flags; the C library is free to add its own bits (glibc sets SA_RESTORER),
   // so only the flags which would change the semantics are checked here.
   EXPECT_EQ(0, current.sa_flags & (SA_SIGINFO | SA_RESETHAND | SA_NODEFER));

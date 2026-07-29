@@ -41,6 +41,7 @@
 
 #include <dune/xt/test/common.hh>
 #include <dune/xt/test/common/float_cmp.hh>
+#include <dune/xt/test/common/scoped_test_dir.hh>
 
 // uncomment this for output
 // std::ostream& test_out = std::cout;
@@ -497,22 +498,12 @@ TYPED_TEST(ConfigurationTest, behaves_correctly)
 namespace {
 
 
-//! A directory unique to the calling test, removed again by remove_test_dir().
-std::string test_dir()
-{
-  return "test_configuration_" + Dune::XT::Common::Test::get_unique_test_name();
-}
+using ScopedTestDir = Dune::XT::Common::Test::ScopedTestDir;
 
-void remove_test_dir()
+//! Writes content to a file below dir and returns its path.
+std::string write_ini(const ScopedTestDir& dir, const std::string& name, const std::string& content)
 {
-  boost::system::error_code ignored;
-  boost::filesystem::remove_all(test_dir(), ignored);
-}
-
-//! Writes content to a file below test_dir() and returns its path.
-std::string write_ini(const std::string& name, const std::string& content)
-{
-  const auto path = test_dir() + "/" + name;
+  const auto path = dir.file(name);
   auto out = Dune::XT::Common::make_ofstream(path);
   *out << content;
   out->close();
@@ -537,17 +528,18 @@ GTEST_TEST(ConfigurationCtors, from_an_istream)
 
 GTEST_TEST(ConfigurationCtors, from_a_filename)
 {
-  const auto file = write_ini("from_a_filename.ini", "key = value\n[sub]\nother = 42\n");
+  const ScopedTestDir dir("test_configuration_");
+  const auto file = write_ini(dir, "from_a_filename.ini", "key = value\n[sub]\nother = 42\n");
   const Configuration config(file);
   EXPECT_EQ("value", config.get<std::string>("key"));
   EXPECT_EQ(42, config.get<int>("sub.other"));
-  remove_test_dir();
 }
 
 
 GTEST_TEST(ConfigurationCtors, from_the_command_line)
 {
-  const auto file = write_ini("from_the_command_line.ini", "key = from_the_file\n");
+  const ScopedTestDir dir("test_configuration_");
+  const auto file = write_ini(dir, "from_the_command_line.ini", "key = from_the_file\n");
 
   // A single argument is read as the name of a parameter file ...
   {
@@ -583,13 +575,13 @@ GTEST_TEST(ConfigurationCtors, from_the_command_line)
     const Configuration config(1, argv.data());
     EXPECT_TRUE(config.empty());
   }
-  remove_test_dir();
 }
 
 
 GTEST_TEST(Configuration, read_command_line)
 {
-  const auto file = write_ini("read_command_line.ini", "key = from_the_file\n");
+  const ScopedTestDir dir("test_configuration_");
+  const auto file = write_ini(dir, "read_command_line.ini", "key = from_the_file\n");
   {
     std::vector<std::string> args{"program", file, "-other", "17"};
     std::vector<char*> argv;
@@ -607,7 +599,6 @@ GTEST_TEST(Configuration, read_command_line)
     Configuration config;
     EXPECT_THROW(config.read_command_line(1, argv.data()), Dune::Exception);
   }
-  remove_test_dir();
 }
 
 
@@ -758,14 +749,21 @@ GTEST_TEST(Configuration, set_logfile_rejects_an_empty_name)
 {
   Configuration config;
   EXPECT_THROW(config.set_logfile(""), Exceptions::wrong_input_given);
-  EXPECT_NO_THROW(config.set_logfile(test_dir() + "/some.log"));
-  remove_test_dir();
+  const ScopedTestDir dir("test_configuration_");
+  EXPECT_NO_THROW(config.set_logfile(dir.file("some.log")));
 }
 
 
 GTEST_TEST(Configuration, log_on_exit_writes_the_configuration)
 {
-  const auto logfile = test_dir() + "/log/dxtc_parameter.log";
+  // set_logfile() does not move the target (see below), so this test asserts on the default location. Remove a
+  // stale copy first, or a leftover from an earlier run would satisfy the assertion on its own.
+  const auto default_logfile = std::string("data/log/dxtc_parameter.log");
+  boost::system::error_code ignored;
+  boost::filesystem::remove(default_logfile, ignored);
+
+  const ScopedTestDir dir("test_configuration_");
+  const auto logfile = dir.file("log/dxtc_parameter.log");
   {
     Configuration config;
     config.set_logfile(logfile);
@@ -776,11 +774,9 @@ GTEST_TEST(Configuration, log_on_exit_writes_the_configuration)
   }
   // set_logfile() does not actually change where the Configuration logs to (it only validates its argument and
   // makes sure the directory of the current logfile exists), so the report ends up below the default logfile.
-  EXPECT_TRUE(boost::filesystem::is_regular_file("data/log/dxtc_parameter.log"));
+  EXPECT_TRUE(boost::filesystem::is_regular_file(default_logfile));
 
-  boost::system::error_code ignored;
-  boost::filesystem::remove("data/log/dxtc_parameter.log", ignored);
-  remove_test_dir();
+  boost::filesystem::remove(default_logfile, ignored);
 }
 
 
@@ -800,14 +796,14 @@ GTEST_TEST(Configuration, a_failure_while_logging_on_exit_is_swallowed)
 {
   // The dtor must not let exceptions escape. Pointing the logfile below an existing regular file makes the
   // directory creation in the dtor fail, which has to be reported on stderr instead of terminating the process.
-  const auto blocking_file = write_ini("not_a_directory", "");
+  const ScopedTestDir dir("test_configuration_");
+  const auto blocking_file = write_ini(dir, "not_a_directory", "");
   ASSERT_TRUE(boost::filesystem::is_regular_file(blocking_file));
   EXPECT_NO_THROW({
     Configuration config(Dune::ParameterTree(),
                          ConfigurationDefaults(false, true, blocking_file + "/dxtc_parameter.log"));
     config["key"] = "value";
   });
-  remove_test_dir();
 }
 
 
@@ -817,14 +813,14 @@ GTEST_TEST(Configuration, the_logfile_follows_datadir_and_logging_dir)
   // ctors which take a tree (the copy ctor keeps whatever the source was set up with), so the keys have to be in
   // place before the Configuration is built.
   Dune::ParameterTree tree;
-  tree["global.datadir"] = test_dir();
+  const ScopedTestDir dir("test_configuration_");
+  tree["global.datadir"] = dir.path();
   tree["logging.dir"] = "logs";
   {
     Configuration config(tree);
     config.set_log_on_exit(true);
   }
-  EXPECT_TRUE(boost::filesystem::is_regular_file(test_dir() + "/logs/dxtc_parameter.log"));
-  remove_test_dir();
+  EXPECT_TRUE(boost::filesystem::is_regular_file(dir.file("logs/dxtc_parameter.log")));
 }
 
 

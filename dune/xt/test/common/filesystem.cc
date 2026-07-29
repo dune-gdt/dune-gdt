@@ -25,26 +25,19 @@
 #include <dune/xt/common/logstreams.hh>
 
 #include <dune/xt/test/common.hh>
+#include <dune/xt/test/common/scoped_test_dir.hh>
 
 using namespace Dune::XT::Common;
 
 namespace {
 
 
-//! A directory unique to the calling test, removed again by the fixture's TearDown().
-std::string test_dir()
-{
-  return "test_filesystem_" + Dune::XT::Common::Test::get_unique_test_name();
-}
+using Dune::XT::Common::Test::ScopedTestDir;
 
-
+//! Every test below works inside a directory of its own, which its ScopedTestDir removes again.
 struct FilesystemTest : public ::testing::Test
 {
-  void TearDown() override
-  {
-    boost::system::error_code ignored;
-    boost::filesystem::remove_all(test_dir(), ignored);
-  }
+  const ScopedTestDir dir{"test_filesystem_"};
 };
 
 
@@ -73,16 +66,16 @@ TEST_F(FilesystemTest, filename_only)
 
 TEST_F(FilesystemTest, test_create_directory_strips_the_filename)
 {
-  const auto dir = test_dir() + "/a/b";
-  ASSERT_FALSE(boost::filesystem::exists(dir));
+  const auto nested = dir.file("a/b");
+  ASSERT_FALSE(boost::filesystem::exists(nested));
 
-  test_create_directory(dir + "/some_file.txt");
-  EXPECT_TRUE(boost::filesystem::is_directory(dir));
+  test_create_directory(nested + "/some_file.txt");
+  EXPECT_TRUE(boost::filesystem::is_directory(nested));
   // The filename must not have been created as a directory of its own.
-  EXPECT_FALSE(boost::filesystem::exists(dir + "/some_file.txt"));
+  EXPECT_FALSE(boost::filesystem::exists(nested + "/some_file.txt"));
 
   // Calling it again on an existing directory is fine ...
-  EXPECT_NO_THROW(test_create_directory(dir + "/some_file.txt"));
+  EXPECT_NO_THROW(test_create_directory(nested + "/some_file.txt"));
   // ... and a path without any directory component is a no-op.
   EXPECT_NO_THROW(test_create_directory("some_file.txt"));
   EXPECT_FALSE(boost::filesystem::exists("some_file.txt"));
@@ -91,9 +84,8 @@ TEST_F(FilesystemTest, test_create_directory_strips_the_filename)
 
 TEST_F(FilesystemTest, touch)
 {
-  const auto dir = test_dir();
-  boost::filesystem::create_directories(dir);
-  const auto file = dir + "/touched.txt";
+  boost::filesystem::create_directories(dir.path());
+  const auto file = dir.file("touched.txt");
   ASSERT_FALSE(boost::filesystem::exists(file));
 
   EXPECT_TRUE(touch(file));
@@ -101,13 +93,13 @@ TEST_F(FilesystemTest, touch)
   EXPECT_EQ(0, boost::filesystem::file_size(file));
 
   // touch does not create intermediate directories, so this one cannot be opened.
-  EXPECT_FALSE(touch(dir + "/does/not/exist.txt"));
+  EXPECT_FALSE(touch(dir.file("does/not/exist.txt")));
 }
 
 
 TEST_F(FilesystemTest, make_ofstream_creates_the_leading_directories)
 {
-  const auto file = test_dir() + "/deeply/nested/output.txt";
+  const auto file = dir.file("deeply/nested/output.txt");
   ASSERT_FALSE(boost::filesystem::exists(file));
 
   {
@@ -144,7 +136,7 @@ TEST_F(FilesystemTest, make_ofstream_creates_the_leading_directories)
 
 TEST_F(FilesystemTest, make_ifstream)
 {
-  const auto file = test_dir() + "/input.txt";
+  const auto file = dir.file("input.txt");
   {
     auto out = make_ofstream(file);
     *out << "first line" << std::endl << "second line" << std::endl;
@@ -161,7 +153,7 @@ TEST_F(FilesystemTest, make_ifstream)
   EXPECT_FALSE(static_cast<bool>(std::getline(*in, line)));
 
   // A missing file yields a stream which is simply not open (make_ifstream does not throw).
-  auto missing = make_ifstream(test_dir() + "/no_such_file.txt");
+  auto missing = make_ifstream(dir.file("no_such_file.txt"));
   ASSERT_NE(nullptr, missing);
   EXPECT_FALSE(missing->is_open());
 }
@@ -169,7 +161,7 @@ TEST_F(FilesystemTest, make_ifstream)
 
 TEST_F(FilesystemTest, file_to_stream_filtered)
 {
-  const auto file = test_dir() + "/filtered.txt";
+  const auto file = dir.file("filtered.txt");
   {
     auto out = make_ofstream(file);
     *out << "keep me" << std::endl << "drop this" << std::endl << "keep me too" << std::endl;
@@ -190,7 +182,7 @@ TEST_F(FilesystemTest, file_to_stream_filtered)
 
   // A file which cannot be opened simply produces no output.
   std::stringstream missing;
-  file_to_stream_filtered(missing, test_dir() + "/no_such_file.txt", "anything");
+  file_to_stream_filtered(missing, dir.file("no_such_file.txt"), "anything");
   EXPECT_EQ("", missing.str());
 }
 

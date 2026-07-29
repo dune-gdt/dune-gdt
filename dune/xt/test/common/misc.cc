@@ -28,6 +28,8 @@
 #include <dune/xt/common/string.hh>
 
 #include <dune/xt/test/common.hh>
+#include <dune/xt/test/common/env_guard.hh>
+#include <dune/xt/test/common/scoped_test_dir.hh>
 
 using namespace Dune::XT::Common;
 
@@ -111,9 +113,10 @@ GTEST_TEST(misc, dump_environment)
 {
   // dump_environment writes two lines: the names of all "key=value" entries of the environment and their values.
   // Setting a variable of our own gives us something to look for in either of them.
-  ASSERT_EQ(0, ::setenv("DUNE_XT_TEST_MISC_VARIABLE", "dune_xt_test_misc_value", 1));
+  const Dune::XT::Common::Test::ScopedEnvVar variable("DUNE_XT_TEST_MISC_VARIABLE", "dune_xt_test_misc_value");
 
-  const auto file = "test_misc_" + Dune::XT::Common::Test::get_unique_test_name() + "/environment.csv";
+  const Dune::XT::Common::Test::ScopedTestDir dir("test_misc_");
+  const auto file = dir.file("environment.csv");
   {
     auto out = make_ofstream(file);
     ASSERT_TRUE(out->is_open());
@@ -135,7 +138,7 @@ GTEST_TEST(misc, dump_environment)
   EXPECT_NE(std::string::npos, values.find("dune_xt_test_misc_value")) << "values were: " << values;
 
   // The separator is configurable.
-  const auto other_file = "test_misc_" + Dune::XT::Common::Test::get_unique_test_name() + "/environment_semicolon.csv";
+  const auto other_file = dir.file("environment_semicolon.csv");
   {
     auto out = make_ofstream(other_file);
     dump_environment(*out, ";");
@@ -145,8 +148,4 @@ GTEST_TEST(misc, dump_environment)
   std::string other_header;
   ASSERT_TRUE(static_cast<bool>(std::getline(other_in, other_header)));
   EXPECT_NE(std::string::npos, other_header.find(';')) << other_header;
-
-  ::unsetenv("DUNE_XT_TEST_MISC_VARIABLE");
-  boost::system::error_code ignored;
-  boost::filesystem::remove_all("test_misc_" + Dune::XT::Common::Test::get_unique_test_name(), ignored);
 }

@@ -16,10 +16,10 @@
 
 #include <dune/xt/common/color.hh>
 
-#include <dune/xt/test/common/term_guard.hh>
+#include <dune/xt/test/common/env_guard.hh>
 
 using namespace Dune::XT::Common;
-using Dune::XT::Common::Test::TermGuard;
+using Dune::XT::Common::Test::ScopedEnvVar;
 
 
 GTEST_TEST(Color, All)
@@ -107,16 +107,16 @@ GTEST_TEST(Color, template_color_chooser)
 GTEST_TEST(Color, terminal_supports_color)
 {
   for (const auto* term : {"xterm", "xterm-color", "xterm-256color", "screen", "linux", "cygwin"}) {
-    TermGuard guard(term);
+    ScopedEnvVar guard("TERM", term);
     EXPECT_TRUE(terminal_supports_color()) << "TERM = " << term;
   }
   for (const auto* term : {"dumb", "vt100", ""}) {
-    TermGuard guard(term);
+    ScopedEnvVar guard("TERM", term);
     EXPECT_FALSE(terminal_supports_color()) << "TERM = " << term;
   }
   {
     // No TERM at all in the environment.
-    TermGuard guard(nullptr);
+    ScopedEnvVar guard("TERM", nullptr);
     EXPECT_FALSE(terminal_supports_color());
   }
 }
@@ -124,7 +124,7 @@ GTEST_TEST(Color, terminal_supports_color)
 GTEST_TEST(Color, color_string_respects_the_terminal)
 {
   {
-    TermGuard guard("xterm");
+    ScopedEnvVar guard("TERM", "xterm");
     EXPECT_EQ(std::string(Colors::red) + "text" + StreamModifiers::normal, color_string("text", Colors::red));
     // The default color is brown.
     EXPECT_EQ(std::string(Colors::brown) + "text" + StreamModifiers::normal, color_string("text"));
@@ -132,7 +132,7 @@ GTEST_TEST(Color, color_string_respects_the_terminal)
   }
   {
     // Without a color capable terminal the string is handed back unchanged.
-    TermGuard guard("dumb");
+    ScopedEnvVar guard("TERM", "dumb");
     EXPECT_EQ("text", color_string("text", Colors::red));
     EXPECT_EQ("text", color_string("text"));
     EXPECT_EQ("text", color_string_red("text"));

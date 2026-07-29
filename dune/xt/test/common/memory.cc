@@ -25,6 +25,7 @@
 #include <dune/xt/common/string.hh>
 
 #include <dune/xt/test/common.hh>
+#include <dune/xt/test/common/scoped_test_dir.hh>
 
 using namespace Dune::XT::Common;
 
@@ -104,8 +105,8 @@ std::pair<std::string, std::string> read_memory_csv(const std::string& filename)
 
 GTEST_TEST(mem_usage, writes_the_peak_consumption_to_the_given_file)
 {
-  const auto dir = "test_memory_" + Dune::XT::Common::Test::get_unique_test_name();
-  const auto file = dir + "/memory.csv";
+  const Dune::XT::Common::Test::ScopedTestDir dir("test_memory_");
+  const auto file = dir.file("memory.csv");
   ASSERT_FALSE(boost::filesystem::exists(file));
 
   mem_usage(file);
@@ -121,20 +122,17 @@ GTEST_TEST(mem_usage, writes_the_peak_consumption_to_the_given_file)
   const auto mean_peak = from_string<long>(tokens[1]);
   EXPECT_GT(max_peak, 0);
   EXPECT_EQ(max_peak, mean_peak);
-
-  boost::system::error_code ignored;
-  boost::filesystem::remove_all(dir, ignored);
 }
 
 
 GTEST_TEST(mem_usage, defaults_to_memory_csv_below_the_configured_datadir)
 {
-  const auto datadir = "test_memory_" + Dune::XT::Common::Test::get_unique_test_name();
-  DXTC_CONFIG.set("global.datadir", datadir, /*overwrite=*/true);
+  // Dune::ParameterTree has no way to remove a key again, so global.datadir stays set for the rest of this binary.
+  // Nothing else in it reads that key, so the mutation is contained.
+  const Dune::XT::Common::Test::ScopedTestDir datadir("test_memory_");
+  DXTC_CONFIG.set("global.datadir", datadir.path(), /*overwrite=*/true);
 
   mem_usage();
 
-  EXPECT_TRUE(boost::filesystem::is_regular_file(datadir + "/memory.csv"));
-  boost::system::error_code ignored;
-  boost::filesystem::remove_all(datadir, ignored);
+  EXPECT_TRUE(boost::filesystem::is_regular_file(datadir.file("memory.csv")));
 }
