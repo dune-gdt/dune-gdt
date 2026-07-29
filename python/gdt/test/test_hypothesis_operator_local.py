@@ -235,8 +235,9 @@ def _indicator_result(grid, filter_factory):
     )
     indicator = LocalElementBilinearFormIndicatorOperator(local_form)
     op += (indicator, filter_factory(grid))
-    # single-argument apply returns a freshly allocated range vector
-    return np.asarray(op.apply(GF(grid, 1.0)), dtype=float)
+    # Applied to a GridFunction source, apply() returns a freshly allocated DiscreteFunction in the
+    # range space (only the vector-source overload returns a bare vector), so go through .dofs.
+    return np.asarray(op.apply(GF(grid, 1.0)).dofs.vector, dtype=float)
 
 
 @given(spec=GRIDS)
