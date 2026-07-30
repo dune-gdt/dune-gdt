@@ -23,10 +23,10 @@ using namespace Dune::GDT::Test;
 
 using SimplexGrids2D = ::testing::Types<ALU_2D_SIMPLEX_CONFORMING,
                                         ALU_2D_SIMPLEX_NONCONFORMING
-#  if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID || HAVE_UG
                                         ,
                                         UG_2D
-#  endif
+#endif
                                         >;
 
 using CubeGrids2D = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET, ALU_2D_CUBE>;
@@ -35,12 +35,12 @@ DUNE_XT_COMMON_TYPENAME(YASP_2D_EQUIDISTANT_OFFSET)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_SIMPLEX_CONFORMING)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_SIMPLEX_NONCONFORMING)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_CUBE)
-#  if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID || HAVE_UG
 DUNE_XT_COMMON_TYPENAME(UG_2D)
-#  endif
-#  if HAVE_ALBERTA
+#endif
+#if HAVE_ALBERTA
 DUNE_XT_COMMON_TYPENAME(ALBERTA_2D)
-#  endif
+#endif
 
 template <class G>
 using StokesTestSimplex = StokesTestcase1<G>;
