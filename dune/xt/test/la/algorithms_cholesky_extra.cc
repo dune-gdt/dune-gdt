@@ -174,10 +174,8 @@ GTEST_TEST(CholeskyExtraTest, factorizes_sparse_matrices)
   factorizes_correctly<CommonSparseMatrixCsr<double>>(large_dim);
   factorizes_correctly<CommonSparseMatrixCsc<double>>(small_dim);
   factorizes_correctly<CommonSparseMatrixCsc<double>>(large_dim);
-#if HAVE_DUNE_ISTL
   factorizes_correctly<IstlRowMajorSparseMatrix<double>>(small_dim);
   factorizes_correctly<IstlRowMajorSparseMatrix<double>>(large_dim);
-#endif
 }
 
 GTEST_TEST(CholeskyExtraTest, storage_layout_specific_implementations_agree)
@@ -232,10 +230,8 @@ GTEST_TEST(CholeskyExtraTest, throws_on_matrix_which_is_not_positive_definite)
   EXPECT_THROW(cholesky(csr), Dune::MathError);
   auto csc = indefinite_matrix<CommonSparseMatrixCsc<double>>(small_dim);
   EXPECT_THROW(cholesky(csc), Dune::MathError);
-#if HAVE_DUNE_ISTL
   auto istl = indefinite_matrix<IstlRowMajorSparseMatrix<double>>(small_dim);
   EXPECT_THROW(cholesky(istl), Dune::MathError);
-#endif
 }
 
 GTEST_TEST(CholeskyExtraTest, csr_and_csc_factorizations_throw_for_other_storage_layouts)

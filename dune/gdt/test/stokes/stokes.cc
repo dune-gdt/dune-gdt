@@ -18,8 +18,6 @@
 
 #include <dune/gdt/test/stokes/stokes-taylorhood.hh>
 
-#if HAVE_DUNE_ISTL
-
 using namespace Dune;
 using namespace Dune::GDT::Test;
 
@@ -66,5 +64,3 @@ TYPED_TEST(StokesTestCube, order3)
 {
   this->run(3, 4e-7, 7e-6);
 }
-
-#endif // HAVE_DUNE_ISTL
