@@ -254,15 +254,22 @@ jobs:
       # generated per-directory script, which needs no built targets and so can
       # run right after configure) rather than the whole build tree with a
       # plain `cmake --install`: the latter also runs
-      # DunePybindxiInstallPythonPackage.cmake's install(CODE) rule for the
-      # Python wheel, which calls dune-common's `dune_execute_process` -- a
-      # macro that is not available in the standalone `cmake -P` process an
-      # install script runs in, so it always fails with "Unknown CMake
-      # command". That is a pre-existing bug in the Python packaging install
-      # path, unrelated to and out of scope for issue #388's cmake/modules
-      # manifest fix (tracked separately in #401); scoping the smoke test to
-      # cmake/modules keeps it testing what the issue is actually about.
+      # DunePybindxiInstallPythonPackage.cmake's install(CODE) rule, which
+      # shells out to `pip wheel` and therefore needs the compiled bindings
+      # that only exist much later in this workflow.
+      #
+      # The grep is the regression test for issue #401: install(CODE) text is
+      # not run at configure time but by the generated cmake_install.cmake,
+      # which CMake executes as a standalone `cmake -P` script that never
+      # includes dune-common's CMake modules. Any dune-common macro called from
+      # there (`dune_execute_process` was the one that broke `cmake --install`)
+      # is undefined in that process, and the failure only shows up when the
+      # rule actually runs -- which is exactly what nothing in CI does.
       run: |
+        if grep -rn --include=cmake_install.cmake -e dune_execute_process "build/${{ matrix.preset }}"; then
+          echo "::error::install(CODE) calls dune_execute_process, which is undefined in the standalone install script (see #401)"
+          exit 1
+        fi
         prefix="$(mktemp -d)"
         cmake "-DCMAKE_INSTALL_PREFIX=${prefix}" -P "build/${{ matrix.preset }}/cmake/modules/cmake_install.cmake"
         module="$(find "${prefix}" -type f -name DuneXTHints.cmake -print -quit)"
