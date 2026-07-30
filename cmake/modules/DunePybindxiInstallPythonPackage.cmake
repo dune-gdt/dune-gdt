@@ -139,10 +139,27 @@ function(dune_pybindxi_install_python_package)
   # Construct the wheel installation commandline
   set(wheel_command "${RUN_IN_ENV_SCRIPT}" "python3" -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${pyinst_fullpath})
 
+  # Render the wheel commandline as an explicitly quoted argument list for the install script below. The list cannot
+  # simply be expanded into the install(CODE) text: that text is re-parsed by a separate CMake parser, where an unquoted
+  # ${wheel_command} would split on any space in DUNE_PYTHON_WHEELHOUSE, RUN_IN_ENV_SCRIPT or the package path.
+  set(wheel_command_code "")
+  foreach(arg IN LISTS wheel_command)
+    string(REPLACE "\\" "\\\\" arg "${arg}")
+    string(REPLACE "\"" "\\\"" arg "${arg}")
+    string(APPEND wheel_command_code " \"${arg}\"")
+  endforeach()
+
   # Add the installation rule
+  #
+  # NB: install(CODE) text does not run at configure time, but from the generated cmake_install.cmake, which CMake
+  # executes as a standalone `cmake -P` script. That process does not include dune-common's CMake modules, so
+  # dune-common's dune_execute_process() macro is undefined there and using it made `cmake --install` fail with "Unknown
+  # CMake command" (see issue #401). Plain execute_process() plus an explicit result check needs no includes and keeps
+  # the same abort-with-a-useful-message behaviour.
   install(
     CODE "message(\"Installing wheel for python package at ${pyinst_fullpath}...\")
-                dune_execute_process(COMMAND ${wheel_command}
-                                     ERROR_MESSAGE \"Error installing wheel for python package at ${pyinst_fullpath}\"
-                                     )")
+                execute_process(COMMAND${wheel_command_code} RESULT_VARIABLE dune_pybindxi_wheel_result)
+                if(NOT dune_pybindxi_wheel_result EQUAL \"0\")
+                  message(FATAL_ERROR \"Error installing wheel for python package at ${pyinst_fullpath}\")
+                endif()")
 endfunction()
