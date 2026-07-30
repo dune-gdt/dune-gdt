@@ -96,6 +96,9 @@ TEST_F(FilesystemTest, create_directory_creates_the_path_itself)
 
   // Calling it again on an existing directory is fine ...
   EXPECT_NO_THROW(create_directory(nested));
+  // ... and so is a trailing slash (entity_visualization.hh relies on this).
+  EXPECT_NO_THROW(create_directory(nested + "/"));
+  EXPECT_TRUE(boost::filesystem::is_directory(nested));
   // ... and an empty path is a no-op.
   EXPECT_NO_THROW(create_directory(""));
 }

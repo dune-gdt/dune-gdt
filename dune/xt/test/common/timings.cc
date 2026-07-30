@@ -65,8 +65,8 @@ GTEST_TEST(ProfilerTest, SetOutputdirCreatesTheDirectory)
   DXTC_TIMINGS.set_outputdir(nested);
   EXPECT_TRUE(boost::filesystem::is_directory(nested));
 
-  // Restore the default so subsequent tests in this binary are unaffected.
-  DXTC_TIMINGS.set_outputdir("");
+  // Restore the constructor default so subsequent tests in this binary are unaffected.
+  DXTC_TIMINGS.set_outputdir("profiling");
 }
 
 GTEST_TEST(ProfilerTest, OutputConstness)
