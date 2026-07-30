@@ -10,7 +10,7 @@
 # ~~~
 """Local forms/operators appended to operators with an element filter, and the operator ``linear`` flag.
 
-Two partial branches in the operator layer are only reachable by appending local pieces that the
+Three partial branches in the operator layer are only reachable by appending local pieces that the
 existing operator tests never construct -- a non-trivial element filter, and a *nonlinear* local
 operator:
 
@@ -18,6 +18,9 @@ operator:
     ``MatrixOperator::apply_local``. Every existing assembly appends element bilinear forms without a
     filter (the default ``ApplyOnAllElements``), so the ``if`` is only ever taken. A ``BilinearForm``
     carrying a real element filter, appended and assembled, drives both sides.
+  * dune/gdt/operators/forward-operator.hh:318 -- the same ``if (filter.contains(...))``, here inside
+    the ``ForwardOperatorAssembler`` that ``Operator::apply`` walks. Reached by appending a local
+    element (indicator) operator *with* a filter and calling ``Operator.apply``.
   * dune/gdt/operators/operator.hh:225 and :259 -- ``linear_ = linear_ && local_operator.linear()``
     in the local-element (no-filter) and local-intersection (with-filter) ``operator+=`` overloads.
     Only advection operators report ``linear() == true`` and none are bound as *local* operators, so
@@ -28,11 +31,18 @@ The element filter used is ``ApplyOnBoundaryElements`` (true on boundary cells, 
 ones) together with the trivial ``ApplyOnAllElements`` / ``ApplyOnNoElements`` bookends, all bound in
 dune.xt.grid. No new bindings are introduced.
 
-(The sibling ``forward-operator.hh:318`` filter check -- the same ``if (filter.contains(...))`` inside
-the ``ForwardOperatorAssembler`` that ``Operator::apply`` walks -- would be reached by applying a
-filtered local element indicator operator through ``Operator.apply``. That grid-walking
-``Operator.apply``-with-a-local-operator path is not exercised by any C++ test and is left out here;
-the appending is fine, only the walk is untested.)
+``Operator.apply`` builds a ``ForwardOperatorAssembler`` and walks it, which is a path no C++ test
+drives (the C++ indicator test binds and applies the local operator directly). It is the same
+``XT::Grid::Walker`` machinery the already-passing ``BilinearForm.apply2`` tests run -- an
+element-and-intersection functor over the leaf view -- with a local element operator writing one
+scalar per element instead of accumulating into a field, so the walk itself is covered ground; only
+the assembler on top of it is new. Note the local operator carries *no* intersection part here, so
+nothing dereferences an outside element.
+
+As a side effect the walk also drives the resize guard in
+``LocalElementIntegralBilinearForm::apply2`` (dune/gdt/local/bilinear-forms/integrals.hh:117) through
+its true-then-false sequence: the indicator operator's result buffer starts out 0x0 and is reused
+across elements, so the first element resizes it and every later one does not.
 """
 
 import numpy as np
@@ -200,6 +210,107 @@ def test_boundary_element_filter_is_a_strict_subset_with_interior_elements():
     # none would give q_boundary == 0 -- both are excluded here.
     assert q_boundary > 1e-6
     assert q_boundary < q_all - 1e-6
+
+
+def _indicator_result(grid, filter_factory):
+    """Per-element indicator vector of a mass integrand, filtered by ``filter_factory(grid)``.
+
+    The indicator writes integral_E (source^2 * weight) into element E's FV dof; with a unit source
+    and unit weight that is exactly vol(E), so the vector is the element-volume vector masked by the
+    filter.
+    """
+    from dune.gdt import (
+        FiniteVolumeSpace,
+        LocalElementBilinearFormIndicatorOperator,
+        LocalElementIntegralBilinearForm,
+        LocalElementProductIntegrand,
+        Operator,
+    )
+    from dune.xt.functions import GridFunction as GF
+
+    space = FiniteVolumeSpace(grid)
+    op = Operator(grid, source_space=space, range_space=space)
+    local_form = LocalElementIntegralBilinearForm(
+        LocalElementProductIntegrand(GF(grid, 1.0))
+    )
+    indicator = LocalElementBilinearFormIndicatorOperator(local_form)
+    op += (indicator, filter_factory(grid))
+    # Applied to a GridFunction source, apply() returns a freshly allocated DiscreteFunction in the
+    # range space (only the vector-source overload returns a bare vector), so go through .dofs.
+    return np.asarray(op.apply(GF(grid, 1.0)).dofs.vector, dtype=float)
+
+
+@given(spec=GRIDS)
+def test_forward_operator_element_filter_masks_indicator_contributions(spec):
+    from dune.xt.grid import (
+        ApplyOnAllElements,
+        ApplyOnBoundaryElements,
+        ApplyOnNoElements,
+    )
+
+    grid = spec.make_grid()
+
+    r_all = _indicator_result(grid, ApplyOnAllElements)
+    r_none = _indicator_result(grid, ApplyOnNoElements)
+    r_boundary = _indicator_result(grid, ApplyOnBoundaryElements)
+
+    # every element contributes its (strictly positive) volume; on the unit box they sum to 1.
+    assert np.all(r_all > 0.0)
+    assert np.isclose(r_all.sum(), 1.0, rtol=1e-9, atol=1e-9)
+
+    # ApplyOnNoElements never fires apply_local -> prepared (zero) range is returned unchanged.
+    assert np.allclose(r_none, 0.0, atol=1e-12)
+
+    # ApplyOnBoundaryElements keeps a boundary cell's volume and zeroes every interior cell, so each
+    # entry is either 0 or exactly the unfiltered volume, and the masked sum cannot exceed the total.
+    tol = 1e-10
+    kept = np.isclose(r_boundary, r_all, rtol=1e-9, atol=tol)
+    dropped = np.abs(r_boundary) <= tol
+    assert np.all(kept | dropped)
+    assert r_boundary.sum() <= r_all.sum() + tol
+    assert np.all(r_boundary >= -tol)
+    # every grid here has at least one boundary cell, so the filter must retain something; without
+    # this the assertions above would also pass for a filter that behaved like ApplyOnNoElements
+    # (an all-zero r_boundary is trivially "all dropped").
+    assert np.any(kept)
+
+
+@pytest.mark.skipif(
+    not has_grid(dim=2, element="cube"),
+    reason="no 2d cube grid bindings available in this build",
+)
+def test_forward_operator_boundary_filter_drops_the_interior_cells():
+    """The filtered ``Operator.apply`` really masks: a 4x4 cube grid has 4 interior cells.
+
+    As for the matrix-operator case above, the property test's bounds alone would also hold for a
+    filter that kept everything or nothing. Here the geometry is known, so the exact split can be
+    asserted: 12 boundary cells keep their volume 1/16, the 4 interior ones are zeroed.
+    """
+    from dune.xt.grid import (
+        ApplyOnAllElements,
+        ApplyOnBoundaryElements,
+        Cube,
+        Dim,
+        make_cube_grid,
+    )
+
+    grid = make_cube_grid(
+        Dim(2), Cube(), lower_left=[0, 0], upper_right=[1, 1], num_elements=[4, 4]
+    )
+
+    r_all = _indicator_result(grid, ApplyOnAllElements)
+    r_boundary = _indicator_result(grid, ApplyOnBoundaryElements)
+
+    assert len(r_all) == 16
+    assert np.allclose(r_all, 1.0 / 16.0, rtol=1e-9, atol=1e-12)
+    # Every entry is either the full cell volume or exactly zero -- the filter masks whole cells,
+    # it never scales one. 12 of the 16 cells touch the boundary, the remaining 4 are dropped.
+    kept = np.isclose(r_boundary, 1.0 / 16.0, rtol=1e-9, atol=1e-12)
+    dropped = np.abs(r_boundary) <= 1e-12
+    assert np.all(kept | dropped)
+    assert np.count_nonzero(kept) == 12
+    assert np.count_nonzero(dropped) == 4
+    assert np.isclose(r_boundary.sum(), 12.0 / 16.0, rtol=1e-9, atol=1e-12)
 
 
 @given(spec=GRIDS, order=ORDERS, weight=WEIGHTS)
