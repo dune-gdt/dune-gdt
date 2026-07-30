@@ -30,9 +30,7 @@
 #  include <dune/grid/albertagrid.hh>
 #endif
 
-#if HAVE_DUNE_ALUGRID
-#  include <dune/alugrid/common/structuredgridfactory.hh>
-#endif
+#include <dune/alugrid/common/structuredgridfactory.hh>
 
 #if HAVE_DUNE_UGGRID
 #  include <dune/grid/uggrid.hh>
@@ -173,7 +171,6 @@ public:
 #endif // HAVE_ALBERTA
 
 
-#if HAVE_DUNE_ALUGRID
 template <int dim_world, int dim, ALUGridRefinementType refineType, class Comm>
 class StructuredGridFactory<ALUGrid<dim, dim_world, Dune::cube, refineType, Comm>>
   : public Dune::StructuredGridFactory<ALUGrid<dim, dim_world, Dune::cube, refineType, Comm>>
@@ -191,14 +188,13 @@ public:
   {
     if (Dune::MPIHelper::isFake) // NOLINT(readability-implicit-bool-conversion)
       return Dune::StructuredGridFactory<GridType>::createCubeGrid(lowerLeft, upperRight, elements);
-#  if HAVE_MPI
+#if HAVE_MPI
     if (mpi_comm == MPI_COMM_WORLD)
       return Dune::StructuredGridFactory<GridType>::createCubeGrid(lowerLeft, upperRight, elements);
-#  endif
+#endif
     DUNE_THROW(InvalidStateException, "ALUgrid Cube construction cannot handle non-world communicators");
   }
 };
-#endif // HAVE_ALBERTA
 
 #if HAVE_DUNE_SPGRID
 template <class ct, int dim, template <int> class Refinement, class Comm>

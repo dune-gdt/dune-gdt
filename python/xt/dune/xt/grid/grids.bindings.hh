@@ -106,9 +106,6 @@ struct grid_name<YaspGrid<dim, EquidistantOffsetCoordinates<double, dim>>>
   }
 };
 
-#if HAVE_DUNE_ALUGRID
-
-
 template <int dim, class Comm>
 struct grid_name<ALUGrid<dim, dim, simplex, conforming, Comm>>
 {
@@ -164,7 +161,6 @@ struct grid_name<ALU3dGrid<dim, dim, ALU3dGridElementType::hexa, Comm>>
 };
 
 
-#endif // HAVE_DUNE_ALUGRID
 #if HAVE_ALBERTA
 
 
@@ -221,23 +217,17 @@ struct grid_name<UGGrid<dim>>
 
 using Available1dGridTypes = std::tuple<ONED_1D, YASP_1D_EQUIDISTANT_OFFSET>;
 
-using Available2dGridTypes = unique_grid_tuple_t<std::tuple<YASP_2D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                                            ,
+using Available2dGridTypes = unique_grid_tuple_t<std::tuple<YASP_2D_EQUIDISTANT_OFFSET,
                                                             ALU_2D_SIMPLEX_CONFORMING
-#endif
 #if HAVE_DUNE_UGGRID || HAVE_UG
                                                             ,
                                                             UG_2D
 #endif
                                                             >>;
 
-using Available3dGridTypes = unique_grid_tuple_t<std::tuple<YASP_3D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                                            ,
+using Available3dGridTypes = unique_grid_tuple_t<std::tuple<YASP_3D_EQUIDISTANT_OFFSET,
                                                             ALU_3D_SIMPLEX_CONFORMING,
                                                             ALU_3D_CUBE
-#endif
 #if HAVE_DUNE_UGGRID || HAVE_UG
                                                             ,
                                                             UG_3D

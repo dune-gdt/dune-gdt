@@ -137,7 +137,6 @@ PYBIND11_MODULE(_grid_gridprovider_cube, m)
   make_cube_grid<YASP_1D_EQUIDISTANT_OFFSET, Cube>::bind(m); // NOSONAR(cpp:S1117): m is an argument, not a decl
   make_cube_grid<YASP_2D_EQUIDISTANT_OFFSET, Cube>::bind(m);
   make_cube_grid<YASP_3D_EQUIDISTANT_OFFSET, Cube>::bind(m);
-#if HAVE_DUNE_ALUGRID
   // default (structured cube / conforming simplex) overloads
   make_cube_grid<ALU_2D_SIMPLEX_CONFORMING, Simplex>::bind(m);
   make_cube_grid<ALU_3D_SIMPLEX_CONFORMING, Simplex>::bind(m);
@@ -146,5 +145,4 @@ PYBIND11_MODULE(_grid_gridprovider_cube, m)
   // historical set that is separately bindable: the nonconforming ALU *simplex* grids share their
   // leaf-view type with the conforming ones (see grids.bindings.hh), and 2d has no cube ALUGrid.
   make_cube_grid_backend<ALU_3D_CUBE, Cube, Nonconforming>::bind(m);
-#endif
 }

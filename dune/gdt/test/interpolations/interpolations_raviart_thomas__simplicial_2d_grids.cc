@@ -14,20 +14,14 @@
 #include "raviart-thomas.hh"
 
 
-using Simplicial2dGrids = ::testing::Types<
-#if HAVE_DUNE_ALUGRID
-    ALU_2D_SIMPLEX_CONFORMING,
-    ALU_2D_SIMPLEX_NONCONFORMING
-#endif
-#if HAVE_DUNE_ALUGRID && HAVE_DUNE_UGGRID
-    ,
-#endif
+using Simplicial2dGrids = ::testing::Types<ALU_2D_SIMPLEX_CONFORMING,
+                                           ALU_2D_SIMPLEX_NONCONFORMING
 #if HAVE_DUNE_UGGRID
-    UG_2D
+                                           ,
+                                           UG_2D
 #endif
-    >;
+                                           >;
 
-#if HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
 template <class G>
 using RaviartThomasInterpolationTest = Dune::GDT::Test::RaviartThomasInterpolationOnLeafViewTest<G>;
 TYPED_TEST_SUITE(RaviartThomasInterpolationTest, Simplicial2dGrids);
@@ -43,4 +37,3 @@ TYPED_TEST(RaviartThomasInterpolationTest, interpolant_has_continuous_normal_com
 {
   this->interpolant_has_continuous_normal_components();
 }
-#endif // HAVE_DUNE_UGGRID  || HAVE_DUNE_ALUGRID

@@ -130,7 +130,6 @@ class Glued
     static constexpr bool value = true;
   };
 
-#  if HAVE_DUNE_ALUGRID
   template <class Comm, bool anything>
   struct allowed_local_grid<ALUGrid<3, 3, simplex, conforming, Comm>, anything>
   {
@@ -142,7 +141,6 @@ class Glued
   {
     static constexpr bool value = false;
   };
-#  endif // HAVE_DUNE_ALUGRID
 
 #  if HAVE_MPI && (HAVE_DUNE_UGGRID || HAVE_UG)
   // UGGrid does not support multiple parallel instances in parallel and we have no means yet to create multiple

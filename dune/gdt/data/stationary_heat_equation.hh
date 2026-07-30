@@ -65,7 +65,6 @@ struct ESV2007DiffusionProblem
   {
     if (std::is_same<G, YASP_2D_EQUIDISTANT_OFFSET>::value) {
       return XT::Grid::make_cube_grid<G>(-1, 1, 8);
-#if HAVE_DUNE_ALUGRID
     } else if (std::is_same<G, ALU_2D_SIMPLEX_CONFORMING>::value) {
       auto grid = XT::Grid::make_cube_grid<G>(-1, 1, 4);
       grid.global_refine(2);
@@ -76,7 +75,6 @@ struct ESV2007DiffusionProblem
       auto grid = XT::Grid::make_cube_grid<G>(-1, 1, 8);
       grid.global_refine(1);
       return grid;
-#endif // HAVE_DUNE_ALUGRID
     } else
       DUNE_THROW(XT::Common::Exceptions::wrong_input_given,
                  "Please add a specialization for '" << XT::Common::Typename<G>::value() << "'!");
