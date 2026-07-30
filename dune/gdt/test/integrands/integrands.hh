@@ -261,13 +261,10 @@ struct IntegrandTest : public ::testing::Test
 } // namespace Dune
 
 
-using Grids2D = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                 ,
+using Grids2D = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET,
                                  ALU_2D_SIMPLEX_CONFORMING,
                                  ALU_2D_SIMPLEX_NONCONFORMING,
                                  ALU_2D_CUBE
-#endif
 #if HAVE_DUNE_UGGRID || HAVE_UG
                                  ,
                                  UG_2D
@@ -279,11 +276,9 @@ using Grids2D = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET
                                  >;
 
 DUNE_XT_COMMON_TYPENAME(YASP_2D_EQUIDISTANT_OFFSET)
-#if HAVE_DUNE_ALUGRID
 DUNE_XT_COMMON_TYPENAME(ALU_2D_SIMPLEX_CONFORMING)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_SIMPLEX_NONCONFORMING)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_CUBE)
-#endif
 #if HAVE_DUNE_UGGRID || HAVE_UG
 DUNE_XT_COMMON_TYPENAME(UG_2D)
 #endif

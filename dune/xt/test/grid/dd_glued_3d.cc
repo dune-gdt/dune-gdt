@@ -45,8 +45,6 @@ struct ExpectedResults<YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>,
 }; // struct ExpectedResults<YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>, YaspGrid<3,
 // EquidistantOffsetCoordinates<double, 3>>, anything>
 
-#  if HAVE_DUNE_ALUGRID
-
 template <class Comm>
 struct ExpectedResults<ALUGrid<3, 3, cube, nonconforming, Comm>, YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>>
 {
@@ -97,7 +95,6 @@ struct ExpectedResults<YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>, ALU
 }; // ExpectedResults<YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>, ALUGrid<3, 3, cube, nonconforming, Comm>,
 // anything>
 
-#  endif // HAVE_DUNE_ALUGRID
 #  if HAVE_DUNE_UGGRID || HAVE_UG
 
 template <>
@@ -164,7 +161,6 @@ using namespace Dune::XT::Grid;
 // clang-format off
 using GridTypes = ::testing::Types< std::tuple<YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>,
                                      YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>>
-#if HAVE_DUNE_ALUGRID
                         , std::tuple<YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>,
                                      Dune::ALUGrid<3, 3, cube, nonconforming>>
 //                      , std::tuple<YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>,
@@ -179,7 +175,6 @@ using GridTypes = ::testing::Types< std::tuple<YaspGrid<3, EquidistantOffsetCoor
 //                                   ALUGrid<3, 3, simplex, nonconforming>>               // <- known to fail completely
 //                      , std::tuple<ALUGrid<3, 3, cube, nonconforming>,
 //                                   ALUGrid<3, 3, simplex, nonconforming>>               // <- known to fail completely
-#endif // HAVE_DUNE_ALUGRID
 #if !HAVE_MPI && (HAVE_DUNE_UGGRID || HAVE_UG)
                         , std::tuple<YaspGrid<3, EquidistantOffsetCoordinates<double, 3>>, UGGrid<3>>
 #endif

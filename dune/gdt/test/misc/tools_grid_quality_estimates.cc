@@ -165,8 +165,6 @@ GTEST_TEST(grid_quality_estimates, inverse_inequality_constants_on_3d_cube_grid)
 }
 
 
-#if HAVE_DUNE_ALUGRID
-
 // #378: the bindings' hypothesis property test segfaulted the whole pytest process in the combined estimate on a 3d
 // ALUGrid cube. The cause turned out to be a dangling grid on the python side rather than anything in the estimator
 // (see the py::keep_alive in python/gdt/dune/gdt/spaces/), but until now this was the only grid this estimator had
@@ -211,5 +209,3 @@ GTEST_TEST(grid_quality_estimates, inverse_inequality_constants_on_simplicial_gr
     check_mesh_width_independence<ALU_3D_SIMPLEX_CONFORMING>(order);
   }
 }
-
-#endif // HAVE_DUNE_ALUGRID

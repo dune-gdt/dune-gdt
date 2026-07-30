@@ -16,9 +16,7 @@
 #ifndef DUNE_XT_GRID_PROVIDER_EOC_HH
 #define DUNE_XT_GRID_PROVIDER_EOC_HH
 
-#if HAVE_DUNE_ALUGRID
-#  include <dune/alugrid/grid.hh>
-#endif
+#include <dune/alugrid/grid.hh>
 
 #include <dune/xt/grid/gridprovider/provider.hh>
 #include <dune/xt/grid/gridprovider/factory.hh>
@@ -187,8 +185,6 @@ public:
 };
 
 
-#if HAVE_DUNE_ALUGRID
-
 template <class Comm>
 class EOCGridProvider<Dune::ALUGrid<2, 2, simplex, conforming, Comm>>
   : public LeafBasedEOCGridProvider<Dune::ALUGrid<2, 2, simplex, conforming, Comm>>
@@ -200,8 +196,6 @@ public:
   {
   }
 };
-
-#endif // HAVE_DUNE_ALUGRID
 
 
 } // namespace Dune::XT::Grid

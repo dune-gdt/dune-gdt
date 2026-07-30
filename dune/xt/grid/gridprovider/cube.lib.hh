@@ -35,9 +35,7 @@
     _prefix Dune::XT::Grid::GridProvider<_GRID> Dune::XT::Grid::make_cube_grid<_GRID>(                                 \
         const Dune::XT::Common::Configuration&)
 
-#  if HAVE_DUNE_ALUGRID
 DUNE_XT_GRID_GRIDPROVIDER_CUBE_LIB_FACTORY_METHODS(extern template, ALU_2D_SIMPLEX_CONFORMING);
-#  endif
 DUNE_XT_GRID_GRIDPROVIDER_CUBE_LIB_FACTORY_METHODS(extern template, YASP_1D_EQUIDISTANT_OFFSET);
 DUNE_XT_GRID_GRIDPROVIDER_CUBE_LIB_FACTORY_METHODS(extern template, YASP_2D_EQUIDISTANT_OFFSET);
 DUNE_XT_GRID_GRIDPROVIDER_CUBE_LIB_FACTORY_METHODS(extern template, YASP_3D_EQUIDISTANT_OFFSET);

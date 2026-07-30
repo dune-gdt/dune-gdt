@@ -195,13 +195,7 @@ public:
 } // namespace Dune
 
 
-using AvailableAdaptiveGridTypes = std::tuple<ONED_1D
-#if HAVE_DUNE_ALUGRID
-                                              ,
-                                              ALU_2D_SIMPLEX_CONFORMING,
-                                              ALU_3D_SIMPLEX_CONFORMING
-#endif
-                                              >;
+using AvailableAdaptiveGridTypes = std::tuple<ONED_1D, ALU_2D_SIMPLEX_CONFORMING, ALU_3D_SIMPLEX_CONFORMING>;
 
 
 template <class V, class VT, class GridTypes = AvailableAdaptiveGridTypes>

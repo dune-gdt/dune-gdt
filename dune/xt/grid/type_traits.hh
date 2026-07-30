@@ -29,9 +29,7 @@
 #  include <dune/xt/common/reenable_warnings.hh>
 #endif
 
-#if HAVE_DUNE_ALUGRID
-#  include <dune/alugrid/grid.hh>
-#endif
+#include <dune/alugrid/grid.hh>
 
 #if HAVE_DUNE_SPGRID
 #  include <dune/grid/spgrid.hh>
@@ -142,7 +140,6 @@ struct is_grid<Dune::AlbertaGrid<dim, dimworld>> : public std::true_type
 {};
 
 #endif // HAVE_ALBERTA
-#if HAVE_DUNE_ALUGRID
 
 template <int dim, int dimworld, ALUGridElementType elType, ALUGridRefinementType refineType, class Comm>
 struct is_grid<Dune::ALUGrid<dim, dimworld, elType, refineType, Comm>> : public std::true_type
@@ -152,7 +149,6 @@ template <int dim, int dimworld, ALU3dGridElementType elType, class Comm>
 struct is_grid<Dune::ALU3dGrid<dim, dimworld, elType, Comm>> : public std::true_type
 {};
 
-#endif // HAVE_DUNE_ALUGRID
 #if HAVE_DUNE_UGGRID || HAVE_UG
 
 template <int dim>
@@ -248,8 +244,6 @@ struct is_cube_alugrid : public std::false_type
 {};
 
 
-#if HAVE_DUNE_ALUGRID
-
 template <int dim, int dimworld, ALUGridElementType elType, ALUGridRefinementType refineType, class Comm>
 struct is_alugrid<ALUGrid<dim, dimworld, elType, refineType, Comm>> : public std::true_type
 {};
@@ -265,8 +259,6 @@ struct is_simplex_alugrid<ALUGrid<dim, dimworld, ALUGridElementType::simplex, re
 template <int dim, int dimworld, ALUGridRefinementType refineType, class Comm>
 struct is_cube_alugrid<ALUGrid<dim, dimworld, ALUGridElementType::cube, refineType, Comm>> : public std::true_type
 {};
-
-#endif // HAVE_DUNE_ALUGRID
 
 
 /// \brief Extracts the grid type from a grid view, grid part, intersection or entity T.

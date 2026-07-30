@@ -14,20 +14,14 @@
 #include "boundary.hh"
 
 
-using Simplicial3dGrids = ::testing::Types<
-#if HAVE_DUNE_ALUGRID
-    ALU_3D_SIMPLEX_CONFORMING,
-    ALU_3D_SIMPLEX_NONCONFORMING
-#endif
-#if HAVE_DUNE_ALUGRID && HAVE_DUNE_UGGRID
-    ,
-#endif
+using Simplicial3dGrids = ::testing::Types<ALU_3D_SIMPLEX_CONFORMING,
+                                           ALU_3D_SIMPLEX_NONCONFORMING
 #if HAVE_DUNE_UGGRID
-    UG_3D
+                                           ,
+                                           UG_3D
 #endif
-    >;
+                                           >;
 
-#if HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
 template <class G>
 using BoundaryInterpolation = Dune::GDT::Test::BoundaryInterpolationOnLeafViewTest<G>;
 TYPED_TEST_SUITE(BoundaryInterpolation, Simplicial3dGrids);
@@ -35,4 +29,3 @@ TYPED_TEST(BoundaryInterpolation, interpolates_correctly)
 {
   this->interpolates_correctly();
 }
-#endif // HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID

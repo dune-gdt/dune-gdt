@@ -53,10 +53,8 @@ PYBIND11_MODULE(_grid_gridprovider_gmsh, m)
   py::module::import("dune.xt.grid._grid_gridprovider_provider");
   py::module::import("dune.xt.grid._grid_traits");
 
-#if HAVE_DUNE_ALUGRID
   make_gmsh_grid<ALU_2D_SIMPLEX_CONFORMING, Simplex>::bind(m);
   make_gmsh_grid<ALU_2D_CUBE, Cube>::bind(m);
   make_gmsh_grid<ALU_3D_SIMPLEX_CONFORMING, Simplex>::bind(m);
   make_gmsh_grid<ALU_3D_CUBE, Cube>::bind(m);
-#endif
 }

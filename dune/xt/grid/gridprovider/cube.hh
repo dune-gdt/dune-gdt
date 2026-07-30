@@ -89,8 +89,6 @@ class CubeGridProviderFactory
   };
 #endif
 
-#if HAVE_DUNE_ALUGRID
-
   template <int dimGrid, int dimWorld, class MpiCommImp>
   struct ElementVariant<Dune::ALUGrid<dimGrid, dimWorld, Dune::cube, Dune::conforming, MpiCommImp>>
   {
@@ -102,8 +100,6 @@ class CubeGridProviderFactory
   {
     static constexpr int id = 1;
   };
-
-#endif // HAVE_DUNE_ALUGRID
 
 public:
   static constexpr bool available = true;
