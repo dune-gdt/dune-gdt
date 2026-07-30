@@ -771,6 +771,8 @@ GTEST_TEST(Configuration, log_on_exit_writes_the_configuration)
     Configuration config;
     config.set_logfile(logfile);
     config.set_log_on_exit(true);
+    // set_log_on_exit(true) creates the logfile's directory right away, before anything is written.
+    EXPECT_TRUE(boost::filesystem::is_directory("elsewhere"));
     // Switching it on again does not create the directory a second time.
     config.set_log_on_exit(true);
     config["key"] = "value";
@@ -793,15 +795,13 @@ GTEST_TEST(Configuration, set_logfile_moves_the_target_while_logging_is_on)
   {
     Configuration config;
     config.set_log_on_exit(true);
-    // Both calls below take the log_on_exit_ branch of set_logfile(), which is meant to create the directory of the
-    // new target right away. There is deliberately no assertion on that directory: set_logfile() hands
-    // directory_only(logfile_) to test_create_directory(), which strips a component off its argument a second time
-    // (see filesystem.cc), so for a target one level deep such as "first/dxtc_parameter.log" the call creates
-    // nothing at all. That double strip predates the missing assignment fixed here and is not what this test is
-    // about -- it stays invisible because make_ofstream() creates the directory properly when the report is written.
+    // Both calls below take the log_on_exit_ branch of set_logfile(), which creates the directory of the new target
+    // right away, via create_directory_of(logfile_).
     config.set_logfile("first/dxtc_parameter.log");
+    EXPECT_TRUE(boost::filesystem::is_directory("first"));
     // Only the last target wins.
     config.set_logfile("second/dxtc_parameter.log");
+    EXPECT_TRUE(boost::filesystem::is_directory("second"));
     config["key"] = "value";
   }
   EXPECT_TRUE(boost::filesystem::is_regular_file("second/dxtc_parameter.log"));

@@ -149,7 +149,7 @@ void Timings::reset()
 void Timings::set_outputdir(std::string dir)
 {
   output_dir_ = std::move(dir);
-  test_create_directory(output_dir_);
+  create_directory(output_dir_);
 }
 
 void Timings::output_per_rank(std::string csv_base) const

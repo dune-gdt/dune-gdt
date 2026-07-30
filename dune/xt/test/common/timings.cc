@@ -16,6 +16,8 @@
 #include <dune/xt/common/ranges.hh>
 #include <dune/xt/common/timings.hh>
 
+#include <dune/xt/test/common/scoped_test_dir.hh>
+
 using namespace Dune::XT::Common;
 const size_t wait_ms = 142;
 
@@ -48,6 +50,23 @@ GTEST_TEST(ProfilerTest, ScopedTiming)
   for ([[maybe_unused]] auto i : dvalue_range)
     scoped_busywait("ProfilerTest.ScopedTiming", wait_ms);
   EXPECT_GE(DXTC_TIMINGS.walltime("ProfilerTest.ScopedTiming"), long(dvalue_range.size() * wait_ms));
+}
+
+GTEST_TEST(ProfilerTest, SetOutputdirCreatesTheDirectory)
+{
+  using Dune::XT::Common::Test::CurrentPathGuard;
+  using Dune::XT::Common::Test::ScopedTestDir;
+
+  const ScopedTestDir dir("test_timings_");
+  const CurrentPathGuard cwd(dir.path());
+  const auto nested = std::string("nested/output/dir");
+  ASSERT_FALSE(boost::filesystem::exists(nested));
+
+  DXTC_TIMINGS.set_outputdir(nested);
+  EXPECT_TRUE(boost::filesystem::is_directory(nested));
+
+  // Restore the default so subsequent tests in this binary are unaffected.
+  DXTC_TIMINGS.set_outputdir("");
 }
 
 GTEST_TEST(ProfilerTest, OutputConstness)

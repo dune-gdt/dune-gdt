@@ -11,6 +11,8 @@
 
 #include <dune/xt/test/main.hxx>
 
+#include <boost/filesystem.hpp>
+
 #include <dune/xt/grid/grids.hh>
 #include <dune/geometry/quadraturerules.hh>
 #include <dune/xt/grid/gridprovider/cube.hh>
@@ -73,6 +75,13 @@ TEST_F(VisualizeGenericGridFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, vis
 
   if (r == 1)
     visualize_gradient(function, leaf_view, "gradient");
+
+  // A path nested below a directory that does not exist yet must have that directory created for it.
+  const std::string nested_dir = "nested_visualization_output_dir";
+  ASSERT_FALSE(boost::filesystem::is_directory(nested_dir));
+  visualize(function, leaf_view, nested_dir + "/default");
+  EXPECT_TRUE(boost::filesystem::is_directory(nested_dir));
+  boost::filesystem::remove_all(nested_dir);
 }
 
 {% endfor  %}

@@ -64,24 +64,40 @@ TEST_F(FilesystemTest, filename_only)
 }
 
 
-TEST_F(FilesystemTest, test_create_directory_strips_the_filename)
+TEST_F(FilesystemTest, create_directory_of_strips_the_filename)
 {
   const auto nested = dir.file("a/b");
   ASSERT_FALSE(boost::filesystem::exists(nested));
 
-  test_create_directory(nested + "/some_file.txt");
+  create_directory_of(nested + "/some_file.txt");
   EXPECT_TRUE(boost::filesystem::is_directory(nested));
   // The filename must not have been created as a directory of its own.
   EXPECT_FALSE(boost::filesystem::exists(nested + "/some_file.txt"));
 
   // Calling it again on an existing directory is fine ...
-  EXPECT_NO_THROW(test_create_directory(nested + "/some_file.txt"));
+  EXPECT_NO_THROW(create_directory_of(nested + "/some_file.txt"));
   // ... and a path without any directory component is a no-op. This one has to stay a bare filename (that is the
   // case under test), so it is made unique to keep it from colliding with anything else in the working directory.
   const auto bare_filename = Dune::XT::Common::Test::get_unique_test_name() + ".txt";
   ASSERT_FALSE(boost::filesystem::exists(bare_filename));
-  EXPECT_NO_THROW(test_create_directory(bare_filename));
+  EXPECT_NO_THROW(create_directory_of(bare_filename));
   EXPECT_FALSE(boost::filesystem::exists(bare_filename));
+}
+
+
+TEST_F(FilesystemTest, create_directory_creates_the_path_itself)
+{
+  const auto nested = dir.file("a/b");
+  ASSERT_FALSE(boost::filesystem::exists(nested));
+
+  // Unlike create_directory_of(), no component is stripped: the given path is the directory to create.
+  create_directory(nested);
+  EXPECT_TRUE(boost::filesystem::is_directory(nested));
+
+  // Calling it again on an existing directory is fine ...
+  EXPECT_NO_THROW(create_directory(nested));
+  // ... and an empty path is a no-op.
+  EXPECT_NO_THROW(create_directory(""));
 }
 
 
