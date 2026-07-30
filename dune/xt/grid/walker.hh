@@ -585,7 +585,7 @@ public:
    * \}
    */
 
-  void walk([[maybe_unused]] const bool use_tbb = false, const bool clear_functors = true)
+  void walk(const bool use_tbb = false, const bool clear_functors = true)
   {
     if (use_tbb) {
       const auto num_partitions =
