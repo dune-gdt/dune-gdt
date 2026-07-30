@@ -24,11 +24,9 @@
 
 #include "config.h"
 
-#if HAVE_EIGEN
-#  include <dune/xt/common/disable_warnings.hh>
-#  include <Eigen/Core>
-#  include <dune/xt/common/reenable_warnings.hh>
-#endif
+#include <dune/xt/common/disable_warnings.hh>
+#include <Eigen/Core>
+#include <dune/xt/common/reenable_warnings.hh>
 
 #include <dune/common/typetraits.hh>
 #include <dune/common/ftraits.hh>
@@ -47,8 +45,6 @@ class EigenDenseMatrix;
 
 template <class ScalarType>
 class EigenRowMajorSparseMatrix;
-
-#if HAVE_EIGEN
 
 
 /**
@@ -296,10 +292,10 @@ public:
   using InterfaceType::as_imp;
 
 private:
-#  ifndef NDEBUG
+#ifndef NDEBUG
   //! disambiguation necessary since it exists in multiple bases
   using InterfaceType::crtp_mutex_;
-#  endif
+#endif
 
   friend class VectorInterface<Traits, ScalarType>;
   friend class EigenDenseMatrix<ScalarType>;
@@ -309,16 +305,6 @@ protected:
   std::shared_ptr<BackendType> backend_;
   std::unique_ptr<MutexesType> mutexes_;
 }; // class EigenBaseVector
-
-#else // HAVE_EIGEN
-
-template <class Traits, class ScalarImp>
-class EigenBaseVector
-{
-  static_assert(Dune::AlwaysFalse<ScalarImp>::value, "You are missing Eigen!");
-};
-
-#endif // HAVE_EIGEN
 
 } // namespace Dune::XT::LA
 

@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#if HAVE_TBB && __has_include(<tbb/tbb_exception.h>)
+#if __has_include(<tbb/tbb_exception.h>)
 #  include <tbb/tbb_exception.h>
 #endif
 

@@ -15,9 +15,7 @@
 #ifndef DUNE_XT_COMMON_PARALLEL_THREADSTORAGE_HH
 #define DUNE_XT_COMMON_PARALLEL_THREADSTORAGE_HH
 
-#if HAVE_TBB
-#  include <tbb/enumerable_thread_specific.h>
-#endif
+#include <tbb/enumerable_thread_specific.h>
 
 #include <algorithm>
 #include <list>
@@ -38,8 +36,6 @@
 namespace Dune::XT::Common {
 namespace internal {
 
-
-#if HAVE_TBB
 
 template <class ValueImp>
 class EnumerableThreadSpecificWrapper
@@ -100,74 +96,6 @@ public:
 private:
   mutable BackendType values_;
 }; // class EnumerableThreadSpecificWrapper<ValueImp>
-
-#else // HAVE_TBB
-
-template <class ValueImp>
-class EnumerableThreadSpecificWrapper
-{
-  using BackendType = std::unique_ptr<std::remove_const_t<ValueImp>>;
-
-public:
-  using ValueType = ValueImp;
-  using ConstValueType = std::add_const_t<ValueType>;
-  using iterator = ValueType*;
-  using const_iterator = const ValueType*;
-
-  //! Initialization by copy construction of ValueType
-  explicit EnumerableThreadSpecificWrapper(ConstValueType& value)
-    : values_(std::make_unique<std::remove_const_t<ValueType>>(value))
-  {
-  }
-
-  //! Initialization by in-place construction ValueType with \param ctor_args
-  template <class... InitTypes, typename = require_not_self_t<EnumerableThreadSpecificWrapper, InitTypes...>>
-  explicit EnumerableThreadSpecificWrapper(InitTypes&&... ctor_args)
-    : values_(std::make_unique<std::remove_const_t<ValueType>>(std::forward<InitTypes>(ctor_args)...))
-  {
-  }
-
-  ValueType& local()
-  {
-    return *values_;
-  }
-
-  const ValueType& local() const
-  {
-    return *values_;
-  }
-
-  iterator begin()
-  {
-    return values_.get();
-  }
-
-  iterator end()
-  {
-    return values_.get() + 1;
-  }
-
-  const_iterator begin() const
-  {
-    return values_.get();
-  }
-
-  const_iterator end() const
-  {
-    return values_.get() + 1;
-  }
-
-  template <class BinaryOperation>
-  ValueType combine(BinaryOperation /*op*/) const
-  {
-    return *values_;
-  }
-
-private:
-  BackendType values_;
-}; // class EnumerableThreadSpecificWrapper<ValueImp>
-
-#endif // HAVE_TBB
 
 
 } // namespace internal

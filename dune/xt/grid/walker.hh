@@ -20,17 +20,13 @@
 #include <type_traits>
 #include <vector>
 
-#if HAVE_TBB
-#  include <tbb/blocked_range.h>
-#  include <tbb/parallel_for.h>
-#endif
+#include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
 
 #include <dune/common/version.hh>
 
 #include <dune/grid/common/rangegenerators.hh>
-#if HAVE_TBB
-#  include <dune/xt/grid/parallel/partitioning/ranged.hh>
-#endif
+#include <dune/xt/grid/parallel/partitioning/ranged.hh>
 
 #include <dune/xt/common/memory.hh>
 #include <dune/xt/common/parallel/threadmanager.hh>
@@ -591,7 +587,6 @@ public:
 
   void walk([[maybe_unused]] const bool use_tbb = false, const bool clear_functors = true)
   {
-#if HAVE_TBB
     if (use_tbb) {
       const auto num_partitions =
           DXTC_CONFIG_GET("threading.partition_factor", 1u) * XT::Common::threadManager().current_threads();
@@ -599,7 +594,6 @@ public:
       this->walk(partitioning, clear_functors);
       return;
     }
-#endif
     // prepare functors
     prepare();
 
@@ -631,7 +625,6 @@ public:
   }
 
 
-#if HAVE_TBB
 protected:
   template <class PartioningType, class WalkerType>
   struct Body
@@ -683,27 +676,6 @@ public:
     if (clear_functors)
       clear();
   } // ... tbb_walk(...)
-#else
-public:
-  template <class PartioningType>
-  void walk(PartioningType& partitioning)
-  {
-    // prepare functors
-    prepare();
-
-    // only do something, if we have to
-    if ((element_functor_wrappers_->size() + intersection_functor_wrappers_->size()
-         + element_and_intersection_functor_wrappers_->size())
-        > 0) {
-      // no actual SMP walk, use range as is
-      walk_range(partitioning.everything());
-    }
-
-    // finalize functors
-    finalize();
-    clear();
-  } // ... tbb_walk(...)
-#endif // HAVE_TBB
 
   template <class ElementRange>
   void walk_range(const ElementRange& element_range)

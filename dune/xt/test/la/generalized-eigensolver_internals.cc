@@ -169,7 +169,6 @@ GTEST_TEST(GeneralizedEigenSolverInternals, field_matrix)
   check_backend_failure_is_reported<MatrixType>();
 }
 
-#if HAVE_EIGEN
 GTEST_TEST(GeneralizedEigenSolverInternals, eigen_dense_matrix)
 {
   using MatrixType = EigenDenseMatrix<double>; // <- column-major and contiguous
@@ -178,4 +177,3 @@ GTEST_TEST(GeneralizedEigenSolverInternals, eigen_dense_matrix)
   check_backend_failure_is_reported<MatrixType>();
   check_varying_problem_sizes<MatrixType>();
 }
-#endif // HAVE_EIGEN
