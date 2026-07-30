@@ -20,6 +20,8 @@
 #include <dune/xt/functions/generic/grid-function.hh>
 #include <dune/xt/functions/visualization.hh>
 
+#include <dune/xt/test/common/scoped_test_dir.hh>
+
 using namespace Dune::XT;
 using namespace Dune::XT::Functions;
 
@@ -76,12 +78,17 @@ TEST_F(VisualizeGenericGridFunction_from_{{GRIDNAME}}_to_{{r}}_times_{{rC}}, vis
   if (r == 1)
     visualize_gradient(function, leaf_view, "gradient");
 
-  // A path nested below a directory that does not exist yet must have that directory created for it.
-  const std::string nested_dir = "nested_visualization_output_dir";
-  ASSERT_FALSE(boost::filesystem::is_directory(nested_dir));
-  visualize(function, leaf_view, nested_dir + "/default");
-  EXPECT_TRUE(boost::filesystem::is_directory(nested_dir));
-  boost::filesystem::remove_all(nested_dir);
+  // A path nested below a directory that does not exist yet must have that directory created for it. This runs
+  // inside its own directory (removed again on scope exit, even if visualize() throws), so a failure here cannot
+  // leave anything behind that would confuse another instantiation of this template.
+  {
+    const Dune::XT::Common::Test::ScopedTestDir dir("test_visualization_");
+    const Dune::XT::Common::Test::CurrentPathGuard cwd(dir.path());
+    const std::string nested_dir = "nested_visualization_output_dir";
+    ASSERT_FALSE(boost::filesystem::is_directory(nested_dir));
+    visualize(function, leaf_view, nested_dir + "/default");
+    EXPECT_TRUE(boost::filesystem::is_directory(nested_dir));
+  }
 }
 
 {% endfor  %}
