@@ -126,6 +126,7 @@ void Configuration::set_logfile(const std::string& logfile)
 {
   if (logfile.empty())
     DUNE_THROW(Exceptions::wrong_input_given, "logfile must not be empty!");
+  logfile_ = logfile;
   if (log_on_exit_)
     test_create_directory(directory_only(logfile_));
 }

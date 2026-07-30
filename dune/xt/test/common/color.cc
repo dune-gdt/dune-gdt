@@ -65,14 +65,12 @@ GTEST_TEST(Color, color_by_number)
   EXPECT_EQ("\033[38;5;42m", color(size_t(42)));
   EXPECT_EQ("\033[38;5;255m", color(size_t(255)));
   EXPECT_EQ("\033[38;5;256m", color(size_t(256)));
-  // BUG: backcolor(i) is documented as "chooses a color ... for a background color", but it emits the very same
-  // foreground sequence as color(i) -- a background color would have to use the 48;5 prefix instead of 38;5. The
-  // assertions below pin down what the function actually does today rather than what it says it does, because
-  // changing it is a behavioural change to production code and thus out of scope for this test-only change. It has
-  // no callers anywhere in the repository, so nothing depends on either reading.
-  EXPECT_EQ(color(size_t(0)), backcolor(size_t(0)));
-  EXPECT_EQ(color(size_t(42)), backcolor(size_t(42)));
-  EXPECT_EQ(std::string::npos, backcolor(size_t(42)).find("48;5"));
+  // ... and backcolor(i) is its background counterpart, which differs only in the 48;5 prefix.
+  EXPECT_EQ("\033[48;5;0m", backcolor(size_t(0)));
+  EXPECT_EQ("\033[48;5;42m", backcolor(size_t(42)));
+  EXPECT_EQ("\033[48;5;255m", backcolor(size_t(255)));
+  EXPECT_EQ("\033[48;5;256m", backcolor(size_t(256)));
+  EXPECT_NE(color(size_t(42)), backcolor(size_t(42)));
 }
 
 GTEST_TEST(Color, color_map)

@@ -759,26 +759,54 @@ GTEST_TEST(Configuration, set_logfile_rejects_an_empty_name)
 
 GTEST_TEST(Configuration, log_on_exit_writes_the_configuration)
 {
-  // set_logfile() does not move the target (see below), so this test has to assert on the *default*, relative
-  // location. Working from inside a directory of our own keeps that off the shared build directory, where a stale
-  // copy or a concurrently running test binary could otherwise interfere.
+  // The logfile paths below are relative, so working from inside a directory of our own keeps the report off the
+  // shared build directory, where a stale copy or a concurrently running test binary could otherwise interfere.
   const ScopedTestDir dir("test_configuration_");
   const CurrentPathGuard cwd(dir.path());
   const auto default_logfile = std::string("data/log/dxtc_parameter.log");
+  const auto logfile = std::string("elsewhere/dxtc_parameter.log");
   ASSERT_FALSE(boost::filesystem::exists(default_logfile));
 
   {
     Configuration config;
-    config.set_logfile("elsewhere/dxtc_parameter.log");
+    config.set_logfile(logfile);
     config.set_log_on_exit(true);
     // Switching it on again does not create the directory a second time.
     config.set_log_on_exit(true);
     config["key"] = "value";
   }
-  // set_logfile() does not actually change where the Configuration logs to (it only validates its argument and
-  // makes sure the directory of the current logfile exists), so the report ends up at the default location.
-  EXPECT_TRUE(boost::filesystem::is_regular_file(default_logfile));
-  EXPECT_FALSE(boost::filesystem::exists("elsewhere/dxtc_parameter.log"));
+  // The report lands at the logfile set_logfile() pointed the Configuration at, not at the default location.
+  ASSERT_TRUE(boost::filesystem::is_regular_file(logfile));
+  EXPECT_FALSE(boost::filesystem::exists(default_logfile));
+  auto in = make_ifstream(logfile);
+  std::string report;
+  for (std::string line; std::getline(*in, line);)
+    report += line + "\n";
+  EXPECT_NE(std::string::npos, report.find("key = value")) << report;
+}
+
+
+GTEST_TEST(Configuration, set_logfile_moves_the_target_while_logging_is_on)
+{
+  const ScopedTestDir dir("test_configuration_");
+  const CurrentPathGuard cwd(dir.path());
+  {
+    Configuration config;
+    config.set_log_on_exit(true);
+    // Both calls below take the log_on_exit_ branch of set_logfile(), which is meant to create the directory of the
+    // new target right away. There is deliberately no assertion on that directory: set_logfile() hands
+    // directory_only(logfile_) to test_create_directory(), which strips a component off its argument a second time
+    // (see filesystem.cc), so for a target one level deep such as "first/dxtc_parameter.log" the call creates
+    // nothing at all. That double strip predates the missing assignment fixed here and is not what this test is
+    // about -- it stays invisible because make_ofstream() creates the directory properly when the report is written.
+    config.set_logfile("first/dxtc_parameter.log");
+    // Only the last target wins.
+    config.set_logfile("second/dxtc_parameter.log");
+    config["key"] = "value";
+  }
+  EXPECT_TRUE(boost::filesystem::is_regular_file("second/dxtc_parameter.log"));
+  EXPECT_FALSE(boost::filesystem::exists("first/dxtc_parameter.log"));
+  EXPECT_FALSE(boost::filesystem::exists("data/log/dxtc_parameter.log"));
 }
 
 
