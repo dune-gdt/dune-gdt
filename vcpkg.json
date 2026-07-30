@@ -38,6 +38,7 @@
     "dune-localfunctions",
     "dune-testtools",
     "dune-alugrid",
+    "dune-grid-glue",
     "pybind11",
     "boost-core",
     "boost-assign",

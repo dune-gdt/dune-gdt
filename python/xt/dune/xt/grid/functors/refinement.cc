@@ -87,19 +87,8 @@ public:
         pybind11::keep_alive<0, 1>());
   } // ... bind_leaf_factory(...)
 
-  static void bind_coupling_factory(pybind11::module& m,
-                                    const std::string& class_id = "maximum_element_volume_refine_functor")
-  {
-    using namespace pybind11::literals;
-    m.def(
-        Common::to_camel_case(class_id).c_str(),
-        [](CouplingGridProvider<G>& coupling_grid_provider, const double& volume) {
-          return std::make_unique<type>(coupling_grid_provider.grid(), volume, 1.);
-        },
-        "coupling_grid_provider"_a,
-        "volume"_a,
-        pybind11::keep_alive<0, 1>());
-  }
+  // No bind_coupling_factory here: the functor needs a mutable reference to the grid to mark elements for
+  // refinement, which a CouplingGridProvider cannot supply (it only exposes the coupling view).
 }; // class MaximumEntityVolumeRefineFunctor
 
 
@@ -123,7 +112,6 @@ struct MaximumEntityVolumeRefineFunctor_for_all_grids
       using GridGlueType = Dune::XT::Grid::DD::Glued<G, G, Dune::XT::Grid::Layers::leaf>;
       using CGV = Dune::XT::Grid::CouplingGridView<GridGlueType>;
       Dune::XT::Grid::bindings::MaximumEntityVolumeRefineFunctor<CGV>::bind(m, grid_name<G>::value(), "coupling");
-      Dune::XT::Grid::bindings::MaximumEntityVolumeRefineFunctor<CGV>::bind_coupling_factory(m);
     }
 #endif
     MaximumEntityVolumeRefineFunctor_for_all_grids<Dune::XT::Common::tuple_tail_t<GridTypes>>::bind(m);

@@ -18,4 +18,4 @@ Module: dune-gdt
 Version: SET.BY.CMAKE
 Maintainer: dune-gdt@dune-community.ovh
 Depends: dune-common (>= 2.8) dune-geometry (>= 2.8) dune-grid (>= 2.8) dune-istl (>= 2.8) dune-localfunctions (>= 2.8) dune-testtools (>= 2.8) dune-alugrid (>= 2.8)
-Suggests: dune-uggrid (>= 2.8)
+Suggests: dune-uggrid (>= 2.8) dune-grid-glue (>= 2.10)
