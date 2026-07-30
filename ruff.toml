@@ -1,0 +1,6 @@
+# Ruff 0.16 enables a much larger set of rules by default (413, up from 59).
+# Pin the previous default selection explicitly so upgrading ruff doesn't
+# silently expand what pre-commit enforces across the repo.
+# See https://astral.sh/blog/ruff-v0.16.0
+[lint]
+select = ["E4", "E7", "E9", "F"]
