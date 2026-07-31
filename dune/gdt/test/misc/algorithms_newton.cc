@@ -104,6 +104,9 @@ public:
   } // ... apply(...)
 
 protected:
+  // this identifier is operator-private: assert_jacobian_opts() only checks it for membership in this list. It names
+  // the shape of the contribution we add below and says nothing about the sparsity pattern empty_jacobian_op()
+  // allocates (which, for a finite volume space, also covers the neighbour couplings).
   std::vector<XT::Common::Configuration> all_jacobian_options() const override final
   {
     return {{{"type", "diagonal"}}};
@@ -161,6 +164,35 @@ GTEST_TEST(algorithms_newton, default_options_have_documented_keys)
   EXPECT_DOUBLE_EQ(1e-7, opts.get<double>("precision"));
   EXPECT_EQ(100u, opts.get<size_t>("max_iter"));
   EXPECT_EQ(1000u, opts.get<size_t>("max_dampening_iter"));
+}
+
+
+// newton_solve() does not differentiate the operator it is given, but the residual operator lhs - rhs. That composed
+// operator therefore has to report jacobian options (newton_solve takes the first one, unconditionally) and has to
+// delegate the actual assembly to its summands.
+GTEST_TEST(algorithms_newton, the_residual_operator_delegates_its_jacobian)
+{
+  auto grid = make_grid();
+  auto grid_view = grid.leaf_view();
+  const auto space = make_finite_volume_space(grid_view);
+  const SquareOperator op(space);
+
+  const size_t n = space.mapper().size();
+  const V rhs(n, 2.);
+  const auto residual_op = op - rhs;
+
+  const auto types = residual_op.jacobian_options();
+  ASSERT_FALSE(types.empty()); // <- newton_solve calls .at(0) on this
+  EXPECT_EQ("lincomb", types.at(0));
+
+  const V u(n, 3.);
+  auto jacobian_op = residual_op.jacobian(u, types.at(0));
+  jacobian_op.assemble();
+
+  EXPECT_EQ(1u, op.num_jacobians()); // <- the composed operator delegated to us
+  // the constant summand contributes a zero jacobian, so this is exactly our diag(2 u)
+  for (size_t ii = 0; ii < n; ++ii)
+    EXPECT_DOUBLE_EQ(6., jacobian_op.matrix().get_entry(ii, ii));
 }
 
 
