@@ -100,7 +100,7 @@ Configuration::~Configuration()
   // std::terminate). Writing the configuration to the logfile on exit is best-effort.
   try {
     if (log_on_exit_ && !empty()) {
-      test_create_directory(directory_only(logfile_));
+      create_directory_of(logfile_);
       report(*make_ofstream(logfile_));
     }
   } catch (const std::exception& e) {
@@ -118,7 +118,7 @@ void Configuration::set_warn_on_default_access(const bool value)
 void Configuration::set_log_on_exit(const bool value)
 {
   if (!log_on_exit_ && value)
-    test_create_directory(directory_only(logfile_));
+    create_directory_of(logfile_);
   log_on_exit_ = value;
 }
 
@@ -128,7 +128,7 @@ void Configuration::set_logfile(const std::string& logfile)
     DUNE_THROW(Exceptions::wrong_input_given, "logfile must not be empty!");
   logfile_ = logfile;
   if (log_on_exit_)
-    test_create_directory(directory_only(logfile_));
+    create_directory_of(logfile_);
 }
 
 // method definitions for Configuration

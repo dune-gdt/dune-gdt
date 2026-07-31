@@ -29,12 +29,15 @@ std::string filename_only(const std::string& _path)
   return boost::filesystem::path(_path).filename().string();
 } // filename_only
 
-//! may include filename, will be stripped
-void test_create_directory(const std::string& _path)
+void create_directory(const std::string& dir_path)
 {
-  std::string pathonly = directory_only(_path);
-  if (!pathonly.empty())
-    boost::filesystem::create_directories(pathonly);
+  if (!dir_path.empty())
+    boost::filesystem::create_directories(dir_path);
+}
+
+void create_directory_of(const std::string& file_path)
+{
+  create_directory(directory_only(file_path));
 }
 
 //! pure c++ emulation of system's touch binary
@@ -46,14 +49,14 @@ bool touch(const std::string& _path)
 std::unique_ptr<boost::filesystem::ofstream> make_ofstream(const boost::filesystem::path& path,
                                                            const std::ios_base::openmode mode)
 {
-  test_create_directory(path.string());
+  create_directory_of(path.string());
   return std::make_unique<boost::filesystem::ofstream>(path, mode);
 }
 
 std::unique_ptr<boost::filesystem::ifstream> make_ifstream(const boost::filesystem::path& path,
                                                            const std::ios_base::openmode mode)
 {
-  test_create_directory(path.string());
+  create_directory_of(path.string());
   return std::make_unique<boost::filesystem::ifstream>(path, mode);
 }
 
