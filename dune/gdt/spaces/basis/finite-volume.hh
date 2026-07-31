@@ -167,8 +167,10 @@ private:
         result.resize(1);
       for (size_t jj = 0; jj < d; ++jj)
         if (alpha[jj] == 0) {
+          // result[0][ii][jj], not result[0][jj]: the derivative range is an r x d matrix with components as rows
+          // and directions as columns, so indexing rows by the direction jj read out of bounds for jj >= r
           for (size_t ii = 0; ii < r; ++ii)
-            result[0][jj] = 1;
+            result[0][ii][jj] = 1;
         } else {
           DUNE_THROW(Exceptions::basis_error, "arbitrary derivatives are not supported!\n\n" << "alpha = " << alpha);
         }

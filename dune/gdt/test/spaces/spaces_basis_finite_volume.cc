@@ -96,11 +96,10 @@ GTEST_TEST(spaces_basis_finite_volume, max_size_is_one)
 }
 
 
-// derivatives() rejects any actual (non-zero) derivative order. alpha = (0, 1) walks the axis loop through both of
-// its branches: the zeroth-order assignment for the first axis, then the documented rejection for the second. (The
-// all-zero alpha is deliberately not exercised: the zeroth-order branch indexes result[0][jj] for every axis jj,
-// which for the 1-row derivative range of a scalar basis is out of bounds from the second axis on -- the derivative
-// semantics of this never-used method need a separate look.)
+// derivatives() answers the all-zero multi-index (regression test: the zeroth-order branch used to index the rows of
+// the r x d derivative range by the direction jj, out of bounds from the second axis on for a scalar basis) and
+// rejects any actual (non-zero) derivative order. alpha = (0, 1) walks the axis loop through both of its branches:
+// the zeroth-order assignment for the first axis, then the documented rejection for the second.
 GTEST_TEST(spaces_basis_finite_volume, derivatives_reject_nonzero_orders)
 {
   auto grid = XT::Grid::make_cube_grid<G>(0., 1., 3);
@@ -112,6 +111,10 @@ GTEST_TEST(spaces_basis_finite_volume, derivatives_reject_nonzero_orders)
   using FunctionSet =
       XT::Functions::ElementFunctionSetInterface<XT::Grid::extract_entity_t<decltype(grid_view)>, 1, 1, R>;
   std::vector<typename FunctionSet::DerivativeRangeType> result(1);
+  basis->derivatives({{0, 0}}, FieldVector<D, d>(0.), result);
+  ASSERT_GE(result.size(), 1u);
+  for (size_t jj = 0; jj < d; ++jj)
+    EXPECT_DOUBLE_EQ(1., result[0][0][jj]);
   EXPECT_THROW(basis->derivatives({{0, 1}}, FieldVector<D, d>(0.), result), Exceptions::basis_error);
 }
 
