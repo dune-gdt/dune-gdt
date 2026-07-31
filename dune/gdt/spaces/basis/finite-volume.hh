@@ -184,8 +184,11 @@ private:
       if (result.size() < 1)
         result.resize(1);
       RangeSelector::ensure_size(result[0]);
+      // result[0][ii], not result[ii]: this fills the r components of the single basis function's
+      // value, while result[ii] indexed the vector of basis functions (of size 1) out of bounds for
+      // every vector-valued (r > 1) space
       for (size_t ii = 0; ii < r; ++ii)
-        result[ii] = 1;
+        result[0][ii] = 1;
     }
 
     void jacobians(const DomainType& /*point_in_reference_element*/,
