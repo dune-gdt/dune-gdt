@@ -153,8 +153,6 @@ struct SaddlePointTestData
   Vector expected_p_;
 };
 
-#if HAVE_EIGEN
-
 GTEST_TEST(SaddlePointSolver, test_direct_eigen)
 {
   using Matrix = XT::LA::EigenRowMajorSparseMatrix<double>;
@@ -178,5 +176,3 @@ GTEST_TEST(SaddlePointSolver, test_cg_direct_schurcomplement_eigen)
   DXTC_EXPECT_FLOAT_EQ(0., (u - data.expected_u_).l2_norm(), 1e-12, 1e-12);
   DXTC_EXPECT_FLOAT_EQ(0., (p - data.expected_p_).l2_norm(), 1e-12, 1e-12);
 }
-
-#endif // HAVE_EIGEN

@@ -11,9 +11,7 @@
 
 #include <config.h>
 
-#if HAVE_EIGEN
-
-#  include "eigen.hh"
+#include "eigen.hh"
 
 
 template class Dune::XT::LA::Solver<Dune::XT::LA::EigenDenseMatrix<double>>;
@@ -36,6 +34,3 @@ template class Dune::XT::LA::Solver<Dune::XT::LA::EigenRowMajorSparseMatrix<doub
 //    const Dune::XT::LA::EigenDenseVector<double>&,
 //    Dune::XT::LA::EigenDenseVector<double>&,
 //    const Dune::XT::Common::Configuration&) const;
-
-
-#endif // HAVE_EIGEN

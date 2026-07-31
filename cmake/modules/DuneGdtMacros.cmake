@@ -55,15 +55,8 @@ foreach(
   endif()
 endforeach()
 
-find_package(Eigen3 3.4.0)
-
-if(EIGEN3_FOUND)
-  dune_register_package_flags(INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR} COMPILE_DEFINITIONS "ENABLE_EIGEN=1")
-  set(HAVE_EIGEN 1)
-else(EIGEN3_FOUND)
-  dune_register_package_flags(COMPILE_DEFINITIONS "ENABLE_EIGEN=0")
-  set(HAVE_EIGEN 0)
-endif(EIGEN3_FOUND)
+find_package(Eigen3 3.4.0 REQUIRED)
+dune_register_package_flags(INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 
 find_package(MKL)
 

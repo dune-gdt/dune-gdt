@@ -24,11 +24,9 @@ using COMMON_SPARSE_MATRIX_CSR = Dune::XT::LA::CommonSparseMatrixCsr<double>;
 using COMMON_SPARSE_MATRIX_CSC = Dune::XT::LA::CommonSparseMatrixCsc<double>;
 // kept for backwards compatibility, identical to COMMON_SPARSE_MATRIX_CSR (csr is the default storage layout)
 using COMMON_SPARSE_MATRIX = Dune::XT::LA::CommonSparseMatrix<double>;
-#if HAVE_EIGEN
 using EIGEN_DENSE_VECTOR = Dune::XT::LA::EigenDenseVector<double>;
 using EIGEN_DENSE_MATRIX = Dune::XT::LA::EigenDenseMatrix<double>;
 using EIGEN_SPARSE_MATRIX = Dune::XT::LA::EigenRowMajorSparseMatrix<double>;
-#endif
 using ISTL_DENSE_VECTOR = Dune::XT::LA::IstlDenseVector<double>;
 using ISTL_SPARSE_MATRIX = Dune::XT::LA::IstlRowMajorSparseMatrix<double>;
 
@@ -38,11 +36,9 @@ using COMMON_DENSE_VECTOR_COMPLEX = Dune::XT::LA::CommonDenseVector<std::complex
 using COMMON_DENSE_MATRIX_COMPLEX = Dune::XT::LA::CommonDenseMatrix<std::complex<double>>;
 using COMMON_SPARSE_MATRIX_CSR_COMPLEX = Dune::XT::LA::CommonSparseMatrixCsr<std::complex<double>>;
 using COMMON_SPARSE_MATRIX_CSC_COMPLEX = Dune::XT::LA::CommonSparseMatrixCsc<std::complex<double>>;
-#if HAVE_EIGEN
 using EIGEN_DENSE_VECTOR_COMPLEX = Dune::XT::LA::EigenDenseVector<std::complex<double>>;
 using EIGEN_DENSE_MATRIX_COMPLEX = Dune::XT::LA::EigenDenseMatrix<std::complex<double>>;
 using EIGEN_SPARSE_MATRIX_COMPLEX = Dune::XT::LA::EigenRowMajorSparseMatrix<std::complex<double>>;
-#endif
 using ISTL_DENSE_VECTOR_COMPLEX = Dune::XT::LA::IstlDenseVector<std::complex<double>>;
 using ISTL_SPARSE_MATRIX_COMPLEX = Dune::XT::LA::IstlRowMajorSparseMatrix<std::complex<double>>;
 
@@ -216,8 +212,6 @@ struct container_name<CommonSparseMatrix<std::complex<double>, Dune::XT::Common:
   }
 };
 
-#if HAVE_EIGEN
-
 template <>
 struct container_name<EigenDenseVector<double>>
 {
@@ -271,8 +265,6 @@ struct container_name<EigenRowMajorSparseMatrix<std::complex<double>>>
     return "eigen_complex_sparse_matrix";
   }
 };
-
-#endif // HAVE_EIGEN
 
 template <>
 struct container_name<IstlDenseVector<double>>

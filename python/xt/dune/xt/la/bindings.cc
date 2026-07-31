@@ -56,10 +56,8 @@ PYBIND11_MODULE(_la, m)
   auto istl_dense_vector_double = LA::bind_Vector<LA::IstlDenseVector<double>>(m);
   auto istl_dense_vector_complex = LA::bind_Vector<LA::IstlDenseVector<std::complex<double>>>(m);
 #endif
-#if HAVE_EIGEN
   auto eigen_dense_vector_double = LA::bind_Vector<LA::EigenDenseVector<double>>(m);
   auto eigen_dense_vector_complex = LA::bind_Vector<LA::EigenDenseVector<std::complex<double>>>(m);
-#endif
 
   LA::bind_SparsityPatternDefault(m);
 
@@ -79,12 +77,10 @@ PYBIND11_MODULE(_la, m)
   BIND_MATRIX(LA::IstlRowMajorSparseMatrix<double>, true, istl_row_major_sparse_matrix_double);
   BIND_MATRIX(LA::IstlRowMajorSparseMatrix<std::complex<double>>, true, istl_row_major_sparse_matrix_complex);
 #endif
-#if HAVE_EIGEN
   BIND_MATRIX(LA::EigenDenseMatrix<double>, false, eigen_dense_matrix_double);
   BIND_MATRIX(LA::EigenDenseMatrix<std::complex<double>>, false, eigen_dense_matrix_complex);
   BIND_MATRIX(LA::EigenRowMajorSparseMatrix<double>, true, eigen_row_major_sparse_matrix_double);
   BIND_MATRIX(LA::EigenRowMajorSparseMatrix<std::complex<double>>, true, eigen_row_major_sparse_matrix_complex);
-#endif
 #undef BIND_MATRIX
   LA::addbind_Matrix_Vector_interaction(common_dense_matrix_double, common_dense_vector_double);
   LA::addbind_Matrix_Vector_interaction(common_dense_matrix_complex, common_dense_vector_complex);
@@ -96,12 +92,10 @@ PYBIND11_MODULE(_la, m)
   LA::addbind_Matrix_Vector_interaction(istl_row_major_sparse_matrix_double, istl_dense_vector_double);
   LA::addbind_Matrix_Vector_interaction(istl_row_major_sparse_matrix_complex, istl_dense_vector_complex);
 #endif
-#if HAVE_EIGEN
   LA::addbind_Matrix_Vector_interaction(eigen_dense_matrix_double, eigen_dense_vector_double);
   LA::addbind_Matrix_Vector_interaction(eigen_dense_matrix_complex, eigen_dense_vector_complex);
   LA::addbind_Matrix_Vector_interaction(eigen_row_major_sparse_matrix_double, eigen_dense_vector_double);
   LA::addbind_Matrix_Vector_interaction(eigen_row_major_sparse_matrix_complex, eigen_dense_vector_complex);
-#endif
 
   // The plain linear Solver (Ax = b, used throughout the FEM/operator solving pipeline) stays
   // double-only real-valued: extending it to complex fields is out of scope for WP5, which closes
@@ -111,10 +105,8 @@ PYBIND11_MODULE(_la, m)
 #if HAVE_DUNE_ISTL
   LA::bind_Solver<LA::IstlRowMajorSparseMatrix<double>>(m);
 #endif
-#if HAVE_EIGEN
   LA::bind_Solver<LA::EigenDenseMatrix<double>>(m);
   LA::bind_Solver<LA::EigenRowMajorSparseMatrix<double>>(m);
-#endif
 
   // Eigen-solver, generalized eigen-solver and matrix-inverter (WP5, #320): bound exactly for the
   // matrix/field combinations the C++ .tpl test suite already exercises (see
@@ -128,10 +120,8 @@ PYBIND11_MODULE(_la, m)
   LA::bind_MatrixInverter<LA::CommonDenseMatrix<std::complex<double>>>(m);
   LA::bind_MatrixInverter<LA::CommonSparseMatrixCsr<double>>(m);
   LA::bind_MatrixInverter<LA::CommonSparseMatrixCsr<std::complex<double>>>(m);
-#if HAVE_EIGEN
   LA::bind_EigenSolver<LA::EigenDenseMatrix<double>>(m);
   LA::bind_GeneralizedEigenSolver<LA::EigenDenseMatrix<double>>(m);
   LA::bind_MatrixInverter<LA::EigenDenseMatrix<double>>(m);
   LA::bind_MatrixInverter<LA::EigenDenseMatrix<std::complex<double>>>(m);
-#endif
 } // PYBIND11_MODULE(...)

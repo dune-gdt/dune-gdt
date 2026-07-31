@@ -27,20 +27,12 @@
 /* Define to the revision of dune-gdt */
 #define DUNE_GDT_VERSION_REVISION ${DUNE_GDT_GIT_VERSION_REVISION}
 
-#ifndef HAVE_EIGEN
-#define HAVE_EIGEN ENABLE_EIGEN
-#endif
-
 #ifndef HAVE_LAPACKE
 #cmakedefine01 HAVE_LAPACKE
 #endif
 
 #ifndef HAVE_MKL
 #cmakedefine01 HAVE_MKL
-#endif
-
-#ifndef HAVE_TBB
-#cmakedefine01 HAVE_TBB
 #endif
 
 #ifndef DXT_DISABLE_LARGE_TESTS
@@ -139,7 +131,7 @@
 
 #define TBB_PREVIEW_GLOBAL_CONTROL 1
 #include <boost/config.hpp>
-#if HAVE_TBB && defined(BOOST_CLANG)
+#if defined(BOOST_CLANG)
   // Hack to fix compilation with clang as tbb does not detect C++11 feature correctly for clang. Recent versions of TBB
   // allow to set the macro TBB_USE_GLIBCXX_VERSION to the proper version of libstdc++ to fix this issue, see
   // https://www.threadingbuildingblocks.org/docs/help/reference/appendices/known_issues/linux_os.html. For older versions
@@ -162,7 +154,7 @@
     #define __TBB_CPP11_DECLTYPE_PRESENT 1
     #define __TBB_CPP11_LAMBDAS_PRESENT 1
   #endif // TBB_INTERFACE_VERSION < 4400
-#endif // HAVE_TBB
+#endif // BOOST_CLANG
 
 // This is an unfortunate hack, see the header for an explanation.
 #include <dune/xt/common/fix-ambiguous-std-math-overloads.hh>
