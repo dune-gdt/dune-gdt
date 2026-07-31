@@ -202,8 +202,12 @@ public:
                    [&](const auto& basis, const auto& x, auto& result, const auto&) {
                      const auto restriction_data_value = restriction_data_as_function_on_child_element.evaluate(x);
                      basis.evaluate(x, child_basis_values);
+                     // result[ii], not result: assigning the DynamicVector directly fills *every* entry with
+                     // the ii-th integrand, leaving the whole rhs at the last basis function's value -- which
+                     // made this L2 projection return a constant for any space with more than one local DoF
+                     // (found by test_coarsening_restores_representable_polynomials)
                      for (size_t ii = 0; ii < basis.size(); ++ii)
-                       result = child_basis_values[ii] * restriction_data_value;
+                       result[ii] = child_basis_values[ii] * restriction_data_value;
                    })
                    .apply(element_basis_on_child_element);
       }
