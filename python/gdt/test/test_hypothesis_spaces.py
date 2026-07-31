@@ -23,6 +23,7 @@ import subprocess
 import sys
 import textwrap
 
+import numpy as np
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
@@ -307,6 +308,276 @@ def test_a_space_keeps_its_grid_alive(dim, element, impl):
         f"exit code {result.returncode} (negative means the interpreter was killed by that "
         f"signal, i.e. the space outlived its grid)\n{result.stderr}"
     )
+
+
+@given(spec=grid_specs(conforming_only=True))
+def test_skeleton_fv_space_has_one_dof_per_intersection(spec):
+    """The FiniteVolumeSkeletonSpace attaches exactly one DoF to every codim-1 entity (its
+    mapper is the FiniteVolumeSkeletonMapper over the intersection index set), and it reports
+    the fixed structural properties encoded in dune/gdt/spaces/skeleton/finite-volume.hh:
+    piecewise constant (polorder 0), discontinuous, nominally lagrangian. conforming_only:
+    on a non-conforming leaf view codim-1 entities and intersections do not coincide."""
+    from dune.gdt import FiniteVolumeSkeletonSpace
+
+    grid = spec.make_grid()
+    space = FiniteVolumeSkeletonSpace(grid)
+    assert space.num_DoFs == grid.size(1)
+    assert space.min_polorder == space.max_polorder == 0
+    assert space.continuous(0) is False
+    assert space.is_lagrangian is True
+    assert space.dimDomain == spec.dim
+    assert space.type == "finite_volume_skeleton"
+    assert repr(space) == f"Space(finite_volume_skeleton, {space.num_DoFs} DoFs)"
+
+
+@given(spec=grid_specs(conforming_only=True))
+def test_rt0_space_has_one_dof_per_facet(spec):
+    """The lowest-order Raviart-Thomas space has exactly one (normal-flux) DoF per codim-1
+    entity; together with the properties block this pins the RT mapper and the structural
+    methods of dune/gdt/spaces/hdiv/raviart-thomas.hh across all conforming grids."""
+    from dune.gdt import RaviartThomasSpace
+
+    grid = spec.make_grid()
+    space = RaviartThomasSpace(grid, order=0)
+    assert space.num_DoFs == grid.size(1)
+    assert space.min_polorder == space.max_polorder == 0
+    assert space.continuous(0) is False
+    assert space.is_lagrangian is False
+    assert space.type == "raviart_thomas"
+
+
+@_needs_vector_grid
+@given(spec=grid_specs(dims=(2, 3), max_elements_per_dim=3), data=st.data())
+def test_vector_fv_space_attaches_r_dofs_per_element(spec, data):
+    """A vector-valued FiniteVolumeSpace attaches dim_range DoFs to every element (the
+    FiniteVolumeMapper's r * rC block); building the element sparsity pattern additionally
+    walks that mapper's global_indices for every element."""
+    from dune.gdt import FiniteVolumeSpace, make_element_sparsity_pattern
+    from dune.xt.grid import Dim
+
+    r = data.draw(st.sampled_from([2, spec.dim]), label="dim_range")
+    grid = spec.make_grid()
+    try:
+        space = FiniteVolumeSpace(grid, dim_range=Dim(r))
+    except TypeError:
+        pytest.skip("this build has no vector-valued FV factory")
+    assert space.num_DoFs == r * grid.size(0)
+    assert space.min_polorder == space.max_polorder == 0
+    assert make_element_sparsity_pattern(space) is not None
+
+
+@given(spec=grid_specs(), data=st.data())
+def test_fv_interpolation_is_cell_averaging(spec, data):
+    """Interpolating into a FiniteVolumeSpace runs the FiniteVolumeGlobalBasis' interpolate
+    (an element integral divided by the volume, dune/gdt/spaces/basis/finite-volume.hh); on
+    the affine elements of a structured grid the cell average of an affine function is its
+    value at the element's centroid, which the grid exposes as centers(0)."""
+    from dune.gdt import FiniteVolumeSpace, default_interpolation
+    from dune.xt.functions import GridFunction
+    from dune.xt.test.hypothesis_strategies import polynomials
+
+    poly = data.draw(polynomials(spec.dim, max_order=1, min_order=0), label="poly")
+    grid = spec.make_grid()
+    space = FiniteVolumeSpace(grid)
+    u_h = default_interpolation(GridFunction(grid, poly.to_function()), space)
+    centers = np.array(grid.centers(0), copy=True)
+    expected = poly(centers)
+    scale = max(1.0, np.abs(expected).max())
+    assert np.allclose(np.array(u_h.dofs.vector), expected, atol=1e-12 * scale)
+
+
+@given(spec=grid_specs(), data=st.data())
+def test_fv_functions_have_zero_weak_gradient(spec, data):
+    """A piecewise constant function has vanishing element-local gradients: the Laplace form
+    applied to an FV discrete function must be exactly zero. This runs the
+    FiniteVolumeGlobalBasis' jacobians (which write out zeros), while the L2 product of the
+    same function runs its evaluate (constant one) -- and scales quadratically."""
+    from dune.gdt import (
+        BilinearForm,
+        FiniteVolumeSpace,
+        LocalElementIntegralBilinearForm,
+        LocalElementProductIntegrand,
+        LocalLaplaceIntegrand,
+        default_interpolation,
+    )
+    from dune.xt.functions import GridFunction
+    from dune.xt.test.hypothesis_strategies import polynomials
+
+    poly = data.draw(polynomials(spec.dim, max_order=1, min_order=0), label="poly")
+    grid = spec.make_grid()
+    space = FiniteVolumeSpace(grid)
+    u_h = default_interpolation(GridFunction(grid, poly.to_function()), space)
+    u = GridFunction(grid, u_h)
+
+    # the 1d bindings model the (1x1 matrix valued) diffusion as a scalar grid function
+    if spec.dim == 1:
+        diffusion = GridFunction(grid, 1.0)
+    else:
+        eye = [
+            [1.0 if ii == jj else 0.0 for jj in range(spec.dim)]
+            for ii in range(spec.dim)
+        ]
+        diffusion = GridFunction(grid, eye)
+    laplace = BilinearForm(grid)
+    laplace += LocalElementIntegralBilinearForm(LocalLaplaceIntegrand(diffusion))
+    assert laplace.apply2(u, u) == 0.0
+
+    l2 = BilinearForm(grid)
+    l2 += LocalElementIntegralBilinearForm(
+        LocalElementProductIntegrand(GridFunction(grid, 1.0))
+    )
+    norm_squared = l2.apply2(u, u)
+    assert norm_squared >= 0.0
+    # apply2 is bilinear: scaling the DoFs by 2 scales the product by 4
+    vec = u_h.dofs.vector
+    for ii in range(len(vec)):
+        vec[ii] = 2.0 * vec[ii]
+    assert np.isclose(l2.apply2(u, u), 4.0 * norm_squared, rtol=1e-12, atol=1e-12)
+
+
+@given(spec=grid_specs(max_elements_per_dim=3), data=st.data())
+def test_fv_mass_matrix_is_diagonal_of_cell_volumes(spec, data):
+    """Assembling the L2 product on a FiniteVolumeSpace evaluates the FiniteVolumeGlobalBasis
+    itself (unlike the discrete-function properties above, which go through the FV shortcut of
+    ConstLocalDiscreteFunction): each basis function is the indicator of its element, so the
+    mass matrix acts as the diagonal of the cell volumes -- and the Laplace matrix, driven by
+    the basis' (zero) jacobians, annihilates everything. Checked through matrix-vector
+    products with a drawn probe vector."""
+    from dune.gdt import (
+        BilinearForm,
+        FiniteVolumeSpace,
+        LocalElementIntegralBilinearForm,
+        LocalElementProductIntegrand,
+        LocalLaplaceIntegrand,
+        MatrixOperator,
+        make_element_sparsity_pattern,
+    )
+    from dune.xt.functions import GridFunction
+    from dune.xt.la import IstlVector
+
+    grid = spec.make_grid()
+    space = FiniteVolumeSpace(grid)
+
+    def assemble(integrand):
+        form = BilinearForm(grid)
+        form += LocalElementIntegralBilinearForm(integrand)
+        op = MatrixOperator(
+            grid,
+            source_space=space,
+            range_space=space,
+            sparsity_pattern=make_element_sparsity_pattern(space),
+        )
+        op.append(form)
+        op.assemble()
+        return op.matrix
+
+    def apply_to(matrix, values):
+        vec = IstlVector(len(values), 0.0)
+        for ii, value in enumerate(values):
+            vec.set_entry(ii, float(value))
+        result = IstlVector(len(values), 0.0)
+        matrix.mv(vec, result)
+        return np.array(result, copy=True)
+
+    probe = data.draw(
+        st.lists(
+            st.floats(-1.0, 1.0, allow_nan=False, allow_infinity=False),
+            min_size=space.num_DoFs,
+            max_size=space.num_DoFs,
+        ),
+        label="probe",
+    )
+    volumes = []
+    grid.apply_on_each_element(lambda element: volumes.append(element.volume))
+
+    mass = assemble(LocalElementProductIntegrand(GridFunction(grid, 1.0)))
+    expected = np.asarray(volumes) * np.asarray(probe)
+    scale = max(1.0, np.abs(expected).max())
+    assert np.allclose(apply_to(mass, probe), expected, atol=1e-13 * scale)
+
+    if spec.dim == 1:
+        diffusion = GridFunction(grid, 1.0)
+    else:
+        eye = [
+            [1.0 if ii == jj else 0.0 for jj in range(spec.dim)]
+            for ii in range(spec.dim)
+        ]
+        diffusion = GridFunction(grid, eye)
+    laplace = assemble(LocalLaplaceIntegrand(diffusion))
+    assert not apply_to(laplace, probe).any()
+
+
+@_needs_simplex
+@given(spec=grid_specs(elements=("simplex",), conforming_only=True), data=st.data())
+def test_rt0_products_are_quadratic_forms(spec, data):
+    """L2 and H1-semi products of an RT0 discrete function run the RaviartThomasGlobalBasis'
+    evaluate (Piola transform, flip/scaling) resp. jacobians (the transformed shape function
+    gradients); both must behave as quadratic forms under scaling of the DoF vector."""
+    import dune.gdt
+    from dune.gdt import (
+        BilinearForm,
+        DiscreteFunction,
+        LocalElementIntegralBilinearForm,
+        LocalElementProductIntegrand,
+        LocalLaplaceIntegrand,
+        RaviartThomasSpace,
+    )
+    from dune.xt.functions import GridFunction
+    from dune.xt.grid import Dim
+
+    d = spec.dim
+    grid = spec.make_grid()
+    space = RaviartThomasSpace(grid, order=0)
+    u_h = DiscreteFunction(space, name="q")
+    vec = u_h.dofs.vector
+    dofs = data.draw(
+        st.lists(
+            st.floats(-10.0, 10.0, allow_nan=False, allow_infinity=False),
+            min_size=len(vec),
+            max_size=len(vec),
+        ),
+        label="dofs",
+    )
+    for ii, value in enumerate(dofs):
+        vec[ii] = value
+
+    if d == 1:
+        u = GridFunction(grid, u_h)
+        weight = GridFunction(grid, 1.0)
+        l2_form = BilinearForm(grid)
+        h1_form = BilinearForm(grid)
+        # the 1d bindings model the (1x1 matrix valued) diffusion as a scalar grid function
+        laplace = LocalLaplaceIntegrand(GridFunction(grid, 1.0))
+    else:
+        u = GridFunction(grid, u_h, dim_range=Dim(d))
+        eye = [[1.0 if ii == jj else 0.0 for jj in range(d)] for ii in range(d)]
+        eye_function = GridFunction(grid, eye)
+        weight = eye_function
+        try:
+            l2_form = BilinearForm(grid, ansatz_range=Dim(d), test_range=Dim(d))
+            h1_form = BilinearForm(grid, ansatz_range=Dim(d), test_range=Dim(d))
+        except TypeError:
+            # builds predating the (ansatz_range, test_range) factory overloads still bind
+            # the class itself under its camel-cased name (verified against those wheels)
+            impl = "".join(w.capitalize() for w in spec.impl.split("_"))
+            cls = getattr(
+                dune.gdt, f"BilinearForm{d}dSimplex{impl}Leaf{d}dRange{d}dSource", None
+            )
+            if cls is None:
+                pytest.skip("this build has no vector-valued BilinearForm binding")
+            l2_form, h1_form = cls(grid), cls(grid)
+        laplace = LocalLaplaceIntegrand(eye_function, dim_range_bases=Dim(d))
+    l2_form += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(weight))
+    h1_form += LocalElementIntegralBilinearForm(laplace)
+
+    l2 = l2_form.apply2(u, u)
+    h1_semi = h1_form.apply2(u, u)
+    assert l2 >= 0.0
+    assert h1_semi >= 0.0
+    for ii in range(len(vec)):
+        vec[ii] = 2.0 * vec[ii]
+    assert np.isclose(l2_form.apply2(u, u), 4.0 * l2, rtol=1e-10, atol=1e-10)
+    assert np.isclose(h1_form.apply2(u, u), 4.0 * h1_semi, rtol=1e-10, atol=1e-10)
 
 
 @given(data=st.data(), spec=grid_specs(max_elements_per_dim=3))
