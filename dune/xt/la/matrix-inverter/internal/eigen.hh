@@ -17,20 +17,16 @@
 
 #include <limits>
 
-#if HAVE_EIGEN
-#  include <dune/xt/common/disable_warnings.hh>
-#  include <Eigen/Core>
-#  include <Eigen/SVD>
+#include <dune/xt/common/disable_warnings.hh>
+#include <Eigen/Core>
+#include <Eigen/SVD>
 // needed for the inverse method of Eigen::Matrix, see http://eigen.tuxfamily.org/bz/show_bug.cgi?id=1089
-#  include <Eigen/LU>
-#  include <dune/xt/common/reenable_warnings.hh>
-#endif
+#include <Eigen/LU>
+#include <dune/xt/common/reenable_warnings.hh>
 
 #include <dune/common/typetraits.hh>
 
 namespace Dune::XT::LA::internal {
-
-#if HAVE_EIGEN
 
 
 /**
@@ -55,20 +51,6 @@ compute_moore_penrose_inverse_using_eigen(const ::Eigen::Matrix<S, ::Eigen::Dyna
          * svd.matrixU().adjoint();
 }
 
-
-#else // HAVE_EIGEN
-
-
-template <class M>
-M compute_moore_penrose_inverse_using_eigen(const M& matrix,
-                                            const double& /*epsilon*/ = std::numeric_limits<double>::epsilon())
-{
-  static_assert(AlwaysFalse<M>::value, "You are missing eigen!");
-  return matrix;
-}
-
-
-#endif // HAVE_EIGEN
 
 } // namespace Dune::XT::LA::internal
 

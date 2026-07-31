@@ -229,11 +229,9 @@ PYBIND11_MODULE(_discretefunction_bochner, m)
   DiscreteBochnerFunction_for_all_grids<LA::CommonDenseVector<double>,
                                         LA::bindings::Common,
                                         XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#if HAVE_EIGEN
   DiscreteBochnerFunction_for_all_grids<LA::EigenDenseVector<double>,
                                         LA::bindings::Eigen,
                                         XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#endif
   DiscreteBochnerFunction_for_all_grids<LA::IstlDenseVector<double>,
                                         LA::bindings::Istl,
                                         XT::Grid::bindings::AvailableGridTypes>::bind(m);

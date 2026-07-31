@@ -163,9 +163,7 @@ GTEST_TEST(TriangularSolvesExtraTest, solves_sparse_systems)
   solves_correctly<CommonSparseMatrixCsc<double>, CommonDenseVector<double>>(dim);
   solves_correctly<CommonSparseMatrixCsr<double>, CommonSparseVector<double>>(dim);
   solves_correctly<CommonSparseMatrixCsc<double>, CommonSparseVector<double>>(dim);
-#if HAVE_DUNE_ISTL
   solves_correctly<IstlRowMajorSparseMatrix<double>, IstlDenseVector<double>>(dim);
-#endif
 }
 
 // CommonSparseOrDenseMatrix decides on construction whether to store the matrix in a sparse or in a dense format, both
@@ -198,9 +196,7 @@ GTEST_TEST(TriangularSolvesExtraTest, throws_for_singular_matrices)
   throws_for_singular_matrices<DynamicMatrix<double>, DynamicVector<double>>(dim);
   throws_for_singular_matrices<CommonSparseMatrixCsr<double>, CommonDenseVector<double>>(dim);
   throws_for_singular_matrices<CommonSparseMatrixCsc<double>, CommonDenseVector<double>>(dim);
-#if HAVE_DUNE_ISTL
   throws_for_singular_matrices<IstlRowMajorSparseMatrix<double>, IstlDenseVector<double>>(dim);
-#endif
 }
 
 GTEST_TEST(TriangularSolvesExtraTest, throws_for_non_square_matrices)

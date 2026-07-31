@@ -79,34 +79,18 @@ struct Container<ScalarType, Backends::istl_sparse>
 
 /// \brief Tuple of all available vector container types (depending on enabled backends).
 template <class S>
-using AvailableVectorTypes = std::tuple<CommonDenseVector<S>,
-                                        IstlDenseVector<S>
-#if HAVE_EIGEN
-                                        ,
-                                        EigenDenseVector<S>
-#endif
-                                        >;
+using AvailableVectorTypes = std::tuple<CommonDenseVector<S>, IstlDenseVector<S>, EigenDenseVector<S>>;
 
 
 /// \brief Tuple of all available dense matrix container types (depending on enabled backends).
 template <class S>
-using AvailableDenseMatrixTypes = std::tuple<CommonDenseMatrix<S>
-#if HAVE_EIGEN
-                                             ,
-                                             EigenDenseMatrix<S>
-#endif
-                                             >;
+using AvailableDenseMatrixTypes = std::tuple<CommonDenseMatrix<S>, EigenDenseMatrix<S>>;
 
 
 /// \brief Tuple of all available sparse matrix container types (depending on enabled backends).
 template <class S>
-using AvailableSparseMatrixTypes = std::tuple<CommonSparseMatrix<S>,
-                                              IstlRowMajorSparseMatrix<S>
-#if HAVE_EIGEN
-                                              ,
-                                              EigenRowMajorSparseMatrix<S>
-#endif
-                                              >;
+using AvailableSparseMatrixTypes =
+    std::tuple<CommonSparseMatrix<S>, IstlRowMajorSparseMatrix<S>, EigenRowMajorSparseMatrix<S>>;
 
 
 } // namespace Dune::XT::LA

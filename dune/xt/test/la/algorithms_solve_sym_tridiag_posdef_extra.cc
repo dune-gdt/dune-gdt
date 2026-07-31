@@ -86,9 +86,7 @@ GTEST_TEST(SolveSymTridiagPosdefExtraTest, solves_systems_given_by_a_matrix)
   solves_correctly<DynamicMatrix<double>, DynamicVector<double>>(12);
   solves_correctly<FieldMatrix<double, 12, 12>, FieldVector<double, 12>>(12);
   solves_correctly<CommonSparseMatrixCsr<double>, CommonDenseVector<double>>(12);
-#if HAVE_DUNE_ISTL
   solves_correctly<IstlRowMajorSparseMatrix<double>, IstlDenseVector<double>>(12);
-#endif
 }
 
 GTEST_TEST(SolveSymTridiagPosdefExtraTest, solves_systems_given_by_diagonal_and_subdiagonal)

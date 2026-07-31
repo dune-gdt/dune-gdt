@@ -69,14 +69,10 @@ struct DiscreteFunction_for_all_grids<V, VT, Dune::XT::Common::tuple_null_type>
                                  XT::Grid::bindings::Available##dim##dGridTypes>::bind(m);                             \
   m.attr("__all__") = py::make_tuple()
 
-#if HAVE_EIGEN
-#  define DUNE_GDT_BIND_DISCRETEFUNCTION_EIGEN(dim)                                                                    \
-    DiscreteFunction_for_all_grids<LA::EigenDenseVector<double>,                                                       \
-                                   LA::bindings::Eigen,                                                                \
-                                   XT::Grid::bindings::Available##dim##dGridTypes>::bind(m);
-#else
-#  define DUNE_GDT_BIND_DISCRETEFUNCTION_EIGEN(dim)
-#endif
+#define DUNE_GDT_BIND_DISCRETEFUNCTION_EIGEN(dim)                                                                      \
+  DiscreteFunction_for_all_grids<LA::EigenDenseVector<double>,                                                         \
+                                 LA::bindings::Eigen,                                                                  \
+                                 XT::Grid::bindings::Available##dim##dGridTypes>::bind(m);
 
 
 #endif // PYTHON_DUNE_GDT_DISCRETEFUNCTION_DISCRETEFUNCTION_FOR_ALL_GRIDS_HH

@@ -38,12 +38,7 @@ class MatrixInverterOptions<FieldMatrix<K, ROWS, COLS>, true>
 public:
   static std::vector<std::string> types()
   {
-    return {"direct"
-#if HAVE_EIGEN
-            ,
-            "moore_penrose"
-#endif
-    };
+    return {"direct", "moore_penrose"};
   }
 
   static Common::Configuration options(const std::string& type = "")
@@ -97,14 +92,10 @@ public:
                          << ee.what());
         DUNE_THROW(Exceptions::matrix_invert_failed, "This was the original error:\n\n" << ee.what());
       }
-    }
-#if HAVE_EIGEN
-    else if (type == "moore_penrose") {
+    } else if (type == "moore_penrose") {
       inverse_ = std::make_unique<MatrixType>(convert_to<MatrixType>(EigenDenseMatrix<K>(
           internal::compute_moore_penrose_inverse_using_eigen(convert_to<EigenDenseMatrix<K>>(matrix_).backend()))));
-    }
-#endif
-    else
+    } else
       DUNE_THROW(Common::Exceptions::internal_error,
                  "Given type '" << type
                                 << "' is none of MatrixInverterOptions<FieldMatrix<K, ROWS, COLS>>::types(), and "
