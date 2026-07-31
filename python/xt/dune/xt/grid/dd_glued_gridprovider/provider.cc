@@ -124,7 +124,7 @@ public:
     bound_type c(
         m,
         ClassName.c_str(),
-        (XT::Common::to_camel_case(class_id) + " (" + macro_grid_id + "_" = micro_grid_id + " variant)").c_str());
+        (XT::Common::to_camel_case(class_id) + " (" + macro_grid_id + "_" + micro_grid_id + " variant)").c_str());
     // dim cannot be binded directly because it is static const
     c.def_property_readonly("dimension", [](type&) { return dim; });
     c.def("local_grid", py::overload_cast<size_t>(&type::local_grid));

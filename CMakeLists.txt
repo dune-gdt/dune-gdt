@@ -38,7 +38,7 @@ list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} "${PROJECT_SOURCE_DIR}/
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 
 set(FEATURE_MODULES)
-set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry)
+set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry Dune::GridGlue)
 
 if("uggrid" IN_LIST VCPKG_MANIFEST_FEATURES)
   list(APPEND FEATURE_MODULES "dune-uggrid")
@@ -50,10 +50,9 @@ if("alberta" IN_LIST VCPKG_MANIFEST_FEATURES)
   find_library(TIRPC_LIB tirpc REQUIRED)
 endif()
 
-# let 'find_package' know where modules can be found once configured removed dune-grid-glue: our gridview wrapper will
-# need changes to work again. Seems Entity types on the glued view are different than in 2.7 removed dune-uggrid: lots
-# of undefined refs
-set(DUNE_SUBMODULES "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-localfunctions;dune-alugrid")
+# let 'find_package' know where modules can be found once configured removed dune-uggrid: lots of undefined refs
+set(DUNE_SUBMODULES
+    "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-localfunctions;dune-alugrid;dune-grid-glue")
 foreach(module IN LISTS FEATURE_MODULES DUNE_SUBMODULES)
   find_package(${module} CONFIG REQUIRED)
   list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
