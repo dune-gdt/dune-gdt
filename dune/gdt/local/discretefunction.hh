@@ -68,13 +68,18 @@ public:
   using typename BaseType::SingleDerivativeRangeReturnType;
   using typename BaseType::SingleDerivativeRangeType;
 
+  // The space is held by reference (not copied): a stateful global basis (e.g. the Raviart-Thomas
+  // basis, whose localized view reads the space's per-element FE data) must see the *live* space,
+  // or every local function created before a grid adaptation reads stale data afterwards. The
+  // caller guarantees the space outlives this local function, as it already does for the DoF
+  // vector (whose mapper is the same space's).
   ConstLocalDiscreteFunction(const SpaceType& spc, const ConstDofVectorType& dof_vector)
     : BaseType()
-    , space_(spc.copy())
-    , space_is_fv_(space_->type() == GDT::SpaceType::finite_volume)
+    , space_(spc)
+    , space_is_fv_(space_.type() == GDT::SpaceType::finite_volume)
     , dof_vector_(dof_vector.localize())
-    , basis_(space_->basis().localize())
-    , basis_values_(space_is_fv_ ? 0 : space_->mapper().max_local_size())
+    , basis_(space_.basis().localize())
+    , basis_values_(space_is_fv_ ? 0 : space_.mapper().max_local_size())
     , dynamic_basis_values_(basis_values_.size())
     , basis_derivatives_(basis_values_.size())
     , dynamic_basis_derivatives_(basis_values_.size())
@@ -100,7 +105,7 @@ public:
 
   const SpaceType& space() const
   {
-    return *space_;
+    return space_;
   }
 
   const LocalBasisType& basis() const
@@ -290,7 +295,7 @@ public:
   /// \}
 
 private:
-  std::unique_ptr<const SpaceType> space_;
+  const SpaceType& space_;
   const bool space_is_fv_;
   ConstLocalDofVectorType dof_vector_;
   std::unique_ptr<LocalBasisType> basis_;
