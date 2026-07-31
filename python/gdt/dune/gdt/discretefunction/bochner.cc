@@ -69,10 +69,10 @@ public:
   {
     DUNE_THROW_IF(list_of_vectors.size() != bochner_space.temporal_space().mapper().size(),
                   XT::Common::Exceptions::wrong_input_given,
-                  "list_of_vectors does not match bochner_space:"
+                  "list_of_vectors does not match bochner_space (one vector per temporal DoF expected):"
                       << "\n"
-                      << "  bochner_space.spatial_space().mapper().size() = "
-                      << bochner_space.spatial_space().mapper().size() << "\n"
+                      << "  bochner_space.temporal_space().mapper().size() = "
+                      << bochner_space.temporal_space().mapper().size() << "\n"
                       << "  list_of_vectors.size() = " << list_of_vectors.size());
     auto vector_array =
         std::make_unique<XT::LA::ListVectorArray<V>>(/*dim=*/bochner_space.spatial_space().mapper().size(),
