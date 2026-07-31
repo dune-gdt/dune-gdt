@@ -181,7 +181,9 @@ void visualize(
     auto df = make_discrete_function(
         discrete_bochner_function.space().spatial_space(), annotated_vector.vector(), discrete_bochner_function.name());
     GDT::visualize(df,
-                   filename_prefix + "_" + (use_counter ? XT::Common::to_string(counter) : XT::Common::to_string(time)),
+                   filename_prefix + "_"
+                       + (use_counter ? XT::Common::to_string(counter)
+                                      : XT::Common::to_string(annotated_vector.note().get("_t").at(0))),
                    subsampling,
                    vtk_output_type,
                    param,
