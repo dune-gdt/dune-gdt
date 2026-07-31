@@ -113,6 +113,7 @@ public:
           for (py::handle list_element : list_of_vectors) {
             auto& vec = get_vec_ref(list_element);
             vector_array->append(vec, {{"_t", {time_points[counter]}}});
+            ++counter;
           }
           return new type(bochner_space, vector_array.release(), name);
         },
@@ -143,6 +144,7 @@ public:
             for (py::handle list_element : list_of_vectors) {
               auto& vec = get_vec_ref(list_element);
               vector_array->append(vec, {{"_t", {time_points[counter]}}});
+              ++counter;
             }
             return new type(bochner_space, vector_array.release(), name);
           },

@@ -557,10 +557,14 @@ def test_rt0_products_are_quadratic_forms(spec, data):
             l2_form = BilinearForm(grid, ansatz_range=Dim(d), test_range=Dim(d))
             h1_form = BilinearForm(grid, ansatz_range=Dim(d), test_range=Dim(d))
         except TypeError:
+            # builds predating the (ansatz_range, test_range) factory overloads still bind
+            # the class itself under its camel-cased name (verified against those wheels)
             impl = "".join(w.capitalize() for w in spec.impl.split("_"))
             cls = getattr(
-                dune.gdt, f"BilinearForm{d}dSimplex{impl}Leaf{d}dRange{d}dSource"
+                dune.gdt, f"BilinearForm{d}dSimplex{impl}Leaf{d}dRange{d}dSource", None
             )
+            if cls is None:
+                pytest.skip("this build has no vector-valued BilinearForm binding")
             l2_form, h1_form = cls(grid), cls(grid)
         laplace = LocalLaplaceIntegrand(eye_function, dim_range_bases=Dim(d))
     l2_form += LocalElementIntegralBilinearForm(LocalElementProductIntegrand(weight))

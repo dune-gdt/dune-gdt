@@ -91,9 +91,7 @@ def test_evaluate_interpolates_linearly_in_time(spec, time_points, data):
     from dune.xt.la import Istl, IstlVector
 
     bochner_space = _bochner_space(spec, time_points)
-    num_spatial_dofs = len(
-        DiscreteBochnerFunction(bochner_space, name="probe").evaluate(0.0).dofs.vector
-    )
+    num_spatial_dofs = bochner_space.spatial_space.num_DoFs
     # one constant-valued spatial vector per time point, with drawn values
     values = data.draw(
         st.lists(
