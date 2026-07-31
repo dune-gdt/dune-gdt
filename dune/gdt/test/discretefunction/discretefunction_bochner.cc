@@ -225,11 +225,18 @@ GTEST_TEST(discretefunction_bochner, visualize_uses_a_counter_without_time_notes
   fill_dofs(bochner_space, u);
 
   const std::string prefix = "discretefunction_bochner__visualize_counter";
-  EXPECT_NO_THROW(visualize(u, prefix, /*subsampling=*/false));
-  if (grid_view.comm().size() == 1) // <- only then do we know the file names the VTKWriter produces
+  // only in a serial run do we know the file names the VTKWriter produces
+  std::vector<std::string> expected_files;
+  if (grid_view.comm().size() == 1)
     for (const std::string& suffix : {"0", "1", "2"})
-      EXPECT_TRUE(boost::filesystem::exists(prefix + "_" + suffix + ".vtu"))
-          << "missing " << prefix + "_" + suffix + ".vtu";
+      expected_files.push_back(prefix + "_" + suffix + ".vtu");
+  // a leftover file from an earlier run would let the assertions below pass without visualize() writing anything
+  for (const auto& expected_file : expected_files)
+    boost::filesystem::remove(expected_file);
+
+  EXPECT_NO_THROW(visualize(u, prefix, /*subsampling=*/false));
+  for (const auto& expected_file : expected_files)
+    EXPECT_TRUE(boost::filesystem::exists(expected_file)) << "missing " << expected_file;
 
   EXPECT_THROW(visualize(u, ""), XT::Common::Exceptions::wrong_input_given);
 }
@@ -250,10 +257,16 @@ GTEST_TEST(discretefunction_bochner, visualize_uses_the_time_note_if_present)
   auto u = make_discrete_bochner_function(bochner_space, dof_vectors);
 
   const std::string prefix = "discretefunction_bochner__visualize_time";
+  // only in a serial run do we know the file names the VTKWriter produces
+  std::vector<std::string> expected_files;
+  if (grid_view.comm().size() == 1)
+    for (const auto& time_point : time_points)
+      expected_files.push_back(prefix + "_" + XT::Common::to_string(time_point) + ".vtu");
+  // a leftover file from an earlier run would let the assertions below pass without visualize() writing anything
+  for (const auto& expected_file : expected_files)
+    boost::filesystem::remove(expected_file);
+
   EXPECT_NO_THROW(visualize(u, prefix, /*subsampling=*/false));
-  if (grid_view.comm().size() == 1) // <- only then do we know the file names the VTKWriter produces
-    for (const auto& time_point : time_points) {
-      const auto expected_file = prefix + "_" + XT::Common::to_string(time_point) + ".vtu";
-      EXPECT_TRUE(boost::filesystem::exists(expected_file)) << "missing " << expected_file;
-    }
+  for (const auto& expected_file : expected_files)
+    EXPECT_TRUE(boost::filesystem::exists(expected_file)) << "missing " << expected_file;
 }
