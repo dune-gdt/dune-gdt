@@ -195,8 +195,13 @@ public:
         // compute rhs for the L2 projection
         rhs += LocalElementIntegralFunctional<E, r, rC, R, R>(
                    /*order=*/
+                   // the integrand below is the *product* of a basis function and the restriction
+                   // data, so its polynomial degree is the sum of both orders; the previous max()
+                   // selected a quadrature that cannot integrate the product exactly (e.g. a
+                   // 1-point rule for the degree-2 product of two P1 functions), skewing the
+                   // projection (found by test_coarsening_restores_representable_polynomials)
                    [&](const auto& basis, const auto&) {
-                     return std::max(basis.order(), restriction_data_as_function_on_child_element.order());
+                     return basis.order() + restriction_data_as_function_on_child_element.order();
                    },
                    /*integrand_evaluation=*/
                    [&](const auto& basis, const auto& x, auto& result, const auto&) {
