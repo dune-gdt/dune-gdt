@@ -142,7 +142,7 @@ class Glued
     static constexpr bool value = false;
   };
 
-#  if HAVE_MPI && (HAVE_DUNE_UGGRID || HAVE_UG)
+#  if HAVE_MPI && HAVE_DUNE_UGGRID
   // UGGrid does not support multiple parallel instances in parallel and we have no means yet to create multiple
   // sequential grids once MPI was found.
   template <bool anything>

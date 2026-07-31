@@ -29,7 +29,7 @@
 #  include <dune/grid/spgrid/dgfparser.hh>
 #endif
 
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 #  include <dune/grid/uggrid.hh>
 #endif
 
@@ -49,7 +49,7 @@ using ALU_2D_CUBE = Dune::ALUGrid<2, 2, Dune::cube, Dune::nonconforming>;
 using ALU_3D_SIMPLEX_CONFORMING = Dune::ALUGrid<3, 3, Dune::simplex, Dune::conforming>;
 using ALU_3D_SIMPLEX_NONCONFORMING = Dune::ALUGrid<3, 3, Dune::simplex, Dune::nonconforming>;
 using ALU_3D_CUBE = Dune::ALUGrid<3, 3, Dune::cube, Dune::nonconforming>;
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 using UG_2D = Dune::UGGrid<2>;
 using UG_3D = Dune::UGGrid<3>;
 #endif
@@ -74,7 +74,7 @@ using Available2dGridTypes = std::tuple<YASP_2D_EQUIDISTANT_OFFSET,
                                         ALU_2D_SIMPLEX_CONFORMING,
                                         ALU_2D_SIMPLEX_NONCONFORMING,
                                         ALU_2D_CUBE
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                         ,
                                         UG_2D
 #endif
@@ -87,7 +87,7 @@ using Available3dGridTypes = std::tuple<YASP_3D_EQUIDISTANT_OFFSET,
                                         ALU_3D_SIMPLEX_CONFORMING,
                                         ALU_3D_SIMPLEX_NONCONFORMING,
                                         ALU_3D_CUBE
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                         ,
                                         UG_3D
 #endif

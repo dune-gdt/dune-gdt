@@ -111,10 +111,6 @@
 #define HAVE_UMFPACK 0
 #endif
 
-#ifndef HAVE_UG
-#define HAVE_UG 0
-#endif
-
 #ifndef ENABLE_BOOST
 #define ENABLE_BOOST 0
 #endif

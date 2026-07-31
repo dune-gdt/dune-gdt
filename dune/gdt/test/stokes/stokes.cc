@@ -23,7 +23,7 @@ using namespace Dune::GDT::Test;
 
 using SimplexGrids2D = ::testing::Types<ALU_2D_SIMPLEX_CONFORMING,
                                         ALU_2D_SIMPLEX_NONCONFORMING
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                         ,
                                         UG_2D
 #endif
@@ -35,7 +35,7 @@ DUNE_XT_COMMON_TYPENAME(YASP_2D_EQUIDISTANT_OFFSET)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_SIMPLEX_CONFORMING)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_SIMPLEX_NONCONFORMING)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_CUBE)
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 DUNE_XT_COMMON_TYPENAME(UG_2D)
 #endif
 #if HAVE_ALBERTA

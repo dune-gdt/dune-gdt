@@ -263,14 +263,14 @@ using SimplicialGrids = ::testing::Types<ONED_1D,
                                          YASP_1D_EQUIDISTANT_OFFSET,
                                          ALU_2D_SIMPLEX_CONFORMING,
                                          ALU_2D_SIMPLEX_NONCONFORMING
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                          ,
                                          UG_2D
 #endif
                                          ,
                                          ALU_3D_SIMPLEX_CONFORMING,
                                          ALU_3D_SIMPLEX_NONCONFORMING
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                          ,
                                          UG_3D
 #endif
@@ -293,14 +293,14 @@ XT::Grid::GridProvider<G> make_cubic_grid()
 
 using CubicGrids = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET,
                                     ALU_2D_CUBE
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                     ,
                                     UG_2D
 #endif
                                     ,
                                     YASP_3D_EQUIDISTANT_OFFSET,
                                     ALU_3D_CUBE
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                     ,
                                     UG_3D
 #endif
@@ -320,7 +320,7 @@ XT::Grid::GridProvider<G> make_prism_grid()
 
 
 using PrismGrids = ::testing::Types<
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
     UG_3D
 #endif
     >;
@@ -339,7 +339,7 @@ XT::Grid::GridProvider<G> make_mixed_grid()
 
 
 using MixedGrids = ::testing::Types<
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
     UG_2D,
     UG_3D
 #endif
@@ -347,7 +347,7 @@ using MixedGrids = ::testing::Types<
 
 
 using MixedGridsWithConformingIntersections = ::testing::Types<
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
     UG_2D
 #endif
     >;

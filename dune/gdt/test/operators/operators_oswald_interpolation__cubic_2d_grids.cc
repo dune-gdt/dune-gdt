@@ -16,7 +16,7 @@
 
 using Cubic2dGrids = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET,
                                       ALU_2D_CUBE
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                       ,
                                       UG_2D
 #endif

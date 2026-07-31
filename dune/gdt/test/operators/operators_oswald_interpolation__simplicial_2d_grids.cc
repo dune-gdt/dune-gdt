@@ -16,7 +16,7 @@
 
 using Simplicial2dGrids = ::testing::Types<ALU_2D_SIMPLEX_CONFORMING,
                                            ALU_2D_SIMPLEX_NONCONFORMING
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                            ,
                                            UG_2D
 #endif
