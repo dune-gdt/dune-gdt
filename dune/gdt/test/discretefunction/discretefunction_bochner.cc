@@ -20,6 +20,7 @@
 #include <boost/filesystem.hpp>
 
 #include <dune/xt/common/fvector.hh>
+#include <dune/xt/common/parameter.hh>
 #include <dune/xt/common/string.hh>
 #include <dune/xt/grid/grids.hh>
 #include <dune/xt/grid/gridprovider/cube.hh>
@@ -239,6 +240,41 @@ GTEST_TEST(discretefunction_bochner, visualize_uses_a_counter_without_time_notes
     EXPECT_TRUE(boost::filesystem::exists(expected_file)) << "missing " << expected_file;
 
   EXPECT_THROW(visualize(u, ""), XT::Common::Exceptions::wrong_input_given);
+}
+
+
+// A time note which carries no value cannot name a file, so it has to fall back to the counter just like a missing
+// one does (a single such vector switches the whole sequence over).
+GTEST_TEST(discretefunction_bochner, visualize_uses_a_counter_for_an_empty_time_note)
+{
+  auto grid = make_grid();
+  auto grid_view = grid.leaf_view();
+  const auto spatial_space = make_finite_volume_space(grid_view);
+  const BS bochner_space(spatial_space, time_grid());
+
+  XT::LA::ListVectorArray<V> dof_vectors(spatial_space.mapper().size(), 0);
+  const auto time_points = bochner_space.time_points();
+  const XT::Common::Parameter valueless_note("_t", std::vector<double>{});
+  ASSERT_TRUE(valueless_note.has_key("_t"));
+  ASSERT_TRUE(valueless_note.get("_t").empty());
+  for (size_t kk = 0; kk < time_points.size(); ++kk)
+    dof_vectors.append(V(spatial_space.mapper().size(), time_points[kk] + 1.),
+                       kk == 1 ? valueless_note : XT::Common::Parameter("_t", time_points[kk]));
+  auto u = make_discrete_bochner_function(bochner_space, dof_vectors);
+
+  const std::string prefix = "discretefunction_bochner__visualize_empty_note";
+  // only in a serial run do we know the file names the VTKWriter produces
+  std::vector<std::string> expected_files;
+  if (grid_view.comm().size() == 1)
+    for (const std::string& suffix : {"0", "1", "2"})
+      expected_files.push_back(prefix + "_" + suffix + ".vtu");
+  // a leftover file from an earlier run would let the assertions below pass without visualize() writing anything
+  for (const auto& expected_file : expected_files)
+    boost::filesystem::remove(expected_file);
+
+  EXPECT_NO_THROW(visualize(u, prefix, /*subsampling=*/false));
+  for (const auto& expected_file : expected_files)
+    EXPECT_TRUE(boost::filesystem::exists(expected_file)) << "missing " << expected_file;
 }
 
 
