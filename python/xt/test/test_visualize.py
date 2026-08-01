@@ -101,3 +101,5 @@ def test_visualize_function_accepts_a_list_of_functions(cube_grid):
     ]
     result = functions.visualize_function(functions_list, provider)
     assert isinstance(result, VTKPlot)
+    # one timestep per function, not just a single collapsed frame
+    assert len(result.vtk_data) == len(functions_list)
