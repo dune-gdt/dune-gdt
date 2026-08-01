@@ -78,6 +78,13 @@ test = [
   # matplotlib for its default color map -- without it here too, k3d above just swaps one ModuleNotFoundError
   # for another, still silently absorbed by pytest.importorskip("dune.gdt"/"dune.gdt.basic") in the test suite.
   "matplotlib",
+  # dune.xt.common.vtk.plot also unconditionally imports vtk, and its .reader submodule needs lxml/xmljson;
+  # dune.xt's own test group has these (see python/xt/pyproject.toml), but dune.gdt's test env is separate --
+  # anything here that imports dune.xt.functions/dune.xt.grid (nearly every gdt test does) pulls the same
+  # HAVE_K3D-gated chain, so it needs the same three packages or collection fails with ModuleNotFoundError.
+  "vtk",
+  "lxml",
+  "xmljson",
 ]
 
 # uv runs the gdt suite in project mode (cmake/modules/DuneXTTesting.cmake) and resolves the project's
