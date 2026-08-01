@@ -136,6 +136,11 @@ test = [
   # only in the `visualisation` extra otherwise (#393), so HAVE_K3D was permanently False under ctest and every
   # k3d-gated branch (dune.xt.functions/grid, common.vtk.plot) went untested. CI already runs ctest under xvfb-run.
   "k3d>=2.15.2",
+  # common/vtk/plot.py imports this unconditionally once HAVE_K3D is True (DEFAULT_COLOR_MAP, the Colormap type
+  # check) -- without it, adding k3d above only swaps a "HAVE_K3D is False" skip for a "matplotlib missing"
+  # ModuleNotFoundError, which pytest.importorskip("dune.xt.functions"/"dune.xt.grid") in the test suite still
+  # silently turns into a skip. So the k3d-gated branches stayed just as untested until this was added too.
+  "matplotlib",
 ]
 # Deps for docs_test_python (cmake/modules/DuneXTTesting.cmake), which runs docs/test_benchmark_plots.py -- a
 # pure-Python unit test suite for the benchmark-plots Sphinx extension (docs/source/_ext/benchmark_plots.py) that
