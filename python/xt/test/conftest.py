@@ -58,6 +58,63 @@ def _k3d_display_builtin(monkeypatch):
 
 
 @pytest.fixture
+def write_vtu():
+    """Factory: write a minimal two-triangle UnstructuredGrid as an ASCII .vtu and return its
+    path, optionally with a named point-data array (for the plot/color-attribute tests) -- shared
+    by test_vtk_reader.py and test_vtk_plot.py, which otherwise both need the same VTK
+    boilerplate to get a loadable fixture file.
+    """
+
+    def _write(path, values=None, array_name="Data"):
+        import vtk
+
+        points = vtk.vtkPoints()
+        for coord in [(0, 0, 0), (1, 0, 0), (0, 1, 0), (1, 1, 0)]:
+            points.InsertNextPoint(*coord)
+        grid = vtk.vtkUnstructuredGrid()
+        grid.SetPoints(points)
+        if values is not None:
+            data = vtk.vtkDoubleArray()
+            data.SetName(array_name)
+            for value in values:
+                data.InsertNextValue(value)
+            grid.GetPointData().AddArray(data)
+        for ids in [(0, 1, 2), (1, 3, 2)]:
+            triangle = vtk.vtkTriangle()
+            for local, global_ in enumerate(ids):
+                triangle.GetPointIds().SetId(local, global_)
+            grid.InsertNextCell(triangle.GetCellType(), triangle.GetPointIds())
+        writer = vtk.vtkXMLUnstructuredGridWriter()
+        writer.SetFileName(str(path))
+        writer.SetDataModeToAscii()
+        writer.SetInputData(grid)
+        writer.Write()
+        return str(path)
+
+    return _write
+
+
+@pytest.fixture
+def write_vtk_collection():
+    """Factory: write a Collection .pvd referencing `datasets` (list of (timestep, file)) and
+    return its path -- shared by test_vtk_reader.py and test_vtk_plot.py."""
+
+    def _write(tmp_path, datasets):
+        pvd = tmp_path / "collection.pvd"
+        lines = [
+            '<?xml version="1.0"?>',
+            '<VTKFile type="Collection" version="0.1">',
+            "<Collection>",
+        ]
+        lines += [f'<DataSet timestep="{ts}" file="{f}"/>' for ts, f in datasets]
+        lines += ["</Collection>", "</VTKFile>", ""]
+        pvd.write_text("\n".join(lines), encoding="utf-8")
+        return str(pvd)
+
+    return _write
+
+
+@pytest.fixture
 def cube_grid():
     """Factory for a `dim`-dimensional unit-cube grid, shared by test_visualize.py and
     test_hypothesis_functions.py's own local helper of the same shape."""

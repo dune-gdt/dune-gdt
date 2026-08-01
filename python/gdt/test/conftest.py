@@ -47,6 +47,6 @@ def _k3d_display_builtin(monkeypatch):
     `display` name available in builtins, which a real Jupyter frontend provides for free but
     ctest does not (see test_visualize_function.py, #393).
     """
-    from IPython.display import display
+    import IPython.display
 
-    monkeypatch.setattr(builtins, "display", display, raising=False)
+    monkeypatch.setattr(builtins, "display", IPython.display.display, raising=False)
