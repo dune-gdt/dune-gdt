@@ -118,7 +118,7 @@ if config.HAVE_K3D:
                 self.camera_no_zoom = True
 
         def _goto_idx(self, idx):
-            if idx > len(self.vtk_data) or idx < 0:
+            if idx >= len(self.vtk_data) or idx < 0:
                 warnings.warn(
                     f"Index {idx} outside data range for VTKPlot", RuntimeWarning
                 )

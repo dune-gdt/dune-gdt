@@ -9,8 +9,10 @@
 #   René Fritze (2026)
 # ~~~
 
+import builtins
 import os
 
+import pytest
 from hypothesis import HealthCheck, settings
 from hypothesis.errors import InvalidArgument
 
@@ -37,3 +39,38 @@ except InvalidArgument:
     # developer's own tooling that is not on this run's plugin path); fall back instead of
     # failing collection of the whole suite
     settings.load_profile("dune-ci")
+
+
+@pytest.fixture(autouse=True)
+def _k3d_display_builtin(monkeypatch):
+    """k3d's Plot.display() (k3d/plot/plot_display.py) calls a bare `display(...)` name. A real
+    Jupyter frontend gets this for free -- IPython.core.interactiveshell.InteractiveShell installs
+    it into `builtins` during init -- but under ctest there is no kernel to do that, so plot()
+    would otherwise raise `NameError: name 'display' is not defined` (see test_vtk_plot.py,
+    test_visualize.py, #393). Providing it here rather than per test module is a no-op for every
+    test that never touches k3d, and avoids standing up a whole InteractiveShell, which would
+    mutate process-global state (sys.displayhook/excepthook, builtin traps) for the rest of the
+    session.
+    """
+    from IPython.display import display
+
+    monkeypatch.setattr(builtins, "display", display, raising=False)
+
+
+@pytest.fixture
+def cube_grid():
+    """Factory for a `dim`-dimensional unit-cube grid, shared by test_visualize.py and
+    test_hypothesis_functions.py's own local helper of the same shape."""
+
+    def _make(dim, num_elements=2):
+        from dune.xt.grid import Cube, Dim, make_cube_grid
+
+        return make_cube_grid(
+            Dim(dim),
+            Cube(),
+            lower_left=[0.0] * dim,
+            upper_right=[1.0] * dim,
+            num_elements=[num_elements] * dim,
+        )
+
+    return _make

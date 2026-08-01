@@ -29,19 +29,6 @@ grid = pytest.importorskip("dune.xt.grid")
 functions = pytest.importorskip("dune.xt.functions")
 
 
-@pytest.fixture(autouse=True)
-def _display_builtin(monkeypatch):
-    """See dune.xt's test_vtk_plot.py::_display_builtin -- k3d's Plot.display() needs a bare
-    `display` name available in builtins, which a real Jupyter frontend provides for free but
-    ctest does not.
-    """
-    import builtins
-
-    from IPython.display import display
-
-    monkeypatch.setattr(builtins, "display", display, raising=False)
-
-
 def _skip_unless_available():
     if not hasattr(grid, "make_cube_grid") or not hasattr(
         functions, "ExpressionFunction"

@@ -24,33 +24,13 @@ from dune.xt.common.config import config
 grid = pytest.importorskip("dune.xt.grid")
 functions = pytest.importorskip("dune.xt.functions")
 
-pytestmark = pytest.mark.skipif(
+# Only the k3d branches actually need it: dune.xt.grid.visualize_grid's 1d path (matplotlib) never
+# reaches its `elif config.HAVE_K3D` sibling, and dune.xt.functions.visualize_function itself is
+# undefined without HAVE_K3D -- gate per-test rather than module-wide so the 1d path still gets
+# exercised on builds without k3d.
+requires_k3d = pytest.mark.skipif(
     not config.HAVE_K3D, reason="k3d not available in this build"
 )
-
-
-@pytest.fixture(autouse=True)
-def _display_builtin(monkeypatch):
-    """See test_vtk_plot.py::_display_builtin -- k3d's Plot.display() needs a bare `display` name
-    available in builtins, which a real Jupyter frontend provides for free but ctest does not.
-    """
-    import builtins
-
-    from IPython.display import display
-
-    monkeypatch.setattr(builtins, "display", display, raising=False)
-
-
-def _make_cube_grid(dim, num_elements=2):
-    from dune.xt.grid import Cube, Dim, make_cube_grid
-
-    return make_cube_grid(
-        Dim(dim),
-        Cube(),
-        lower_left=[0.0] * dim,
-        upper_right=[1.0] * dim,
-        num_elements=[num_elements] * dim,
-    )
 
 
 def _skip_unless_cube_grid_available():
@@ -58,22 +38,23 @@ def _skip_unless_cube_grid_available():
         pytest.skip("no make_cube_grid binding available in this build")
 
 
+@requires_k3d
 @pytest.mark.parametrize("dim", (2, 3))
-def test_visualize_grid_returns_k3d_plot(dim):
+def test_visualize_grid_returns_k3d_plot(dim, cube_grid):
     _skip_unless_cube_grid_available()
     from dune.xt.common.vtk.plot import VTKPlot
 
-    provider = _make_cube_grid(dim)
+    provider = cube_grid(dim)
     result = grid.visualize_grid(provider)
     assert isinstance(result, VTKPlot)
 
 
-def test_visualize_grid_1d_uses_matplotlib_not_k3d():
+def test_visualize_grid_1d_uses_matplotlib_not_k3d(cube_grid):
     _skip_unless_cube_grid_available()
     from matplotlib.axes import Axes
 
     # the 1d branch in dune.xt.grid.visualize_grid returns before ever checking HAVE_K3D
-    provider = _make_cube_grid(1, num_elements=4)
+    provider = cube_grid(1, num_elements=4)
     ax = grid.visualize_grid(provider)
     assert isinstance(ax, Axes)
 
@@ -84,13 +65,14 @@ def _skip_unless_expression_function_available():
         pytest.skip("no ExpressionFunction binding available in this build")
 
 
+@requires_k3d
 @pytest.mark.parametrize("dim", (2, 3))
-def test_visualize_function_returns_k3d_plot(dim):
+def test_visualize_function_returns_k3d_plot(dim, cube_grid):
     _skip_unless_expression_function_available()
     from dune.xt.common.vtk.plot import VTKPlot
     from dune.xt.grid import Dim
 
-    provider = _make_cube_grid(dim)
+    provider = cube_grid(dim)
     func = functions.ExpressionFunction(
         dim_domain=Dim(dim),
         variable="x",
@@ -102,14 +84,15 @@ def test_visualize_function_returns_k3d_plot(dim):
     assert isinstance(result, VTKPlot)
 
 
-def test_visualize_function_accepts_a_list_of_functions():
+@requires_k3d
+def test_visualize_function_accepts_a_list_of_functions(cube_grid):
     """A list writes a .pvd time-series collection instead of a single .vtu (see the `len(functions)
     == 1` branch in dune.xt.functions.visualize_function) -- exercise that path too."""
     _skip_unless_expression_function_available()
     from dune.xt.common.vtk.plot import VTKPlot
     from dune.xt.grid import Dim
 
-    provider = _make_cube_grid(2)
+    provider = cube_grid(2)
     functions_list = [
         functions.ExpressionFunction(
             dim_domain=Dim(2), variable="x", order=1, expression=expr, name="f"

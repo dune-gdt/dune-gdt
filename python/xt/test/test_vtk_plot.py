@@ -25,22 +25,6 @@ pytest.importorskip("ipywidgets")
 plot_mod = pytest.importorskip("dune.xt.common.vtk.plot", exc_type=ImportError)
 
 
-@pytest.fixture(autouse=True)
-def _display_builtin(monkeypatch):
-    """k3d's Plot.display() (k3d/plot/plot_display.py) calls a bare `display(...)` name. A real
-    Jupyter frontend gets this for free -- IPython.core.interactiveshell.InteractiveShell installs
-    it into `builtins` during init -- but under ctest there is no kernel to do that, so plot()
-    would otherwise raise `NameError: name 'display' is not defined`. Provide it directly instead
-    of standing up a whole InteractiveShell, which would mutate process-global state
-    (sys.displayhook/excepthook, builtin traps) for the rest of the test session.
-    """
-    import builtins
-
-    from IPython.display import display
-
-    monkeypatch.setattr(builtins, "display", display, raising=False)
-
-
 def _write_vtu(path, values):
     """Write a minimal two-triangle UnstructuredGrid with a "Data" point array as an ASCII .vtu."""
     points = vtk.vtkPoints()
@@ -147,6 +131,16 @@ def test_goto_idx_out_of_range_warns_and_is_a_noop(tmp_path):
     with pytest.warns(RuntimeWarning, match="outside data range"):
         result._goto_idx(5)
     # the index (and therefore the displayed timestep) is unchanged
+    assert result.idx == 0
+
+
+def test_goto_idx_at_exact_boundary_warns_and_is_a_noop(tmp_path):
+    """len(vtk_data) itself -- one past the last valid index -- used to slip past the guard
+    (`idx > len(...)` missed the `==` case) and raise IndexError instead of warning."""
+    path = _write_vtu(tmp_path / "grid.vtu", [0.0, 1.0, 2.0, 3.0])
+    result = plot_mod.plot(path, color_attribute_name="Data")
+    with pytest.warns(RuntimeWarning, match="outside data range"):
+        result._goto_idx(len(result.vtk_data))
     assert result.idx == 0
 
 
