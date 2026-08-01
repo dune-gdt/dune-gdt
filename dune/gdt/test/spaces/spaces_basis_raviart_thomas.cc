@@ -10,6 +10,8 @@
 
 #include <dune/xt/test/main.hxx> // <- this one has to come first (includes the config.h)!
 
+#include <dune/common/dynvector.hh>
+
 #include <dune/geometry/referenceelements.hh>
 
 #include <dune/grid/common/rangegenerators.hh>
@@ -17,6 +19,7 @@
 #include <dune/xt/grid/grids.hh>
 #include <dune/xt/grid/gridprovider/cube.hh>
 
+#include <dune/gdt/exceptions.hh>
 #include <dune/gdt/spaces/hdiv/raviart-thomas.hh>
 
 using namespace Dune;
@@ -61,4 +64,28 @@ GTEST_TEST(spaces_basis_raviart_thomas, basis_is_vector_valued)
     for (size_t ii = 0; ii < values.size(); ++ii)
       EXPECT_EQ(d, values[ii].size());
   }
+}
+
+
+// The RT basis' bookkeeping surface: max_size (the largest local basis any element carries, on the global and the
+// localized view), default_data (the all-ones scaling used to bootstrap restoration on elements outside the grid
+// view), and restore, which accepts data of matching size and rejects everything else.
+GTEST_TEST(spaces_basis_raviart_thomas, max_size_default_data_and_restore)
+{
+  auto grid = XT::Grid::make_cube_grid<G>(0., 1., 3);
+  auto grid_view = grid.leaf_view();
+  const auto space = make_raviart_thomas_space(grid_view, 0);
+  const auto element = *Dune::elements(grid_view).begin();
+  auto basis = space.basis().localize(element);
+
+  EXPECT_EQ(basis->size(), space.basis().max_size());
+  EXPECT_EQ(basis->size(), basis->max_size());
+
+  const auto default_data = basis->default_data(element.type());
+  ASSERT_EQ(basis->size(), default_data.size());
+  for (size_t ii = 0; ii < default_data.size(); ++ii)
+    EXPECT_DOUBLE_EQ(1., default_data[ii]);
+
+  basis->restore(element, default_data);
+  EXPECT_THROW(basis->restore(element, DynamicVector<double>(basis->size() + 1, 1.)), Exceptions::finite_element_error);
 }
