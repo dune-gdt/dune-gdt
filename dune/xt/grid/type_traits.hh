@@ -36,7 +36,7 @@
 #  include <dune/grid/spgrid/dgfparser.hh>
 #endif
 
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 #  include <dune/grid/uggrid.hh>
 #endif
 
@@ -149,13 +149,13 @@ template <int dim, int dimworld, ALU3dGridElementType elType, class Comm>
 struct is_grid<Dune::ALU3dGrid<dim, dimworld, elType, Comm>> : public std::true_type
 {};
 
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 template <int dim>
 struct is_grid<Dune::UGGrid<dim>> : public std::true_type
 {};
 
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID
 
 #if HAVE_DUNE_SPGRID
 template <class ct, int dim, template <int> class Ref, class Comm>
@@ -214,7 +214,7 @@ template <class T>
 struct is_uggrid : public std::false_type
 {};
 
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 template <int dim>
 struct is_uggrid<UGGrid<dim>> : public std::true_type

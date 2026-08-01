@@ -26,7 +26,7 @@ using namespace Dune::XT::Grid::bindings;
 // more than one geometry type (or a prism), which only UGGrid can hold -- so they are bound for UG
 // grids exclusively. The very same factories build the meshes used by the C++ space tests
 // (dune/gdt/test/spaces/base.hh), so the bindings exercise identical meshes.
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 
 // Both factories share the same python signature -- (Dim, num_refinements) -> GridProvider -- so a
@@ -45,7 +45,7 @@ void bind_unstructured_factory(pybind11::module& m, const std::string& name)
 }
 
 
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID
 
 
 PYBIND11_MODULE(_grid_gridprovider_unstructured, m)
@@ -56,7 +56,7 @@ PYBIND11_MODULE(_grid_gridprovider_unstructured, m)
   py::module::import("dune.xt.grid._grid_gridprovider_provider");
   py::module::import("dune.xt.grid._grid_traits");
 
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
   bind_unstructured_factory<UG_2D, &XT::Grid::make_mixed_grid<UG_2D>>(m, "make_mixed_grid");
   bind_unstructured_factory<UG_3D, &XT::Grid::make_mixed_grid<UG_3D>>(m, "make_mixed_grid");
   bind_unstructured_factory<UG_3D, &XT::Grid::make_prism_grid<UG_3D>>(m, "make_prism_grid");

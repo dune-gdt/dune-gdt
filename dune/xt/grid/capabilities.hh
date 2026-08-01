@@ -38,7 +38,7 @@ struct has_boundary_id
 };
 
 
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 template <int dim>
 struct has_boundary_id<UGGrid<dim>>
@@ -46,7 +46,7 @@ struct has_boundary_id<UGGrid<dim>>
   static constexpr bool value = false;
 };
 
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID
 
 
 } // namespace Dune::XT::Grid

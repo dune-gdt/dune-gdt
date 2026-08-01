@@ -16,7 +16,7 @@
 
 using Simplicial3dGrids = ::testing::Types<ALU_3D_SIMPLEX_CONFORMING,
                                            ALU_3D_SIMPLEX_NONCONFORMING
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                            ,
                                            UG_3D
 #endif

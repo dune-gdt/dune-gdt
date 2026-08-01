@@ -175,7 +175,7 @@ struct grid_name<Dune::AlbertaGrid<dim, dim>>
 
 
 #endif // HAVE_ALBERTA
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 
 template <int dim>
@@ -188,7 +188,7 @@ struct grid_name<UGGrid<dim>>
 };
 
 
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID
 
 
 /// \attention grid_name<G>::value must be unique for all grid variants below, and every make_...grid
@@ -219,7 +219,7 @@ using Available1dGridTypes = std::tuple<ONED_1D, YASP_1D_EQUIDISTANT_OFFSET>;
 
 using Available2dGridTypes = unique_grid_tuple_t<std::tuple<YASP_2D_EQUIDISTANT_OFFSET,
                                                             ALU_2D_SIMPLEX_CONFORMING
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                                             ,
                                                             UG_2D
 #endif
@@ -228,7 +228,7 @@ using Available2dGridTypes = unique_grid_tuple_t<std::tuple<YASP_2D_EQUIDISTANT_
 using Available3dGridTypes = unique_grid_tuple_t<std::tuple<YASP_3D_EQUIDISTANT_OFFSET,
                                                             ALU_3D_SIMPLEX_CONFORMING,
                                                             ALU_3D_CUBE
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                                             ,
                                                             UG_3D
 #endif
