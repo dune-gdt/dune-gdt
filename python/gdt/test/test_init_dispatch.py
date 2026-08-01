@@ -20,29 +20,29 @@ from types import SimpleNamespace
 
 import pytest
 
-import dune.gdt
+dune_gdt = pytest.importorskip("dune.gdt", exc_type=ImportError)
 
 
 def test_dim_of_rejects_an_object_without_a_dimension_attribute():
     with pytest.raises(TypeError, match="cannot determine the grid dimension"):
-        dune.gdt._dim_of(object())
+        dune_gdt._dim_of(object())
 
 
 def test_split_submodule_wraps_import_error():
     with pytest.raises(
         ImportError, match=r"cannot dispatch to dune\.gdt\.no_such_base_7d"
     ):
-        dune.gdt._split_submodule("no_such_base", 7)
+        dune_gdt._split_submodule("no_such_base", 7)
 
 
 def test_factory_requires_the_dimension_carrying_argument():
-    factory = dune.gdt._make_dispatch("no_such_base", "SomeFactory", dim_kwarg="grid")
+    factory = dune_gdt._make_dispatch("no_such_base", "SomeFactory", dim_kwarg="grid")
     with pytest.raises(TypeError, match="missing the dimension-carrying argument"):
         factory()
 
 
 def test_factory_accepts_the_dimension_carrying_argument_as_a_keyword():
-    factory = dune.gdt._make_dispatch("no_such_base", "SomeFactory", dim_kwarg="grid")
+    factory = dune_gdt._make_dispatch("no_such_base", "SomeFactory", dim_kwarg="grid")
     probe = SimpleNamespace(dimension=3)
     # the keyword is resolved into `probe` and handed to _dim_of/_split_submodule; the submodule
     # itself does not exist, so the call still fails, but only after the keyword-lookup branch
