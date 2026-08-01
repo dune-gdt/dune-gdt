@@ -20,9 +20,12 @@ import pytest
 
 from dune.xt.common.config import config
 
-pytestmark = pytest.mark.skipif(
-    not config.HAVE_K3D, reason="k3d not available in this build"
-)
+def test_visualize_function_1d_uses_matplotlib():
+    ...
+
+`@pytest.mark.skipif`(not config.HAVE_K3D, reason="k3d not available in this build")
+def test_visualize_function_2d_discrete_function_returns_k3d_plot():
+    ...
 
 gdt = pytest.importorskip("dune.gdt", exc_type=ImportError)
 grid = pytest.importorskip("dune.xt.grid")
