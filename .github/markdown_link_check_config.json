@@ -20,6 +20,15 @@
     },
     {
       "pattern": "^https://zivgitlab.uni-muenster.de"
+    },
+    {
+      "pattern": "^tutorials$"
+    },
+    {
+      "pattern": "^examples$"
+    },
+    {
+      "pattern": "^benchmarks$"
     }
   ]
 }

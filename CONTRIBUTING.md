@@ -1,7 +1,7 @@
 ```
 # This file is part of the dune-gdt project:
 #   https://github.com/dune-gdt/dune-gdt
-# Copyright 2010-2021 dune-gdt developers and contributors. All rights reserved.
+# Copyright 2009-2021 dune-gdt developers and contributors. All rights reserved.
 # License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 #      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 #          with "runtime exception" (http://www.dune-project.org/license.html)
@@ -19,7 +19,7 @@ Please note that dune-gdt is not one of the core DUNE modules. Thus, you will no
 any support from the official channels (such as the DUNE mailinglist, the DUNE bugtracker,
 etc...).
 When submitting bugs, please read these
-[general guidelines](https://www.dune-project.org/doc/guides/bug_reporting/) beforehand.
+[general guidelines](https://www.dune-project.org/dev/issues/bug_reporting/) beforehand.
 
 # Contributing
 
@@ -65,7 +65,7 @@ typos.
 * Include guards follow a pattern: file location `dune/xt/common/fvector.hh` turns into `DUNE_XT_COMMON_FVECTOR_HH`
 * Be careful to handle integers corretly, bad integer conversion is bad! Whenever possible, use `size_t` (even for
 `template<class Foo, size_t bar>`) and convert to the correct type using our `numeric_cast` from
-[dune/xt/common/numeric_cast.hh](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/-/blob/master/dune/xt/common/numeric_cast.hh):
+[dune/xt/common/numeric_cast.hh](https://github.com/dune-gdt/dune-gdt/blob/main/dune/xt/common/numeric_cast.hh):
 ```c++
 #include <dune/xt/common/numeric_cast.hh>
 
