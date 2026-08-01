@@ -45,6 +45,17 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ninja-build
 
+    - name: Set up uv
+      # The configure step expands the templated test suites through `uv run` (see
+      # dxt_codegen_command in cmake/modules/DuneXTTesting.cmake), and CMakeLists.txt
+      # resolves the Python interpreter with `uv python find`. Without uv on PATH the
+      # configure dies ~30 minutes in, after vcpkg has built every dependency.
+      uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+      with:
+        # this workflow only runs on pushes to main and workflow_dispatch, so the
+        # cache is never written from an untrusted fork
+        enable-cache: true
+
     - name: Configure CMake
       id: configure_cmake
       run: cmake --preset=release

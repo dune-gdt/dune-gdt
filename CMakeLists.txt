@@ -70,10 +70,21 @@ endforeach()
 # that active venv and breaks the configure-time system-test extraction (`dune_extract_static.py: No module named
 # dune`).
 option(DXT_USE_UV_PYTHON "Resolve the Python interpreter via uv (pinned by .python-version)" ON)
-if(DXT_USE_UV_PYTHON)
-  find_program(UV_EXECUTABLE uv)
+
+# uv is a hard build requirement independent of DXT_USE_UV_PYTHON: the configure-time expansion of the templated test
+# suites runs through `uv run` (see dxt_codegen_command in DuneXTTesting.cmake), as do the Python test and coverage
+# targets. Fail here rather than let a missing binary surface much later as an opaque "no such file or directory" from
+# the codegen -- on a from-scratch vcpkg build that is half an hour of dependency compilation further in.
+find_program(UV_EXECUTABLE uv)
+if(NOT UV_EXECUTABLE)
+  message(
+    FATAL_ERROR
+      "uv was not found on PATH. It is required to expand the templated test suites and to run the Python test suites."
+      " Install it (https://docs.astral.sh/uv/getting-started/installation/); CI jobs get it from the"
+      " astral-sh/setup-uv action.")
 endif()
-if(UV_EXECUTABLE)
+
+if(DXT_USE_UV_PYTHON)
   # `uv python find` only locates an already-available interpreter; it does not download one. On a host/runner whose
   # system Python doesn't match the pinned (.python-version) interpreter, resolve it in two steps: try to find it, and
   # if that fails install it with `uv python install` (uv downloads a managed CPython) and find it again.
@@ -116,7 +127,7 @@ if(UV_EXECUTABLE)
       CACHE FILEPATH "Python interpreter provided by uv" FORCE)
   message(STATUS "Using uv-provided Python interpreter: ${_uv_python_executable}")
 else()
-  message(STATUS "uv disabled or unavailable (DXT_USE_UV_PYTHON=${DXT_USE_UV_PYTHON}); using default FindPython")
+  message(STATUS "DXT_USE_UV_PYTHON=OFF; using default FindPython")
 endif()
 
 find_package(Python COMPONENTS Interpreter Development)

@@ -139,11 +139,13 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
   #
   # * `uv run --no-project --with ...` supplies jinja2/pyparsing without a manually-managed venv, the same way the
   #   coverage targets in dxt_add_python_tests() pull gcovr/coverage.py, and `--python ${Python_EXECUTABLE}` pins the
-  #   interpreter the rest of the build resolved (see the uv block in the top-level CMakeLists.txt). Both are bounded to
-  #   their current major version: template expansion is build-critical, and both libraries have broken across a major
-  #   bump before (jinja2 2->3, pyparsing 2->3). They are deliberately *not* pinned exactly here -- python/xt/uv.lock
-  #   already resolves them (jinja2 3.1.6, pyparsing 3.3.2) and is what the dependency tooling updates, so an exact
-  #   version repeated in CMake would be a second source of truth that silently drifts from it.
+  #   interpreter the rest of the build resolved (see the uv block in the top-level CMakeLists.txt, which also resolves
+  #   ${UV_EXECUTABLE} and fails the configure outright when uv is missing -- expanding these templates is the earliest
+  #   consumer, and a bare `uv` here reported that as an opaque "no such file or directory"). Both are bounded to their
+  #   current major version: template expansion is build-critical, and both libraries have broken across a major bump
+  #   before (jinja2 2->3, pyparsing 2->3). They are deliberately *not* pinned exactly here -- python/xt/uv.lock already
+  #   resolves them (jinja2 3.1.6, pyparsing 3.3.2) and is what the dependency tooling updates, so an exact version
+  #   repeated in CMake would be a second source of truth that silently drifts from it.
   # * PYTHONPATH points at the binary-dir assembly of the `dune.xt` package -- the symlinked sources plus the configured
   #   _version.py that dune_pybindxi_install_python_package() and python/xt/dune/xt/CMakeLists.txt put there. The
   #   per-suite .py configs import dune.xt.codegen / dune.xt.test.grid_types, and the source tree on its own is not
@@ -154,8 +156,8 @@ macro(_PROCESS_SUBDIR_TESTS fullpath)
   # was dropped (its find_program is commented out in CMakeLists.txt), and the ${PROJECT_SOURCE_DIR}/python/ scripts/
   # path, which has never existed -- the script lives in python/xt/scripts/.
   set(dxt_codegen_command
-      ${CMAKE_COMMAND} -E env "PYTHONPATH=${CMAKE_BINARY_DIR}/python/xt" uv run --no-project --with "jinja2>=3,<4"
-      --with "pyparsing>=3,<4" --python ${Python_EXECUTABLE} python
+      ${CMAKE_COMMAND} -E env "PYTHONPATH=${CMAKE_BINARY_DIR}/python/xt" ${UV_EXECUTABLE} run --no-project --with
+      "jinja2>=3,<4" --with "pyparsing>=3,<4" --python ${Python_EXECUTABLE} python
       ${PROJECT_SOURCE_DIR}/python/xt/scripts/dxt_code_generation.py)
 
   foreach(template ${test_templates})
@@ -435,15 +437,19 @@ macro(DXT_ADD_PYTHON_TESTS)
   # from a clean source checkout with `python python/update_lockfiles.py` (no build dir required).
   add_test(
     NAME xt_test_python
-    COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group test python -m pytest ${CMAKE_BINARY_DIR}/python/xt
-            --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml)
+    COMMAND
+      ${UV_EXECUTABLE} run --frozen --python ${Python_EXECUTABLE} --group test python -m pytest
+      ${CMAKE_BINARY_DIR}/python/xt --cov ${CMAKE_CURRENT_SOURCE_DIR}/
+      --junitxml=${CMAKE_BINARY_DIR}/pytest_results_xt.xml)
   set_tests_properties(
     xt_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/xt ENVIRONMENT
                               COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-xt LABELS "dune-gdt-test;python_test")
   add_test(
     NAME gdt_test_python
-    COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group test python -m pytest ${CMAKE_BINARY_DIR}/python/gdt
-            --cov ${CMAKE_CURRENT_SOURCE_DIR}/ --junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml)
+    COMMAND
+      ${UV_EXECUTABLE} run --frozen --python ${Python_EXECUTABLE} --group test python -m pytest
+      ${CMAKE_BINARY_DIR}/python/gdt --cov ${CMAKE_CURRENT_SOURCE_DIR}/
+      --junitxml=${CMAKE_BINARY_DIR}/pytest_results_gdt.xml)
   set_tests_properties(
     gdt_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/gdt ENVIRONMENT
                                COVERAGE_FILE=${CMAKE_BINARY_DIR}/coverage-gdt LABELS "dune-gdt-test;python_test")
@@ -456,7 +462,7 @@ macro(DXT_ADD_PYTHON_TESTS)
   # future non-test file dropped into docs/ is never accidentally swept into this suite.
   add_test(
     NAME docs_test_python
-    COMMAND uv run --frozen --python ${Python_EXECUTABLE} --group docs_test python -m pytest
+    COMMAND ${UV_EXECUTABLE} run --frozen --python ${Python_EXECUTABLE} --group docs_test python -m pytest
             ${CMAKE_SOURCE_DIR}/docs/test_benchmark_plots.py --junitxml=${CMAKE_BINARY_DIR}/pytest_results_docs.xml)
   set_tests_properties(docs_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/xt LABELS
                                                    "dune-gdt-test;python_test")
@@ -471,9 +477,9 @@ macro(DXT_ADD_PYTHON_TESTS)
     add_custom_target(
       coverage_cpp
       COMMAND
-        uv run --no-project --with gcovr gcovr --root ${CMAKE_SOURCE_DIR} --filter ${CMAKE_SOURCE_DIR}/dune/
-        --gcov-ignore-parse-errors --exclude-unreachable-branches --exclude-throw-branches --print-summary --xml-pretty
-        -o ${CMAKE_BINARY_DIR}/coverage-cpp.xml ${CMAKE_BINARY_DIR}
+        ${UV_EXECUTABLE} run --no-project --with gcovr gcovr --root ${CMAKE_SOURCE_DIR} --filter
+        ${CMAKE_SOURCE_DIR}/dune/ --gcov-ignore-parse-errors --exclude-unreachable-branches --exclude-throw-branches
+        --print-summary --xml-pretty -o ${CMAKE_BINARY_DIR}/coverage-cpp.xml ${CMAKE_BINARY_DIR}
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       VERBATIM USES_TERMINAL)
   endif()
@@ -499,8 +505,9 @@ macro(DXT_ADD_PYTHON_TESTS)
     # combine the two coverage.py data files written by the pytest CTest runs and emit one XML.
     add_custom_target(
       coverage_python
-      COMMAND uv run --no-project --with coverage python -m coverage combine coverage-xt coverage-gdt
-      COMMAND uv run --no-project --with coverage python -m coverage xml -o ${CMAKE_BINARY_DIR}/coverage-python.xml
+      COMMAND ${UV_EXECUTABLE} run --no-project --with coverage python -m coverage combine coverage-xt coverage-gdt
+      COMMAND ${UV_EXECUTABLE} run --no-project --with coverage python -m coverage xml -o
+              ${CMAKE_BINARY_DIR}/coverage-python.xml
       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       VERBATIM USES_TERMINAL)
   endif()
