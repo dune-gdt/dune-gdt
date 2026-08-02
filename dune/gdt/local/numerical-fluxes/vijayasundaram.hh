@@ -141,7 +141,14 @@ public:
     }
     const auto P_plus = T * lambda_plus * T_inv;
     const auto P_minus = T * lambda_minus * T_inv;
-    return P_plus * u + P_minus * v;
+    // NOTE: not simply `return P_plus * u + P_minus * v;`, Dune::FieldMatrix<K, 1, 1> (i.e. m == 1, as used by
+    //       scalar conservation laws) does not implement FieldMatrix::operator* for FieldVector<K, 1> in a way that
+    //       combines with operator+ here, which fails to compile (see #106).
+    StateType ret(0.);
+    for (size_t ii = 0; ii < m; ++ii)
+      for (size_t jj = 0; jj < m; ++jj)
+        ret[ii] += P_plus[ii][jj] * u[jj] + P_minus[ii][jj] * v[jj];
+    return ret;
   } // ... apply(...)
 
 private:
