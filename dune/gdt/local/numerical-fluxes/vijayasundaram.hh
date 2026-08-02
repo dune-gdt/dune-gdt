@@ -58,18 +58,23 @@ public:
 
   static FluxEigenDecompositionLambdaType default_flux_eigen_decomposition()
   {
-    return [](const LocalFluxType& local_flux,
-              const StateType& w,
-              const PhysicalDomainType& n,
-              const XT::Common::Parameter& param) {
-      // evaluate flux jacobian, compute P matrix [DF2016, p. 404, (8.17)]
-      static PhysicalDomainType dummy_x;
-      const auto df = local_flux.jacobian(dummy_x, w, param);
-      const auto P = df * n;
-      auto eigensolver = XT::LA::make_eigen_solver(
-          P, {{"type", XT::LA::eigen_solver_types(P)[0]}, {"assert_real_eigendecomposition", "1e-10"}});
-      return std::make_tuple(
-          eigensolver.real_eigenvalues(), eigensolver.real_eigenvectors(), eigensolver.real_eigenvectors_inverse());
+    // NOTE: this default (used whenever no explicit flux_eigen_decomposition is supplied, e.g. by
+    //       InstationaryNonconformingHyperbolicEocStudy::make_lhs_operator()) is intentionally left unimplemented:
+    //       for scalar (m == 1) fluxes, local_flux.jacobian(...) does not yield a square m x m matrix that df * n
+    //       can turn into an eigen-decomposable P, which fails to compile (see #106). Callers that need the
+    //       Vijayasundaram flux must supply their own flux_eigen_decomposition lambda, as
+    //       dune/gdt/test/inviscid-compressible-flow/base.hh does for the Euler equations.
+    return [](const LocalFluxType& /*local_flux*/,
+              const StateType& /*w*/,
+              const PhysicalDomainType& /*n*/,
+              const XT::Common::Parameter& /*param*/) -> std::tuple<std::vector<XT::Common::real_t<R>>,
+                                                                    XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>,
+                                                                    XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>> {
+      DUNE_THROW(Dune::NotImplemented,
+                 "default_flux_eigen_decomposition() is not implemented, supply your own flux_eigen_decomposition!");
+      return std::make_tuple(std::vector<XT::Common::real_t<R>>(m),
+                             XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>(),
+                             XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>());
     };
   }
 
