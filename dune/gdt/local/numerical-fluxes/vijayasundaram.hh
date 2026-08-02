@@ -130,6 +130,7 @@ public:
     const auto& evs = std::get<0>(eigendecomposition);
     const auto& T = std::get<1>(eigendecomposition);
     const auto& T_inv = std::get<2>(eigendecomposition);
+    DUNE_THROW_IF(evs.size() != m, Exceptions::numerical_flux_error, "evs.size() = " << evs.size() << "\n   m = " << m);
     // compute numerical flux [DF2016, p. 428, (8.108)]
     auto lambda_plus = XT::Common::zeros_like(T);
     auto lambda_minus = XT::Common::zeros_like(T);
