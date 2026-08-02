@@ -64,18 +64,20 @@ public:
     //       can turn into an eigen-decomposable P, which fails to compile (see #106). Callers that need the
     //       Vijayasundaram flux must supply their own flux_eigen_decomposition lambda, as
     //       dune/gdt/test/inviscid-compressible-flow/base.hh does for the Euler equations.
-    return [](const LocalFluxType& /*local_flux*/,
-              const StateType& /*w*/,
-              const PhysicalDomainType& /*n*/,
-              const XT::Common::Parameter& /*param*/) -> std::tuple<std::vector<XT::Common::real_t<R>>,
-                                                                    XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>,
-                                                                    XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>> {
-      DUNE_THROW(Dune::NotImplemented,
-                 "default_flux_eigen_decomposition() is not implemented, supply your own flux_eigen_decomposition!");
-      return std::make_tuple(std::vector<XT::Common::real_t<R>>(m),
-                             XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>(),
-                             XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>());
-    };
+    return
+        [](const LocalFluxType& /*local_flux*/,
+           const StateType& /*w*/,
+           const PhysicalDomainType& /*n*/,
+           const XT::Common::Parameter& /*param*/) -> std::tuple<std::vector<XT::Common::real_t<R>>,
+                                                                 XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>,
+                                                                 XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>> {
+          DUNE_THROW(
+              Dune::NotImplemented,
+              "default_flux_eigen_decomposition() is not implemented, supply your own flux_eigen_decomposition!");
+          return std::make_tuple(std::vector<XT::Common::real_t<R>>(m),
+                                 XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>(),
+                                 XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>());
+        };
   }
 
   NumericalVijayasundaramFlux(const FluxType& flx)
