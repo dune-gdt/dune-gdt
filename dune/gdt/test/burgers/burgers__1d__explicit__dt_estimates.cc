@@ -25,6 +25,7 @@
 #include <dune/xt/test/main.hxx> // <- this one has to come first (includes the config.h)!
 
 #include <algorithm>
+#include <string>
 
 #include <dune/xt/grid/grids.hh>
 
@@ -71,6 +72,28 @@ struct BurgersFixedExplicitDtTest : public BurgersExplicitTest<G>
     }
     return largest_sup_norm / u_0.dofs().vector().sup_norm();
   }
+
+  /**
+   * \brief Checks estimate_fixed_explicit_dt_to_T_end() for the given space type.
+   *
+   * A fraction of the actual T_end of the problem keeps this cheap, the estimator does not care. min_dt is roughly an
+   * order of magnitude below the dt the burgers .mini configs pin for either space type, so the bisection is
+   * guaranteed a valid left bracket (it would throw bisection_error otherwise).
+   */
+  void check_estimate_fixed_explicit_dt_to_T_end(const std::string& space_type)
+  {
+    SCOPED_TRACE("space_type = " + space_type);
+    this->space_type_ = space_type;
+    const auto grid = this->make_initial_grid();
+    const auto space = this->make_space(grid);
+    const double T_end = 0.1 * this->T_end_;
+    const double min_dt = 1e-3;
+    const double max_overshoot = 1.25;
+    const auto dt = this->estimate_fixed_explicit_dt_to_T_end(*space, min_dt, T_end, max_overshoot);
+    EXPECT_GE(dt, min_dt);
+    EXPECT_LE(dt, T_end);
+    EXPECT_LE(this->largest_relative_sup_norm_during_explicit_euler(*space, dt, T_end), max_overshoot);
+  }
 }; // struct BurgersFixedExplicitDtTest
 
 
@@ -93,29 +116,10 @@ TEST_F(Burgers1dFixedExplicitDtTest, estimate_fixed_explicit_dt_is_stable_for_dg
 
 TEST_F(Burgers1dFixedExplicitDtTest, estimate_fixed_explicit_dt_to_T_end_is_stable_for_dg)
 {
-  this->space_type_ = "dg_p1";
-  const auto grid = this->make_initial_grid();
-  const auto space = this->make_space(grid);
-  // a fraction of the actual T_end of the problem keeps this cheap, the estimator does not care
-  const double T_end = 0.1 * this->T_end_;
-  const double min_dt = 1e-3;
-  const double max_overshoot = 1.25;
-  const auto dt = this->estimate_fixed_explicit_dt_to_T_end(*space, min_dt, T_end, max_overshoot);
-  EXPECT_GE(dt, min_dt);
-  EXPECT_LE(dt, T_end);
-  EXPECT_LE(this->largest_relative_sup_norm_during_explicit_euler(*space, dt, T_end), max_overshoot);
+  this->check_estimate_fixed_explicit_dt_to_T_end("dg_p1");
 }
 
 TEST_F(Burgers1dFixedExplicitDtTest, estimate_fixed_explicit_dt_to_T_end_is_stable_for_fv)
 {
-  this->space_type_ = "fv";
-  const auto grid = this->make_initial_grid();
-  const auto space = this->make_space(grid);
-  const double T_end = 0.1 * this->T_end_;
-  const double min_dt = 1e-3;
-  const double max_overshoot = 1.25;
-  const auto dt = this->estimate_fixed_explicit_dt_to_T_end(*space, min_dt, T_end, max_overshoot);
-  EXPECT_GE(dt, min_dt);
-  EXPECT_LE(dt, T_end);
-  EXPECT_LE(this->largest_relative_sup_norm_during_explicit_euler(*space, dt, T_end), max_overshoot);
+  this->check_estimate_fixed_explicit_dt_to_T_end("fv");
 }
