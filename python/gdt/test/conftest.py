@@ -9,8 +9,10 @@
 #   René Fritze (2026)
 # ~~~
 
+import builtins
 import os
 
+import pytest
 from hypothesis import HealthCheck, settings
 from hypothesis.errors import InvalidArgument
 
@@ -37,3 +39,14 @@ except InvalidArgument:
     # developer's own tooling that is not on this run's plugin path); fall back instead of
     # failing collection of the whole suite
     settings.load_profile("dune-ci")
+
+
+@pytest.fixture(autouse=True)
+def _k3d_display_builtin(monkeypatch):
+    """See dune.xt's conftest.py::_k3d_display_builtin -- k3d's Plot.display() needs a bare
+    `display` name available in builtins, which a real Jupyter frontend provides for free but
+    ctest does not (see test_visualize_function.py, #393).
+    """
+    import IPython.display
+
+    monkeypatch.setattr(builtins, "display", IPython.display.display, raising=False)

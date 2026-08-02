@@ -795,9 +795,14 @@ test = [
     { name = "hatchling" },
     { name = "hypothesis" },
     { name = "k3d" },
+    { name = "lxml" },
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-regressions" },
+    { name = "vtk" },
+    { name = "xmljson" },
 ]
 
 [package.metadata]
@@ -821,9 +826,13 @@ test = [
     { name = "hatchling" },
     { name = "hypothesis" },
     { name = "k3d", specifier = ">=2.15.2" },
+    { name = "lxml" },
+    { name = "matplotlib" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-regressions" },
+    { name = "vtk" },
+    { name = "xmljson" },
 ]
 
 [[package]]
@@ -1001,6 +1010,7 @@ test = [
     { name = "jinja2" },
     { name = "k3d", specifier = ">=2.15.2" },
     { name = "lxml" },
+    { name = "matplotlib" },
     { name = "pyparsing" },
     { name = "pytest" },
     { name = "pytest-cov" },

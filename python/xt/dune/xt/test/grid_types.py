@@ -20,7 +20,10 @@ except ImportError as e:
 
     if os.environ.get("DXT_PYTHON_DEBUG", False):
         raise e
-    logging.error("dune-xt-grid bindings not available")
+    # Logged with the original exception (not just a fixed string) so a genuinely broken build --
+    # as opposed to one that never compiled this binding at all -- is diagnosable from CI output
+    # instead of silently shrinking the grid-type matrix that depends on it (#393).
+    logging.error("dune-xt-grid bindings not available: %s", e)
 
 from collections import namedtuple
 

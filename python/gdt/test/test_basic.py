@@ -22,6 +22,8 @@
 
 import pytest
 
+from dune.xt.common.config import config
+
 basic = pytest.importorskip("dune.gdt.basic", exc_type=ImportError)
 
 
@@ -38,3 +40,10 @@ basic = pytest.importorskip("dune.gdt.basic", exc_type=ImportError)
 )
 def test_basic_reexports_expected_names(name):
     assert hasattr(basic, name)
+
+
+def test_basic_reexports_visualize_function_iff_have_k3d():
+    # Regression test for #393: k3d is now in the ctest `test` dependency group, so this branch
+    # (dune/gdt/basic.py:3) is exercised both ways for the first time -- previously HAVE_K3D was
+    # permanently False under ctest and only the negative case was ever reached.
+    assert hasattr(basic, "visualize_function") == config.HAVE_K3D
