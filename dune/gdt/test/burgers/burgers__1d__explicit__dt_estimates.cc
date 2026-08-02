@@ -24,6 +24,8 @@
 
 #include <dune/xt/test/main.hxx> // <- this one has to come first (includes the config.h)!
 
+#include <algorithm>
+
 #include <dune/xt/grid/grids.hh>
 
 #include <dune/gdt/test/instationary-eocstudies/hyperbolic-nonconforming.hh>
@@ -47,23 +49,27 @@ struct BurgersFixedExplicitDtTest : public BurgersExplicitTest<G>
   }
 
   /**
-   * \brief Integrates the initial values with explicit Euler up to T_end and returns the resulting sup norm, relative
-   *        to the one of the initial values.
+   * \brief Integrates the initial values with explicit Euler up to T_end and returns the largest sup norm encountered
+   *        on the way, relative to the one of the initial values.
    *
    * Anything below max_overshoot means the given dt was indeed stable in the sense of the estimators, which use the
-   * very same criterion to accept a dt.
+   * very same criterion to accept a dt. Note that the maximum over all steps is what matters here: the estimators
+   * reject a dt as soon as a single step overshoots, so only looking at the final state would accept a dt which blew
+   * up in between and decayed again.
    */
-  double relative_sup_norm_after_explicit_euler(const S& space, const double dt, const double T_end)
+  double largest_relative_sup_norm_during_explicit_euler(const S& space, const double dt, const double T_end)
   {
     const auto u_0 = this->make_initial_values(space);
     const auto op = this->make_lhs_operator(space);
     auto u = u_0.dofs().vector();
+    double largest_sup_norm = u.sup_norm();
     double time = 0.;
     while (time < T_end + dt) {
       u -= op->apply(u, {{"_t", {time}}, {"_dt", {dt}}}) * dt;
       time += dt;
+      largest_sup_norm = std::max(largest_sup_norm, u.sup_norm());
     }
-    return u.sup_norm() / u_0.dofs().vector().sup_norm();
+    return largest_sup_norm / u_0.dofs().vector().sup_norm();
   }
 }; // struct BurgersFixedExplicitDtTest
 
@@ -81,7 +87,8 @@ TEST_F(Burgers1dFixedExplicitDtTest, estimate_fixed_explicit_dt_is_stable_for_dg
   const auto dt = this->estimate_fixed_explicit_dt(*space, max_overshoot, max_steps_to_try);
   EXPECT_GT(dt, 0.);
   EXPECT_LE(dt, this->T_end_); // the bisection may not leave its bracket
-  EXPECT_LE(this->relative_sup_norm_after_explicit_euler(*space, dt, /*T_end=*/max_steps_to_try * dt), max_overshoot);
+  EXPECT_LE(this->largest_relative_sup_norm_during_explicit_euler(*space, dt, /*T_end=*/max_steps_to_try * dt),
+            max_overshoot);
 }
 
 TEST_F(Burgers1dFixedExplicitDtTest, estimate_fixed_explicit_dt_to_T_end_is_stable_for_dg)
@@ -96,7 +103,7 @@ TEST_F(Burgers1dFixedExplicitDtTest, estimate_fixed_explicit_dt_to_T_end_is_stab
   const auto dt = this->estimate_fixed_explicit_dt_to_T_end(*space, min_dt, T_end, max_overshoot);
   EXPECT_GE(dt, min_dt);
   EXPECT_LE(dt, T_end);
-  EXPECT_LE(this->relative_sup_norm_after_explicit_euler(*space, dt, T_end), max_overshoot);
+  EXPECT_LE(this->largest_relative_sup_norm_during_explicit_euler(*space, dt, T_end), max_overshoot);
 }
 
 TEST_F(Burgers1dFixedExplicitDtTest, estimate_fixed_explicit_dt_to_T_end_is_stable_for_fv)
@@ -110,5 +117,5 @@ TEST_F(Burgers1dFixedExplicitDtTest, estimate_fixed_explicit_dt_to_T_end_is_stab
   const auto dt = this->estimate_fixed_explicit_dt_to_T_end(*space, min_dt, T_end, max_overshoot);
   EXPECT_GE(dt, min_dt);
   EXPECT_LE(dt, T_end);
-  EXPECT_LE(this->relative_sup_norm_after_explicit_euler(*space, dt, T_end), max_overshoot);
+  EXPECT_LE(this->largest_relative_sup_norm_during_explicit_euler(*space, dt, T_end), max_overshoot);
 }
