@@ -58,20 +58,26 @@ public:
 
   static FluxEigenDecompositionLambdaType default_flux_eigen_decomposition()
   {
-    //! TODO: re-enable
-    // return [](const LocalFluxType& local_flux,
-    //           const StateType& w,
-    //           const PhysicalDomainType& n,
-    //           const XT::Common::Parameter& param) {
-    //   // evaluate flux jacobian, compute P matrix [DF2016, p. 404, (8.17)]
-    //   static PhysicalDomainType dummy_x;
-    //   const auto df = local_flux.jacobian(dummy_x, w, param);
-    //   const auto P = df * n;
-    //   auto eigensolver = XT::LA::make_eigen_solver(
-    //       P, {{"type", XT::LA::eigen_solver_types(P)[0]}, {"assert_real_eigendecomposition", "1e-10"}});
-    //   return std::make_tuple(
-    //       eigensolver.real_eigenvalues(), eigensolver.real_eigenvectors(), eigensolver.real_eigenvectors_inverse());
-    // };
+    // NOTE: this default (used whenever no explicit flux_eigen_decomposition is supplied, e.g. by
+    //       InstationaryNonconformingHyperbolicEocStudy::make_lhs_operator()) is intentionally left unimplemented:
+    //       for scalar (m == 1) fluxes, local_flux.jacobian(...) does not yield a square m x m matrix that df * n
+    //       can turn into an eigen-decomposable P, which fails to compile (see #106). Callers that need the
+    //       Vijayasundaram flux must supply their own flux_eigen_decomposition lambda, as
+    //       dune/gdt/test/inviscid-compressible-flow/base.hh does for the Euler equations.
+    return
+        [](const LocalFluxType& /*local_flux*/,
+           const StateType& /*w*/,
+           const PhysicalDomainType& /*n*/,
+           const XT::Common::Parameter& /*param*/) -> std::tuple<std::vector<XT::Common::real_t<R>>,
+                                                                 XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>,
+                                                                 XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>> {
+          DUNE_THROW(
+              Dune::NotImplemented,
+              "default_flux_eigen_decomposition() is not implemented, supply your own flux_eigen_decomposition!");
+          return std::make_tuple(std::vector<XT::Common::real_t<R>>(m),
+                                 XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>(),
+                                 XT::Common::FieldMatrix<XT::Common::real_t<R>, m, m>());
+        };
   }
 
   NumericalVijayasundaramFlux(const FluxType& flx)
@@ -119,23 +125,30 @@ public:
                   const XT::Common::Parameter& param = {}) const override final
   {
     // compute decomposition
-    //! TODO: re-enable
-    // this->compute_entity_coords(x);
-    // const auto eigendecomposition = flux_eigen_decomposition_(*local_flux_inside_, 0.5 * (u + v), n, param);
-    // const auto& evs = std::get<0>(eigendecomposition);
-    // const auto& T = std::get<1>(eigendecomposition);
-    // const auto& T_inv = std::get<2>(eigendecomposition);
-    // // compute numerical flux [DF2016, p. 428, (8.108)]
-    // auto lambda_plus = XT::Common::zeros_like(T);
-    // auto lambda_minus = XT::Common::zeros_like(T);
-    // for (size_t ii = 0; ii < m; ++ii) {
-    //   const auto& real_ev = evs[ii];
-    //   XT::Common::set_matrix_entry(lambda_plus, ii, ii, XT::Common::max(real_ev, 0.));
-    //   XT::Common::set_matrix_entry(lambda_minus, ii, ii, XT::Common::min(real_ev, 0.));
-    // }
-    // const auto P_plus = T * lambda_plus * T_inv;
-    // const auto P_minus = T * lambda_minus * T_inv;
-    // return P_plus * u + P_minus * v;
+    this->compute_entity_coords(x);
+    const auto eigendecomposition = flux_eigen_decomposition_(*local_flux_inside_, 0.5 * (u + v), n, param);
+    const auto& evs = std::get<0>(eigendecomposition);
+    const auto& T = std::get<1>(eigendecomposition);
+    const auto& T_inv = std::get<2>(eigendecomposition);
+    DUNE_THROW_IF(evs.size() != m, Exceptions::numerical_flux_error, "evs.size() = " << evs.size() << "\n   m = " << m);
+    // compute numerical flux [DF2016, p. 428, (8.108)]
+    auto lambda_plus = XT::Common::zeros_like(T);
+    auto lambda_minus = XT::Common::zeros_like(T);
+    for (size_t ii = 0; ii < m; ++ii) {
+      const auto& real_ev = evs[ii];
+      XT::Common::set_matrix_entry(lambda_plus, ii, ii, XT::Common::max(real_ev, 0.));
+      XT::Common::set_matrix_entry(lambda_minus, ii, ii, XT::Common::min(real_ev, 0.));
+    }
+    const auto P_plus = T * lambda_plus * T_inv;
+    const auto P_minus = T * lambda_minus * T_inv;
+    // NOTE: not simply `return P_plus * u + P_minus * v;`, Dune::FieldMatrix<K, 1, 1> (i.e. m == 1, as used by
+    //       scalar conservation laws) does not implement FieldMatrix::operator* for FieldVector<K, 1> in a way that
+    //       combines with operator+ here, which fails to compile (see #106).
+    StateType ret(0.);
+    for (size_t ii = 0; ii < m; ++ii)
+      for (size_t jj = 0; jj < m; ++jj)
+        ret[ii] += P_plus[ii][jj] * u[jj] + P_minus[ii][jj] * v[jj];
+    return ret;
   } // ... apply(...)
 
 private:

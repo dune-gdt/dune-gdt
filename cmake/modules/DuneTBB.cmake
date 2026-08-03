@@ -20,18 +20,12 @@
 # tries to link _debug libraries if cmake build mode matches DEBUG
 # ~~~
 
-find_package(TBB)
+find_package(TBB REQUIRED)
 
 # add all TBB related flags to ALL_PKG_FLAGS, this must happen regardless of a target using add_dune_tbb_flags
-if(TBB_FOUND)
-  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-DENABLE_TBB=1")
-  foreach(dir ${TBB_INCLUDE_DIRS})
-    set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
-  endforeach()
-  set(HAVE_TBB 1)
-else(TBB_FOUND)
-  set(HAVE_TBB 0)
-endif(TBB_FOUND)
+foreach(dir ${TBB_INCLUDE_DIRS})
+  set_property(GLOBAL APPEND PROPERTY ALL_PKG_FLAGS "-I${dir}")
+endforeach()
 
 function(add_dune_tbb_flags targets)
   include_sys_dir("${TBB_INCLUDE_DIRS}")

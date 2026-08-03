@@ -126,6 +126,7 @@ public:
   }
 
   GenericLocalCouplingIntersectionBilinearForm(ThisType&& source) = default;
+  GenericLocalCouplingIntersectionBilinearForm(const ThisType& other) = default;
 
   std::unique_ptr<BaseType> copy() const override final
   {

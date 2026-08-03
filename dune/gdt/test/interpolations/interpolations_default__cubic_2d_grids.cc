@@ -14,17 +14,15 @@
 #include "default.hh"
 
 
-using Cubic2dGrids = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                      ,
-                                      ALU_2D_CUBE
-#endif
+// YASP_2D_EQUIDISTANT_OFFSET is covered at runtime by the hypothesis property tests driving
+// the bindings (python/gdt/test/test_hypothesis_interpolation.py); only the grids the
+// bindings do not instantiate remain here.
+using Cubic2dGrids = ::testing::Types<ALU_2D_CUBE
 #if HAVE_DUNE_UGGRID
                                       ,
                                       UG_2D
 #endif
                                       >;
-
 
 template <class G>
 using InterpolationTest = Dune::GDT::Test::DefaultInterpolationOnLeafViewTest<G>;

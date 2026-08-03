@@ -63,8 +63,8 @@ foreach(source ${example_sources}) # do some name conversion
 endforeach(source ${example_sources})
 
 # the example dependencies (pyMOR) are declared as the `examples` extra of the dune.gdt package (see
-# python/gdt/setup.py, which forwards to the dune.xt `examples` extra in python/xt/pyproject.toml); installing the extra
-# of the already editable-installed package pulls them into the dune-env.
+# python/gdt/hatch_build.py, which forwards to the dune.xt `examples` extra in python/xt/pyproject.toml); installing the
+# extra of the already editable-installed package pulls them into the dune-env.
 add_custom_target(
   install_example_requirements
   COMMAND ${RUN_IN_ENV_SCRIPT} python -m pip install "dune.gdt[examples]"

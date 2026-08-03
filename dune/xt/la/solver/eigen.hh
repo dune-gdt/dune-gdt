@@ -23,24 +23,22 @@
 #include <cmath>
 #include <complex>
 
-#if HAVE_EIGEN
-#  include <dune/xt/common/disable_warnings.hh>
-#  include <Eigen/Dense>
-#  include <Eigen/SparseCore>
-#  include <Eigen/IterativeLinearSolvers>
-#  include <Eigen/SparseCholesky>
-#  include <Eigen/SparseLU>
-#  include <Eigen/SparseQR>
-// #   if HAVE_UMFPACK
-// #     include <Eigen/UmfPackSupport>
-// #   endif
-// #   include <Eigen/SPQRSupport>
-// #   include <Eigen/CholmodSupport>
-// #   if HAVE_SUPERLU
-// #     include <Eigen/SuperLUSupport>
-// #   endif
-#  include <dune/xt/common/reenable_warnings.hh>
-#endif // HAVE_EIGEN
+#include <dune/xt/common/disable_warnings.hh>
+#include <Eigen/Dense>
+#include <Eigen/SparseCore>
+#include <Eigen/IterativeLinearSolvers>
+#include <Eigen/SparseCholesky>
+#include <Eigen/SparseLU>
+#include <Eigen/SparseQR>
+// #if HAVE_UMFPACK
+// #  include <Eigen/UmfPackSupport>
+// #endif
+// #include <Eigen/SPQRSupport>
+// #include <Eigen/CholmodSupport>
+// #if HAVE_SUPERLU
+// #  include <Eigen/SuperLUSupport>
+// #endif
+#include <dune/xt/common/reenable_warnings.hh>
 
 #include <dune/xt/common/exceptions.hh>
 #include <dune/xt/common/configuration.hh>
@@ -49,8 +47,6 @@
 #include "../solver.hh"
 
 namespace Dune::XT::LA {
-
-#if HAVE_EIGEN
 
 /// \brief Available solver options for EigenDenseMatrix (direct LU, QR and Cholesky factorizations).
 template <class S, class CommunicatorType>
@@ -211,8 +207,7 @@ public:
         const S val = solution.get_entry(ii);
         if (Common::isnan(val) || Common::isinf(val)) {
           std::stringstream msg;
-          msg << "The computed solution contains inf or nan and you requested checking (see options "
-              << "below)!\n"
+          msg << "The computed solution contains inf or nan and you requested checking (see options " << "below)!\n"
               << "If you want to disable this check, set 'check_for_inf_nan = 0' in the options.\n\n"
               << "Those were the given options:\n\n"
               << opts;
@@ -234,8 +229,7 @@ public:
         std::stringstream msg;
         msg << "The computed solution does not solve the system (although the eigen backend reported "
             << "'Success') and you requested checking (see options below)!\n"
-            << "If you want to disable this check, set 'post_check_solves_system = 0' in the options."
-            << "\n\n"
+            << "If you want to disable this check, set 'post_check_solves_system = 0' in the options." << "\n\n"
             << "  (A * x - b).sup_norm() = " << tmp.sup_norm() << "\n\n"
             << "Those were the given options:\n\n"
             << opts;
@@ -629,27 +623,11 @@ private:
 }; // class Solver
 
 
-#else // HAVE_EIGEN
-
-template <class S>
-class Solver<EigenDenseMatrix<S>>
-{
-  static_assert(Dune::AlwaysFalse<S>::value, "You are missing Eigen!");
-};
-
-template <class S>
-class Solver<EigenRowMajorSparseMatrix<S>>
-{
-  static_assert(Dune::AlwaysFalse<S>::value, "You are missing Eigen!");
-};
-
-#endif // HAVE_EIGEN
-
 } // namespace Dune::XT::LA
 
 
 // begin: this is what we need for the lib
-#if DUNE_XT_WITH_PYTHON_BINDINGS && HAVE_EIGEN
+#if DUNE_XT_WITH_PYTHON_BINDINGS
 
 extern template class Dune::XT::LA::Solver<Dune::XT::LA::EigenDenseMatrix<double>>;
 // extern template void
@@ -672,7 +650,7 @@ extern template class Dune::XT::LA::Solver<Dune::XT::LA::EigenRowMajorSparseMatr
 //    Dune::XT::LA::EigenDenseVector<double>&,
 //    const Dune::XT::Common::Configuration&) const;
 
-#endif // DUNE_XT_WITH_PYTHON_BINDINGS && HAVE_EIGEN
+#endif // DUNE_XT_WITH_PYTHON_BINDINGS
 // end: this is what we need for the lib
 
 

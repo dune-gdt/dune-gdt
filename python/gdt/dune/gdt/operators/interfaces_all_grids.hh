@@ -132,4 +132,25 @@ struct OperatorInterface_for_all_grids<M, MT, ST, Dune::XT::Common::tuple_null_t
 };
 
 
+// Shared by interfaces_istl_1d.cc/_2d.cc/_3d.cc: see DUNE_GDT_BIND_OPERATOR_MODULE for rationale.
+// Type-only (grid-named classes are unique across modules), so no __all__ / trampoline needed.
+#define DUNE_GDT_BIND_OPERATOR_INTERFACES_ISTL_MODULE(dim)                                                             \
+  namespace py = pybind11;                                                                                             \
+  using namespace Dune;                                                                                                \
+  using namespace Dune::XT;                                                                                            \
+  using namespace Dune::GDT;                                                                                           \
+                                                                                                                       \
+  py::module::import("dune.xt.common");                                                                                \
+  py::module::import("dune.xt.la");                                                                                    \
+  py::module::import("dune.xt.grid");                                                                                  \
+  py::module::import("dune.xt.functions");                                                                             \
+                                                                                                                       \
+  py::module::import("dune.gdt._spaces_interface");                                                                    \
+                                                                                                                       \
+  OperatorInterface_for_all_grids<LA::IstlRowMajorSparseMatrix<double>,                                                \
+                                  LA::bindings::Istl,                                                                  \
+                                  void,                                                                                \
+                                  XT::Grid::bindings::Available##dim##dGridTypes>::bind(m, "istl_sparse")
+
+
 #endif // PYTHON_DUNE_GDT_OPERATORS_INTERFACES_BINDINGS_HH

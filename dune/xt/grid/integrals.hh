@@ -69,8 +69,9 @@ double element_integral(const Element& element,
 template <class RangeType, class IntersectionType>
 RangeType intersection_integral(
     const IntersectionType& intersection,
-    std::function<RangeType(const FieldVector<typename IntersectionType::ctype, IntersectionType::mydimension>&
-                                point_in_reference_intersection)> function,
+    std::function<RangeType(const FieldVector<typename IntersectionType::Geometry::ctype,
+                                              IntersectionType::mydimension>& point_in_reference_intersection)>
+        function,
     const int polynomial_order_of_the_function)
 {
   static_assert(XT::Grid::is_intersection<IntersectionType>::value, "intersection has to be a codim-1 grid entity");

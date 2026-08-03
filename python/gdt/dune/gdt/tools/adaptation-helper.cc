@@ -60,7 +60,10 @@ public:
   }
 
   GDT::FiniteVolumeSpace<GV, r, rC> marker_indices;
-  XT::LA::CommonDenseVector<size_t> markers;
+  // double-valued (not size_t) so coarsening can be requested with a negative marker, matching
+  // the -1/0/1 semantics of Grid::mark(); exposed to Python as the (buffer-compatible)
+  // CommonVector, so `np.array(helper.markers, copy=False)` keeps working
+  XT::LA::CommonDenseVector<double> markers;
 
   G& grid() // expose access for bindings below
   {
@@ -129,7 +132,7 @@ public:
             auto grid_view = self.grid().leafGridView();
             for (auto&& element : elements(grid_view))
               if (element.isNew())
-                self.markers[self.marker_indices.mapper().global_index(element, size_t(0))] = size_t(1);
+                self.markers[self.marker_indices.mapper().global_index(element, size_t(0))] = 1.;
           }
           // ... possibly cleaning up the grid
           self.post_adapt(post_adapt_grid, clear);
@@ -152,11 +155,14 @@ public:
           "dim_range"_a = XT::Grid::bindings::Dimension<r>(),
           "logging_prefix"_a = "");
     else if (std::is_same<VT, XT::LA::bindings::Istl>::value)
+      // dim_range before la_backend (and correctly named, they used to be swapped), so that
+      // `AdaptationHelper(grid, dim_range=Dim(d))` works for the vector-valued helper just like
+      // the other dim_range-dispatched factories
       m.def(
           FactoryName.c_str(),
           [](XT::Grid::GridProvider<G>& grid,
-             const VT&,
              const XT::Grid::bindings::Dimension<r>&,
+             const VT&,
              const std::string& logging_prefix) { return new type(grid.grid(), logging_prefix); },
           "grid"_a,
           "dim_range"_a,
@@ -195,13 +201,7 @@ public:
 } // namespace Dune
 
 
-using AvailableAdaptiveGridTypes = std::tuple<ONED_1D
-#if HAVE_DUNE_ALUGRID
-                                              ,
-                                              ALU_2D_SIMPLEX_CONFORMING,
-                                              ALU_3D_SIMPLEX_CONFORMING
-#endif
-                                              >;
+using AvailableAdaptiveGridTypes = std::tuple<ONED_1D, ALU_2D_SIMPLEX_CONFORMING, ALU_3D_SIMPLEX_CONFORMING>;
 
 
 template <class V, class VT, class GridTypes = AvailableAdaptiveGridTypes>
@@ -244,7 +244,9 @@ PYBIND11_MODULE(_tools_adaptation_helper, m)
   py::module::import("dune.xt.functions");
 
   py::module::import("dune.gdt._spaces_interface");
-  py::module::import("dune.gdt._discretefunction_discretefunction");
+  py::module::import("dune.gdt._discretefunction_discretefunction_1d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_2d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_3d");
 
   //  AdaptationHelper_for_all_grids<LA::CommonDenseVector<double>, LA::bindings::Common>::bind(m);
   // #if HAVE_EIGEN

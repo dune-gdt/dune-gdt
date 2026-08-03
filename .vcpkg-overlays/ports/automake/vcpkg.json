@@ -1,0 +1,15 @@
+{
+  "name": "automake",
+  "version": "1.18.1",
+  "description":
+    "GNU Automake, a tool for automatically generating Makefile.in files compliant with the GNU Coding Standards",
+  "homepage": "https://www.gnu.org/software/automake/",
+  "license": "GPL-2.0-or-later",
+  "supports": "!windows",
+  "dependencies": [
+    {
+      "name": "autoconf",
+      "host": true
+    }
+  ]
+}

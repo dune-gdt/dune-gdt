@@ -1,0 +1,10 @@
+{
+  "name": "autoconf",
+  "version": "2.73",
+  "description":
+    "GNU Autoconf, a tool for producing configure scripts for building, installing and packaging software",
+  "homepage": "https://www.gnu.org/software/autoconf/",
+  "license": "GPL-3.0-or-later",
+  "supports": "!windows",
+  "dependencies": []
+}

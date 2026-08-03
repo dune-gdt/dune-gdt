@@ -167,8 +167,10 @@ private:
         result.resize(1);
       for (size_t jj = 0; jj < d; ++jj)
         if (alpha[jj] == 0) {
+          // result[0][ii][jj], not result[0][jj]: the derivative range is an r x d matrix with components as rows
+          // and directions as columns, so indexing rows by the direction jj read out of bounds for jj >= r
           for (size_t ii = 0; ii < r; ++ii)
-            result[0][jj] = 1;
+            result[0][ii][jj] = 1;
         } else {
           DUNE_THROW(Exceptions::basis_error, "arbitrary derivatives are not supported!\n\n" << "alpha = " << alpha);
         }
@@ -184,8 +186,11 @@ private:
       if (result.size() < 1)
         result.resize(1);
       RangeSelector::ensure_size(result[0]);
+      // result[0][ii], not result[ii]: this fills the r components of the single basis function's
+      // value, while result[ii] indexed the vector of basis functions (of size 1) out of bounds for
+      // every vector-valued (r > 1) space
       for (size_t ii = 0; ii < r; ++ii)
-        result[ii] = 1;
+        result[0][ii] = 1;
     }
 
     void jacobians(const DomainType& /*point_in_reference_element*/,

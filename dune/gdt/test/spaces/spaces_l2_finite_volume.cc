@@ -189,22 +189,17 @@ struct FiniteVolumeSpaceOnSimplicialLeafView
 
 
 using SimplicialGrids = ::testing::Types<ONED_1D,
-                                         YASP_1D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                         ,
+                                         YASP_1D_EQUIDISTANT_OFFSET,
                                          ALU_2D_SIMPLEX_CONFORMING,
                                          ALU_2D_SIMPLEX_NONCONFORMING
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                          ,
                                          UG_2D
 #endif
-#if HAVE_DUNE_ALUGRID
                                          ,
                                          ALU_3D_SIMPLEX_CONFORMING,
                                          ALU_3D_SIMPLEX_NONCONFORMING
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                          ,
                                          UG_3D
 #endif
@@ -281,22 +276,16 @@ struct FiniteVolumeSpaceOnCubicLeafView
 }; // struct FiniteVolumeSpaceOnCubicLeafView
 
 
-using CubicGrids = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                    ,
+using CubicGrids = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET,
                                     ALU_2D_CUBE
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                     ,
                                     UG_2D
 #endif
                                     ,
-                                    YASP_3D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                    ,
+                                    YASP_3D_EQUIDISTANT_OFFSET,
                                     ALU_3D_CUBE
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                     ,
                                     UG_3D
 #endif
@@ -388,13 +377,13 @@ struct FiniteVolumeSpaceOnPrismLeafView
 
 
 using PrismGrids = ::testing::Types<
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
     UG_3D
 #endif
     >;
 
 // currently the grid list is empty if we do not have UG
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 template <class G>
 using ScalarPrismFiniteVolumeSpace = FiniteVolumeSpaceOnPrismLeafView<G, 1>;
@@ -431,7 +420,7 @@ TYPED_TEST(ScalarPrismFiniteVolumeSpace, local_interpolation_seems_to_be_correct
 {
   this->local_interpolation_seems_to_be_correct();
 }
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID
 
 template <class G, size_t r>
 struct FiniteVolumeSpaceOnPyramidLeafView
@@ -480,13 +469,13 @@ struct FiniteVolumeSpaceOnPyramidLeafView
 
 
 using PyramidGrids = ::testing::Types<
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
     UG_3D
 #endif
     >;
 
 // currently the grid list is empty if we do not have UG
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 template <class G>
 using ScalarPyramidFiniteVolumeSpace = FiniteVolumeSpaceOnPyramidLeafView<G, 1>;
@@ -524,7 +513,7 @@ TYPED_TEST(ScalarPyramidFiniteVolumeSpace, local_interpolation_seems_to_be_corre
   this->local_interpolation_seems_to_be_correct();
 }
 
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID
 
 template <class G, size_t r>
 struct FiniteVolumeSpaceOnMixedLeafView
@@ -616,13 +605,13 @@ struct FiniteVolumeSpaceOnMixedLeafView
 
 
 using MixedGrids = ::testing::Types<
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
     UG_2D,
     UG_3D
 #endif
     >;
 // currently the grid list is empty if we do not have UG
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 
 template <class G>
@@ -660,4 +649,4 @@ TYPED_TEST(ScalarMixedFiniteVolumeSpace, local_interpolation_seems_to_be_correct
 {
   this->local_interpolation_seems_to_be_correct();
 }
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID

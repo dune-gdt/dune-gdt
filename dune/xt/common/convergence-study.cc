@@ -220,23 +220,27 @@ ConvergenceStudy::run(const std::vector<std::string>& only_these, std::ostream& 
     } else {
       // lets see if we can fit all words in these rows somehow nicely
       int last_row = 0;
-      for (auto word_it = words.begin(); word_it != words.end(); ++word_it) {
+      // Note: erase() invalidates word_it and already yields the iterator to the next word, so the loop must not
+      // advance on its own after a word was consumed (doing so skipped a word and, once the last one was erased,
+      // stepped past end() -- from where the loop condition never held again and the iteration ran off the vector).
+      for (auto word_it = words.begin(); word_it != words.end();) {
         const auto& word = *word_it;
         if (word.size() > column_width)
           break;
         if (last_row <= 1 && word.size() <= (column_width - first_row.size() - (first_row.empty() ? 0 : 1))) {
           first_row += (first_row.empty() ? "" : " ") + word;
           last_row = 1;
-          words.erase(word_it);
+          word_it = words.erase(word_it);
         } else if (last_row <= 2 && word.size() <= (column_width - second_row.size() - (second_row.empty() ? 0 : 1))) {
           second_row += (second_row.empty() ? "" : " ") + word;
           last_row = 2;
-          words.erase(word_it);
+          word_it = words.erase(word_it);
         } else if (last_row <= 3 && word.size() <= (column_width - third_row.size() - (third_row.empty() ? 0 : 1))) {
           third_row += (third_row.empty() ? "" : " ") + word;
           last_row = 3;
-          words.erase(word_it);
-        }
+          word_it = words.erase(word_it);
+        } else
+          ++word_it;
       }
       if (words.empty()) {
         // this worked, align right

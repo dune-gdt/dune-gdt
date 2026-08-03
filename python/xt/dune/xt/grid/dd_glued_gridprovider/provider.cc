@@ -124,7 +124,7 @@ public:
     bound_type c(
         m,
         ClassName.c_str(),
-        (XT::Common::to_camel_case(class_id) + " (" + macro_grid_id + "_" = micro_grid_id + " variant)").c_str());
+        (XT::Common::to_camel_case(class_id) + " (" + macro_grid_id + "_" + micro_grid_id + " variant)").c_str());
     // dim cannot be binded directly because it is static const
     c.def_property_readonly("dimension", [](type&) { return dim; });
     c.def("local_grid", py::overload_cast<size_t>(&type::local_grid));
@@ -264,18 +264,11 @@ struct MacroGridBasedBoundaryInfo
  * \note Available grid types for DD::Glued. So far, we only use Alugrid and Yasp
  */
 
-using AvailableGridGlueGridTypes = std::tuple<YASP_2D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                              ,
-                                              ALU_2D_SIMPLEX_CONFORMING,
-                                              ALU_2D_CUBE
-#endif
-                                              >;
+using AvailableGridGlueGridTypes = std::tuple<YASP_2D_EQUIDISTANT_OFFSET, ALU_2D_SIMPLEX_CONFORMING, ALU_2D_CUBE>;
 
 using GridGlue2dYaspYasp =
     Dune::XT::Grid::DD::Glued<YASP_2D_EQUIDISTANT_OFFSET, YASP_2D_EQUIDISTANT_OFFSET, Dune::XT::Grid::Layers::leaf>;
 using CouplingGridView2dYaspYasp = Dune::XT::Grid::CouplingGridView<GridGlue2dYaspYasp>;
-#if HAVE_DUNE_ALUGRID
 using GridGlue2dAluSimplexConformingAluSimplexConforming =
     Dune::XT::Grid::DD::Glued<ALU_2D_SIMPLEX_CONFORMING, ALU_2D_SIMPLEX_CONFORMING, Dune::XT::Grid::Layers::leaf>;
 using GridGlue2dAluConformingAluConforming =
@@ -284,15 +277,10 @@ using CouplingGridView2dAluSimplexConformingAluSimplexConforming =
     Dune::XT::Grid::CouplingGridView<GridGlue2dAluSimplexConformingAluSimplexConforming>;
 using CouplingGridView2dAluConformingAluConforming =
     Dune::XT::Grid::CouplingGridView<GridGlue2dAluConformingAluConforming>;
-#endif
 
-using AvailableCouplingGridViewTypes = std::tuple<CouplingGridView2dYaspYasp
-#if HAVE_DUNE_ALUGRID
-                                                  ,
+using AvailableCouplingGridViewTypes = std::tuple<CouplingGridView2dYaspYasp,
                                                   CouplingGridView2dAluSimplexConformingAluSimplexConforming,
-                                                  CouplingGridView2dAluConformingAluConforming
-#endif
-                                                  >;
+                                                  CouplingGridView2dAluConformingAluConforming>;
 
 
 template <class GridTypes = AvailableGridGlueGridTypes>

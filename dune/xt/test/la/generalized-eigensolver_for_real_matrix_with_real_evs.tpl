@@ -47,7 +47,6 @@ struct GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}
 }; // struct GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}
 
 
-#if HAVE_MKL || HAVE_LAPACKE
 TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, exports_correct_types)
 {
   exports_correct_types();
@@ -63,9 +62,19 @@ TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_broken_ma
   throws_on_broken_matrix_construction();
 }
 
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_broken_rhs_matrix_construction)
+{
+  throws_on_broken_rhs_matrix_construction();
+}
+
 TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, allows_broken_matrix_construction_when_checks_disabled)
 {
   allows_broken_matrix_construction_when_checks_disabled();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, allows_broken_matrix_construction_when_all_checks_disabled)
+{
+  allows_broken_matrix_construction_when_all_checks_disabled();
 }
 
 TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_inconsistent_given_options)
@@ -73,14 +82,64 @@ TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_inconsist
   throws_on_inconsistent_given_options();
 }
 
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_missing_type_in_options)
+{
+  throws_on_missing_type_in_options();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_unknown_type)
+{
+  throws_on_unknown_type();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_unknown_type_when_checks_are_disabled)
+{
+  throws_on_unknown_type_when_checks_are_disabled();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_non_positive_real_tolerance)
+{
+  throws_on_non_positive_real_tolerance();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_matrices_of_wrong_size)
+{
+  throws_on_matrices_of_wrong_size();
+}
+
 TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, is_constructible)
 {
   is_constructible();
 }
 
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, is_constructible_from_options_pointer)
+{
+  is_constructible_from_options_pointer();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, exposes_the_given_matrices)
+{
+  exposes_the_given_matrices();
+}
+
 TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, gives_correct_eigenvalues)
 {
   gives_correct_eigenvalues();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, gives_correct_eigenvalues_via_free_functions)
+{
+  gives_correct_eigenvalues_via_free_functions();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_request_for_eigenvectors)
+{
+  throws_on_request_for_eigenvectors();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, throws_on_indefinite_rhs_matrix)
+{
+  throws_on_indefinite_rhs_matrix();
 }
 
 TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, gives_correct_real_eigenvalues)
@@ -97,10 +156,20 @@ TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, gives_correct_min_e
 {
   gives_correct_min_eigenvalue();
 }
-#else // HAVE_MKL || HAVE_LAPACKE
-TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, disabled_due_to_missing_lapacke)
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, gives_correct_extremal_eigenvalues)
 {
+  gives_correct_extremal_eigenvalues();
 }
-#endif
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, checks_eigenvalue_assertions)
+{
+  checks_eigenvalue_assertions();
+}
+
+TEST_F(GeneralizedEigenSolverForMatrixFullOfOnes_{{T_NAME}}, computes_eigenvalues_required_for_assertions)
+{
+  computes_eigenvalues_required_for_assertions();
+}
 
 {% endfor %}

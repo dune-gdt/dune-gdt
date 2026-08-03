@@ -1,7 +1,7 @@
 ```
-# This file is part of the dune-xt project:
-#   https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt
-# Copyright 2009-2021 dune-xt developers and contributors. All rights reserved.
+# This file is part of the dune-gdt project:
+#   https://github.com/dune-gdt/dune-gdt
+# Copyright 2009-2021 dune-gdt developers and contributors. All rights reserved.
 # License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 #      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 #          with "runtime exception" (http://www.dune-project.org/license.html)
@@ -13,12 +13,13 @@
 
 # Help
 
-If you are experiencing problems or would like to get help, just send us an [email](dune-xt@dune-community.ovh).
-Please note that dune-xt is not one of the core DUNE modules. Thus, you will not get
+If you are experiencing problems or would like to get help, please open an issue on
+[GitHub](https://github.com/dune-gdt/dune-gdt/issues).
+Please note that dune-gdt is not one of the core DUNE modules. Thus, you will not get
 any support from the official channels (such as the DUNE mailinglist, the DUNE bugtracker,
 etc...).
 When submitting bugs, please read these
-[general guidelines](https://www.dune-project.org/doc/guides/bug_reporting/) beforehand.
+[general guidelines](https://www.dune-project.org/dev/issues/bug_reporting/) beforehand.
 
 # Contributing
 
@@ -32,9 +33,13 @@ Before you start making changes, please make sure you have [pre-commit](https://
 installed and run `pre-commit install` in the module root directory. This installs git hooks
 to automatically check coding style and some linters.
 
+Note that `dune/xt` and `python/xt` (the dune-xt extensions) are developed and maintained directly
+in this repository, not in a separate upstream project — contributions and bug reports for that
+code follow the same process as the rest of dune-gdt.
+
 ## Issues
 
-Take a look at the [issues](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/-/issues)
+Take a look at the [issues](https://github.com/dune-gdt/dune-gdt/issues)
 to help shape the future of this project.
 
 # Coding style
@@ -60,7 +65,7 @@ typos.
 * Include guards follow a pattern: file location `dune/xt/common/fvector.hh` turns into `DUNE_XT_COMMON_FVECTOR_HH`
 * Be careful to handle integers corretly, bad integer conversion is bad! Whenever possible, use `size_t` (even for
 `template<class Foo, size_t bar>`) and convert to the correct type using our `numeric_cast` from
-[dune/xt/common/numeric_cast.hh](https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/-/blob/master/dune/xt/common/numeric_cast.hh):
+[dune/xt/common/numeric_cast.hh](https://github.com/dune-gdt/dune-gdt/blob/main/dune/xt/common/numeric_cast.hh):
 ```c++
 #include <dune/xt/common/numeric_cast.hh>
 

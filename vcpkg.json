@@ -38,6 +38,7 @@
     "dune-localfunctions",
     "dune-testtools",
     "dune-alugrid",
+    "dune-grid-glue",
     "pybind11",
     "boost-core",
     "boost-assign",
@@ -54,12 +55,18 @@
     "exprtk",
     "gtest",
     "nanobench",
-    "pybind11",
     "eigen3",
     "tbb",
     "openblas",
     "suitesparse",
     "lapack"
   ],
-  "builtin-baseline": "ce613c41372b23b1f51333815feb3edd87ef8a8b"
+  "builtin-baseline": "d015e31e90838a4c9dfa3eed45979bc70d9357fc",
+  "overrides": [
+    {
+      "name": "eigen3",
+      "version": "3.4.0",
+      "port-version": 5
+    }
+  ]
 }

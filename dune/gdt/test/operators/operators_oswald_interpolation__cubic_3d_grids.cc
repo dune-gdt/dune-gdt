@@ -14,12 +14,9 @@
 #include "oswald-interpolation.hh"
 
 
-using Cubic3dGrids = ::testing::Types<YASP_3D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                      ,
+using Cubic3dGrids = ::testing::Types<YASP_3D_EQUIDISTANT_OFFSET,
                                       ALU_3D_CUBE
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                       ,
                                       UG_3D
 #endif

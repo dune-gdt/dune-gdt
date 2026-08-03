@@ -110,8 +110,6 @@ PYBIND11_MODULE(_discretefunction_dof_vector, m)
   py::module::import("dune.xt.functions");
 
   DofVector_for_all_grids<LA::CommonDenseVector<double>>::bind(m);
-#if HAVE_EIGEN
   DofVector_for_all_grids<LA::EigenDenseVector<double>>::bind(m);
-#endif
   DofVector_for_all_grids<LA::IstlDenseVector<double>>::bind(m);
 }

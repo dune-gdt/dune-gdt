@@ -62,6 +62,32 @@ public:
                    << "  - [2]: " << XT::Common::Typename<V>::value() << "&");
   } // ... get_vec_ref(...)
 
+  // Shared body of the two list-of-vectors factory overloads below: interprets list_of_vectors
+  // as a ListVectorArray of correct length, annotating each vector with its temporal node.
+  static std::unique_ptr<XT::LA::ListVectorArray<V>> make_vector_array(const BS& bochner_space,
+                                                                       pybind11::list list_of_vectors)
+  {
+    DUNE_THROW_IF(list_of_vectors.size() != bochner_space.temporal_space().mapper().size(),
+                  XT::Common::Exceptions::wrong_input_given,
+                  "list_of_vectors does not match bochner_space (one vector per temporal DoF expected):"
+                      << "\n"
+                      << "  bochner_space.temporal_space().mapper().size() = "
+                      << bochner_space.temporal_space().mapper().size() << "\n"
+                      << "  list_of_vectors.size() = " << list_of_vectors.size());
+    auto vector_array =
+        std::make_unique<XT::LA::ListVectorArray<V>>(/*dim=*/bochner_space.spatial_space().mapper().size(),
+                                                     /*length=*/0,
+                                                     /*reserve=*/bochner_space.temporal_space().mapper().size());
+    size_t counter = 0;
+    auto time_points = bochner_space.time_points();
+    for (pybind11::handle list_element : list_of_vectors) {
+      auto& vec = get_vec_ref(list_element);
+      vector_array->append(vec, {{"_t", {time_points[counter]}}});
+      ++counter;
+    }
+    return vector_array;
+  } // ... make_vector_array(...)
+
   static bound_type bind(pybind11::module& m,
                          const std::string& layer_id = "",
                          const std::string& grid_id = XT::Grid::bindings::grid_name<G>::value(),
@@ -96,25 +122,7 @@ public:
     m.def(
         XT::Common::to_camel_case(class_id).c_str(),
         [](const BS& bochner_space, py::list list_of_vectors, const MatchingVectorTag&, const std::string& name) {
-          // try to interprete list_of_vectors as a ListVectorArray of correct length
-          DUNE_THROW_IF(list_of_vectors.size() != bochner_space.temporal_space().mapper().size(),
-                        XT::Common::Exceptions::wrong_input_given,
-                        "list_of_vectors does not match bochner_space:"
-                            << "\n"
-                            << "  bochner_space.spatial_space().mapper().size() = "
-                            << bochner_space.spatial_space().mapper().size() << "\n"
-                            << "  list_of_vectors.size() = " << list_of_vectors.size());
-          auto vector_array =
-              std::make_unique<XT::LA::ListVectorArray<V>>(/*dim=*/bochner_space.spatial_space().mapper().size(),
-                                                           /*length=*/0,
-                                                           /*reserve=*/bochner_space.temporal_space().mapper().size());
-          size_t counter = 0;
-          auto time_points = bochner_space.time_points();
-          for (py::handle list_element : list_of_vectors) {
-            auto& vec = get_vec_ref(list_element);
-            vector_array->append(vec, {{"_t", {time_points[counter]}}});
-          }
-          return new type(bochner_space, vector_array.release(), name);
+          return new type(bochner_space, make_vector_array(bochner_space, list_of_vectors).release(), name);
         },
         "space"_a,
         "list_of_vectors"_a,
@@ -126,25 +134,7 @@ public:
       m.def(
           XT::Common::to_camel_case(class_id).c_str(),
           [](const BS& bochner_space, py::list list_of_vectors, const std::string& name, const MatchingVectorTag&) {
-            // try to interprete list_of_vectors as a ListVectorArray of correct length
-            DUNE_THROW_IF(list_of_vectors.size() != bochner_space.temporal_space().mapper().size(),
-                          XT::Common::Exceptions::wrong_input_given,
-                          "list_of_vectors does not match bochner_space:"
-                              << "\n"
-                              << "  bochner_space.spatial_space().mapper().size() = "
-                              << bochner_space.spatial_space().mapper().size() << "\n"
-                              << "  list_of_vectors.size() = " << list_of_vectors.size());
-            auto vector_array = std::make_unique<XT::LA::ListVectorArray<V>>(
-                /*dim=*/bochner_space.spatial_space().mapper().size(),
-                /*length=*/0,
-                /*reserve=*/bochner_space.temporal_space().mapper().size());
-            size_t counter = 0;
-            auto time_points = bochner_space.time_points();
-            for (py::handle list_element : list_of_vectors) {
-              auto& vec = get_vec_ref(list_element);
-              vector_array->append(vec, {{"_t", {time_points[counter]}}});
-            }
-            return new type(bochner_space, vector_array.release(), name);
+            return new type(bochner_space, make_vector_array(bochner_space, list_of_vectors).release(), name);
           },
           "space"_a,
           "list_of_vectors"_a,
@@ -221,17 +211,17 @@ PYBIND11_MODULE(_discretefunction_bochner, m)
   py::module::import("dune.xt.grid");
   py::module::import("dune.xt.functions");
 
-  py::module::import("dune.gdt._discretefunction_discretefunction");
+  py::module::import("dune.gdt._discretefunction_discretefunction_1d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_2d");
+  py::module::import("dune.gdt._discretefunction_discretefunction_3d");
   py::module::import("dune.gdt._spaces_bochner");
 
   DiscreteBochnerFunction_for_all_grids<LA::CommonDenseVector<double>,
                                         LA::bindings::Common,
                                         XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#if HAVE_EIGEN
   DiscreteBochnerFunction_for_all_grids<LA::EigenDenseVector<double>,
                                         LA::bindings::Eigen,
                                         XT::Grid::bindings::AvailableGridTypes>::bind(m);
-#endif
   DiscreteBochnerFunction_for_all_grids<LA::IstlDenseVector<double>,
                                         LA::bindings::Istl,
                                         XT::Grid::bindings::AvailableGridTypes>::bind(m);

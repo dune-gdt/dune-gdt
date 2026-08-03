@@ -331,12 +331,15 @@ public:
 
   K* end()
   {
-    return &(backend_[num_blocks - 1][block_size]);
+    // one-past-the-end pointer via pointer arithmetic on the last block's first (valid) entry:
+    // &backend_[num_blocks - 1][block_size] would call FieldVector::operator[](block_size), an
+    // out-of-bounds index (valid range is [0, block_size)) that a hardened libstdc++ aborts on.
+    return &(backend_[num_blocks - 1][0]) + block_size;
   }
 
   const K* end() const
   {
-    return &(backend_[num_blocks - 1][block_size]);
+    return &(backend_[num_blocks - 1][0]) + block_size;
   }
 
   ThisType& operator*=(const K& val)

@@ -35,8 +35,11 @@ std::string directory_only(std::string _path);
 //! return everything after the last slash
 std::string filename_only(const std::string& _path);
 
-//! may include filename, will be stripped
-void test_create_directory(const std::string& _path);
+//! creates \a dir_path itself (must not include a filename component)
+void create_directory(const std::string& dir_path);
+
+//! creates the directory containing \a file_path (which may include a filename, will be stripped)
+void create_directory_of(const std::string& file_path);
 
 //! pure c++ emulation of system's touch binary
 bool touch(const std::string& _path);

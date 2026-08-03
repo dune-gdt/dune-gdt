@@ -47,14 +47,7 @@
 using namespace Dune;
 using namespace Dune::GDT;
 
-#if HAVE_DUNE_ALUGRID
 using G = ALU_2D_SIMPLEX_CONFORMING;
-#elif HAVE_DUNE_UGGRID || HAVE_UG
-using G = UG_2D;
-#else
-#  warning Falling back to cubic grid, results will not be reproduced but similar!
-using G = YASP_2D_EQUIDISTANT_OFFSET;
-#endif
 
 using GP = XT::Grid::GridProvider<G>;
 using GV = typename G::LeafGridView;

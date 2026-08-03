@@ -41,6 +41,12 @@ class Prism
 {};
 
 
+/// \brief make_cube_grid selector tag picking the unstructured, nonconforming-refinement grid
+///        implementation (ALUGrid) over the structured/conforming default for a given element type.
+class Nonconforming
+{};
+
+
 template <size_t d>
 class Dimension
 {};

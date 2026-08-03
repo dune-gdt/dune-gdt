@@ -44,7 +44,7 @@ if(NOT ${VCPKG_FOUND})
     FetchContent_Declare(
       vcpkg
       GIT_REPOSITORY https://github.com/microsoft/vcpkg/
-      GIT_TAG 2025.04.09
+      GIT_TAG 2026.06.01
       SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.vcpkg-root CMAKE_CACHE_ARGS
       -DVCPKG_BOOTSTRAP_OPTIONS:STRING="-disableMetrics")
     FetchContent_MakeAvailable(vcpkg)

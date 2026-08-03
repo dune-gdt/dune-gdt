@@ -25,8 +25,8 @@ endmacro(INCLUDE_DEPENDENT_BINARY_PYTHON_DIRS)
 #
 # * Package is always installed into the dune-env.
 # * The whole package directory is symlinked to the binary dir so the build dir can serve as the assembly point for the
-#   symlinked sources, the configured _version.py and the compiled .so modules. A legacy setup.py.in is still configured
-#   into the build dir; a plain setup.py is symlinked along with the rest.
+#   symlinked sources (pyproject.toml, hatch_build.py, the dune namespace tree, scripts), the configured _version.py and
+#   the compiled .so modules. `pip wheel` (hatchling backend) is then pointed at that binary dir.
 #
 # cmake-lint: disable=R0915
 function(dune_pybindxi_install_python_package)
@@ -48,17 +48,11 @@ function(dune_pybindxi_install_python_package)
   endif()
 
   set(pyinst_fullpath ${CMAKE_CURRENT_SOURCE_DIR}/${PYINST_PATH})
-  if(EXISTS ${pyinst_fullpath}/setup.py.in OR EXISTS ${pyinst_fullpath}/setup.py)
+  if(EXISTS ${pyinst_fullpath}/pyproject.toml)
     # Symlink the whole package source tree into the binary dir. The binary dir is the assembly point: it gathers the
-    # symlinked sources, the configured _version.py, the compiled .so modules and (for a plain setup.py) the setup.py
-    # itself, and is what `pip wheel` is pointed at. We always assemble there, regardless of whether the package ships a
-    # plain setup.py or a setup.py.in template.
+    # symlinked sources (pyproject.toml, hatch_build.py, the dune namespace tree, scripts), the configured _version.py
+    # and the compiled .so modules, and is what `pip wheel` is pointed at.
     file(GLOB_RECURSE files "${pyinst_fullpath}/*")
-    if(EXISTS ${pyinst_fullpath}/setup.py.in)
-      # Do not symlink a (possibly stale) source setup.py into the binary dir; configure_file below generates it and
-      # must write a real file, not follow a symlink back into the source tree.
-      list(REMOVE_ITEM files "${pyinst_fullpath}/setup.py")
-    endif()
     foreach(fn ${files})
       file(RELATIVE_PATH rel_fn ${CMAKE_CURRENT_SOURCE_DIR} ${fn})
       get_filename_component(directory ${rel_fn} DIRECTORY)
@@ -66,17 +60,10 @@ function(dune_pybindxi_install_python_package)
       execute_process(COMMAND ${CMAKE_COMMAND} "-E" "create_symlink" "${CMAKE_CURRENT_SOURCE_DIR}/${rel_fn}"
                               "${CMAKE_CURRENT_BINARY_DIR}/${rel_fn}")
     endforeach()
-    # Legacy support for templated setup.py.in; plain setup.py packages are symlinked above and need no configuration.
-    if(EXISTS ${pyinst_fullpath}/setup.py.in)
-      # Drop any symlink left from a previous configure so configure_file cannot write through it into the source tree.
-      file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH}/setup.py)
-      configure_file(${PYINST_PATH}/setup.py.in ${PYINST_PATH}/setup.py)
-    endif()
     set(pyinst_fullpath ${CMAKE_CURRENT_BINARY_DIR}/${PYINST_PATH})
     set(pyinst_purepython TRUE)
   else()
-    message(
-      FATAL_ERROR "dune_python_install_package: Requested installations, but neither setup.py nor setup.py.in found!")
+    message(FATAL_ERROR "dune_python_install_package: Requested installation, but no pyproject.toml found!")
   endif()
 
   # Find out whether we should install in editable mode
@@ -152,10 +139,27 @@ function(dune_pybindxi_install_python_package)
   # Construct the wheel installation commandline
   set(wheel_command "${RUN_IN_ENV_SCRIPT}" "python3" -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${pyinst_fullpath})
 
+  # Render the wheel commandline as an explicitly quoted argument list for the install script below. The list cannot
+  # simply be expanded into the install(CODE) text: that text is re-parsed by a separate CMake parser, where an unquoted
+  # ${wheel_command} would split on any space in DUNE_PYTHON_WHEELHOUSE, RUN_IN_ENV_SCRIPT or the package path.
+  set(wheel_command_code "")
+  foreach(arg IN LISTS wheel_command)
+    string(REPLACE "\\" "\\\\" arg "${arg}")
+    string(REPLACE "\"" "\\\"" arg "${arg}")
+    string(APPEND wheel_command_code " \"${arg}\"")
+  endforeach()
+
   # Add the installation rule
+  #
+  # NB: install(CODE) text does not run at configure time, but from the generated cmake_install.cmake, which CMake
+  # executes as a standalone `cmake -P` script. That process does not include dune-common's CMake modules, so
+  # dune-common's dune_execute_process() macro is undefined there and using it made `cmake --install` fail with "Unknown
+  # CMake command" (see issue #401). Plain execute_process() plus an explicit result check needs no includes and keeps
+  # the same abort-with-a-useful-message behaviour.
   install(
     CODE "message(\"Installing wheel for python package at ${pyinst_fullpath}...\")
-                dune_execute_process(COMMAND ${wheel_command}
-                                     ERROR_MESSAGE \"Error installing wheel for python package at ${pyinst_fullpath}\"
-                                     )")
+                execute_process(COMMAND${wheel_command_code} RESULT_VARIABLE dune_pybindxi_wheel_result)
+                if(NOT dune_pybindxi_wheel_result EQUAL \"0\")
+                  message(FATAL_ERROR \"Error installing wheel for python package at ${pyinst_fullpath}\")
+                endif()")
 endfunction()

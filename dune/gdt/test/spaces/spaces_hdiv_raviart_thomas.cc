@@ -326,22 +326,17 @@ struct RtSpaceOnSimplicialLeafView : public RtSpace<typename Dune::XT::Grid::Gri
 
 
 using SimplicialGrids = ::testing::Types<ONED_1D,
-                                         YASP_1D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                         ,
+                                         YASP_1D_EQUIDISTANT_OFFSET,
                                          ALU_2D_SIMPLEX_CONFORMING,
                                          ALU_2D_SIMPLEX_NONCONFORMING
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                          ,
                                          UG_2D
 #endif
-#if HAVE_DUNE_ALUGRID
                                          ,
                                          ALU_3D_SIMPLEX_CONFORMING,
                                          ALU_3D_SIMPLEX_NONCONFORMING
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                          ,
                                          UG_3D
 #endif
@@ -425,22 +420,16 @@ struct RtSpaceOnCubicLeafView : public RtSpace<typename Dune::XT::Grid::GridProv
 }; // struct RtSpaceOnCubicLeafView
 
 
-using CubicGrids = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                    ,
+using CubicGrids = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET,
                                     ALU_2D_CUBE
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                     ,
                                     UG_2D
 #endif
                                     ,
-                                    YASP_3D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                    ,
+                                    YASP_3D_EQUIDISTANT_OFFSET,
                                     ALU_3D_CUBE
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                     ,
                                     UG_3D
 #endif
@@ -580,7 +569,7 @@ struct RtSpaceOnMixedLeafView : public RtSpace<typename Dune::XT::Grid::GridProv
 
 
 using MixedGrids = ::testing::Types<
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
     UG_2D
 //,
 //    UG_3D // Intersections are non-conforming between simplices and cubes in 3d, which the mapper cannot handle yet!
@@ -588,7 +577,7 @@ using MixedGrids = ::testing::Types<
     >;
 
 // currently the grid list is empty if we do not have UG
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 
 template <class G>
 using Order0MixedRtSpace = RtSpaceOnMixedLeafView<G, 0>;
@@ -633,4 +622,4 @@ TYPED_TEST(Order0MixedRtSpace, local_interpolation_seems_to_be_correct)
 {
   this->local_interpolation_seems_to_be_correct();
 }
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID

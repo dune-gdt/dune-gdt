@@ -17,7 +17,7 @@ using namespace Dune;
 using namespace Dune::GDT;
 
 // currently the grid list is empty if we do not have UG
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 template <class G>
 using Order1MixedContinuousLagrangeSpace = ContinuousLagrangeSpaceOnMixedLeafViewTest<G, 1, double, 1>;
 TYPED_TEST_SUITE(Order1MixedContinuousLagrangeSpace, MixedGridsWithConformingIntersections);
@@ -106,4 +106,4 @@ TYPED_TEST(Order2MixedContinuousLagrangeSpace, local_interpolation_seems_to_be_c
 {
   this->local_interpolation_seems_to_be_correct();
 }
-#endif // HAVE_DUNE_UGGRID || HAVE_UG
+#endif // HAVE_DUNE_UGGRID

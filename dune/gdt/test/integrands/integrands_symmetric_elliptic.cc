@@ -66,6 +66,44 @@ struct SymmetrizedLaplaceIntegrandTest : public IntegrandTest<G>
         2, [](const DomainType& x, const XT::Common::Parameter&) { return x[0] * x[1]; });
     [[maybe_unused]] VectorIntegrandType vector_integrand3(scalar_function);
     [[maybe_unused]] VectorIntegrandType vector_integrand4(*diffusion_factor_);
+    // copy constructor
+    VectorIntegrandType src;
+    [[maybe_unused]] VectorIntegrandType vector_integrand5(src);
+    // copy_as_binary_element_integrand
+    auto clone = src.copy_as_binary_element_integrand();
+    EXPECT_NE(clone, nullptr);
+  }
+
+  void order_is_correct()
+  {
+    // order = diffusion_order + test_order + ansatz_order
+    // diffusion_factor_ has order 2, vector_test_ has order 2, vector_ansatz_ (custom, order 2)
+    // expected: 2 + 2 + 2 = 6
+    VectorIntegrandType integrand(*diffusion_factor_);
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    EXPECT_EQ(6, integrand.order(*vector_test_, *vector_ansatz_));
+    // With constant (order 0) diffusion: 0 + 2 + 2 = 4
+    VectorIntegrandType integrand_const(1.);
+    integrand_const.bind(element);
+    EXPECT_EQ(4, integrand_const.order(*vector_test_, *vector_ansatz_));
+  }
+
+  void evaluates_to_zero_with_zero_test_jacobian()
+  {
+    // vector_test_[0] = (1,2) has a zero jacobian, so result[0][*] must be zero
+    // for any ansatz. This holds regardless of the diffusion factor.
+    VectorIntegrandType integrand(*diffusion_factor_);
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    const auto integrand_order = integrand.order(*vector_test_, *vector_ansatz_);
+    DynamicMatrix<D> result(2, 2, 0.);
+    for (const auto& qp : Dune::QuadratureRules<D, d>::rule(element.type(), integrand_order)) {
+      const auto& x = qp.position();
+      integrand.evaluate(*vector_test_, *vector_ansatz_, x, result);
+      EXPECT_DOUBLE_EQ(0., result[0][0]);
+      EXPECT_DOUBLE_EQ(0., result[0][1]);
+    }
   }
 
   virtual void evaluates_correctly()
@@ -109,6 +147,16 @@ TYPED_TEST_SUITE(SymmetrizedLaplaceIntegrandTest, Grids2D);
 TYPED_TEST(SymmetrizedLaplaceIntegrandTest, is_constructable)
 {
   this->is_constructable();
+}
+
+TYPED_TEST(SymmetrizedLaplaceIntegrandTest, order_is_correct)
+{
+  this->order_is_correct();
+}
+
+TYPED_TEST(SymmetrizedLaplaceIntegrandTest, evaluates_to_zero_with_zero_test_jacobian)
+{
+  this->evaluates_to_zero_with_zero_test_jacobian();
 }
 
 TYPED_TEST(SymmetrizedLaplaceIntegrandTest, evaluates_correctly)

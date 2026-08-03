@@ -189,7 +189,6 @@ public:
 };
 
 
-#if HAVE_EIGEN
 template <class S>
 class ContainerFactory<Dune::XT::LA::EigenDenseVector<S>>
 {
@@ -238,7 +237,6 @@ public:
     return matrix;
   }
 };
-#endif // HAVE_EIGEN
 
 #define EXPECT_DOUBLE_OR_COMPLEX_EQ(expected, actual)                                                                  \
   {                                                                                                                    \

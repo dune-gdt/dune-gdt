@@ -138,7 +138,8 @@ public:
     const auto u_order = u_->order(param);
     const auto local_basis_order = basis.order(param);
     const auto integrand_order = local_flux_->order(param) * u_order + std::max(local_basis_order - 1, 0);
-    for (auto&& quadrature_point : QuadratureRules<D, d>::rule(element().type(), integrand_order)) {
+    const auto quadrature_rule_vol = QuadratureRules<D, d>::rule(element().type(), integrand_order);
+    for (auto&& quadrature_point : quadrature_rule_vol) {
       // prepare
       const auto point_in_reference_element = quadrature_point.position();
       const auto integration_factor = element().geometry().integrationElement(point_in_reference_element);
@@ -147,9 +148,24 @@ public:
       basis.jacobians(point_in_reference_element, basis_jacobians_, param);
       const auto source_value = u_->evaluate(point_in_reference_element, param);
       const auto flux_value = local_flux_->evaluate(point_in_reference_element, source_value, param);
-      // compute
-      for (size_t ii = 0; ii < basis.size(param); ++ii)
-        local_dofs_[ii] += integration_factor * quadrature_weight * -1. * (flux_value * basis_jacobians_[ii]);
+      // compute the contraction of the flux with the basis jacobians, i.e. sum_{r, s} f(u)_{s, r}
+      // d/dx_s phi_r. NOTE: the previous spelling `flux_value * basis_jacobians_[ii]` (a
+      // FieldVector<RF, d> times a FieldMatrix<RF, 1, d> for m == 1) only ever compiled for d == 1,
+      // where FieldVector<RF, 1> converts to/from scalars -- like boundary_treatment, this operator
+      // was never instantiated for d > 1 before the Python bindings.
+      for (size_t ii = 0; ii < basis.size(param); ++ii) {
+        RF flux_dot_jacobian = 0.;
+        if constexpr (m == 1) {
+          // flux_value is a FieldVector<RF, d>, basis_jacobians_[ii] a FieldMatrix<RF, 1, d>
+          flux_dot_jacobian = flux_value * basis_jacobians_[ii][0];
+        } else {
+          // flux_value is a FieldMatrix<RF, d, m>, basis_jacobians_[ii] a FieldMatrix<RF, m, d>
+          for (size_t rr = 0; rr < m; ++rr)
+            for (size_t ss = 0; ss < d; ++ss)
+              flux_dot_jacobian += flux_value[ss][rr] * basis_jacobians_[ii][rr][ss];
+        }
+        local_dofs_[ii] += integration_factor * quadrature_weight * -1. * flux_dot_jacobian;
+      }
     }
     // apply local mass matrix, if required (not optimal, uses a temporary)
     if (local_mass_matrices_.valid())
@@ -316,7 +332,8 @@ public:
     const auto v_order = v_->order(param);
     const auto integrand_order = std::max(inside_basis.order(param), outside_basis.order(param))
                                  + std::max(inside_flux_order * u_order, outside_flux_order * v_order);
-    for (const auto& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order)) {
+    const auto quadrature_rule = QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order);
+    for (const auto& quadrature_point : quadrature_rule) {
       // prepare
       const auto point_in_reference_intersection = quadrature_point.position();
       const auto integration_factor = intersection().geometry().integrationElement(point_in_reference_intersection);
@@ -417,6 +434,22 @@ public:
   }
 
   /// Applies the inverse of the local mass matrix.
+  /// When using this constructor, source has to be set by a call to with_source before calling apply
+  /// (like the source-less constructor of LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator,
+  /// which is what AdvectionDgOperator::boundary_treatment requires).
+  LocalAdvectionDgBoundaryTreatmentByCustomNumericalFluxOperator(
+      const LocalMassMatrixProviderType& local_mass_matrices,
+      LambdaType numerical_boundary_flux,
+      const int numerical_flux_order,
+      const XT::Common::ParameterType& numerical_flux_param_type = {})
+    : BaseType(1, numerical_flux_param_type)
+    , numerical_boundary_flux_(numerical_boundary_flux)
+    , numerical_flux_order_(numerical_flux_order)
+    , local_mass_matrices_(local_mass_matrices)
+  {
+  }
+
+  /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgBoundaryTreatmentByCustomNumericalFluxOperator(
       const SourceType& source,
       const LocalMassMatrixProviderType& local_mass_matrices,
@@ -477,7 +510,8 @@ public:
     inside_local_dofs_.resize(inside_basis.size(param));
     inside_local_dofs_ *= 0.;
     const auto integrand_order = inside_basis.order(param) + numerical_flux_order_ * u_->order(param);
-    for (const auto& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order)) {
+    const auto quadrature_rule = QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order);
+    for (const auto& quadrature_point : quadrature_rule) {
       // prepare
       const auto point_in_reference_intersection = quadrature_point.position();
       const auto integration_factor = intersection().geometry().integrationElement(point_in_reference_intersection);
@@ -555,6 +589,23 @@ public:
   }
 
   /// Applies the inverse of the local mass matrix.
+  /// When using this constructor, source has to be set by a call to with_source before calling apply
+  /// (like the source-less constructor of LocalAdvectionFvBoundaryTreatmentByCustomExtrapolationOperator,
+  /// which is what AdvectionDgOperator::boundary_treatment requires).
+  LocalAdvectionDgBoundaryTreatmentByCustomExtrapolationOperator(
+      const LocalMassMatrixProviderType& local_mass_matrices,
+      const NumericalFluxType& numerical_flux,
+      LambdaType boundary_extrapolation_lambda,
+      const XT::Common::ParameterType& boundary_treatment_param_type = {})
+    : BaseType(1, numerical_flux.parameter_type() + boundary_treatment_param_type)
+    , numerical_flux_(numerical_flux.copy())
+    , local_flux_(numerical_flux_->flux().local_function())
+    , extrapolate_(boundary_extrapolation_lambda)
+    , local_mass_matrices_(local_mass_matrices)
+  {
+  }
+
+  /// Applies the inverse of the local mass matrix.
   LocalAdvectionDgBoundaryTreatmentByCustomExtrapolationOperator(
       const SourceType& source,
       const LocalMassMatrixProviderType& local_mass_matrices,
@@ -616,7 +667,8 @@ public:
     inside_local_dofs_.resize(inside_basis.size(param));
     inside_local_dofs_ *= 0.;
     const auto integrand_order = inside_basis.order(param) + local_flux_->order(param) * u_->order(param);
-    for (const auto& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order)) {
+    const auto quadrature_rule = QuadratureRules<D, d - 1>::rule(intersection().type(), integrand_order);
+    for (const auto& quadrature_point : quadrature_rule) {
       // prepare
       const auto point_in_reference_intersection = quadrature_point.position();
       const auto integration_factor = intersection().geometry().integrationElement(point_in_reference_intersection);
@@ -792,7 +844,8 @@ public:
         const auto neighbor = intersection.outside();
         v_->bind(neighbor);
         const auto integration_order = std::pow(std::max(u_->order(param), v_->order(param)), 2);
-        for (auto&& quadrature_point : QuadratureRules<D, d - 1>::rule(intersection.type(), integration_order)) {
+        const auto quadrature_rule_face = QuadratureRules<D, d - 1>::rule(intersection.type(), integration_order);
+        for (auto&& quadrature_point : quadrature_rule_face) {
           const auto point_in_reference_intersection = quadrature_point.position();
           const auto point_in_reference_element =
               intersection.geometryInInside().global(point_in_reference_intersection);
@@ -822,8 +875,9 @@ public:
     // evaluate artificial viscosity form (8.183)
     if (smoothed_discrete_jump_indicator > 0) {
       const auto h = element().geometry().volume();
-      for (auto&& quadrature_point : QuadratureRules<D, d>::rule(
-               element().type(), std::max(0, u_->order(param) - 1) + std::max(0, basis.order(param) - 1))) {
+      const auto quadrature_rule_visc = QuadratureRules<D, d>::rule(
+          element().type(), std::max(0, u_->order(param) - 1) + std::max(0, basis.order(param) - 1));
+      for (auto&& quadrature_point : quadrature_rule_visc) {
         const auto point_in_reference_element = quadrature_point.position();
         const auto integration_factor = element().geometry().integrationElement(point_in_reference_element);
         const auto quadrature_weight = quadrature_point.weight();

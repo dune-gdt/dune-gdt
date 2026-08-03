@@ -11,12 +11,7 @@
 
 #include <dune/xt/test/main.hxx>
 
-#if DUNE_VERSION_GTE(DUNE_COMMON, 3, 9) && HAVE_TBB // EXADUNE
-#  include <dune/grid/utility/partitioning/seedlist.hh>
-#endif
-
 #include <dune/xt/common/logstreams.hh>
-#include <dune/xt/common/parallel/partitioner.hh>
 
 #include <dune/xt/grid/gridprovider/cube.hh>
 #include <dune/xt/grid/functors/boundary-detector.hh>
@@ -34,7 +29,11 @@ template <class T>
 struct GridWalkerTest : public ::testing::Test
 {
   static constexpr size_t griddim = T::value;
-  static constexpr size_t level = 128;
+  // Number of elements per dimension (passed as num_elements to make_cube_grid, not a refinement level). Kept small on
+  // purpose: at 128 the 3d instance builds a ~2M-element grid and walks it repeatedly, which times out under the
+  // instrumented coverage build (the test is killed before it can flush its profile, so the whole TU reports 0%). All
+  // assertions below are invariants that hold at any resolution, so a small grid exercises the same code paths.
+  static constexpr size_t level = 8;
   using GridType = Dune::YaspGrid<griddim, Dune::EquidistantOffsetCoordinates<double, griddim>>;
   using GridLayerType = typename GridType::LeafGridView;
   using EntityType = extract_entity_t<GridLayerType>;
@@ -69,18 +68,6 @@ struct GridWalkerTest : public ::testing::Test
 
     list<function<void()>> element_tests({test1, test2, test3});
     list<function<void()>> intersection_tests({test4, test5});
-#if DUNE_VERSION_GTE(DUNE_COMMON, 3, 9) && HAVE_TBB // EXADUNE
-    // exadune guard for SeedListPartitioning
-    auto test0 = [&] {
-      const auto& set = gv.grid().leafIndexSet();
-      IndexSetPartitioner<GridLayerType> partitioner(set);
-      EXPECT_EQ(set.size(0), partitioner.partitions());
-      Dune::SeedListPartitioning<GridType, 0> partitioning(gv, partitioner);
-      walker.append(counter);
-      walker.walk(partitioning);
-    };
-    tests.push_back(test0);
-#endif // DUNE_VERSION_GTE(DUNE_COMMON, 3, 9) && HAVE_TBB
 
     for (const auto& test : element_tests) {
       count = 0;

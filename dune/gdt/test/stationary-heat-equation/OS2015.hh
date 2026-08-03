@@ -65,12 +65,10 @@ struct OS2015MultiscaleProblem
   {
     if (std::is_same<G, YASP_2D_EQUIDISTANT_OFFSET>::value) {
       return XT::Grid::make_cube_grid<G>({0., 0.}, {5., 1.}, {100u, 20u});
-#  if HAVE_DUNE_ALUGRID
     } else if (std::is_same<G, ALU_2D_SIMPLEX_CONFORMING>::value) {
       auto grid = XT::Grid::make_cube_grid<G>({0., 0.}, {5., 1.}, {100u, 20u});
       grid.global_refine(2);
       return grid;
-#  endif // HAVE_DUNE_ALUGRID
     } else
       EXPECT_TRUE(false) << "Please add a specialization for '" << XT::Common::Typename<G>::value << "'!";
   } // ... make_initial_grid(...)

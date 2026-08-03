@@ -31,6 +31,69 @@ the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
 > case edit `deps/module_list.bash` and the affected `portfile.cmake` together by
 > hand, keeping them in sync.
 
+## Hand-maintained ports (not generated)
+
+A handful of ports in `ports/` are **not** produced by `update_ports.bash` and
+are edited by hand: `pybind11`, `uv`, `libtirpc`, `alberta`, `mpfr`, and the GNU
+autotools host tools below. `update_ports.bash` only touches the DUNE modules
+listed in `deps/module_list.bash`, so it leaves these alone.
+
+### GNU autotools host tools
+
+`libtirpc` and `alberta` build with `vcpkg_configure_make`, which needs the GNU
+autotools. To avoid depending on whatever happens to be installed on the build
+machine, the following ports pin current upstream releases (downloaded from
+`ftp.gnu.org` and verified by SHA-512):
+
+| Port | Version | Notes |
+|------|---------|-------|
+| autoconf | 2.73 | `autoconf`, `autoreconf`, `autom4te`, ... under `tools/autoconf/bin` |
+| automake | 1.18.1 | `automake`/`aclocal`; depends on `autoconf` (host) |
+| libtool | 2.5.4 | `libtool`/`libtoolize` plus the `libltdl` loader library + `ltdl.h` |
+| autoconf-archive | 2024.10.16 | data-only: ~580 reusable m4 macros under `share/autoconf-archive/aclocal` |
+
+`vcpkg_configure_make` bakes the persistent `CURRENT_INSTALLED_DIR` into the
+installed scripts as their prefix and installs the executables under
+`tools/<port>/bin`, so the tools remain usable after the temporary build trees
+are gone. The aclocal macros for each port live in `share/<port>/aclocal`; a
+consumer that wires these tools onto `PATH` should also add those directories to
+`ACLOCAL_PATH` (for example `share/libtool/aclocal` and
+`share/autoconf-archive/aclocal`).
+
+Providing these ports is not enough on its own. Declaring them as `host`
+dependencies of a make-based port makes vcpkg *build and install* them into the
+host tree, but it does **not** put them to use: `vcpkg_run_autoreconf` locates
+`autoreconf`/`aclocal`/`libtoolize` with a plain `find_program`, and vcpkg does
+not add a host dependency's `tools/<port>/bin` to the consuming port's build
+`PATH`. The aclocal macros are also installed under per-port
+`share/<port>/aclocal` dirs that `aclocal` does not search by default. A consumer
+therefore has to do two things: declare the tools as `host` dependencies *and*,
+in its portfile, prepend `tools/autoconf|automake|libtool/bin` to `PATH` and set
+`ACLOCAL_PATH` to the `share/*/aclocal` dirs (so the `AX_*` macros from
+autoconf-archive are found).
+
+`libtirpc` and `alberta` happen to build against the autoconf/automake/libtool
+that the CI runners already ship, so they don't wire anything up. `mpfr` is the
+port that actually needs the overlay tools: it autoreconfs and its
+`configure.ac` uses an autoconf-archive (`AX_*`) macro that is **not** present on
+the runners. It is overlaid here as a copy of the upstream port (`dll.patch`,
+`src-only.patch`, `usage` verbatim) with two changes to `portfile.cmake` and
+`vcpkg.json`: the four autotools added as `host` dependencies, and a block before
+`vcpkg_make_configure` that prepends the tool `bin` dirs to `PATH` and points
+`ACLOCAL_PATH` at the installed `share/*/aclocal` dirs. Without this, `mpfr`
+falls back to the build machine's system autotools and fails on runners that lack
+`autoconf-archive`. When bumping the vcpkg baseline, re-sync the patches/usage
+from `.vcpkg-root/ports/mpfr/` if upstream changed them, and re-check that the
+upstream `portfile.cmake` still matches apart from the autotools wiring block.
+
+To bump a version: update `version` in the port's `vcpkg.json`, the URL/SHA-512
+in its `portfile.cmake` (`sha512sum` of the new `.tar.xz`), and rebuild.
+
+> Note: the bare `libtool` entry in the repo's top-level `.gitignore` (an
+> autotools-generated script name) also matches `ports/libtool/`, so that path is
+> re-included there with a `!` negation. Keep that negation when editing
+> `.gitignore`.
+
 ## Current pins (DUNE 2.10)
 
 All core/staging modules currently track the **`releases/2.10` maintenance

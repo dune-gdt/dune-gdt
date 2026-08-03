@@ -149,10 +149,12 @@ clangquill_include_dirs = ["../.."]
 clangquill_std = "c++17"
 clangquill_clang_resource_dir = _clang_resource_dir()
 clangquill_output_dir = "cpp_api"
-# Group at class granularity (clangquill >= 0.3.0): descend through namespaces so
-# a single huge dune::{gdt,xt} namespace becomes one page per member class. This
-# keeps Sphinx's C++ domain resolver fast and gives each class its own URL.
-clangquill_group_by = "class"
+# Build a browsable namespace hierarchy (clangquill >= 0.6.0): the index lists
+# only the top namespaces, each namespace hub links its sub-namespaces, classes,
+# per-name function pages, a lumped operators page, and grouped types/constants
+# pages. This replaces the single colossal flat index (one entry per class) with
+# a drill-down: all namespaces -> everything in a namespace -> per-symbol pages.
+clangquill_group_by = "namespace"
 # Emit every symbol clangquill extracts, including the (largely templated)
 # undocumented internals, so the C++ API pages cover all in-tree headers rather
 # than only those carrying a documentation comment.

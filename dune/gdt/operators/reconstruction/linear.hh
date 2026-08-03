@@ -147,7 +147,12 @@ private:
     return true;
   } // void fill_stencils(...)
 
-  const GV& grid_view_;
+  // Stored BY VALUE (GV is a cheap, copyable leaf-view handle, like DiscontinuousLagrangeSpace
+  // itself stores it): LocalLinearReconstructionOperator constructs this functor from its by-value
+  // `target_space` constructor parameter's grid_view(), which is destroyed when that constructor
+  // returns -- a reference here would dangle and segfault on the first fill_stencils() access (this
+  // operator was never instantiated before it was bound to Python, which is why it went unnoticed).
+  const GV grid_view_;
   const std::vector<LocalVectorType>& source_values_;
   const BoundaryValueType& boundary_values_;
   const AnalyticalFluxType& analytical_flux_;
@@ -429,7 +434,10 @@ public:
     return source_space_;
   }
 
-  const auto& assembly_grid_view() const override final
+  // NOTE: a virtual function must not have a deduced (auto) return type ([dcl.spec.auto]), so this
+  // spells out the AssemblyGridViewType the interface declares (this operator was never instantiated
+  // before it was bound to Python, which is why the deduced return type went unnoticed).
+  const GV& assembly_grid_view() const final
   {
     return source_space_.grid_view();
   }

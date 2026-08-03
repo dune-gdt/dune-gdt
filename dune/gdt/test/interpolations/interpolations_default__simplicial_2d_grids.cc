@@ -14,20 +14,16 @@
 #include "default.hh"
 
 
-using Simplicial2dGrids = ::testing::Types<
-#if HAVE_DUNE_ALUGRID
-    ALU_2D_SIMPLEX_CONFORMING,
-    ALU_2D_SIMPLEX_NONCONFORMING
-#endif
-#if HAVE_DUNE_ALUGRID && HAVE_DUNE_UGGRID
-    ,
-#endif
+// ALU_2D_SIMPLEX_CONFORMING is covered at runtime by the hypothesis property tests driving
+// the bindings (python/gdt/test/test_hypothesis_interpolation.py); only the grids the
+// bindings do not instantiate remain here.
+using Simplicial2dGrids = ::testing::Types<ALU_2D_SIMPLEX_NONCONFORMING
 #if HAVE_DUNE_UGGRID
-    UG_2D
+                                           ,
+                                           UG_2D
 #endif
-    >;
+                                           >;
 
-#if HAVE_DUNE_UGGRID || HAVE_DUNE_ALUGRID
 template <class G>
 using InterpolationTest = Dune::GDT::Test::DefaultInterpolationOnLeafViewTest<G>;
 TYPED_TEST_SUITE(InterpolationTest, Simplicial2dGrids);
@@ -35,4 +31,3 @@ TYPED_TEST(InterpolationTest, interpolates_correctly)
 {
   this->interpolates_correctly();
 }
-#endif // HAVE_DUNE_UGGRID  || HAVE_DUNE_ALUGRID

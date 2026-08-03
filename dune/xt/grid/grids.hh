@@ -22,16 +22,14 @@
 #  include <dune/xt/common/reenable_warnings.hh>
 #endif
 
-#if HAVE_DUNE_ALUGRID
-#  include <dune/alugrid/grid.hh>
-#endif
+#include <dune/alugrid/grid.hh>
 
 #if HAVE_DUNE_SPGRID
 #  include <dune/grid/spgrid.hh>
 #  include <dune/grid/spgrid/dgfparser.hh>
 #endif
 
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 #  include <dune/grid/uggrid.hh>
 #endif
 
@@ -45,15 +43,13 @@ using YASP_1D_EQUIDISTANT_OFFSET = Dune::YaspGrid<1, Dune::EquidistantOffsetCoor
 using YASP_2D_EQUIDISTANT_OFFSET = Dune::YaspGrid<2, Dune::EquidistantOffsetCoordinates<double, 2>>;
 using YASP_3D_EQUIDISTANT_OFFSET = Dune::YaspGrid<3, Dune::EquidistantOffsetCoordinates<double, 3>>;
 using YASP_4D_EQUIDISTANT_OFFSET = Dune::YaspGrid<4, Dune::EquidistantOffsetCoordinates<double, 4>>;
-#if HAVE_DUNE_ALUGRID
 using ALU_2D_SIMPLEX_CONFORMING = Dune::ALUGrid<2, 2, Dune::simplex, Dune::conforming>;
 using ALU_2D_SIMPLEX_NONCONFORMING = Dune::ALUGrid<2, 2, Dune::simplex, Dune::nonconforming>;
 using ALU_2D_CUBE = Dune::ALUGrid<2, 2, Dune::cube, Dune::nonconforming>;
 using ALU_3D_SIMPLEX_CONFORMING = Dune::ALUGrid<3, 3, Dune::simplex, Dune::conforming>;
 using ALU_3D_SIMPLEX_NONCONFORMING = Dune::ALUGrid<3, 3, Dune::simplex, Dune::nonconforming>;
 using ALU_3D_CUBE = Dune::ALUGrid<3, 3, Dune::cube, Dune::nonconforming>;
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 using UG_2D = Dune::UGGrid<2>;
 using UG_3D = Dune::UGGrid<3>;
 #endif
@@ -64,16 +60,6 @@ using ALBERTA_3D = Dune::AlbertaGrid<3, 3>;
 
 
 namespace Dune::XT::Grid {
-namespace internal {
-
-
-// To give better error messages, required below.
-template <size_t d>
-class ThereIsNoSimplexGridAvailableInDimension
-{};
-
-
-} // namespace internal
 
 
 /**
@@ -84,14 +70,11 @@ using Available1dGridTypes = std::tuple<ONED_1D, YASP_1D_EQUIDISTANT_OFFSET>;
 /**
  * \note Alberta grids are missing here on purpose, these cannot be handled automatically very well.
  */
-using Available2dGridTypes = std::tuple<YASP_2D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                        ,
+using Available2dGridTypes = std::tuple<YASP_2D_EQUIDISTANT_OFFSET,
                                         ALU_2D_SIMPLEX_CONFORMING,
                                         ALU_2D_SIMPLEX_NONCONFORMING,
                                         ALU_2D_CUBE
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                         ,
                                         UG_2D
 #endif
@@ -100,14 +83,11 @@ using Available2dGridTypes = std::tuple<YASP_2D_EQUIDISTANT_OFFSET
 /**
  * \note Alberta grids are missing here on purpose, these cannot be handled automatically very well.
  */
-using Available3dGridTypes = std::tuple<YASP_3D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                        ,
+using Available3dGridTypes = std::tuple<YASP_3D_EQUIDISTANT_OFFSET,
                                         ALU_3D_SIMPLEX_CONFORMING,
                                         ALU_3D_SIMPLEX_NONCONFORMING,
                                         ALU_3D_CUBE
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                         ,
                                         UG_3D
 #endif
@@ -122,22 +102,8 @@ using AvailableGridTypes = Common::tuple_cat_t<Available1dGridTypes, Available2d
 
 
 using SIMPLEXGRID_1D = ONED_1D;
-using SIMPLEXGRID_2D =
-#if HAVE_DUNE_ALUGRID
-    ALU_2D_SIMPLEX_CONFORMING;
-#elif HAVE_DUNE_UGGRID || HAVE_UG
-    UG_2D;
-#else
-    Dune::XT::Grid::internal::ThereIsNoSimplexGridAvailableInDimension<2>;
-#endif
-using SIMPLEXGRID_3D =
-#if HAVE_DUNE_ALUGRID
-    ALU_3D_SIMPLEX_CONFORMING;
-#elif HAVE_DUNE_UGGRID || HAVE_UG
-    UG_3D;
-#else
-    Dune::XT::Grid::internal::ThereIsNoSimplexGridAvailableInDimension<3>;
-#endif
+using SIMPLEXGRID_2D = ALU_2D_SIMPLEX_CONFORMING;
+using SIMPLEXGRID_3D = ALU_3D_SIMPLEX_CONFORMING;
 
 
 using CUBEGRID_1D = ONED_1D;
@@ -145,13 +111,8 @@ using CUBEGRID_2D = YASP_2D_EQUIDISTANT_OFFSET;
 using CUBEGRID_3D = YASP_3D_EQUIDISTANT_OFFSET;
 
 
-#if HAVE_DUNE_ALUGRID || HAVE_DUNE_UGGRID || HAVE_UG
-#  define SIMPLEXGRID_2D_AVAILABLE 1
-#  define SIMPLEXGRID_3D_AVAILABLE 1
-#else
-#  define SIMPLEXGRID_2D_AVAILABLE 0
-#  define SIMPLEXGRID_3D_AVAILABLE 0
-#endif
+#define SIMPLEXGRID_2D_AVAILABLE 1
+#define SIMPLEXGRID_3D_AVAILABLE 1
 
 
 using GRID_1D = ONED_1D;

@@ -25,11 +25,9 @@
 
 #include <boost/numeric/conversion/cast.hpp>
 
-#if HAVE_EIGEN
-#  include <dune/xt/common/disable_warnings.hh>
-#  include <Eigen/SparseCore>
-#  include <dune/xt/common/reenable_warnings.hh>
-#endif
+#include <dune/xt/common/disable_warnings.hh>
+#include <Eigen/SparseCore>
+#include <dune/xt/common/reenable_warnings.hh>
 
 #include <dune/common/typetraits.hh>
 #include <dune/common/ftraits.hh>
@@ -57,8 +55,6 @@ class EigenRowMajorSparseMatrix;
 class EigenMatrixInterfaceDynamic
 {};
 
-
-#if HAVE_EIGEN
 
 namespace internal {
 
@@ -123,12 +119,12 @@ public:
         backend_->startVec(static_cast<EIGEN_size_t>(row));
         const auto& columns = pattern_in.inner(row);
         for (const auto& column : columns) {
-#  ifndef NDEBUG
+#ifndef NDEBUG
           if (column >= cc)
             DUNE_THROW(Common::Exceptions::shapes_do_not_match,
                        "The size of row " << row << " of the pattern does not match the number of columns of this ("
                                           << cc << ")!");
-#  endif // NDEBUG
+#endif // NDEBUG
           backend_->insertBackByOuterInner(static_cast<EIGEN_size_t>(row), static_cast<EIGEN_size_t>(column));
         }
         // create entry (insertBackByOuterInner() can not handle empty rows)
@@ -543,22 +539,9 @@ private:
 }; // class EigenRowMajorSparseMatrix
 
 
-#else // HAVE_EIGEN
-
-template <class ScalarImp>
-class EigenRowMajorSparseMatrix
-{
-  static_assert(AlwaysFalse<ScalarImp>::value, "You are missing Eigen!");
-};
-
-#endif // HAVE_EIGEN
-
-
 } // namespace LA
 namespace Common {
 
-
-#if HAVE_EIGEN
 
 template <class T>
 struct MatrixAbstraction<LA::EigenRowMajorSparseMatrix<T>>
@@ -572,14 +555,12 @@ struct MatrixAbstraction<LA::EigenRowMajorSparseMatrix<T>>
   using MatrixTypeTemplate = LA::EigenRowMajorSparseMatrix<FieldType>;
 };
 
-#endif // HAVE_EIGEN
-
 } // namespace Common
 } // namespace Dune::XT
 
 
 // begin: this is what we need for the lib
-#if DUNE_XT_WITH_PYTHON_BINDINGS && HAVE_EIGEN
+#if DUNE_XT_WITH_PYTHON_BINDINGS
 
 
 extern template class Dune::XT::LA::EigenRowMajorSparseMatrix<double>;
@@ -598,7 +579,7 @@ extern template class Dune::XT::LA::EigenRowMajorSparseMatrix<double>;
 //                                                    Dune::XT::LA::EigenDenseVector<double>&) const;
 
 
-#endif // DUNE_XT_WITH_PYTHON_BINDINGS && HAVE_EIGEN
+#endif // DUNE_XT_WITH_PYTHON_BINDINGS
 // end: this is what we need for the lib
 
 

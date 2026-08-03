@@ -45,8 +45,6 @@
 using namespace Dune;
 using namespace Dune::GDT;
 
-#if HAVE_DUNE_ALUGRID
-
 int main(int argc, char** argv)
 {
   MPIHelper::instance(argc, argv);
@@ -110,13 +108,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-
-#else // HAVE_DUNE_ALUGRID
-
-int main()
-{
-  // The ESV2007 benchmark requires a simplex grid (dune-alugrid); nothing to do otherwise.
-  return 0;
-}
-
-#endif // HAVE_DUNE_ALUGRID
