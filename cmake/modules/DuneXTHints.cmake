@@ -23,7 +23,7 @@ set(_root_hints "/usr/" "${CMAKE_SOURCE_DIR}/../local/" "${CMAKE_SOURCE_DIR}/../
 set(BIN_HINTS "")
 append_to_each("${_root_hints}" "bin/" BIN_HINTS)
 
-set(LIB_HINT "")
+set(LIB_HINTS "")
 append_to_each("${_root_hints}" "lib/" LIB_HINTS)
 
 set(INCLUDE_HINTS "")

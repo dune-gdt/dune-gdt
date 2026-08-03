@@ -107,7 +107,7 @@ std::string color(const std::string id)
 
 std::string backcolor(size_t i)
 {
-  return "\033[38;5;" + std::to_string(i) + "m";
+  return "\033[48;5;" + std::to_string(i) + "m";
 }
 
 size_t template_color_chooser(size_t i)

@@ -22,7 +22,12 @@ def typeid_to_typedef_name(typeid, replacement="_"):
 
 def is_found(cache, name):
     if name in cache.keys():
-        return "notfound" not in cache[name].lower()
+        value = cache[name]
+        # BOOL entries and the *_DIR companion keys arrive from parse_cache already reduced to a
+        # bool; a path-valued entry is a string that spells out its own absence as "<NAME>-NOTFOUND".
+        if isinstance(value, bool):
+            return value
+        return "notfound" not in value.lower()
     return False
 
 
@@ -38,6 +43,6 @@ def la_backends(cache):
     ret = []
     if have_eigen(cache):
         ret.append("eigen_sparse")
-    if have_istl:
+    if have_istl(cache):
         ret.append("istl_sparse")
     return ret

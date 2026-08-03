@@ -174,11 +174,14 @@ public:
       const XT::Common::ParameterType& boundary_treatment_parameter_type = {},
       const XT::Grid::IntersectionFilter<AGV>& filter = XT::Grid::ApplyOn::BoundaryIntersections<AGV>())
   {
+    // NOTE: the pair-based operator+= expects the filter by reference (and copies it internally),
+    // like in AdvectionFvOperator::boundary_treatment; the local operator is constructed without a
+    // source (set by a call to with_source before each apply, see the local operator's constructor).
     *this += {BoundaryTreatmentByCustomNumericalFluxOperatorType(local_mass_matrix_provider_,
                                                                  numerical_boundary_treatment_flux,
                                                                  numerical_boundary_treatment_flux_order,
                                                                  boundary_treatment_parameter_type),
-              filter.copy()};
+              filter};
     return *this;
   } // ... append(...)
 
@@ -187,9 +190,10 @@ public:
                      const XT::Common::ParameterType& extrapolation_parameter_type = {},
                      const XT::Grid::IntersectionFilter<AGV>& filter = XT::Grid::ApplyOn::BoundaryIntersections<AGV>())
   {
+    // NOTE: see the comment in the boundary_treatment overload above.
     *this += {BoundaryTreatmentByCustomExtrapolationOperatorType(
                   local_mass_matrix_provider_, *numerical_flux_, extrapolation, extrapolation_parameter_type),
-              filter.copy()};
+              filter};
     return *this;
   }
 

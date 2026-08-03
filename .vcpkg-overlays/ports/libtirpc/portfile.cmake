@@ -13,7 +13,17 @@ vcpkg_download_distfile(
 
 vcpkg_extract_source_archive(SOURCE_PATH ARCHIVE "${ARCHIVE}")
 
-vcpkg_configure_make(SOURCE_PATH "${SOURCE_PATH}" DETERMINE_BUILD_TRIPLET AUTOCONFIG OPTIONS --disable-gssapi)
+vcpkg_configure_make(
+  SOURCE_PATH
+  "${SOURCE_PATH}"
+  DETERMINE_BUILD_TRIPLET
+  AUTOCONFIG
+  OPTIONS
+  --disable-gssapi
+  OPTIONS_DEBUG
+  "CFLAGS=-std=c17"
+  OPTIONS_RELEASE
+  "CFLAGS=-std=c17")
 
 vcpkg_install_make()
 

@@ -27,11 +27,9 @@
 
 #include <boost/numeric/conversion/cast.hpp>
 
-#if HAVE_EIGEN
-#  include <dune/xt/common/disable_warnings.hh>
-#  include <Eigen/Core>
-#  include <dune/xt/common/reenable_warnings.hh>
-#endif
+#include <dune/xt/common/disable_warnings.hh>
+#include <Eigen/Core>
+#include <dune/xt/common/reenable_warnings.hh>
 
 #include <dune/common/typetraits.hh>
 #include <dune/common/densematrix.hh>
@@ -60,8 +58,6 @@ class EigenMappedDenseVector;
 template <class ScalarImp>
 class EigenDenseMatrix;
 
-
-#if HAVE_EIGEN
 
 namespace internal {
 
@@ -729,32 +725,8 @@ private:
 }; // class EigenDenseMatrix
 
 
-#else // HAVE_EIGEN
-
-template <class ScalarImp>
-class EigenDenseVector
-{
-  static_assert(Dune::AlwaysFalse<ScalarImp>::value, "You are missing Eigen!");
-};
-
-template <class ScalarImp>
-class EigenMappedDenseVector
-{
-  static_assert(Dune::AlwaysFalse<ScalarImp>::value, "You are missing Eigen!");
-};
-
-template <class ScalarImp>
-class EigenDenseMatrix
-{
-  static_assert(Dune::AlwaysFalse<ScalarImp>::value, "You are missing Eigen!");
-};
-
-#endif // HAVE_EIGEN
-
 } // namespace LA
 namespace Common {
-
-#if HAVE_EIGEN
 
 template <class T>
 struct VectorAbstraction<LA::EigenDenseVector<T>> : public LA::internal::VectorAbstractionBase<LA::EigenDenseVector<T>>
@@ -786,14 +758,12 @@ struct MatrixAbstraction<LA::EigenDenseMatrix<T>> : public LA::internal::MatrixA
   }
 };
 
-#endif // HAVE_EIGEN
-
 } // namespace Common
 } // namespace Dune::XT
 
 
 // begin: this is what we need for the lib
-#if DUNE_XT_WITH_PYTHON_BINDINGS && HAVE_EIGEN
+#if DUNE_XT_WITH_PYTHON_BINDINGS
 
 
 extern template class Dune::XT::LA::EigenDenseVector<double>;
@@ -809,7 +779,7 @@ extern template class Dune::XT::LA::EigenDenseMatrix<double>;
 //                                                                Dune::XT::LA::EigenDenseVector<double>&) const;
 
 
-#endif // DUNE_XT_WITH_PYTHON_BINDINGS && HAVE_EIGEN
+#endif // DUNE_XT_WITH_PYTHON_BINDINGS
 // end: this is what we need for the lib
 
 

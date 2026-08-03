@@ -51,12 +51,10 @@
 #include <dune/xt/common/parallel/threadmanager.hh>
 
 
-#if HAVE_TBB
-#  if __has_include(<tbb/global_control.h>)
-#    include <tbb/global_control.h>
-#  else
-#    include <tbb/task_scheduler_init.h>
-#  endif
+#if __has_include(<tbb/global_control.h>)
+#  include <tbb/global_control.h>
+#else
+#  include <tbb/task_scheduler_init.h>
 #endif
 
 #include <dune/xt/test/common.hh>
@@ -107,12 +105,10 @@ int main(int argc, char** argv)
     const size_t threads = DXTC_CONFIG.has_key("threading.max_count") // <- doing this so complicated to
                                ? DXTC_CONFIG.get<size_t>("threading.max_count") //    silence the WARNING: ...
                                : 1;
-#if HAVE_TBB
-#  if __has_include(<tbb/global_control.h>)
+#if __has_include(<tbb/global_control.h>)
     tbb::global_control tbb_control(tbb::global_control::max_allowed_parallelism, boost::numeric_cast<int>(threads));
-#  else
-    tbb::task_scheduler_init tbb_init(boost::numeric_cast<int>(threads));
-#  endif
+#else
+  tbb::task_scheduler_init tbb_init(boost::numeric_cast<int>(threads));
 #endif
     threadManager().set_max_threads(threads);
 

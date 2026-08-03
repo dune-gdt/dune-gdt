@@ -306,7 +306,11 @@ public:
   {
     VectorType ret(0.);
     for (size_t ii = 0; ii < first_slope.size(); ++ii)
-      ret[ii] = superbee(first_slope[ii], second_slope[ii]);
+      // superbee limiter: maxmod(minmod(a, 2b), minmod(2a, b)). The per-component call used to read
+      // superbee(first_slope[ii], second_slope[ii]) -- with no scalar overload the arguments converted
+      // back to VectorType and it recursed into itself until the stack overflowed (segfault).
+      ret[ii] = XT::Common::maxmod(XT::Common::minmod(first_slope[ii], 2. * second_slope[ii]),
+                                   XT::Common::minmod(2. * first_slope[ii], second_slope[ii]));
     return ret;
   }
 }; // class SuperbeeSlope

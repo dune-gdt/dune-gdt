@@ -182,8 +182,9 @@ public:
                   std::max(intersection_Pk_basis.order(),
                            std::max(local_source_element->order(param),
                                     std::max(intersection_Pk_basis.order(), local_source_neighbor->order(param))));
-              for (auto&& quadrature_point : QuadratureRules<D, d - 1>::rule(
-                       intersection.type(), 2 * std::max(max_polorder, rt_basis->order()))) {
+              const auto quadrature_rule_face =
+                  QuadratureRules<D, d - 1>::rule(intersection.type(), 2 * std::max(max_polorder, rt_basis->order()));
+              for (auto&& quadrature_point : quadrature_rule_face) {
                 const auto point_on_reference_intersection = quadrature_point.position();
                 const auto point_in_reference_element =
                     intersection.geometryInInside().global(point_on_reference_intersection);
@@ -249,8 +250,9 @@ public:
             there_are_intersection_dofs_to_determine = true;
             // do a face quadrature
             const int max_polorder = std::max(intersection_Pk_basis.order(), local_source_element->order(param));
-            for (auto&& quadrature_point :
-                 QuadratureRules<D, d - 1>::rule(intersection.type(), 2 * std::max(max_polorder, rt_basis->order()))) {
+            const auto quadrature_rule_boundary =
+                QuadratureRules<D, d - 1>::rule(intersection.type(), 2 * std::max(max_polorder, rt_basis->order()));
+            for (auto&& quadrature_point : quadrature_rule_boundary) {
               const auto point_on_reference_intersection = quadrature_point.position();
               const auto point_in_reference_element =
                   intersection.geometryInInside().global(point_on_reference_intersection);

@@ -26,13 +26,11 @@
 #include <iterator>
 #include <vector>
 
-#if HAVE_TBB
 // The new TBB oneAPI does not have this file anymore
 #if __has_include(<tbb/tbb_stddef.h>)
 #  include <tbb/tbb_stddef.h>
-#  else
+#else
 #  include <tbb/blocked_range.h>
-#  endif
 #endif
 
 #include <dune/xt/grid/type_traits.hh>
@@ -139,7 +137,6 @@ namespace Dune::XT::Grid {
                   : 0);
       }
 
-#if HAVE_TBB
       //! Splitting Constructor
       /**
        * Construct second half of set, update \c other to represent first half.
@@ -167,7 +164,6 @@ namespace Dune::XT::Grid {
       {
         return lastPartition_ - firstPartition_ > 1;
       }
-#endif // HAVE_TBB
 
     private:
       const RangedPartitioning &partitioning_;

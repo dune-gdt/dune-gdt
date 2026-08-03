@@ -207,7 +207,8 @@ public:
     py::array_t<double> quadrature_points(/*shape=*/{num_quadrature_points, size_t(d)});
     auto access_to_quadrature_points = quadrature_points.mutable_unchecked<2>();
     size_t pp = 0;
-    for (const auto& quadrature_point : QuadratureRules<D, d>::rule(element.type(), integrand_order_)) {
+    const auto quadrature_rule = QuadratureRules<D, d>::rule(element.type(), integrand_order_);
+    for (const auto& quadrature_point : quadrature_rule) {
       integration_factor[pp] = element.geometry().integrationElement(quadrature_point.position());
       quadrature_weight[pp] = quadrature_point.weight();
       for (size_t ii = 0; ii < d; ++ii)

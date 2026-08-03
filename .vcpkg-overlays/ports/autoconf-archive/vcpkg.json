@@ -1,0 +1,10 @@
+{
+  "name": "autoconf-archive",
+  "version": "2024.10.16",
+  "description":
+    "GNU Autoconf Archive, a collection of more than 500 reusable autoconf macros",
+  "homepage": "https://www.gnu.org/software/autoconf-archive/",
+  "license": "GPL-3.0-or-later",
+  "supports": "!windows",
+  "dependencies": []
+}

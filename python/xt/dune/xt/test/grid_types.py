@@ -20,9 +20,14 @@ except ImportError as e:
 
     if os.environ.get("DXT_PYTHON_DEBUG", False):
         raise e
-    logging.error("dune-xt-grid bindings not available")
+    # Logged with the original exception (not just a fixed string) so a genuinely broken build --
+    # as opposed to one that never compiled this binding at all -- is diagnosable from CI output
+    # instead of silently shrinking the grid-type matrix that depends on it (#393).
+    logging.error("dune-xt-grid bindings not available: %s", e)
 
 from collections import namedtuple
+
+from dune.xt.codegen import is_found
 
 arguments = {
     "alu": namedtuple("alu_args", "dim element_type refinement"),
@@ -36,6 +41,10 @@ templates = {
     "ug": "Dune::UGGrid<{dim}>",
     "alberta": "Dune::AlbertaGrid<{dim},{dim}>",
 }
+# Keys looked up in the CMake cache snapshot the codegen reads. The dune-* ones are the boolean
+# companions parse_cache derives from the modules' *_DIR cache paths; ALBERTA_FOUND is not a cache
+# variable at all and is appended to the snapshot by dxt_write_codegen_cache() (DuneXTTesting.cmake)
+# from find_package(Alberta)'s normal variable -- keep the two names in sync.
 guards = {
     "alu": "dune-alugrid",
     "yasp": "dune-grid",
@@ -45,10 +54,7 @@ guards = {
 
 
 def _is_usable(grid, cache):
-    try:
-        return cache[guards[grid]]
-    except KeyError:
-        return False
+    return is_found(cache, guards[grid])
 
 
 def all_args(dims):

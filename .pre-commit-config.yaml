@@ -6,15 +6,19 @@ repos:
   rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
   hooks:
   - id: trailing-whitespace
+    # mpfr and lapack-reference are verbatim copies of the upstream vcpkg ports;
+    # do not rewrite their patches (stripping context-line whitespace corrupts
+    # the diffs -- a blank context line is a single space).
+    exclude: "^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
   - id: check-yaml
     args: [--allow-multiple-documents]
   - id: check-added-large-files
   - id: debug-statements
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 'dd18dad857d6133e90bbe478f4f2f22ec0030269' # frozen: v22.1.5
+  rev: 'f4d7745e17a28aad7eed2f4874ca8d1568c11c4c' # frozen: v22.1.8
   hooks:
   - id: clang-format
-    exclude: "^(pybind11)"
+    exclude: "^(pybind11)|^\\.vcpkg-overlays/ports/mpfr/"
 - repo: https://github.com/google/yamlfmt
   rev: b5ca1890231d5e1e5181fef75a1be609d1e25029 # frozen: v0.21.0
   hooks:
@@ -25,7 +29,7 @@ repos:
   hooks:
   - id: actionlint
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: 22f0422809455ec89ffdcf5a00170ba816e42ddb # frozen: v0.15.16
+  rev: cb8c523fd4835aba42af70f4cad5568db4df0b6c # frozen: v0.16.0
   hooks:
   - id: ruff
   - id: ruff-format
@@ -34,14 +38,14 @@ repos:
   hooks:
   - id: cmake-format
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-    exclude: "config.h.cmake|pybind11"
+    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
     args: ["-i", "--config-files=.cmake_format.py"]
   - id: cmake-lint
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-    exclude: "config.h.cmake|pybind11"
+    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
     args: ["--config-files=.cmake_format.py"]
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: 943377262562a12b57292fc98fabd7dbf81451fe # frozen: 0.37.2
+  rev: 1a4bb160cab6417b3045e1b37b6b72449243e658 # frozen: 0.37.4
   hooks:
   - id: check-github-actions
     additional_dependencies:
@@ -55,6 +59,6 @@ repos:
   - id: actionlint
     additional_dependencies: [pyflakes>=3.0.1, shellcheck-py>=0.9.0.5]
 - repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: a23f6b85d0fdd5bb9d564e2579e678033debbdff # frozen: v0.10.0.1
+  rev: 745eface02aef23e168a8afb6b5737818efbea95 # frozen: v0.11.0.1
   hooks:
   - id: shellcheck

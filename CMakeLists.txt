@@ -38,7 +38,7 @@ list(APPEND CMAKE_MODULE_PATH ${dune-common_MODULE_PATH} "${PROJECT_SOURCE_DIR}/
 set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL ON)
 
 set(FEATURE_MODULES)
-set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry)
+set(GRID_LIBS Dune::ALUGrid Dune::Grid Dune::ISTL Dune::Geometry Dune::GridGlue)
 
 if("uggrid" IN_LIST VCPKG_MANIFEST_FEATURES)
   list(APPEND FEATURE_MODULES "dune-uggrid")
@@ -50,14 +50,85 @@ if("alberta" IN_LIST VCPKG_MANIFEST_FEATURES)
   find_library(TIRPC_LIB tirpc REQUIRED)
 endif()
 
-# let 'find_package' know where modules can be found once configured removed dune-grid-glue: our gridview wrapper will
-# need changes to work again. Seems Entity types on the glued view are different than in 2.7 removed dune-uggrid: lots
-# of undefined refs
-set(DUNE_SUBMODULES "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-localfunctions;dune-alugrid")
+# let 'find_package' know where modules can be found once configured removed dune-uggrid: lots of undefined refs
+set(DUNE_SUBMODULES
+    "dune-common;dune-geometry;dune-grid;dune-istl;dune-testtools;dune-localfunctions;dune-alugrid;dune-grid-glue")
 foreach(module IN LISTS FEATURE_MODULES DUNE_SUBMODULES)
   find_package(${module} CONFIG REQUIRED)
   list(APPEND CMAKE_MODULE_PATH ${${module}_MODULE_PATH})
 endforeach()
+
+# Prefer the interpreter uv provides (pinned by the repo-root .python-version) as the single source of truth for "which
+# Python". This guarantees the compiled bindings' ABI matches the interpreter the Python test suites run under (they
+# also go through `uv run`, see DuneXTTesting.cmake). The hint set below is consumed by find_package(Python) immediately
+# afterwards, by pybind11 (its vcpkg overlay is built with PYBIND11_NOPYTHON=ON, so it reuses these find_package(Python)
+# results rather than searching on its own), and by dune-common's Python3 detection in include(DuneMacros) further down.
+#
+# DXT_USE_UV_PYTHON must be turned OFF for builds that have to use a specific pre-existing interpreter: the manylinux
+# wheel build (.ci/build-wheels.sh) compiles against the container's CPython inside an already-activated venv into which
+# dune-common installs the `dune` package; forcing a uv interpreter there desyncs dune-common's virtualenv handling from
+# that active venv and breaks the configure-time system-test extraction (`dune_extract_static.py: No module named
+# dune`).
+option(DXT_USE_UV_PYTHON "Resolve the Python interpreter via uv (pinned by .python-version)" ON)
+
+# uv is a hard build requirement independent of DXT_USE_UV_PYTHON: the configure-time expansion of the templated test
+# suites runs through `uv run` (see dxt_codegen_command in DuneXTTesting.cmake), as do the Python test and coverage
+# targets. Fail here rather than let a missing binary surface much later as an opaque "no such file or directory" from
+# the codegen -- on a from-scratch vcpkg build that is half an hour of dependency compilation further in.
+find_program(UV_EXECUTABLE uv)
+if(NOT UV_EXECUTABLE)
+  message(
+    FATAL_ERROR
+      "uv was not found on PATH. It is required to expand the templated test suites and to run the Python test suites."
+      " Install it (https://docs.astral.sh/uv/getting-started/installation/); CI jobs get it from the"
+      " astral-sh/setup-uv action.")
+endif()
+
+if(DXT_USE_UV_PYTHON)
+  # `uv python find` only locates an already-available interpreter; it does not download one. On a host/runner whose
+  # system Python doesn't match the pinned (.python-version) interpreter, resolve it in two steps: try to find it, and
+  # if that fails install it with `uv python install` (uv downloads a managed CPython) and find it again.
+  execute_process(
+    COMMAND ${UV_EXECUTABLE} python find
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE _uv_python_executable
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE _uv_python_result)
+  if(NOT _uv_python_result EQUAL 0)
+    message(STATUS "uv has no matching interpreter yet; installing the pinned one via `uv python install`")
+    execute_process(
+      COMMAND ${UV_EXECUTABLE} python install
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      RESULT_VARIABLE _uv_install_result)
+    if(NOT _uv_install_result EQUAL 0)
+      message(
+        FATAL_ERROR "`uv python install` failed (exit ${_uv_install_result}); cannot provide the Python interpreter")
+    endif()
+    execute_process(
+      COMMAND ${UV_EXECUTABLE} python find
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      OUTPUT_VARIABLE _uv_python_executable
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      RESULT_VARIABLE _uv_python_result)
+  endif()
+  if(NOT _uv_python_result EQUAL 0)
+    message(FATAL_ERROR "`uv python find` failed (exit ${_uv_python_result}); cannot resolve the Python interpreter")
+  endif()
+  # Python_EXECUTABLE / Python3_EXECUTABLE are the CMake-mandated FindPython hint names, so the C0103 cache-name
+  # convention does not apply to them.
+
+  # cmake-lint: disable=C0103
+  set(Python_EXECUTABLE
+      "${_uv_python_executable}"
+      CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+  # cmake-lint: disable=C0103
+  set(Python3_EXECUTABLE
+      "${_uv_python_executable}"
+      CACHE FILEPATH "Python interpreter provided by uv" FORCE)
+  message(STATUS "Using uv-provided Python interpreter: ${_uv_python_executable}")
+else()
+  message(STATUS "DXT_USE_UV_PYTHON=OFF; using default FindPython")
+endif()
 
 find_package(Python COMPONENTS Interpreter Development)
 find_package(pybind11 CONFIG REQUIRED)
@@ -119,6 +190,12 @@ find_file(
 # silence most warnings we are not responsible for
 make_dependent_modules_sys_included()
 
+# GCC 12 added -Wdangling-reference (enabled by -Wall) but incorrectly fires on QuadratureRules::rule(), which returns a
+# static cache reference (GCC bug #106372). Suppress this false positive globally for GCC >= 12.
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL "12")
+  add_compile_options(-Wno-dangling-reference)
+endif()
+
 # do not change order here
 add_subdirectory(python)
 make_dependent_modules_sys_included()
@@ -140,7 +217,7 @@ add_pylicense()
 dxt_exclude_from_headercheck(${CMAKE_SOURCE_DIR}/.vcpkg-root)
 dxt_exclude_from_headercheck(${CMAKE_BINARY_DIR}/vcpkg_installed)
 
-finalize_dune_project(GENERATE_CONFIG_H_CMAKE)
+finalize_dune_project()
 # patch config.h to remove warnings about unused HAVE_GRIDTYPE
 execute_process(
   COMMAND sed -i -e "s,^\\([ ]*\\)\#if HAVE_GRIDTYPE$,\\1\#if defined(HAVE_GRIDTYPE) \\&\\& HAVE_GRIDTYPE,g"

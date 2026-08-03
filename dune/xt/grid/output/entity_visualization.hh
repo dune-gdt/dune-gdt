@@ -55,7 +55,7 @@ struct ElementVisualization
     vtkwriter.addCellData(values, "data");
     const std::string piecefilesFolderName = "piecefiles";
     const std::string piecefilesPath = f.dir() + "/" + piecefilesFolderName + "/";
-    Common::test_create_directory(piecefilesPath);
+    Common::create_directory(piecefilesPath);
     vtkwriter.pwrite(f.filename(), f.dir(), piecefilesFolderName, Dune::VTK::appendedraw);
   }
 

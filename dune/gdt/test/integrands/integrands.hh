@@ -14,6 +14,7 @@
 
 #include <dune/geometry/quadraturerules.hh>
 #include <dune/geometry/type.hh>
+#include <dune/grid/common/rangegenerators.hh>
 
 #include <gtest/gtest.h>
 #include <dune/xt/common/fvector.hh>
@@ -144,6 +145,113 @@ struct IntegrandTest : public ::testing::Test
         });
   } // ... SetUp(...)
 
+  I find_inner_intersection() const
+  {
+    const auto& gv = grid_provider_->leaf_view();
+    for (const auto& element : Dune::elements(gv))
+      for (const auto& intersection : Dune::intersections(gv, element))
+        if (intersection.neighbor())
+          return intersection;
+    DUNE_THROW(Dune::InvalidStateException, "No inner intersection found in grid!");
+  }
+
+  I find_boundary_intersection() const
+  {
+    const auto& gv = grid_provider_->leaf_view();
+    for (const auto& element : Dune::elements(gv))
+      for (const auto& intersection : Dune::intersections(gv, element))
+        if (!intersection.neighbor())
+          return intersection;
+    DUNE_THROW(Dune::InvalidStateException, "No boundary intersection found in grid!");
+  }
+
+  std::shared_ptr<LocalScalarBasisType> make_const_basis() const
+  {
+    return std::make_shared<LocalScalarBasisType>(
+        /*fixed_size=*/1,
+        /*ord=*/0,
+        [](const DomainType& /*x*/, std::vector<ScalarRangeType>& ret, const XT::Common::Parameter& /*param*/) {
+          ret = {{1.0}};
+        });
+  }
+
+  template <class Callable>
+  bool with_first_interior_intersection(Callable&& callable) const
+  {
+    const auto& gv = grid_provider_->leaf_view();
+    for (auto&& el : elements(gv)) {
+      for (auto&& is : intersections(gv, el)) {
+        if (is.neighbor()) {
+          callable(gv, el, is);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  template <class Callable>
+  void for_each_intersection_of_first_element(Callable&& callable) const
+  {
+    const auto& gv = grid_provider_->leaf_view();
+    const auto el = *(gv.template begin<0>());
+    for (auto&& is : intersections(gv, el))
+      callable(gv, el, is);
+  }
+
+  template <class Callable>
+  bool with_first_coupling_intersection(Callable&& callable) const
+  {
+    return with_first_interior_intersection([&](const GV& /*gv*/, const E& el_in, const I& is) {
+      auto el_out = is.outside();
+      auto basis_in = make_const_basis();
+      auto basis_out = make_const_basis();
+      basis_in->bind(el_in);
+      basis_out->bind(el_out);
+      callable(is, *basis_in, *basis_out);
+    });
+  }
+
+  template <class UnaryIntegrandType, class BasisType>
+  void check_unary_clone_matches(UnaryIntegrandType& integrand, const BasisType& basis)
+  {
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    auto clone = integrand.copy_as_unary_element_integrand();
+    clone->bind(element);
+    const auto order = integrand.order(basis);
+    const size_t n = basis.size();
+    DynamicVector<double> result_orig(n, 0.), result_clone(n, 0.);
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
+      const auto& x = qp.position();
+      integrand.evaluate(basis, x, result_orig);
+      clone->evaluate(basis, x, result_clone);
+      for (size_t ii = 0; ii < n; ++ii)
+        EXPECT_DOUBLE_EQ(result_orig[ii], result_clone[ii]);
+    }
+  }
+
+  template <class BinaryIntegrandType>
+  void check_binary_clone_matches(BinaryIntegrandType& integrand)
+  {
+    const auto element = *(grid_provider_->leaf_view().template begin<0>());
+    integrand.bind(element);
+    auto clone = integrand.copy_as_binary_element_integrand();
+    clone->bind(element);
+    const auto order = integrand.order(*scalar_test_, *scalar_ansatz_);
+    DynamicMatrix<double> result_orig(2, 2, 0.), result_clone(2, 2, 0.);
+    const auto quadrature_rule = Dune::QuadratureRules<D, d>::rule(element.type(), order);
+    for (const auto& qp : quadrature_rule) {
+      const auto& x = qp.position();
+      integrand.evaluate(*scalar_test_, *scalar_ansatz_, x, result_orig);
+      clone->evaluate(*scalar_test_, *scalar_ansatz_, x, result_clone);
+      for (size_t ii = 0; ii < 2; ++ii)
+        for (size_t jj = 0; jj < 2; ++jj)
+          EXPECT_DOUBLE_EQ(result_orig[ii][jj], result_clone[ii][jj]);
+    }
+  }
+
   virtual void is_constructable() = 0;
 }; // struct IntegrandTest
 
@@ -153,14 +261,11 @@ struct IntegrandTest : public ::testing::Test
 } // namespace Dune
 
 
-using Grids2D = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET
-#if HAVE_DUNE_ALUGRID
-                                 ,
+using Grids2D = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET,
                                  ALU_2D_SIMPLEX_CONFORMING,
                                  ALU_2D_SIMPLEX_NONCONFORMING,
                                  ALU_2D_CUBE
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
                                  ,
                                  UG_2D
 #endif
@@ -171,12 +276,10 @@ using Grids2D = ::testing::Types<YASP_2D_EQUIDISTANT_OFFSET
                                  >;
 
 DUNE_XT_COMMON_TYPENAME(YASP_2D_EQUIDISTANT_OFFSET)
-#if HAVE_DUNE_ALUGRID
 DUNE_XT_COMMON_TYPENAME(ALU_2D_SIMPLEX_CONFORMING)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_SIMPLEX_NONCONFORMING)
 DUNE_XT_COMMON_TYPENAME(ALU_2D_CUBE)
-#endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
+#if HAVE_DUNE_UGGRID
 DUNE_XT_COMMON_TYPENAME(UG_2D)
 #endif
 #if HAVE_ALBERTA

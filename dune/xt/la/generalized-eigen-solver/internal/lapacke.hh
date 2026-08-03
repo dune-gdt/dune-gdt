@@ -89,7 +89,13 @@ compute_generalized_eigenvalues_of_real_matrices_using_lapack_impl(
                "Given RHS matrix has to be square, is " << Dune::XT::Common::get_matrix_rows(rhs_matrix) << "x"
                                                         << Dune::XT::Common::get_matrix_cols(rhs_matrix) << "!");
 #endif // DUNE_XT_LA_DISABLE_ALL_CHECKS
-  thread_local std::vector<double> real_part_of_eigenvalues(size, 0.);
+  // The buffer is thread_local to avoid a heap allocation on every call, but a thread_local with an initializer is
+  // only initialized on the first pass through its declaration: sizing it there would keep the size of the very first
+  // problem this thread solved forever and let dsygv write past the end for any larger problem afterwards. Resize on
+  // every call instead (a no-op whenever the size did not change), as the non-generalized backend does in
+  // dune/xt/la/eigen-solver/internal/lapacke.hh.
+  thread_local std::vector<double> real_part_of_eigenvalues;
+  real_part_of_eigenvalues.assign(size, 0.);
   int storage_layout = MatrixDataProvider<RealMatrixType, contiguous_and_mutable>::storage_layout
                                == Common::StorageLayout::dense_row_major
                            ? Common::Lapacke::row_major()

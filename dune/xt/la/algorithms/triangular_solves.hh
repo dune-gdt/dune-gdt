@@ -321,9 +321,8 @@ class TriangularSolver<CommonSparseOrDenseMatrix<DenseMatrixType, SparseMatrixTy
                        Common::StorageLayout::other>
 {
   using MatrixType = CommonSparseOrDenseMatrix<DenseMatrixType, SparseMatrixType>;
-  using M = Common::VectorAbstraction<MatrixType>;
-  using V = Common::VectorAbstraction<VectorType>;
 
+public:
   static void solve(const MatrixType& A, VectorType& x)
   {
     A.sparse() ? TriangularSolver<SparseMatrixType, VectorType, triangular_type, transpose>::solve(A.sparse_matrix(), x)

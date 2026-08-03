@@ -26,9 +26,6 @@
 
 namespace Dune::XT::LA {
 
-#if HAVE_EIGEN
-
-
 /// \brief Matrix-inverter options for an EigenDenseMatrix.
 template <class S>
 class MatrixInverterOptions<EigenDenseMatrix<S>, true>
@@ -99,27 +96,6 @@ protected:
   using BaseType::options_;
 }; // class MatrixInverter<EigenDenseMatrix<...>>
 
-
-#else // HAVE_EIGEN
-
-
-/// \brief Matrix-inverter options for an EigenDenseMatrix (unavailable without Eigen).
-template <class S>
-class MatrixInverterOptions<EigenDenseMatrix<S>, true>
-{
-  static_assert(AlwaysFalse<S>::value, "You are missing eigen!");
-};
-
-
-/// \brief Matrix-inverter for an EigenDenseMatrix (unavailable without Eigen).
-template <class S>
-class MatrixInverter<EigenDenseMatrix<S>, true>
-{
-  static_assert(AlwaysFalse<S>::value, "You are missing eigen!");
-};
-
-
-#endif // HAVE_EIGEN
 
 } // namespace Dune::XT::LA
 

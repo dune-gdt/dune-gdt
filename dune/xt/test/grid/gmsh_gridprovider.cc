@@ -11,9 +11,7 @@
 
 #include <dune/xt/test/main.hxx>
 
-#if HAVE_DUNE_ALUGRID
-
-#  include "provider.hh"
+#include "provider.hh"
 
 
 struct GmshGridProvider : public GridProviderBase<TESTGRIDTYPE>
@@ -40,12 +38,3 @@ TEST_F(GmshGridProvider, visualize)
 {
   this->check_visualize();
 }
-
-#else // HAVE_DUNE_ALUGRID
-
-
-TEST(DISABLED_GmshGridProvider, layers) {}
-TEST(DISABLED_GmshGridProvider, visualize) {}
-
-
-#endif // HAVE_DUNE_ALUGRID

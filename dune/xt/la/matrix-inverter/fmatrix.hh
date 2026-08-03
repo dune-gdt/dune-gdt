@@ -23,6 +23,7 @@
 #include <dune/xt/la/container/conversion.hh>
 #include <dune/xt/la/container/eigen/dense.hh>
 #include <dune/xt/la/matrix-inverter.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "internal/base.hh"
 #include "internal/eigen.hh"
@@ -37,12 +38,7 @@ class MatrixInverterOptions<FieldMatrix<K, ROWS, COLS>, true>
 public:
   static std::vector<std::string> types()
   {
-    return {"direct"
-#if HAVE_EIGEN
-            ,
-            "moore_penrose"
-#endif
-    };
+    return {"direct", "moore_penrose"};
   }
 
   static Common::Configuration options(const std::string& type = "")
@@ -70,7 +66,7 @@ class MatrixInverter<FieldMatrix<K, ROWS, COLS>, true> : public internal::Matrix
 public:
   using MatrixType = typename BaseType::MatrixType;
 
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<MatrixInverter, Args...>>
   explicit MatrixInverter(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -96,14 +92,10 @@ public:
                          << ee.what());
         DUNE_THROW(Exceptions::matrix_invert_failed, "This was the original error:\n\n" << ee.what());
       }
-    }
-#if HAVE_EIGEN
-    else if (type == "moore_penrose") {
+    } else if (type == "moore_penrose") {
       inverse_ = std::make_unique<MatrixType>(convert_to<MatrixType>(EigenDenseMatrix<K>(
           internal::compute_moore_penrose_inverse_using_eigen(convert_to<EigenDenseMatrix<K>>(matrix_).backend()))));
-    }
-#endif
-    else
+    } else
       DUNE_THROW(Common::Exceptions::internal_error,
                  "Given type '" << type
                                 << "' is none of MatrixInverterOptions<FieldMatrix<K, ROWS, COLS>>::types(), and "
@@ -126,7 +118,7 @@ template <class K, int ROWS, int COLS>
 class MatrixInverter<Common::FieldMatrix<K, ROWS, COLS>, true> : public MatrixInverter<FieldMatrix<K, ROWS, COLS>>
 {
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<MatrixInverter, Args...>>
   explicit MatrixInverter(Args&&... args)
     : MatrixInverter<FieldMatrix<K, ROWS, COLS>>(std::forward<Args>(args)...)
   {

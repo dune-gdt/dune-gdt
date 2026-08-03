@@ -55,7 +55,7 @@ inline std::ostream& operator<<(std::ostream& out, const SpaceType& space_type)
   else if (space_type == SpaceType::finite_volume_skeleton)
     out << "finite_volume_skeleton";
   else if (space_type == SpaceType::raviart_thomas)
-    out << "finite_volume";
+    out << "raviart_thomas";
   else
     out << "SpaceType(" << int(space_type) << ")";
   return out;

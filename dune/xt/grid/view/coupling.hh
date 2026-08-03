@@ -153,6 +153,7 @@ public:
   using LocalElementType = typename GridGlueType::MicroEntityType;
 
   using GlueType = typename GridGlueType::GlueType;
+  using MicroGridViewType = typename GridGlueType::MicroGridViewType;
   using CouplingIntersectionType = typename GlueType::Intersection;
   using MacroInterSectionType = typename BaseGridViewTraits::Intersection;
   using CorrectedCouplingIntersectionType =
@@ -164,10 +165,12 @@ public:
   template <int cd>
   struct Codim : public BaseGridViewTraits::template Codim<cd>
   {
-    // We need to define these in case BaseGridViewImp is a grid part.
-    using Entity = extract_entity_t<BaseGridViewType, cd>;
-    using Geometry = extract_geometry_t<BaseGridViewType, cd>;
-    using LocalGeometry = extract_local_geometry_t<BaseGridViewType, cd>;
+    // The coupling view hands out entities of the local (micro) grids, not of the macro grid these traits are
+    // otherwise based on. The types have to come from the micro grid view: with differing macro and local grid
+    // types they are not interchangeable.
+    using Entity = extract_entity_t<MicroGridViewType, cd>;
+    using Geometry = extract_geometry_t<MicroGridViewType, cd>;
+    using LocalGeometry = extract_local_geometry_t<MicroGridViewType, cd>;
 
     using Iterator = typename std::vector<LocalElementType>::const_iterator;
 

@@ -14,18 +14,14 @@
 #include "oswald-interpolation.hh"
 
 
-using Simplicial2dGrids = ::testing::Types<
-#if HAVE_DUNE_ALUGRID
-    ALU_2D_SIMPLEX_CONFORMING,
-    ALU_2D_SIMPLEX_NONCONFORMING
+using Simplicial2dGrids = ::testing::Types<ALU_2D_SIMPLEX_CONFORMING,
+                                           ALU_2D_SIMPLEX_NONCONFORMING
+#if HAVE_DUNE_UGGRID
+                                           ,
+                                           UG_2D
 #endif
-#if HAVE_DUNE_UGGRID || HAVE_UG
-    ,
-    UG_2D
-#endif
-    >;
+                                           >;
 
-#if HAVE_DUNE_UGGRID || HAVE_UG || HAVE_DUNE_ALUGRID
 template <class G>
 using OswaldInterpolationOperator = Dune::GDT::Test::OswaldInterpolationOperatorOnLeafViewTest<G>;
 TYPED_TEST_SUITE(OswaldInterpolationOperator, Simplicial2dGrids);
@@ -37,4 +33,3 @@ TYPED_TEST(OswaldInterpolationOperator, fulfills_h1_interpolation_estimate)
 {
   this->fulfills_h1_interpolation_estimate();
 }
-#endif // HAVE_DUNE_UGGRID || HAVE_UG || HAVE_DUNE_ALUGRID

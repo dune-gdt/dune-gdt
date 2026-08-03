@@ -33,6 +33,7 @@ for mod_name in (
     # '_grid_functors_refinement',
     "_grid_gridprovider_cube",
     "_grid_gridprovider_gmsh",
+    "_grid_gridprovider_unstructured",
     "_grid_gridprovider_provider",
     "_grid_dd_glued_gridprovider_cube",
     "_grid_dd_glued_gridprovider_provider",

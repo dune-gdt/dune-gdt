@@ -1,20 +1,113 @@
 [build-system]
-requires = ['setuptools>=61', 'wheel', 'packaging']
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "dune.gdt"
 description = "Python bindings for dune-gdt"
 readme = "README.md"
-# LICENSE.txt is bundled into the wheel via setup.cfg ([metadata] license_file); we intentionally do not set a [project]
-# license field, as the dual BSD-2-Clause / GPL-2.0+ license is not a single SPDX expression.
+# Matches the lower bound declared in python/xt/pyproject.toml (dune.gdt pins dune.xt to its own exact version, so the
+# two projects resolve as one graph). Declared explicitly so `uv lock` resolves a deterministic, universal lockfile
+# instead of silently defaulting to `>=3.11`.
+requires-python = ">=3.10"
+# LICENSE.txt is bundled into the wheel via [project] license-files (hatchling copies it into the .dist-info); we
+# intentionally do not set a [project] license field, as the dual BSD-2-Clause / GPL-2.0+ license is not a single SPDX
+# expression.
+license-files = ["LICENSE.txt"]
 authors = [{ name = "The dune-gdt devs", email = "felix.schindler@uni-muenster.de" }]
-# version, dependencies and the optional-dependencies are supplied by setup.py: they all pin dune.xt to the exact same
-# version, which is read from the CMake-generated dune/gdt/_version.py.
+# version, dependencies and the optional-dependencies are build-time-dynamic: the version is read by
+# [tool.hatch.version] from the CMake-generated dune/gdt/_version.py, and the custom metadata hook in hatch_build.py
+# pins dune.xt to that exact same version for both the dependencies and the optional-dependencies.
 dynamic = ["version", "dependencies", "optional-dependencies"]
 
 [project.urls]
 Homepage = "https://github.com/dune-gdt/dune-gdt"
 
-# Package discovery, the `dune` namespace package and the .so package data are configured in setup.py, alongside the
-# BinaryDistribution wheel forcing.
+# The version is extracted (without importing the package, which would pull in the compiled extensions) from the
+# CMake-generated dune/gdt/_version.py.
+[tool.hatch.version]
+path = "dune/gdt/_version.py"
+pattern = '__git_revision__ = "(?P<version>[^"]+)"'
+
+# Computes `dependencies` and `optional-dependencies` (see hatch_build.py); reads the version from the same generated
+# _version.py to build the exact dune.xt== pins.
+[tool.hatch.metadata.hooks.custom]
+
+[tool.hatch.build.targets.wheel]
+# The .so modules are compiled build outputs (dropped into the binary dir by CMake); force-include them as artifacts so
+# they always ship, even if a VCS-ignore rule would otherwise exclude them.
+artifacts = ["dune/**/*.so"]
+# Package the whole `dune` namespace tree (dune/__init__.py declares the namespace so dune.xt and dune.gdt coexist).
+packages = ["dune"]
+# The wheel is assembled in the in-source CMake build dir, so the `dune` tree above is interleaved with build artifacts:
+# CMakeFiles/*.cc.o object files, CMake metadata, the binding .cc/.hh sources and configured templates. packages=["dune"]
+# would otherwise ship all of it -- the unstripped *.cc.o objects alone added ~900 MB and blew the wheel ~8x past Test
+# PyPI's 100 MB per-file limit. Ship only the Python sources and the compiled .so modules, matching the behaviour of the
+# former setuptools find_packages() + package_data={"": ["*.so"]}.
+exclude = [
+  "**/CMakeFiles/**",
+  "**/*.o",
+  "**/*.cc",
+  "**/*.hh",
+  "**/*.cmake",
+  "**/CMakeLists.txt",
+  "**/*.in",
+]
+
+# Force a platform (non-pure) wheel via the build hook in hatch_build.py (CustomBuildHook): hatchling has no declarative
+# option for this, so the hook sets pure_python=False (Root-Is-Purelib: false) and infer_tag=True (stamp the building
+# interpreter's platform tag, e.g. cp313-cp313-linux_x86_64). Required because the package ships pre-built .so
+# extensions and is passed through `auditwheel repair`, which rejects pure py3-none-any wheels.
+[tool.hatch.build.targets.wheel.hooks.custom]
+
+# PEP 735 dependency group with the test tooling for the dune.gdt suite. The `gdt_test_python` CMake target
+# (cmake/modules/DuneXTTesting.cmake) runs `uv run --group test ...` from the binary dir, so the deps are declared here
+# rather than as individual `--with` flags on the uv command line. hatchling is needed by the hatch_build.py
+# CustomMetadataHook/CustomBuildHook tests.
+[dependency-groups]
+test = [
+  "pytest",
+  "pytest-cov",
+  "pytest-regressions",
+  "hypothesis",
+  "hatchling",
+  # only in dune.xt's `visualisation` extra otherwise (#393), so HAVE_K3D was permanently False under ctest and
+  # visualize_function (dune/gdt/__init__.py) went untested. CI already runs ctest under xvfb-run.
+  "k3d>=2.15.2",
+  # dune.xt.common.vtk.plot (imported by visualize_function once HAVE_K3D is True) unconditionally imports
+  # matplotlib for its default color map -- without it here too, k3d above just swaps one ModuleNotFoundError
+  # for another, still silently absorbed by pytest.importorskip("dune.gdt"/"dune.gdt.basic") in the test suite.
+  "matplotlib",
+  # dune.xt.common.vtk.plot also unconditionally imports vtk, and its .reader submodule needs lxml/xmljson;
+  # dune.xt's own test group has these (see python/xt/pyproject.toml), but dune.gdt's test env is separate --
+  # anything here that imports dune.xt.functions/dune.xt.grid (nearly every gdt test does) pulls the same
+  # HAVE_K3D-gated chain, so it needs the same three packages or collection fails with ModuleNotFoundError.
+  "vtk",
+  "lxml",
+  "xmljson",
+]
+
+# uv runs the gdt suite in project mode (cmake/modules/DuneXTTesting.cmake) and resolves the project's
+# optional-dependencies universally -- the same reason the xt `docs` extra needs a clangquill marker. dune.gdt's extras
+# re-export dune.xt[...] pinned to this build's exact version (see hatch_build.py), which exists only as the freshly
+# built editable in the sibling binary dir, never on an index. Point every dune.xt requirement -- the base dependency and
+# the extras' exact pins alike -- at that local build (../xt is the sibling assembly dir in the binary tree) so the
+# resolution stays solvable without `--with-editable` on the uv command line. This [tool.uv] table is ignored by the
+# hatchling wheel build, so the published wheel still depends on dune.xt from an index.
+[tool.uv.sources]
+"dune.xt" = { path = "../xt", editable = true }
+
+# Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: some test modules are named e.g.
+# test/segfault_laplace_integrand.py (not test_*.py), so without this pattern pytest would not collect them. The
+# `make gdt_test_python` target runs pytest from the binary dir, where this pyproject.toml is the assembly-point config.
+# (The obsolete pytest-pep8 options and the setuptools `[aliases] test = pytest` from setup.cfg are intentionally
+# dropped.)
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = ["test/*.py"]
+junit_family = "xunit2"
+# --capture=no: this suite drives compiled bindings, and pytest's default fd-level capture swallows
+# C-level stderr (assert() messages, DUNE exception text, std::terminate notes) when a test aborts
+# the interpreter -- the captured output dies with the process before pytest can replay it, leaving
+# only faulthandler's Python stack. Uncaptured output goes straight to the CTest log instead.
+addopts = "-p no:warnings --capture=no"

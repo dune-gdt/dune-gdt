@@ -106,7 +106,7 @@ macro(ADD_TIDY)
       COMMENT "Running clang-tidy -fix for all files, this will take a very long time..."
       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
   else()
-    message(WARNING "not adding tidy target because clang-tidy is missing or"
+    message(WARNING "not adding tidy target because clang-tidy is missing or "
                     "wrong version: ${ClangTidy_EXECUTABLE} ${ClangTidy_VERSION}")
   endif(ClangTidy_FOUND)
 endmacro()

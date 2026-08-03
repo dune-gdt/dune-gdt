@@ -9,10 +9,11 @@ on:
   merge_group:
   workflow_dispatch:
 
-# Add concurrency to cancel in-progress jobs
+# Cancel superseded in-progress PR runs, but never cancel a queued merge_group
+# build or a push to main (each of those must run to completion).
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Permissions are declared per job (least privilege) rather than at workflow level,
 # as recommended by SonarCloud rule githubactions:S8264. The build jobs only need
@@ -20,21 +21,152 @@ concurrency:
 # extra scopes they require (pages / id-token write for Trusted Publishing).
 
 jobs:
-  build-linux:
-    name: Build on Linux
-    runs-on: ubuntu-24.04
-    timeout-minutes: 120
+  # Path filter that drives the per-job `if:` conditions below. Lets a docs-only
+  # change skip the heavy C++ matrix and the wheel build (the docs job then pulls
+  # the last good wheels from main), while any code change still runs the full
+  # pipeline. `push`/`workflow_dispatch` ignore the outputs and always run full.
+  changes:
+    name: Detect changed paths
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
+      # paths-filter reads the PR file list via the API on pull_request events
+      pull-requests: read
+    outputs:
+      docs: ${{ steps.filter.outputs.docs }}
+      non_docs: ${{ steps.filter.outputs.non_docs }}
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+        # full history so the action can diff against the base for push/merge_group
+        # (pull_request uses the API and needs no local history); no submodules/tags
+        # are required just to enumerate changed paths.
+        fetch-depth: 0
+    - name: Filter paths
+      id: filter
+      uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+      with:
+        # pull_request: base auto-detected from the PR (omit). merge_group: diff
+        # against the queue base. push: empty base lets the action use the before-sha.
+        base: ${{ github.event_name == 'merge_group' && github.event.merge_group.base_ref || '' }}
+        ref: ${{ github.event_name == 'merge_group' && github.event.merge_group.head_ref || github.ref }}
+        filters: |
+          docs:
+            - 'docs/**'
+          non_docs:
+            - '**'
+            - '!docs/**'
+            - '!**/*.md'
+
+  config:
+    # Single source of truth for build parallelism. The test_binaries/bindings
+    # build -j and the ctest --parallel level both derive from the vCPU count set
+    # here, so the sizing lives in one place. This indirection exists because
+    # GitHub Actions does not expose the env: context inside run: steps as a
+    # workflow-wide constant; a job output (needs.config.outputs.*) is the
+    # simplest shared value.
+    name: CI sizing constants
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: read
+    outputs:
+      linux_build_jobs: ${{ steps.sizing.outputs.linux_build_jobs }}
+      bindings_jobs: ${{ steps.sizing.outputs.bindings_jobs }}
+      ctest_parallel: ${{ steps.sizing.outputs.ctest_parallel }}
+    steps:
+    - id: sizing
+      run: |
+        # ---- GitHub-hosted runner vCPU count ----
+        # Detect the runner's core count instead of hard-coding it, so the derived
+        # -j / --parallel levels stay correct if the runner class ever changes. The
+        # config job shares build-linux's ubuntu-26.04 label, so its nproc matches
+        # that job's core count; standard GitHub-hosted runners report 4.
+        linux_cpu="$(nproc)"
+        # -----------------------------------------
+        # Fail fast on a nonsensical size so a bad value surfaces here (a cheap
+        # job) instead of as a confusing "-j 0"/"--parallel 0" deep in a build.
+        # linux_cpu must be >= 2 so linux_build_jobs (cpu-1) stays >= 1.
+        [[ "$linux_cpu" =~ ^[0-9]+$ ]] || { echo "::error::linux_cpu must be a positive integer (got '$linux_cpu')"; exit 1; }
+        (( linux_cpu >= 2 )) || { echo "::error::linux_cpu must be >= 2 (got $linux_cpu)"; exit 1; }
+        {
+          # Cap compile concurrency by RAM: the GitHub-hosted runner has only
+          # 16 GB. Ordinary TUs (the library and the ~520 test binaries) peak
+          # ~2 GB each, so cpu-1 keeps their peak RAM well under the box while
+          # using all but one vCPU.
+          echo "linux_build_jobs=$((linux_cpu - 1))"
+          # The pybind11 binding TUs instantiate deeply-nested Dune templates and
+          # peak far higher (well above 4 GB each) -- building them at the shared
+          # cpu-1 OOM-killed the 16 GB runner -- so give them a tighter cap.
+          echo "bindings_jobs=$((linux_cpu / 2))"
+          # Tests are ~640 short, IO-light ctest entries: oversubscribe at 2x vCPU.
+          echo "ctest_parallel=$((linux_cpu * 2))"
+        } >> "$GITHUB_OUTPUT"
+
+  build-linux:
+    name: Build on Linux (${{ matrix.preset }})
+    needs: [config, changes]
+    # Two ANDed gates: (1) fork-trust — skip the heavy build for external fork PRs
+    # (pushes/tags, the merge queue and same-repo PRs still run); this also keeps a
+    # fork from writing the shared Actions cache. (2) path filter — skip the C++
+    # matrix on docs-only/markdown-only changes (push/dispatch always run full).
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
+    # GitHub-hosted standard runner (4 vCPU / 16 GB). The bindings compile is the
+    # memory driver: its pybind11 TUs instantiate deeply-nested Dune templates and
+    # peak far above the ~2 GB/TU of the test binaries, so they get their own
+    # tighter cap (bindings_jobs = cpu/2 from the config job) -- the shared cpu-1
+    # level OOM-killed this 16 GB runner. Every compile step (incl. the main Build)
+    # is -j capped for the same reason. Neither preset uses LTO, so there is no
+    # /tmp ltrans explosion like build_wheels.
+    runs-on: ubuntu-26.04
+    # A fully cold leg (no build cache) compiles every vcpkg dependency as a shared
+    # library, the project, the ~520 test binaries and the Python bindings from
+    # scratch; on the 4 vCPU hosted runner with the memory-bounded -j caps above
+    # that is slower than the old self-hosted fleet, so the timeout is generous.
+    # Warm runs restore the ccache and finish much faster.
+    timeout-minutes: 240
+    permissions:
+      contents: read
+      # codecov's GitHub Action authenticates to codecov.io via OpenID Connect
+      # (use_oidc below) instead of an upload token. Only the coverage matrix leg
+      # actually exchanges this token, but job-level permissions are shared by the
+      # whole matrix, so the scope is declared once here.
+      id-token: write
+    strategy:
+      # one leg's failure must not cancel the other: a broken debug build should
+      # still let the release+coverage leg report, and vice versa.
+      fail-fast: false
+      matrix:
+        include:
+        # the stock debug build (no instrumentation). Compiled with clang-22 (like
+        # the coverage leg below) rather than the runner's default gcc: gcc's
+        # unoptimized (-O0) template instantiation for the pybind11 binding TUs was
+        # repeatedly pushing this leg over the 16 GB runner's memory ceiling late in
+        # the build (external-looking "runner received a shutdown signal" / exit 143
+        # failures, see PR #329's discussion), while clang-22 already builds the
+        # coverage leg's equally template-heavy bindings comfortably.
+        - preset: clang22-debug
+          coverage_llvm: false
+        # the coverage leg: the release build compiled with clang-22's native
+        # source-based coverage (-fprofile-instr-generate -fcoverage-mapping),
+        # exported to lcov format via llvm-profdata/llvm-cov (see
+        # .ci/llvm_cov_export.bash) and uploaded to Codecov. This replaced the
+        # previous gcc --coverage / gcovr pipeline: gcovr cannot read clang's
+        # gcov-style data (PR #277), and llvm's own branch data is free of the
+        # gcov template/exception noise that motivated issue #314's Track A (see
+        # PR #318 for the side-by-side measurement).
+        - preset: clang22-release_coverage
+          coverage_llvm: true
     env:
       # Compiler-level cache. Unlike the build/ cache (keyed on the vcpkg/preset
       # hash), the ccache survives manifest changes and partial rebuilds, so the
-      # 400+ test-binary translation units stay warm across runs.
+      # ~520 test-binary translation units stay warm across runs.
       CCACHE_DIR: ${{ github.workspace }}/.ccache
       CCACHE_MAXSIZE: "2G"
 
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         # this checkout's token is not used for any later git push/API call
         persist-credentials: false
@@ -42,120 +174,263 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
 
-    - name: Restore build cache
-      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-      with:
-        # .vcpkg-root holds the vcpkg toolchain that VcpkgBootStrap.cmake bakes
-        # into build/.../CMakeSystem.cmake. It must be cached together with build/,
-        # otherwise the restored CMake config points at a toolchain that does not
-        # exist on a fresh checkout and configure fails immediately.
-        path: |
-          build
-          .vcpkg-root
-        # Key on the inputs that determine the toolchain/manifest so the cache is
-        # rebuilt when they change. The trailing-dash restore-key only matches
-        # caches written by this (consistent) scheme, never the legacy build-only one.
-        # Note the cached dune-env virtualenv is never reused: it is deleted right
-        # after restore (see "Discard cached dune-env virtualenv" below), so a stale
-        # or corrupted venv in the cache cannot break configure.
-        key: ${{ runner.os }}-build-v2-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
-        restore-keys: |
-          ${{ runner.os }}-build-v2-
+    - name: Free disk space
+      # vcpkg builds every dependency from source and this leg additionally keeps a
+      # coverage-instrumented build tree; the runner's preinstalled SDKs (Android,
+      # .NET, Haskell, ...) are unused here and just eat into that budget.
+      run: ./.ci/free_disk_space.bash
 
-    - name: Drop stale build cache if vcpkg toolchain is missing
-      run: |
-        if [ -d build ] && [ ! -f .vcpkg-root/scripts/buildsystems/vcpkg.cmake ]; then
-          echo "Restored build/ but .vcpkg-root toolchain is missing; clearing stale" \
-               "build/ so CMake re-bootstraps vcpkg from scratch."
-          rm -rf build
-        fi
-
-    - name: Discard cached dune-env virtualenv
-      # The dune-env virtualenv inside build/ must not be reused across runs: a
-      # cached venv can hold a dune-common Python package whose version differs
-      # from the current vcpkg wheelhouse, and the in-configure pip downgrade that
-      # follows is fragile (an interrupted uninstall leaves a half-removed
-      # "~une-common" distribution and a dune package without __main__, failing
-      # configure with "Dune python package could not be found"). Deleting the
-      # venv here makes dune-common's CMake recreate it during configure and
-      # install the wheels from the current wheelhouse — a few seconds of work
-      # that removes this whole class of random merge-queue failures.
-      run: rm -rf build/*/dune-env
-
+    # The build/ tree and .vcpkg-root toolchain are intentionally NOT cached: a
+    # corrupted restore was repeatedly failing the build (vcpkg configure dying
+    # early on a half-written toolchain/installed tree). Each run bootstraps vcpkg
+    # and configures from scratch; the compiler ccache below keeps recompiles cheap.
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build ccache
+        # xvfb gives the Python binding tests a headless display; both legs run
+        # those tests. coverage.py is pulled on the fly by uv inside the CMake
+        # coverage_python target (coverage leg only).
+        sudo apt-get install -y ninja-build ccache xvfb
+
+    - name: Install Clang 22
+      # Only the clang22-* leg needs clang-22; skip the (slow) apt repo add elsewhere.
+      # The clang22-* presets compile the project with clang-22/clang++-22 (the vcpkg
+      # dependencies still build with the runner's default gcc, exactly as the existing
+      # clang-* presets do). clang-22 is not in the stock ubuntu-26.04 apt repositories,
+      # so add the official LLVM apt repo via the upstream llvm.sh helper; llvm-22
+      # provides the llvm-profdata-22/llvm-cov-22/llvm-objdump-22 tools the
+      # coverage_cpp_llvm target runs.
+      if: startsWith(matrix.preset, 'clang22')
+      run: |
+        wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+        chmod +x /tmp/llvm.sh
+        sudo /tmp/llvm.sh 22
+        sudo apt-get install -y clang-22 llvm-22
+        clang-22 --version
+
+    - name: Set up uv
+      # Both legs run the Python test suite, which the ctest xt_test_python /
+      # gdt_test_python tests execute via `uv run` (no manually-managed venv).
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        # gate the uv cache to trusted runs (pushes/merge queue and same-repo
+        # PRs); disable it for external-fork PRs so a fork cannot poison the cache
+        enable-cache: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     - name: Restore ccache
-      uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ github.workspace }}/.ccache
         # run_id makes every save a unique (always-miss) key so each run writes a
         # fresh cache; the prefix restore-key then pulls the most recent ccache
-        # from any previous run.
-        key: ${{ runner.os }}-ccache-${{ github.run_id }}
+        # from any previous run. Keyed per preset because the instrumented release
+        # objects must not pollute the debug leg's cache (different compile flags).
+        key: ${{ runner.os }}-ccache-${{ matrix.preset }}-${{ github.run_id }}
         restore-keys: |
-          ${{ runner.os }}-ccache-
+          ${{ runner.os }}-ccache-${{ matrix.preset }}-
 
     - name: Configure CMake
       id: configure_cmake
       # Route every compile through ccache. Passing the launcher as a cache
-      # variable (not just an env var) forces CMake to regenerate the Ninja
-      # rules even when a stale build/ tree is restored from cache.
+      # variable (not just an env var) is harmless on the fresh build/ tree here
+      # (build/ is no longer cached). The source-based coverage instrumentation
+      # lives in the clang22-release_coverage preset (see CMakePresets.json), so
+      # nothing extra is injected here.
       run: >
-        cmake --preset=debug -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+        cmake --preset=${{ matrix.preset }} -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+
+    - name: Test install
+      # Regression test for issue #388: nothing else in this workflow ever runs
+      # `cmake --install`, so a broken install(FILES) list (e.g. referencing a
+      # nonexistent file, or omitting a file another installed module
+      # `include()`s) stayed unnoticed until a downstream consumer's configure
+      # failed. The second check reproduces the exact failure mode from the
+      # issue: FindMKL/FindCBLAS/FindLAPACKE all `include(DuneXTHints)`, so an
+      # installed tree that is missing DuneXTHints.cmake would leave
+      # LIB_HINTS/INCLUDE_HINTS/append_to_each/include_sys_dir undefined for
+      # downstream consumers.
+      #
+      # This deliberately installs only the cmake/modules subtree (its
+      # generated per-directory script, which needs no built targets and so can
+      # run right after configure) rather than the whole build tree with a
+      # plain `cmake --install`: the latter also runs
+      # DunePybindxiInstallPythonPackage.cmake's install(CODE) rule, which
+      # shells out to `pip wheel` and therefore needs the compiled bindings
+      # that only exist much later in this workflow.
+      #
+      # The grep is the regression test for issue #401: install(CODE) text is
+      # not run at configure time but by the generated cmake_install.cmake,
+      # which CMake executes as a standalone `cmake -P` script that never
+      # includes dune-common's CMake modules. Any dune-common macro called from
+      # there (`dune_execute_process` was the one that broke `cmake --install`)
+      # is undefined in that process, and the failure only shows up when the
+      # rule actually runs -- which is exactly what nothing in CI does.
+      run: |
+        if grep -rn --include=cmake_install.cmake -e dune_execute_process "build/${{ matrix.preset }}"; then
+          echo "::error::install(CODE) calls dune_execute_process, which is undefined in the standalone install script (see #401)"
+          exit 1
+        fi
+        prefix="$(mktemp -d)"
+        cmake "-DCMAKE_INSTALL_PREFIX=${prefix}" -P "build/${{ matrix.preset }}/cmake/modules/cmake_install.cmake"
+        module="$(find "${prefix}" -type f -name DuneXTHints.cmake -print -quit)"
+        if [[ ! -f "${module}" ]]; then
+          echo "::error::DuneXTHints.cmake was not installed"
+          exit 1
+        fi
+        moduledir="$(dirname "${module}")"
+        cmake "-DCMAKE_MODULE_PATH=${moduledir}" -P /dev/stdin <<< 'include(DuneXTHints)'
 
     - name: Build
-      run: cmake --build --preset=debug --parallel
+      # Cap the library build at the memory-bounded -j too: ninja would otherwise
+      # default to nproc+2, and the heavy template TUs can exhaust the 16 GB runner.
+      run: cmake --build --preset=${{ matrix.preset }} --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
 
     - name: Build test binaries
       run: |
-        # test_binaries is ~400 separate executables, several of which are
-        # template-heavy TUs that peak around ~2 GB RAM each. The old "-l 2"
-        # load cap effectively serialised the build (~6 s/file, ~40 min). Cap
-        # concurrency by memory instead: -j 3 keeps peak RAM well under the
-        # 16 GB runner while using 3 of the 4 vCPUs. With a warm ccache most of
-        # these are cache hits and cost almost nothing.
-        cmake --build --preset=debug --target test_binaries --parallel -- -j 3
+        # test_binaries is ~520 separate executables (breakdown under "Test with
+        # CTest" below), several of which are template-heavy TUs that peak around
+        # ~2 GB RAM each. Cap concurrency by
+        # memory: -j cpu-1 (linux_build_jobs from the config job) keeps peak RAM
+        # (~2 GB * (cpu-1)) well under the GitHub-hosted runner (16 GB) while using
+        # all but one of its vCPUs. With a warm ccache most of these are cache hits.
+        cmake --build --preset=${{ matrix.preset }} --target test_binaries --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
         ccache --show-stats
 
-    - name: Test with CTest
-      run: |
-        ctest --preset=debug
+    - name: Build Python bindings
+      # Both legs run the Python test suite (now part of ctest), so both build the
+      # .so bindings first — CTest does not build dependencies, and the
+      # xt_test_python / gdt_test_python tests need the compiled modules present.
+      # bindings_jobs (cpu/2) caps these memory-heavy pybind11 TUs below the wider
+      # linux_build_jobs used elsewhere, to stay under the 16 GB runner.
+      run: cmake --build --preset=${{ matrix.preset }} --target bindings --parallel -- -j ${{ needs.config.outputs.bindings_jobs }}
 
-    - name: Save build cache
-      if: ${{ success() && steps.configure_cmake.outcome == 'success' }}
-      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+    - name: Test with CTest
+      # Runs both the C++ suite and the Python (pytest) suite — the latter is now
+      # registered as ctest tests (xt_test_python / gdt_test_python) rather than a
+      # standalone build target. xvfb-run wraps the whole invocation so any
+      # visualisation-backed binding test has a headless display. The pytest tests
+      # write coverage.py data files (coverage-xt, coverage-gdt) into the build dir
+      # for the coverage_python target below. ctest_parallel (2x vCPU, from the
+      # config job) oversubscribes the short/IO-light C++ executables.
+      #
+      # Sizing, counted from the tree in issue #370 (the previous "~400" matched
+      # nothing countable): 123 plain hand-written .cc suites -> 123 binaries; 29
+      # meta-ini (.mini) suites -> 112 binaries and 235 ctest entries; 49 templated
+      # (.tpl) suites -> 283 generated binaries. Total ~518 executables and ~641
+      # ctest entries, before the Python suites. The .tpl share was zero until the
+      # glob bug diagnosed in that issue was fixed, so the figure this replaces
+      # predates the dune-xt/dune-gdt merge at best.
+      run: |
+        xvfb-run -a ctest --preset=${{ matrix.preset }} --parallel ${{ needs.config.outputs.ctest_parallel }}
+
+    - name: Collect Python coverage (coverage_python target -> XML)
+      # the CMake coverage_python target combines the two coverage.py data files
+      # written by the pytest ctest runs and writes build/<preset>/coverage-python.xml.
+      # coverage.py data is compiler-independent, so it rides on the coverage leg.
+      if: ${{ matrix.coverage_llvm }}
+      run: cmake --build --preset=${{ matrix.preset }} --target coverage_python
+
+    - name: Collect C++ coverage (llvm source-based -> lcov)
+      # merges the .profraw files written by the instrumented test run (see the
+      # clang22-release_coverage test preset's LLVM_PROFILE_FILE) and exports two
+      # lcov-format reports (with and without branch records) plus per-area summary
+      # tables -- see .ci/llvm_cov_export.bash / .ci/lcov_area_summary.py.
+      if: ${{ matrix.coverage_llvm }}
+      run: cmake --build --preset=${{ matrix.preset }} --target coverage_cpp_llvm
+
+    - name: Publish lcov area summaries to the job summary
+      if: ${{ matrix.coverage_llvm }}
+      run: |
+        {
+          python3 .ci/lcov_area_summary.py build/${{ matrix.preset }}/coverage-cpp.info --root "$PWD"
+          echo
+          python3 .ci/lcov_area_summary.py build/${{ matrix.preset }}/coverage-cpp-lineonly.info --root "$PWD"
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Upload lcov reports as artifact
+      if: ${{ matrix.coverage_llvm }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
+        name: clang22-lcov-coverage
         path: |
-          build
-          .vcpkg-root
-        key: ${{ runner.os }}-build-v2-${{ hashFiles('vcpkg.json', 'CMakePresets.json', 'cmake/VcpkgBootStrap.cmake') }}
+          ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-cpp.info
+          ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-cpp-lineonly.info
+        if-no-files-found: error
+
+    - name: Upload C++ coverage to Codecov
+      # uploads the lcov report incl. llvm's branch records (Codecov counts a hit
+      # line with untaken branches as a partial). The line-only variant is kept as
+      # an artifact; switching the upload to it is a one-filename change.
+      if: ${{ matrix.coverage_llvm }}
+      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      with:
+        # OIDC (id-token) auth instead of an upload token; see job permissions.
+        use_oidc: true
+        files: ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-cpp.info
+        flags: cpp
+        # We already produced the lcov report with llvm-cov above; stop the action
+        # from searching the tree and from running its own coverage plugins (the
+        # gcov plugin would otherwise re-run gcov over the whole build tree).
+        disable_search: true
+        plugins: noop
+        # fail the job if the upload fails, so coverage reporting cannot silently
+        # break (requires the repo to be activated on codecov.io).
+        fail_ci_if_error: true
+
+    - name: Upload Python coverage to Codecov
+      if: ${{ matrix.coverage_llvm }}
+      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      with:
+        use_oidc: true
+        files: ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-python.xml
+        flags: python
+        disable_search: true
+        plugins: noop
+        fail_ci_if_error: true
 
     - name: Save ccache
       # Always persist the compiler cache (even when the build or tests fail) so
       # the next run starts warm. Only requires that configure succeeded, since
-      # that is what populates the cache directory.
-      if: always() && steps.configure_cmake.outcome == 'success'
-      uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      # that is what populates the cache directory. The fork-trust gate is repeated
+      # here as defence-in-depth + to satisfy the cache-poisoning lint on a
+      # standalone save step; the job-level `if` already blocks fork PRs.
+      if: always() && steps.configure_cmake.outcome == 'success' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ${{ github.workspace }}/.ccache
-        key: ${{ runner.os }}-ccache-${{ github.run_id }}
+        key: ${{ runner.os }}-ccache-${{ matrix.preset }}-${{ github.run_id }}
 
     - name: Upload error logs (in case of failure)
       if: always() && (steps.configure_cmake.conclusion == 'failure')
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: linux_vcpkg_error-log
+        name: linux_vcpkg_error-log_${{ matrix.preset }}
         path: |
           ${{ github.workspace }}/build/*/vcpkg-*.log
           ${{ github.workspace }}/.vcpkg-root/buildtrees/*/*.log
 
   build_wheels:
     name: Build wheels
-    runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    needs: [changes]
+    # Two ANDed gates: (1) fork-trust — skip the wheel build for external fork PRs
+    # (pushes/tags, the merge queue and same-repo PRs still run); this also keeps a
+    # fork from writing the shared Actions cache. (2) path filter — skip on
+    # docs-only/markdown-only changes; build_docs then sources the wheels from the
+    # last successful main build instead of rebuilding them here.
+    if: >-
+      (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || needs.changes.outputs.non_docs == 'true')
+    # GitHub-hosted standard runner (4 vCPU / 16 GB). build-wheels.sh builds at
+    # -j "$(nproc --ignore 1)" (= 3 on a standard 4-vCPU runner), so its compile
+    # parallelism auto-scales with the runner; at -j3 the parallel LTO links keep
+    # their *.ltrans.o scratch within /tmp and the build stays within memory (the
+    # much wider -j on the old self-hosted box needed an enlarged volume for the
+    # spill — moot at -j3).
+    runs-on: ubuntu-26.04
+    # A cold build compiles every vcpkg dependency plus the LTO release bindings
+    # from scratch. On the 4 vCPU hosted runner (half the cores of the old
+    # self-hosted box, and -j3 vs -j7) that is far slower, so the timeout is raised
+    # well above the old 120 min to leave headroom.
+    timeout-minutes: 300
     permissions:
       contents: read
     strategy:
@@ -163,7 +438,7 @@ jobs:
         python-version: ["3.13"] #, "3.9", "3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         # this checkout's token is not used for any later git push/API call
         persist-credentials: false
@@ -171,6 +446,32 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
 
+    - name: Free disk space
+      # vcpkg builds every dependency from source and the LTO release bindings spill
+      # link scratch to /tmp; the runner's preinstalled SDKs (Android, .NET, Haskell,
+      # ...) are unused here and just eat into that budget.
+      run: ./.ci/free_disk_space.bash
+
+    - name: Restore wheel-build ccache
+      # build-wheels.sh sets CCACHE_DIR to build/wheelhouse/cache (on the host
+      # bind-mount), so the compiler cache survives between runs. Split into
+      # restore/save (rather than the unified action) so the write can be gated to
+      # trusted contexts, matching build-linux and avoiding cache poisoning.
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: build/wheelhouse/cache
+        # Unique per-run key so the save below always writes a fresh cache; the
+        # restore-key falls back to the most recent cache for this Python version.
+        key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
+        restore-keys: |
+          ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-
+
+    # The vcpkg toolchain (.vcpkg-root) and installed packages
+    # (build/wheelbuilder-release/vcpkg_installed) are intentionally NOT cached: a
+    # corrupted restore was repeatedly failing the wheel build early (vcpkg
+    # configure dying on a half-written toolchain/installed tree). vcpkg rebuilds
+    # the dependencies from scratch each run; the wheel ccache above still keeps
+    # the dune-xt/dune-gdt recompiles cheap.
     - run: |
         ./.ci/make_docker_wheels.bash
       env:
@@ -179,6 +480,47 @@ jobs:
         # provide a unique build number so every upload gets a distinct version
         CI: "true"
         GITHUB_RUN_NUMBER: ${{ github.run_number }}
+
+    - name: Dump vcpkg build error logs
+      # On failure, surface vcpkg's per-port error logs directly in the job log
+      # so the cause is visible without downloading the artifact below. vcpkg
+      # writes these inside the container as root, so freshly created buildtree
+      # dirs are not traversable by the unprivileged runner -> read them via sudo.
+      if: failure()
+      run: |
+        # Only the per-port error logs (not the multi-MB vcpkg-manifest-install.log,
+        # which would bury the real error in the retrievable log tail); the full
+        # set is still captured by the artifact upload below.
+        sudo find .vcpkg-root/buildtrees -type f \
+          \( -name '*-err.log' -o -name 'git-fetch-*' \) \
+          2>/dev/null | sort | while read -r f; do
+          echo "::group::${f}"
+          sudo cat "${f}" || true
+          echo "::endgroup::"
+        done
+
+    - name: Upload vcpkg error logs (in case of failure)
+      # Companion downloadable artifact, mirroring the build-linux job's
+      # "Upload error logs" step.
+      if: failure()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: wheels_vcpkg_error-log_${{ matrix.python-version }}
+        path: |
+          .vcpkg-root/buildtrees/*/*.log
+          build/wheelbuilder-release/vcpkg-*.log
+        if-no-files-found: warn
+
+    - name: Save wheel-build ccache
+      # Persist the compiler cache even when the build fails so the next run stays
+      # warm. The job-level `if` already blocks fork PRs; the same trust gate is
+      # repeated here as defence-in-depth (and to satisfy the cache-poisoning lint
+      # on a standalone save step).
+      if: always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: build/wheelhouse/cache
+        key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -189,18 +531,34 @@ jobs:
 
   build_docs:
     name: Build docs (executes notebooks via myst-nb)
-    runs-on: ubuntu-24.04
-    needs: build_wheels
+    needs: [build_wheels, changes]
+    # Gates (all ANDed): (1) fork-trust, same as build_wheels (also satisfies the
+    # cache-poisoning lint on the uv cache below). (2) build_wheels reached a valid
+    # terminal state — success (use its artifact) or skipped/docs-only (pull the
+    # wheels from the last main build below); a failed/cancelled build_wheels leaves
+    # no usable wheel, so docs is skipped and ci-gate reports the upstream failure.
+    # (3) path filter — rebuild docs on any code or docs change (notebook execution
+    # doubles as a bindings smoke test); only markdown-outside-docs changes skip it.
+    if: >-
+      !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (needs.build_wheels.result == 'success' || needs.build_wheels.result == 'skipped') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+       needs.changes.outputs.non_docs == 'true' || needs.changes.outputs.docs == 'true')
+    # GitHub-hosted standard runner (4 vCPU / 16 GB). The docs build is
+    # single-threaded (sphinx -j 1), so the standard runner is plenty (it only
+    # downloads the wheels artifact and renders HTML).
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     permissions:
       contents: read
+      # needed to look up and download the wheel artifact from another run on
+      # docs-only PRs (see "Resolve last successful main build" below)
+      actions: read
     env:
       # the documentation notebooks are executed against the freshly built wheels
       # (current, git-derived version), not the stale dune-gdt release on PyPI
       PYTHON_VERSION: "3.13"
 
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
         # this checkout's token is not used for any later git push/API call
         persist-credentials: false
@@ -210,17 +568,55 @@ jobs:
     # uv provides and manages the Python interpreter itself, so there is no
     # separate actions/setup-python step; all execution below goes through uv.
     - name: Set up uv
-      uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
       with:
         # gate the uv cache to trusted runs (pushes/merge queue and same-repo
         # PRs); disable it for external-fork PRs so a fork cannot poison the cache
         enable-cache: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     - name: Download freshly built wheels
+      # the normal path: build_wheels ran in this same workflow run (code change,
+      # push or merge queue) and uploaded the artifact
+      if: needs.build_wheels.result == 'success'
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: wheels_${{ env.PYTHON_VERSION }}
         path: wheelhouse/
+
+    - name: Resolve last successful main build
+      # docs-only change: build_wheels was skipped, so find the most recent
+      # successful run of this workflow on main to source the wheels from.
+      if: needs.build_wheels.result == 'skipped'
+      id: last_main
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          const runs = await github.rest.actions.listWorkflowRuns({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'non_docker_build.yml',
+            branch: 'main',
+            status: 'success',
+            per_page: 1,
+          });
+          if (runs.data.total_count === 0) {
+            core.setFailed('no successful main build found to source wheels from');
+            return;
+          }
+          core.setOutput('run_id', String(runs.data.workflow_runs[0].id));
+
+    - name: Download wheels from last successful main build
+      # docs-only change: pull the wheel artifact produced by the run resolved above.
+      # Gate on last_main success too: a custom if: drops the implicit success()
+      # check, so without it a failed resolve (no main build found) would still run
+      # this with an empty run-id and mask the real error.
+      if: needs.build_wheels.result == 'skipped' && steps.last_main.outcome == 'success'
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: wheels_${{ env.PYTHON_VERSION }}
+        path: wheelhouse/
+        run-id: ${{ steps.last_main.outputs.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install system dependencies
       run: |
@@ -264,8 +660,23 @@ jobs:
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
       # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
       # inventory fetches emit network-dependent warnings unrelated to the docs build.
+      # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
+      # it (4 vCPU / 16 GB GitHub-hosted runner), and the clangquill C++ API now
+      # emits one page per class/function (group_by="namespace"), a far larger document
+      # set whose per-worker environment copies under "-j auto" OOM-killed the 16 GB box
+      # mid-write. Single-threaded keeps peak RAM bounded; the 60 min timeout is ample.
+      #
+      # PYTHONFAULTHANDLER: a notebook kernel that dies from a deadly signal (segfault,
+      # abort) surfaces to sphinx only as nbclient.exceptions.DeadKernelError: Kernel died,
+      # with no traceback -- nb_execution_raise_on_error=False only covers python-level
+      # cell errors, never a killed kernel process. faulthandler installs handlers for
+      # SIGSEGV/SIGABRT/SIGFPE/SIGBUS that dump the C-level Python stack to the kernel's
+      # inherited stderr (this job's own log) before the process dies, turning an
+      # otherwise undiagnosable failure into one with an actual traceback. It cannot catch
+      # SIGKILL (the OOM-killer's signal); "Dump dmesg on docs failure" below covers that.
       env:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
+        PYTHONFAULTHANDLER: "1"
       run: |
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/docs_html"
@@ -292,6 +703,14 @@ jobs:
           echo "::endgroup::"
         done
 
+    - name: Dump dmesg on docs failure
+      # A notebook kernel killed by SIGKILL (the OOM-killer) leaves no report above and no
+      # faulthandler output either (PYTHONFAULTHANDLER only catches signals a process can
+      # trap); the kernel log is the only place that death is recorded. Non-fatal if dmesg
+      # is unavailable or empty (e.g. a signal faulthandler already caught).
+      if: failure()
+      run: sudo dmesg --time-format iso | tail -n 200 || true
+
     - name: Upload built docs HTML
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -302,7 +721,7 @@ jobs:
 
   deploy_docs:
     name: Deploy docs to GitHub Pages
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_docs
     # publish only on pushes to main; PRs and the merge queue build (above) but
     # never deploy. build_docs must have succeeded, so broken docs are not
@@ -339,7 +758,7 @@ jobs:
 
   test_publish:
     name: Publish to Test PyPI
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_wheels
     # only publish to Test PyPI on pushes to main, never on PRs, the merge
     # queue, or manual runs
@@ -361,7 +780,7 @@ jobs:
         ls -l wheels/*
       shell: bash
     - name: Upload wheels to PyPI
-      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
+      uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247 # v1.14.1
       id: upload-pypi_on_tag
       with:
         packages-dir: wheels/
@@ -370,7 +789,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     needs: build_wheels
     if: startsWith(github.ref, 'refs/tags/')
     timeout-minutes: 120
@@ -390,7 +809,33 @@ jobs:
         ls -l wheels/*
       shell: bash
     - name: Upload wheels to PyPI
-      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
+      uses: pypa/gh-action-pypi-publish@ba38be9e461d3875417946c167d0b5f3d385a247 # v1.14.1
       with:
         packages-dir: wheels/
         verbose: true
+
+  # Single aggregating "control check". This is the ONLY status check that branch
+  # protection / the merge queue should require: it always runs (even when upstream
+  # jobs are skipped by the path filter or fail), and it resolves green when every
+  # needed job either succeeded or was skipped, red when any failed or was cancelled.
+  # That makes path-based skipping safe — a skipped job no longer leaves a required
+  # check pending forever. Matrix job results aggregate (any failed leg => failure).
+  ci-gate:
+    name: CI gate
+    runs-on: ubuntu-26.04
+    permissions: {}
+    if: always()
+    needs: [changes, config, build-linux, build_wheels, build_docs]
+    steps:
+    - name: Decide gate result
+      env:
+        RESULTS: ${{ join(needs.*.result, ' ') }}
+      run: |
+        echo "needed job results: ${RESULTS}"
+        for r in ${RESULTS}; do
+          if [ "${r}" = "failure" ] || [ "${r}" = "cancelled" ]; then
+            echo "::error::a required job ended with result '${r}'"
+            exit 1
+          fi
+        done
+        echo "all required jobs passed or were skipped"

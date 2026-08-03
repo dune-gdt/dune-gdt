@@ -19,6 +19,7 @@
 #include <dune/xt/functions/grid-function.hh>
 #include <dune/xt/functions/interfaces/grid-function.hh>
 #include <dune/xt/functions/type_traits.hh>
+#include <dune/xt/common/type_traits.hh>
 
 #include "derivatives-of-element-functions.hh"
 
@@ -106,7 +107,7 @@ class DivergenceGridFunction : public DerivativeGridFunction<GridFunctionType, D
   using BaseType = DerivativeGridFunction<GridFunctionType, DerivativeType::divergence>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<DivergenceGridFunction, Args...>>
   explicit DivergenceGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {
@@ -121,7 +122,7 @@ class GradientGridFunction : public DerivativeGridFunction<GridFunctionType, Der
   using BaseType = DerivativeGridFunction<GridFunctionType, DerivativeType::gradient>;
 
 public:
-  template <class... Args>
+  template <class... Args, typename = Common::require_not_self_t<GradientGridFunction, Args...>>
   explicit GradientGridFunction(Args&&... args)
     : BaseType(std::forward<Args>(args)...)
   {

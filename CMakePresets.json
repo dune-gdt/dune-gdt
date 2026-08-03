@@ -19,6 +19,10 @@
           "type": "PATH",
           "value": "${sourceDir}/.vcpkg-overlays/ports"
         },
+        "VCPKG_OVERLAY_TRIPLETS": {
+          "type": "PATH",
+          "value": "${sourceDir}/.vcpkg-overlays/triplets"
+        },
         "VCPKG_MANIFEST_FEATURES": "alberta;uggrid"
       }
     },
@@ -86,7 +90,9 @@
         "ninja-base"
       ],
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_SHARED_LIBS": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-linux-shared"
       }
     },
     {
@@ -96,7 +102,22 @@
         "ninja-base"
       ],
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_SHARED_LIBS": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-linux-shared"
+      }
+    },
+    {
+      "name": "release_coverage",
+      "displayName": "Release Config with gcov coverage (Ninja)",
+      "inherits": [
+        "release"
+      ],
+      "cacheVariables": {
+        "CMAKE_C_FLAGS": "-Wall -Wextra -Wpedantic --coverage",
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Wpedantic --coverage",
+        "CMAKE_EXE_LINKER_FLAGS": "--coverage",
+        "CMAKE_SHARED_LINKER_FLAGS": "--coverage"
       }
     },
     {
@@ -142,6 +163,44 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++"
       }
+    },
+    {
+      "name": "clang22-base",
+      "hidden": true,
+      "inherits": [
+        "ninja-base"
+      ],
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-22",
+        "CMAKE_CXX_COMPILER": "clang++-22",
+        "DXT_TEST_TIMEOUT": "2400"
+      }
+    },
+    {
+      "name": "clang22-release_coverage",
+      "displayName":
+        "Release Config with llvm source-based coverage (Clang 22)",
+      "inherits": [
+        "clang22-base",
+        "release"
+      ],
+      "cacheVariables": {
+        "CMAKE_C_FLAGS":
+          "-Wall -Wextra -Wpedantic -fprofile-instr-generate -fcoverage-mapping",
+        "CMAKE_CXX_FLAGS":
+          "-Wall -Wextra -Wpedantic -fprofile-instr-generate -fcoverage-mapping",
+        "CMAKE_EXE_LINKER_FLAGS": "-fprofile-instr-generate",
+        "CMAKE_SHARED_LINKER_FLAGS": "-fprofile-instr-generate",
+        "DXT_LLVM_VERSION": "22"
+      }
+    },
+    {
+      "name": "clang22-debug",
+      "displayName": "Debug Config (Clang 22)",
+      "inherits": [
+        "clang22-base",
+        "debug"
+      ]
     }
   ],
   "buildPresets": [
@@ -162,6 +221,10 @@
       "configurePreset": "release"
     },
     {
+      "name": "release_coverage",
+      "configurePreset": "release_coverage"
+    },
+    {
       "name": "windows-debug",
       "configurePreset": "windows-debug",
       "configuration": "Debug"
@@ -178,6 +241,14 @@
     {
       "name": "clang-release",
       "configurePreset": "clang-release"
+    },
+    {
+      "name": "clang22-release_coverage",
+      "configurePreset": "clang22-release_coverage"
+    },
+    {
+      "name": "clang22-debug",
+      "configurePreset": "clang22-debug"
     }
   ],
   "testPresets": [
@@ -215,6 +286,14 @@
       ]
     },
     {
+      "name": "release_coverage",
+      "displayName": "Release Coverage Tests",
+      "configurePreset": "release_coverage",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
       "name": "windows-debug",
       "displayName": "Windows Debug Tests",
       "configurePreset": "windows-debug",
@@ -244,6 +323,31 @@
       "name": "clang-release",
       "displayName": "Clang Release Tests",
       "configurePreset": "clang-release",
+      "inherits": [
+        "test-base"
+      ]
+    },
+    {
+      "name": "clang22-release_coverage",
+      "displayName": "Clang 22 Release Coverage Tests",
+      "configurePreset": "clang22-release_coverage",
+      "inherits": [
+        "test-base"
+      ],
+      "environment": {
+        "LLVM_PROFILE_FILE":
+          "${sourceDir}/build/clang22-release_coverage/profraw/%m.profraw"
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false,
+        "timeout": 2400
+      }
+    },
+    {
+      "name": "clang22-debug",
+      "displayName": "Clang 22 Debug Tests",
+      "configurePreset": "clang22-debug",
       "inherits": [
         "test-base"
       ]

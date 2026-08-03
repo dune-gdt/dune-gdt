@@ -174,14 +174,18 @@ void visualize(
       filename_prefix.empty(), XT::Common::Exceptions::wrong_input_given, "filename_prefix must not be empty!");
   bool use_counter = false;
   size_t counter = 0;
+  // an annotated vector without a (non-empty) time note cannot contribute a time to the filename below, so a single
+  // one of those makes us number all snapshots consecutively instead
   for (const auto& annotated_vector : discrete_bochner_function.dof_vectors())
-    if (!annotated_vector.note().has_key("_t"))
+    if (!annotated_vector.note().has_key("_t") || annotated_vector.note().get("_t").empty())
       use_counter = true;
   for (const auto& annotated_vector : discrete_bochner_function.dof_vectors()) {
     auto df = make_discrete_function(
         discrete_bochner_function.space().spatial_space(), annotated_vector.vector(), discrete_bochner_function.name());
     GDT::visualize(df,
-                   filename_prefix + "_" + (use_counter ? XT::Common::to_string(counter) : XT::Common::to_string(time)),
+                   filename_prefix + "_"
+                       + (use_counter ? XT::Common::to_string(counter)
+                                      : XT::Common::to_string(annotated_vector.note().get("_t").at(0))),
                    subsampling,
                    vtk_output_type,
                    param,

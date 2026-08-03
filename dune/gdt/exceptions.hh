@@ -133,6 +133,12 @@ class discrete_function_error : public Exception
 class newton_error : public operator_error
 {};
 
+/**
+ * \brief Exception thrown on errors in the tools of dune/gdt/tools/.
+ */
+class tools_error : public Exception
+{};
+
 
 } // namespace Exceptions
 } // namespace GDT

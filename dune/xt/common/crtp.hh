@@ -91,6 +91,11 @@ protected:
 
 #ifndef NDEBUG
   // needs to be static so diff instances don't clash in function local crtp check
+  //
+  // This deliberately is a std::recursive_mutex (and not a std::mutex): CHECK_CRTP detects a missing override by
+  // re-entering the interface method while the lock is still held by the same thread. With a recursive_mutex that
+  // re-entrant lock succeeds and the (already set) call flag triggers a clean CRTP_check_failed exception; a plain
+  // std::mutex would instead deadlock (re-locking a non-recursive mutex on the same thread is undefined behaviour).
   static std::recursive_mutex crtp_mutex_;
 #endif
 }; // CRTPInterface
