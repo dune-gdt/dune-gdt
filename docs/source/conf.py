@@ -307,8 +307,8 @@ class _UnactionableWarningFilter(logging.Filter):
         )
 
 
-def setup(app):  # noqa: ARG001
-    """Sphinx entry point for conf.py-local setup."""
+def setup(_app):
+    """Sphinx entry point for conf.py-local setup (called with the app)."""
     # Sphinx counts a warning -- and, under `-W`, fails the build for it -- in a
     # filter on the handlers of its "sphinx" logger, so ours has to run before
     # those: insert it at the front of each chain rather than appending it.
