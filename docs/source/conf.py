@@ -113,8 +113,10 @@ nb_execution_excludepatterns = []
 # present in the docs environment; libclang reports those as non-fatal
 # diagnostics and still extracts every symbol it can parse (they are filtered
 # out of the -W build via suppress_warnings below). Should the wheel be built
-# without libclang, the extension degrades to a placeholder page rather than
-# failing the build.
+# without libclang, the extension writes a placeholder page and warns
+# (clangquill.libclang); that warning is deliberately left unfiltered, so a
+# build that would silently publish the manual without any C++ API at all fails
+# under -W instead of quietly shipping the placeholder.
 
 # The C++ standard and include dirs the in-tree headers are parsed with. Kept in
 # variables because they feed both the compilation database written below and the
@@ -250,6 +252,18 @@ suppress_warnings = [
     # every `#include <dune/common/...>` in the parsed in-tree headers is reported
     # as unresolved. That is expected and non-fatal -- clangquill still extracts
     # every symbol it can parse.
+    #
+    # This deliberately covers the whole type rather than only the "file not
+    # found" message: a missing external header is not one diagnostic but a
+    # cascade. Parsing 7 of the dune/gdt headers emits 140 diagnostics, of which
+    # only 49 are "file not found" -- the other 91 are its consequences (the base
+    # class is now unknown, so "expected class name"; `Dune::Exception` no longer
+    # resolves; DUNE feature macros are undefined; clang hits -ferror-limit).
+    # Matching on the message would therefore leave the majority of them fatal and
+    # keep the docs build permanently red, while still not distinguishing a real
+    # in-tree parse error from a downstream effect of the absent dependency stack.
+    # The DUNE headers would have to be installed in the docs environment for that
+    # distinction to mean anything.
     "clangquill.parse",
 ]
 
@@ -272,6 +286,26 @@ def _warning_location(record):
     return sphinx.util.logging.get_node_location(location) or ""
 
 
+def _inventories_are_all_remote(mapping):
+    """Whether every configured intersphinx inventory is fetched over the network.
+
+    Guards the inventory-failure rule in :class:`_UnactionableWarningFilter`:
+    Sphinx reports *any* exhausted inventory the same way, so with a local
+    ``objects.inv`` configured that one warning would also cover an unreadable or
+    malformed file -- a real misconfiguration, and one this build should fail on.
+    While every target is a URL, the warning can only mean the network.
+    """
+    for target_uri, inventories in mapping.values():
+        if not isinstance(inventories, tuple):
+            inventories = (inventories,)
+        for location in (target_uri, *inventories):
+            if location is not None and not location.strip().startswith(
+                ("http://", "https://")
+            ):
+                return False
+    return True
+
+
 class _UnactionableWarningFilter(logging.Filter):
     """Drop the warnings this documentation build has no way to act on.
 
@@ -284,22 +318,30 @@ class _UnactionableWarningFilter(logging.Filter):
       or MyST reading braces in C++ code as a substitution. None of that is
       fixable from this repository, and none of it comes from a hand-written
       page -- which keeps failing the build for its own warnings.
-    * intersphinx failing to reach the external inventories, which depends on
-      the network rather than on the documentation. That warning carries no
-      type/subtype, so ``suppress_warnings`` cannot address it; every
-      intersphinx warning that does report a documentation problem (an
-      unresolvable cross-reference) is typed, so dropping only the untyped ones
-      keeps `-W` meaningful here too.
+    * intersphinx exhausting the locations for an inventory, which with the
+      all-remote mapping this project configures means the network was in the
+      way rather than the documentation. That warning carries no type/subtype,
+      so ``suppress_warnings`` cannot address it; every intersphinx warning that
+      does report a documentation problem (an unresolvable cross-reference) is
+      typed, so dropping only the untyped ones keeps `-W` meaningful here too.
+      Should a local inventory ever be configured, the same warning starts
+      covering an unreadable or malformed file as well, and this rule turns
+      itself off rather than hide it.
     """
 
-    def __init__(self, generated_dir):
+    def __init__(self, generated_dir, *, filter_inventory_failures):
         super().__init__()
         self._generated = f"{generated_dir}/"
+        self._filter_inventory_failures = filter_inventory_failures
 
     def filter(self, record):
         if record.levelno < logging.WARNING:
             return True
-        if "intersphinx" in record.name and getattr(record, "type", None) is None:
+        if (
+            self._filter_inventory_failures
+            and "intersphinx" in record.name
+            and getattr(record, "type", None) is None
+        ):
             return False
         location = _warning_location(record).replace(os.sep, "/")
         return not (
@@ -312,7 +354,12 @@ def setup(_app):
     # Sphinx counts a warning -- and, under `-W`, fails the build for it -- in a
     # filter on the handlers of its "sphinx" logger, so ours has to run before
     # those: insert it at the front of each chain rather than appending it.
-    warning_filter = _UnactionableWarningFilter(clangquill_output_dir)
+    # intersphinx_mapping is defined further down; setup() runs after conf.py has
+    # been executed in full, so the module global is there by then.
+    warning_filter = _UnactionableWarningFilter(
+        clangquill_output_dir,
+        filter_inventory_failures=_inventories_are_all_remote(intersphinx_mapping),
+    )
     for handler in logging.getLogger("sphinx").handlers:
         handler.filters.insert(0, warning_filter)
 
