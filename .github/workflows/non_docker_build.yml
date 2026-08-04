@@ -658,8 +658,14 @@ jobs:
       # shadow the installed bindings. Notebook execution is the actual test: myst-nb
       # is configured with nb_execution_raise_on_error=False, so a failing notebook
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
-      # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
-      # inventory fetches emit network-dependent warnings unrelated to the docs build.
+      # on those below. -W turns every warning into a build failure; since Sphinx 8 that
+      # no longer aborts on the first one -- the build runs to completion and exits
+      # non-zero at the end -- so the whole warning list is in the log (--keep-going is
+      # a no-op there, kept for an older Sphinx, which would abort on the first
+      # warning without it). Warnings this repository cannot act on are filtered in
+      # conf.py: libclang's diagnostics about the absent external DUNE headers, the
+      # Sphinx C++ domain choking on the generated C++ API pages, and intersphinx's
+      # network-dependent inventory fetches. Everything else fails the job.
       # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
       # it (4 vCPU / 16 GB GitHub-hosted runner), and the clangquill C++ API now
       # emits one page per class/function (group_by="namespace"), a far larger document
@@ -683,7 +689,7 @@ jobs:
         # --no-project: ignore the repo-root pyproject stub; run in the venv built above
         xvfb-run -a uv run --no-project \
           --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
-          python -m sphinx --keep-going -j 1 -b html \
+          python -m sphinx -W --keep-going -j 1 -b html \
           "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
           echo "::error::one or more executed documentation notebooks failed (see dumped reports below)"

@@ -1,10 +1,13 @@
 import glob
+import json
+import logging
 import os
 import sys
 from pathlib import Path
 
 import slugify
 import sphinx
+import sphinx.util.logging
 
 import dune.gdt
 
@@ -19,6 +22,9 @@ needs_sphinx = "3.4"
 # -----------------------------------------------------------------------------
 
 this_dir = Path(__file__).resolve().parent
+# repository root: this file lives in docs/source (used for the C++ API parse
+# below and for the linkcode source links at the bottom of this file)
+_repo_root = (this_dir / ".." / "..").resolve()
 src_dir = (this_dir / ".." / ".." / "src").resolve()
 sys.path.insert(0, str(src_dir))
 sys.path.insert(0, str(this_dir))
@@ -105,9 +111,17 @@ nb_execution_excludepatterns = []
 # and the include dir lets the intra-tree `#include <dune/...>` headers resolve.
 # The external DUNE dependency headers (dune-common, dune-grid, ...) are not
 # present in the docs environment; libclang reports those as non-fatal
-# diagnostics and still extracts every symbol it can parse. Should the wheel be
-# built without libclang, the extension degrades to a placeholder page rather
-# than failing the build.
+# diagnostics and still extracts every symbol it can parse (they are filtered
+# out of the -W build via suppress_warnings below). Should the wheel be built
+# without libclang, the extension degrades to a placeholder page rather than
+# failing the build.
+
+# The C++ standard and include dirs the in-tree headers are parsed with. Kept in
+# variables because they feed both the compilation database written below and the
+# clangquill_std / clangquill_include_dirs values, which clangquill falls back to
+# for any input the database holds no entry for.
+_cpp_std = "c++17"
+_cpp_include_dirs = ["../.."]
 
 
 def _clang_resource_dir():
@@ -144,10 +158,71 @@ def _clang_resource_dir():
     return out.stdout.strip() or None
 
 
+def _write_compile_commands(inputs, resource_dir):
+    """Write the compilation database clangquill parses the headers with.
+
+    clangquill >= 0.10 requires one: the Sphinx extension refuses to guess compile
+    flags and aborts the build when ``clangquill_compile_commands`` is unset. The
+    CMake presets do export a database (``CMAKE_EXPORT_COMPILE_COMMANDS=ON``, in
+    ``build/<preset>/``), but it only carries entries for the compiled ``.cc``
+    translation units -- never for the headers parsed here -- and the docs CI job
+    installs pre-built wheels without ever configuring CMake. So we write our own,
+    with one entry per parsed header carrying exactly the flags this documentation
+    build needs, and return the directory holding it (what clangquill expects).
+
+    ``CLANGQUILL_COMPILE_COMMANDS`` overrides this with an existing database (a
+    directory holding a ``compile_commands.json``, or that file itself), e.g. a
+    fully configured local build tree that also resolves the external DUNE
+    dependency headers.
+    """
+    override = os.environ.get("CLANGQUILL_COMPILE_COMMANDS")
+    if override:
+        return override
+
+    arguments = ["clang++", f"-std={_cpp_std}", "-xc++"]
+    arguments += [f"-I{(this_dir / d).resolve()}" for d in _cpp_include_dirs]
+    if resource_dir:
+        arguments.append(f"-resource-dir={resource_dir}")
+
+    # Fully resolved, exactly as clangquill resolves clangquill_input: the database
+    # is looked up by the path of the file being parsed, so an entry keyed by any
+    # other spelling of that path would silently not be found.
+    headers = sorted(
+        {
+            str(Path(match).resolve())
+            for pattern in inputs
+            for match in glob.glob(str(this_dir / pattern), recursive=True)
+            if Path(match).is_file()
+        }
+    )
+    # git-ignored, and outside the Sphinx srcdir so nothing lands next to the
+    # documentation sources
+    out_dir = _repo_root / "build" / "docs_compile_commands"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "compile_commands.json").write_text(
+        json.dumps(
+            [
+                {
+                    "directory": str(_repo_root),
+                    "file": header,
+                    "arguments": [*arguments, "-c", header],
+                }
+                for header in headers
+            ],
+            indent=1,
+        ),
+        encoding="utf-8",
+    )
+    return str(out_dir)
+
+
 clangquill_input = ["../../dune/**/*.hh"]
-clangquill_include_dirs = ["../.."]
-clangquill_std = "c++17"
+clangquill_include_dirs = _cpp_include_dirs
+clangquill_std = _cpp_std
 clangquill_clang_resource_dir = _clang_resource_dir()
+clangquill_compile_commands = _write_compile_commands(
+    clangquill_input, clangquill_clang_resource_dir
+)
 clangquill_output_dir = "cpp_api"
 # Build a browsable namespace hierarchy (clangquill >= 0.6.0): the index lists
 # only the top namespaces, each namespace hub links its sub-namespaces, classes,
@@ -161,6 +236,86 @@ clangquill_group_by = "namespace"
 clangquill_include_undocumented = True
 # Persist the SQLite IR + page hashes so local rebuilds are incremental.
 clangquill_cache_dir = "_clangquill_cache"
+
+# -----------------------------------------------------------------------------
+# Warnings
+# -----------------------------------------------------------------------------
+# The docs are built with `-W` (see the build_docs job in
+# .github/workflows/non_docker_build.yml), so every warning fails the build. Only
+# warnings the documentation itself cannot fix are filtered out -- by type here,
+# and by where they come from in _UnactionableWarningFilter below.
+suppress_warnings = [
+    # One warning per libclang diagnostic. The external DUNE dependency headers
+    # (dune-common, dune-grid, ...) are not installed in a docs environment, so
+    # every `#include <dune/common/...>` in the parsed in-tree headers is reported
+    # as unresolved. That is expected and non-fatal -- clangquill still extracts
+    # every symbol it can parse.
+    "clangquill.parse",
+]
+
+
+def _warning_location(record):
+    """Best-effort source location of a Sphinx log ``record``, as a string.
+
+    ``location=`` is passed as a docname, a ``(docname, lineno)`` pair or a
+    docutils node, depending on who logs the warning; Sphinx normalises all of
+    them, but only in a handler filter that runs after the one counting warnings
+    (see :func:`setup`), so this filter has to do it itself.
+    """
+    location = getattr(record, "location", None)
+    if location is None:
+        return ""
+    if isinstance(location, tuple):
+        return str(location[0] or "")
+    if isinstance(location, str):
+        return location
+    return sphinx.util.logging.get_node_location(location) or ""
+
+
+class _UnactionableWarningFilter(logging.Filter):
+    """Drop the warnings this documentation build has no way to act on.
+
+    Everything else stays fatal under `-W`; the two exceptions are:
+
+    * Warnings about a page under ``clangquill_output_dir``. Those pages are
+      generated from the C++ headers, and the bulk of them are the Sphinx C++
+      domain balking at declarations libclang extracted verbatim (deeply nested
+      DUNE templates it cannot re-parse, specialisations it sees as duplicates)
+      or MyST reading braces in C++ code as a substitution. None of that is
+      fixable from this repository, and none of it comes from a hand-written
+      page -- which keeps failing the build for its own warnings.
+    * intersphinx failing to reach the external inventories, which depends on
+      the network rather than on the documentation. That warning carries no
+      type/subtype, so ``suppress_warnings`` cannot address it; every
+      intersphinx warning that does report a documentation problem (an
+      unresolvable cross-reference) is typed, so dropping only the untyped ones
+      keeps `-W` meaningful here too.
+    """
+
+    def __init__(self, generated_dir):
+        super().__init__()
+        self._generated = f"{generated_dir}/"
+
+    def filter(self, record):
+        if record.levelno < logging.WARNING:
+            return True
+        if "intersphinx" in record.name and getattr(record, "type", None) is None:
+            return False
+        location = _warning_location(record).replace(os.sep, "/")
+        return not (
+            location.startswith(self._generated) or f"/{self._generated}" in location
+        )
+
+
+def setup(app):  # noqa: ARG001
+    """Sphinx entry point for conf.py-local setup."""
+    # Sphinx counts a warning -- and, under `-W`, fails the build for it -- in a
+    # filter on the handlers of its "sphinx" logger, so ours has to run before
+    # those: insert it at the front of each chain rather than appending it.
+    warning_filter = _UnactionableWarningFilter(clangquill_output_dir)
+    for handler in logging.getLogger("sphinx").handlers:
+        handler.filters.insert(0, warning_filter)
+
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
@@ -373,7 +528,6 @@ try_on_binder_slug = os.environ.get(
 
 # repository hosting both the tutorial sources and the python bindings
 _linkcode_baseurl = "https://github.com/dune-gdt/dune-gdt"
-_repo_root = (this_dir / ".." / "..").resolve()
 
 
 def linkcode_resolve(domain, info):

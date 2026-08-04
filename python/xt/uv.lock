@@ -319,7 +319,7 @@ wheels = [
 
 [[package]]
 name = "clangquill"
-version = "0.8.3"
+version = "0.10.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click", marker = "python_full_version >= '3.13'" },
@@ -328,10 +328,10 @@ dependencies = [
     { name = "rich", marker = "python_full_version >= '3.13'" },
     { name = "typer", marker = "python_full_version >= '3.13'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0b/15/0b9e5c21ff0fb669208257a4a3e560a4175ae29f1c3b4bcbfb80e17da0f8/clangquill-0.8.3.tar.gz", hash = "sha256:a89809f1ddd98bd8f2b413fab54eaf641d91e67dc04776d17a2fce0569cdca09", size = 1606035, upload-time = "2026-07-05T17:09:47.699Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/09/a7/ea5fc876f6463ec652cfbe780ed2e3c0d9b301eab8a56b95b878c52d05c2/clangquill-0.10.0.tar.gz", hash = "sha256:041df075f9fc1e88ab858a8b74b3bb8af5eaad0b576a737414e9d996d5949eaa", size = 1613798, upload-time = "2026-08-04T14:17:10.609Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c9/f7/8d336f999c869db2650e85bd04ead45836d0ecd484e30a005ec1eb9139ae/clangquill-0.8.3-cp313-cp313-manylinux_2_34_aarch64.whl", hash = "sha256:a0134f89c58aecd10c1d56e1f03b9dc6cb0c714b8de28f1c82289f2c0afbf2d4", size = 56947418, upload-time = "2026-07-05T17:09:41.232Z" },
-    { url = "https://files.pythonhosted.org/packages/dc/6e/d35e59d669d0643f78e0524eb7dd3403588f9491bf188f5a763ddfdf8197/clangquill-0.8.3-cp313-cp313-manylinux_2_34_x86_64.whl", hash = "sha256:da491f8036c501b47372a8254b1494c3909d6ee54e77c7fe8745f8898d2eab44", size = 60601602, upload-time = "2026-07-05T17:09:45.285Z" },
+    { url = "https://files.pythonhosted.org/packages/ee/1c/2031fc9eda7998117d967895aee208d481d3cba149123f51760039d865ac/clangquill-0.10.0-cp313-cp313-manylinux_2_34_aarch64.whl", hash = "sha256:4bc8ead8ca44b3b439f224c49eb1c28e2ade4d8675efabc84e1872dc798e356b", size = 56952274, upload-time = "2026-08-04T14:17:04.559Z" },
+    { url = "https://files.pythonhosted.org/packages/f8/5a/58d92e0e5974364250cddacbd05cdb05c71e2c87178d15946eace3e181fc/clangquill-0.10.0-cp313-cp313-manylinux_2_34_x86_64.whl", hash = "sha256:d4435aaa9fe86c25ee1df1aaa5bbdccd6ce6c33907888d7449170024c87ee216", size = 60606652, upload-time = "2026-08-04T14:17:07.693Z" },
 ]
 
 [[package]]
@@ -907,9 +907,9 @@ test = [
 requires-dist = [
     { name = "bokeh", marker = "extra == 'all'" },
     { name = "bokeh", marker = "extra == 'parallel'" },
-    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'all'", specifier = ">=0.6.0" },
-    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'docs'", specifier = ">=0.6.0" },
-    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'infrastructure'", specifier = ">=0.6.0" },
+    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'all'", specifier = ">=0.10.0" },
+    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'docs'", specifier = ">=0.10.0" },
+    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'infrastructure'", specifier = ">=0.10.0" },
     { name = "cmake-format", marker = "extra == 'all'", specifier = "==0.4.1" },
     { name = "cmake-format", marker = "extra == 'infrastructure'", specifier = "==0.4.1" },
     { name = "codecov", marker = "extra == 'all'" },
