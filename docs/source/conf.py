@@ -265,6 +265,14 @@ suppress_warnings = [
     # The DUNE headers would have to be installed in the docs environment for that
     # distinction to mean anything.
     "clangquill.parse",
+    # Cosmetic, and only reachable when the notebooks are *not* executed. The
+    # tutorials use IPython shell escapes (`!ls -l f.vtu`), which the plain
+    # "python" pygments lexer cannot tokenise. Executing a notebook records
+    # language_info.pygments_lexer = "ipython3" -- which handles them -- so this
+    # never fires in CI; without execution the lexer falls back to
+    # kernelspec.language ("python") and the escapes fail to lex. Sphinx retries
+    # in relaxed mode either way, so the rendered page is fine.
+    "misc.highlighting_failure",
 ]
 
 
