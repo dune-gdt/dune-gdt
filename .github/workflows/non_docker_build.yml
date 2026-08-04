@@ -124,8 +124,12 @@ jobs:
     # library, the project, the ~520 test binaries and the Python bindings from
     # scratch; on the 4 vCPU hosted runner with the memory-bounded -j caps above
     # that is slower than the old self-hosted fleet, so the timeout is generous.
-    # Warm runs restore the ccache and finish much faster.
-    timeout-minutes: 240
+    # Warm runs restore the ccache and finish much faster -- though even those vary
+    # widely enough in practice (runner-to-runner performance, not just cache state)
+    # that clang22-release_coverage's "Build test binaries" step alone has been seen
+    # anywhere from ~1h30m to ~2h40m on the same branch, so 240 was cutting it too
+    # close and got cancelled mid-build on a run that wasn't actually stuck.
+    timeout-minutes: 360
     permissions:
       contents: read
       # codecov's GitHub Action authenticates to codecov.io via OpenID Connect
