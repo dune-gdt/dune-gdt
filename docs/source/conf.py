@@ -286,22 +286,22 @@ def _warning_location(record):
     return sphinx.util.logging.get_node_location(location) or ""
 
 
-def _inventories_are_all_remote(mapping):
-    """Whether every configured intersphinx inventory is fetched over the network.
+def _inventories_are_all_https(mapping):
+    """Whether every configured intersphinx inventory is fetched over HTTPS.
 
     Guards the inventory-failure rule in :class:`_UnactionableWarningFilter`:
     Sphinx reports *any* exhausted inventory the same way, so with a local
     ``objects.inv`` configured that one warning would also cover an unreadable or
     malformed file -- a real misconfiguration, and one this build should fail on.
-    While every target is a URL, the warning can only mean the network.
+    While every target is a URL, the warning can only mean the network. A
+    plain-``http://`` target deliberately does not qualify: this project has none,
+    and the stricter reading (inventory failures stay fatal) is the safe default.
     """
     for target_uri, inventories in mapping.values():
         if not isinstance(inventories, tuple):
             inventories = (inventories,)
         for location in (target_uri, *inventories):
-            if location is not None and not location.strip().startswith(
-                ("http://", "https://")
-            ):
+            if location is not None and not location.strip().startswith("https://"):
                 return False
     return True
 
@@ -319,7 +319,7 @@ class _UnactionableWarningFilter(logging.Filter):
       fixable from this repository, and none of it comes from a hand-written
       page -- which keeps failing the build for its own warnings.
     * intersphinx exhausting the locations for an inventory, which with the
-      all-remote mapping this project configures means the network was in the
+      all-HTTPS mapping this project configures means the network was in the
       way rather than the documentation. That warning carries no type/subtype,
       so ``suppress_warnings`` cannot address it; every intersphinx warning that
       does report a documentation problem (an unresolvable cross-reference) is
@@ -358,7 +358,7 @@ def setup(_app):
     # been executed in full, so the module global is there by then.
     warning_filter = _UnactionableWarningFilter(
         clangquill_output_dir,
-        filter_inventory_failures=_inventories_are_all_remote(intersphinx_mapping),
+        filter_inventory_failures=_inventories_are_all_https(intersphinx_mapping),
     )
     for handler in logging.getLogger("sphinx").handlers:
         handler.filters.insert(0, warning_filter)
