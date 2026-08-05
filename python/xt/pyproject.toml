@@ -41,7 +41,11 @@ docs = [
     # does in project mode, see cmake/modules/DuneXTTesting.cmake) stays satisfiable on the Python 3.12 test builds; the
     # docs themselves are built on 3.13. Without the marker the test resolution fails with an unsatisfiable requirement.
     # >=0.10.0 for the required clangquill_compile_commands (the Sphinx extension no longer guesses compile flags) on
-    # top of the hierarchical group_by="namespace" page layout; both are configured in docs/source/conf.py.
+    # top of the hierarchical group_by="namespace" page layout; both are configured in docs/source/conf.py. This
+    # deliberately drops the `<0.10.0` cap main added as a stopgap: that cap was there because nothing configured
+    # clangquill_compile_commands and the docs build died with "clangquill_compile_commands is not configured" -- true
+    # while the build_docs job only installs the prebuilt wheels and never runs CMake, which is exactly what conf.py now
+    # solves by writing its own compilation database for the parsed headers.
     'clangquill>=0.10.0; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
