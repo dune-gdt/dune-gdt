@@ -81,8 +81,8 @@ public:
     if (list_of_rows.size() != ROWS)
       DUNE_THROW(Exceptions::wrong_input_given,
                  "You are trying to construct a FieldMatrix< ..., "
-                     << ROWS << ", " << COLS << " > (of "
-                     << "static size) from a list modeling a matrix with " << list_of_rows.size() << " rows!");
+                     << ROWS << ", " << COLS << " > (of " << "static size) from a list modeling a matrix with "
+                     << list_of_rows.size() << " rows!");
 #endif // NDEBUG
     size_t rr = 0;
     for (auto row : list_of_rows) {
@@ -90,8 +90,8 @@ public:
       if (row.size() != COLS)
         DUNE_THROW(Exceptions::wrong_input_given,
                    "You are trying to construct a FieldMatrix< ..., "
-                       << ROWS << ", " << COLS << " > (of "
-                       << "static size) from a list with a row of length " << row.size() << "!");
+                       << ROWS << ", " << COLS << " > (of " << "static size) from a list with a row of length "
+                       << row.size() << "!");
 #endif // NDEBUG
       size_t cc = 0;
       for (auto entry : row)
@@ -279,41 +279,41 @@ inline void FieldMatrix<K, ROWS, COLS>::invert()
     DUNE_THROW(Dune::FMatrixError, "Can't invert a " << ROWS << "x" << COLS << " matrix!");
   if (ROWS <= 3) {
     BaseType::invert();
-  } else {
-    auto A = *this;
-    std::vector<size_type> pivot(ROWS);
-    this->luDecomposition(A, ElimPivot(pivot));
-    auto& L = A;
-    auto& U = A;
+    return;
+  }
+  auto A = *this;
+  std::vector<size_type> pivot(ROWS);
+  this->luDecomposition(A, ElimPivot(pivot));
+  auto& L = A;
+  auto& U = A;
 
-    // initialize inverse
-    *this = field_type();
+  // initialize inverse
+  *this = field_type();
 
-    for (size_type i = 0; i < ROWS; ++i)
-      (*this)[i][i] = 1;
+  for (size_type i = 0; i < ROWS; ++i)
+    (*this)[i][i] = 1;
 
-    // L Y = I; multiple right hand sides
-    for (size_type i = 0; i < ROWS; i++)
-      for (size_type j = 0; j < i; j++)
-        for (size_type k = 0; k < ROWS; k++)
-          (*this)[i][k] -= L[i][j] * (*this)[j][k];
+  // L Y = I; multiple right hand sides
+  for (size_type i = 0; i < ROWS; i++)
+    for (size_type j = 0; j < i; j++)
+      for (size_type k = 0; k < ROWS; k++)
+        (*this)[i][k] -= L[i][j] * (*this)[j][k];
 
-    // U A^{-1} = Y
-    for (size_type i = ROWS; i > 0;) {
-      --i;
-      for (size_type k = 0; k < ROWS; k++) {
-        for (size_type j = i + 1; j < ROWS; j++)
-          (*this)[i][k] -= U[i][j] * (*this)[j][k];
-        (*this)[i][k] /= U[i][i];
-      }
+  // U A^{-1} = Y
+  for (size_type i = ROWS; i > 0;) {
+    --i;
+    for (size_type k = 0; k < ROWS; k++) {
+      for (size_type j = i + 1; j < ROWS; j++)
+        (*this)[i][k] -= U[i][j] * (*this)[j][k];
+      (*this)[i][k] /= U[i][i];
     }
+  }
 
-    for (size_type i = ROWS; i > 0;) {
-      --i;
-      if (i != pivot[i])
-        for (size_type j = 0; j < ROWS; ++j)
-          std::swap((*this)[j][pivot[i]], (*this)[j][i]);
-    }
+  for (size_type i = ROWS; i > 0;) {
+    --i;
+    if (i != pivot[i])
+      for (size_type j = 0; j < ROWS; ++j)
+        std::swap((*this)[j][pivot[i]], (*this)[j][i]);
   }
 }
 

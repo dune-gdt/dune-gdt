@@ -321,23 +321,22 @@ public:
       // apply op with perturbed source DoF
       local_op_->apply(*local_range_inside_, *local_range_outside_, param_);
       // observe perturbation in inside range DoFs
-      for (size_t ii = 0; ii < local_range_inside_size; ++ii) {
-        auto derivative = (local_range_inside_->dofs()[ii] - range_DoFs_inside_[ii]) / eps;
-        if (XT::Common::FloatCmp::eq(derivative, eps))
-          derivative = 0;
-        matrix_.add_to_entry(
-            global_range_indices_inside_[ii], global_source_indices_inside_[jj], scaling_ * derivative);
-      }
+      add_perturbation_to_matrix(*local_range_inside_,
+                                 range_DoFs_inside_,
+                                 global_range_indices_inside_,
+                                 global_source_indices_inside_,
+                                 local_range_inside_size,
+                                 jj,
+                                 eps);
       // observe perturbation in outside range DoFs
-      if (treat_outside) {
-        for (size_t ii = 0; ii < local_range_outside_size; ++ii) {
-          auto derivative = (local_range_outside_->dofs()[ii] - range_DoFs_outside_[ii]) / eps;
-          if (XT::Common::FloatCmp::eq(derivative, eps))
-            derivative = 0;
-          matrix_.add_to_entry(
-              global_range_indices_outside_[ii], global_source_indices_inside_[jj], scaling_ * derivative);
-        }
-      }
+      if (treat_outside)
+        add_perturbation_to_matrix(*local_range_outside_,
+                                   range_DoFs_outside_,
+                                   global_range_indices_outside_,
+                                   global_source_indices_inside_,
+                                   local_range_outside_size,
+                                   jj,
+                                   eps);
       // restore source
       local_source_inside_->dofs()[jj] = jjth_source_DoF;
     }
@@ -354,21 +353,21 @@ public:
         // apply op with perturbed source DoF
         local_op_->apply(*local_range_inside_, *local_range_outside_, param_);
         // observe perturbation in inside range DoFs
-        for (size_t ii = 0; ii < local_range_inside_size; ++ii) {
-          auto derivative = (local_range_inside_->dofs()[ii] - range_DoFs_inside_[ii]) / eps;
-          if (XT::Common::FloatCmp::eq(derivative, eps))
-            derivative = 0;
-          matrix_.add_to_entry(
-              global_range_indices_inside_[ii], global_source_indices_outside_[jj], scaling_ * derivative);
-        }
+        add_perturbation_to_matrix(*local_range_inside_,
+                                   range_DoFs_inside_,
+                                   global_range_indices_inside_,
+                                   global_source_indices_outside_,
+                                   local_range_inside_size,
+                                   jj,
+                                   eps);
         // observe perturbation in outside range DoFs
-        for (size_t ii = 0; ii < local_range_outside_size; ++ii) {
-          auto derivative = (local_range_outside_->dofs()[ii] - range_DoFs_outside_[ii]) / eps;
-          if (XT::Common::FloatCmp::eq(derivative, eps))
-            derivative = 0;
-          matrix_.add_to_entry(
-              global_range_indices_outside_[ii], global_source_indices_outside_[jj], scaling_ * derivative);
-        }
+        add_perturbation_to_matrix(*local_range_outside_,
+                                   range_DoFs_outside_,
+                                   global_range_indices_outside_,
+                                   global_source_indices_outside_,
+                                   local_range_outside_size,
+                                   jj,
+                                   eps);
         // restore source
         local_source_outside_->dofs()[jj] = jjth_source_DoF;
       }
@@ -376,6 +375,22 @@ public:
   } // ... apply_local(...)
 
 private:
+  void add_perturbation_to_matrix(LocalDiscreteFunction<V, RGV, r_r, r_rC, F>& local_range,
+                                  const DynamicVector<F>& range_DoFs,
+                                  const DynamicVector<size_t>& global_range_indices,
+                                  const DynamicVector<size_t>& global_source_indices,
+                                  const size_t local_range_size,
+                                  const size_t jj,
+                                  const real_t<F> eps)
+  {
+    for (size_t ii = 0; ii < local_range_size; ++ii) {
+      auto derivative = (local_range.dofs()[ii] - range_DoFs[ii]) / eps;
+      if (XT::Common::FloatCmp::eq(derivative, eps))
+        derivative = 0;
+      matrix_.add_to_entry(global_range_indices[ii], global_source_indices[jj], scaling_ * derivative);
+    }
+  } // ... add_perturbation_to_matrix(...)
+
   std::unique_ptr<const SourceSpaceType> source_space_;
   std::unique_ptr<const RangeSpaceType> range_space_;
   MatrixType& matrix_;
