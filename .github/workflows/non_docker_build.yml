@@ -124,8 +124,12 @@ jobs:
     # library, the project, the ~520 test binaries and the Python bindings from
     # scratch; on the 4 vCPU hosted runner with the memory-bounded -j caps above
     # that is slower than the old self-hosted fleet, so the timeout is generous.
-    # Warm runs restore the ccache and finish much faster.
-    timeout-minutes: 240
+    # Warm runs restore the ccache and finish much faster -- though even those vary
+    # widely enough in practice (runner-to-runner performance, not just cache state)
+    # that clang22-release_coverage's "Build test binaries" step alone has been seen
+    # anywhere from ~1h30m to ~2h40m on the same branch, so 240 was cutting it too
+    # close and got cancelled mid-build on a run that wasn't actually stuck.
+    timeout-minutes: 360
     permissions:
       contents: read
       # codecov's GitHub Action authenticates to codecov.io via OpenID Connect
@@ -133,6 +137,10 @@ jobs:
       # actually exchanges this token, but job-level permissions are shared by the
       # whole matrix, so the scope is declared once here.
       id-token: write
+      # needed by the push-to-main leg to delete the previous "main" ccache
+      # snapshot via `gh cache delete` before re-saving it (see "Refresh the
+      # shared main ccache slot" below). Unused by pull_request/merge_group runs.
+      actions: write
     strategy:
       # one leg's failure must not cancel the other: a broken debug build should
       # still let the release+coverage leg report, and vice versa.
@@ -222,11 +230,24 @@ jobs:
       with:
         path: ${{ github.workspace }}/.ccache
         # run_id makes every save a unique (always-miss) key so each run writes a
-        # fresh cache; the prefix restore-key then pulls the most recent ccache
-        # from any previous run. Keyed per preset because the instrumented release
-        # objects must not pollute the debug leg's cache (different compile flags).
+        # fresh cache; the restore-keys below then pull the best available ccache.
+        # Keyed per preset because the instrumented release objects must not
+        # pollute the debug leg's cache (different compile flags).
         key: ${{ runner.os }}-ccache-${{ matrix.preset }}-${{ github.run_id }}
+        # The "-main" slot is a single long-lived entry kept fresh by every push to
+        # main (see "Refresh/Save the shared main ccache slot" below) and is
+        # readable from any ref (default-branch caches are always in scope). Try it
+        # first: push/merge_group builds run on refs with no history of their own
+        # (a merge-queue ref is created fresh each time), so without this fallback
+        # they restore nothing and silently compile ~520 test binaries plus the
+        # Python bindings from scratch -- which is what blew the coverage leg's
+        # 240-minute timeout on main and in PR #240's repeated merge-queue
+        # attempts (every one of the per-run_id blobs below had already been
+        # evicted from the repo's shared cache quota by the time it was needed).
+        # The per-run_id prefix is kept as a second fallback for same-branch PR
+        # re-runs, where it usually still hits.
         restore-keys: |
+          ${{ runner.os }}-ccache-${{ matrix.preset }}-main
           ${{ runner.os }}-ccache-${{ matrix.preset }}-
 
     - name: Configure CMake
@@ -400,6 +421,29 @@ jobs:
         path: ${{ github.workspace }}/.ccache
         key: ${{ runner.os }}-ccache-${{ matrix.preset }}-${{ github.run_id }}
 
+    - name: Refresh the shared "main" ccache slot
+      # actions/cache has no "overwrite" -- an existing key can only be replaced by
+      # deleting it first -- so this deletes the previous "-main" snapshot right
+      # before the save step below re-creates it under the same fixed key. That
+      # keeps exactly one long-lived entry per preset here instead of growing one
+      # per run (the github.run_id key above), which is what was exhausting the
+      # repo's shared cache storage quota and getting this leg's cache evicted
+      # before push/merge_group builds could ever restore it. Only main's own push
+      # maintains this slot; PRs and the merge queue only ever read it (via the
+      # restore-keys fallback above).
+      if: always() && steps.configure_cmake.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
+      run: gh cache delete "${{ runner.os }}-ccache-${{ matrix.preset }}-main" --repo "${GITHUB_REPOSITORY}"
+
+    - name: Save the shared "main" ccache slot
+      if: always() && steps.configure_cmake.outcome == 'success' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ github.workspace }}/.ccache
+        key: ${{ runner.os }}-ccache-${{ matrix.preset }}-main
+
     - name: Upload error logs (in case of failure)
       if: always() && (steps.configure_cmake.conclusion == 'failure')
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -433,6 +477,10 @@ jobs:
     timeout-minutes: 300
     permissions:
       contents: read
+      # needed by the push-to-main leg to delete the previous "main" wheel-ccache
+      # snapshot via `gh cache delete` before re-saving it (see "Refresh the
+      # shared main wheel-build ccache slot" below).
+      actions: write
     strategy:
       matrix:
         python-version: ["3.13"] #, "3.9", "3.10", "3.11", "3.12"]
@@ -461,9 +509,16 @@ jobs:
       with:
         path: build/wheelhouse/cache
         # Unique per-run key so the save below always writes a fresh cache; the
-        # restore-key falls back to the most recent cache for this Python version.
+        # restore-keys below fall back to the best available cache for this
+        # Python version. Same "-main" slot pattern as build-linux's ccache (see
+        # its "Restore ccache" step for why): try the single long-lived entry kept
+        # fresh by every push to main first, since push/merge_group builds run on
+        # refs with no cache history of their own and the per-run_id blobs churn
+        # through the repo's shared cache quota fast enough to be gone by the time
+        # a later run needs them.
         key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
         restore-keys: |
+          ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-main
           ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-
 
     # The vcpkg toolchain (.vcpkg-root) and installed packages
@@ -521,6 +576,24 @@ jobs:
       with:
         path: build/wheelhouse/cache
         key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-${{ github.run_id }}
+
+    - name: Refresh the shared "main" wheel-build ccache slot
+      # Same delete-then-save pattern as build-linux's "Refresh the shared main
+      # ccache slot" step: keeps exactly one long-lived entry per Python version
+      # here instead of growing one per run, so it survives the repo's shared
+      # cache quota long enough for push/merge_group builds to actually restore it.
+      if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
+      run: gh cache delete "${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-main" --repo "${GITHUB_REPOSITORY}"
+
+    - name: Save the shared "main" wheel-build ccache slot
+      if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: build/wheelhouse/cache
+        key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-main
 
     - name: Upload wheels
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
