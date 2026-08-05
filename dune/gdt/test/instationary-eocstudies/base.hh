@@ -56,6 +56,35 @@ namespace GDT {
 namespace Test {
 
 
+// Updates the per-component relative mass conservation errors for a single time step. Extracted to keep the nesting in
+// compute_on_current_refinement shallow (cpp:S134).
+template <size_t m, class MassesType>
+void update_relative_mass_conservation_errors(MassesType& relative_mass_conservation_errors,
+                                              const MassesType& initial_masses,
+                                              const MassesType& current_masses)
+{
+  for (size_t ss = 0; ss < m; ++ss)
+    relative_mass_conservation_errors[ss] = std::max(relative_mass_conservation_errors[ss],
+                                                     std::abs(initial_masses[ss] - current_masses[ss])
+                                                         / (initial_masses[ss] > 0. ? initial_masses[ss] : 1.));
+}
+
+
+// Computes the L^infty-in-time norm of the difference between two solutions. Extracted to keep the nesting in
+// compute_on_current_refinement shallow (cpp:S134).
+template <class VectorArrayType, class SpaceType, class SpatialNormType>
+double compute_temporal_l_infty_norm(const VectorArrayType& u,
+                                     const VectorArrayType& u_h,
+                                     const SpaceType& reference_space,
+                                     const SpatialNormType& spatial_norm)
+{
+  double result = 0;
+  for (size_t ii = 0; ii < u.length(); ++ii)
+    result = std::max(result, spatial_norm(make_discrete_function(reference_space, u[ii].vector() - u_h[ii].vector())));
+  return result;
+}
+
+
 template <class GridView, size_t m_ = 1, XT::LA::Backends la = XT::LA::Backends::istl_sparse>
 class InstationaryEocStudy
   : public XT::Common::ConvergenceStudy
@@ -285,11 +314,7 @@ public:
                      "I do not know how to compute the spatial norm '" << spatial_norm_id << "'!");
         // - temporal component
         if (temporal_norm_id == "L_infty") {
-          double result = 0;
-          for (size_t ii = 0; ii < u.length(); ++ii)
-            result = std::max(result,
-                              spatial_norm(make_discrete_function(reference_space, u[ii].vector() - u_h[ii].vector())));
-          current_data_["norm"][norm_id] = result;
+          current_data_["norm"][norm_id] = compute_temporal_l_infty_norm(u, u_h, reference_space, spatial_norm);
         } else if (temporal_norm_id == "L_2") {
           const XT::Functions::GenericFunction<1> spatial_norm_function(
               1, [&](const auto& time, const auto& /*param*/) {
@@ -341,10 +366,8 @@ public:
         relative_mass_conservation_errors *= 0;
         for (size_t ii = 1; ii < solution_on_current_grid.length(); ++ii) {
           const auto current_masses = compute_masses(solution_on_current_grid[ii].vector());
-          for (size_t ss = 0; ss < m; ++ss)
-            relative_mass_conservation_errors[ss] = std::max(relative_mass_conservation_errors[ss],
-                                                             std::abs(initial_masses[ss] - current_masses[ss])
-                                                                 / (initial_masses[ss] > 0. ? initial_masses[ss] : 1.));
+          update_relative_mass_conservation_errors<m>(
+              relative_mass_conservation_errors, initial_masses, current_masses);
         }
         current_data_["quantity"][id] = relative_mass_conservation_errors.infinity_norm();
       } else if (id == "num timesteps") {

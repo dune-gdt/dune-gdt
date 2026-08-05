@@ -54,6 +54,46 @@ XT::Common::Configuration hyperbolic_default_eigensolver_options()
 } // ... hyperbolic_default_eigensolver_options()
 
 
+// Computes the eigenvalues and (normalized) eigenvectors of a single 2x2 block. Extracted to keep the nesting in
+// compute_eigenvectors_impl shallow (cpp:S134).
+template <class LocalMatrixType, class EigvalsType>
+void compute_2x2_block_eigenvectors(const LocalMatrixType& jac, EigvalsType& eigvals, LocalMatrixType& eigvecs)
+{
+  using RangeFieldType = std::decay_t<decltype(eigvecs[0][0])>;
+  const auto trace = jac[0][0] + jac[1][1];
+  const auto det = jac[0][0] * jac[1][1] - jac[0][1] * jac[1][0];
+  const auto sqrt_val = std::sqrt(0.25 * trace * trace - det);
+  eigvals[0] = 0.5 * trace + sqrt_val;
+  eigvals[1] = 0.5 * trace - sqrt_val;
+  if (std::abs(jac[1][0]) > std::abs(jac[0][1])) {
+    if (XT::Common::FloatCmp::ne(jac[1][0], 0.)) {
+      eigvecs[0][0] = eigvals[0] - jac[1][1];
+      eigvecs[0][1] = eigvals[1] - jac[1][1];
+      eigvecs[1][0] = eigvecs[1][1] = jac[1][0];
+    } else {
+      eigvecs[0][0] = eigvecs[1][1] = 1.;
+      eigvecs[0][1] = eigvecs[1][0] = 0.;
+    }
+  } else {
+    if (XT::Common::FloatCmp::ne(jac[0][1], 0.)) {
+      eigvecs[1][0] = eigvals[0] - jac[0][0];
+      eigvecs[1][1] = eigvals[1] - jac[0][0];
+      eigvecs[0][0] = eigvecs[0][1] = jac[0][1];
+    } else {
+      eigvecs[0][0] = eigvecs[1][1] = 1.;
+      eigvecs[0][1] = eigvecs[1][0] = 0.;
+    }
+  }
+  // normalize such that the eigenvectors have norm 1
+  for (size_t col = 0; col < 2; ++col) {
+    RangeFieldType two_norm = 0;
+    two_norm = std::sqrt(std::pow(eigvecs[0][col], 2) + std::pow(eigvecs[1][col], 2));
+    for (size_t row = 0; row < 2; ++row)
+      eigvecs[row][col] /= two_norm;
+  }
+} // ... compute_2x2_block_eigenvectors(...)
+
+
 // Wrapper for thread-safe and consistent handling of the different jacobians (Usual matrices vs. block matrices in the
 // partial moment case)
 template <class AnalyticalFluxType, class MatrixImp, class VectorImp>
@@ -407,40 +447,8 @@ public:
       for (size_t dd = 0; dd < dimDomain; ++dd) {
         for (size_t jj = 0; jj < num_blocks; ++jj) {
           if (block_size == 2) {
-            const auto& jac = (*jacobian_)[dd].block(jj);
-            const auto trace = jac[0][0] + jac[1][1];
-            const auto det = jac[0][0] * jac[1][1] - jac[0][1] * jac[1][0];
-            const auto sqrt_val = std::sqrt(0.25 * trace * trace - det);
-            auto& eigvals = eigenvalues_[dd][jj];
-            eigvals[0] = 0.5 * trace + sqrt_val;
-            eigvals[1] = 0.5 * trace - sqrt_val;
-            auto& eigvecs = eigenvectors_[dd].block(jj);
-            if (std::abs(jac[1][0]) > std::abs(jac[0][1])) {
-              if (XT::Common::FloatCmp::ne(jac[1][0], 0.)) {
-                eigvecs[0][0] = eigvals[0] - jac[1][1];
-                eigvecs[0][1] = eigvals[1] - jac[1][1];
-                eigvecs[1][0] = eigvecs[1][1] = jac[1][0];
-              } else {
-                eigvecs[0][0] = eigvecs[1][1] = 1.;
-                eigvecs[0][1] = eigvecs[1][0] = 0.;
-              }
-            } else {
-              if (XT::Common::FloatCmp::ne(jac[0][1], 0.)) {
-                eigvecs[1][0] = eigvals[0] - jac[0][0];
-                eigvecs[1][1] = eigvals[1] - jac[0][0];
-                eigvecs[0][0] = eigvecs[0][1] = jac[0][1];
-              } else {
-                eigvecs[0][0] = eigvecs[1][1] = 1.;
-                eigvecs[0][1] = eigvecs[1][0] = 0.;
-              }
-            }
-            // normalize such that the eigenvectors have norm 1
-            for (size_t col = 0; col < 2; ++col) {
-              RangeFieldType two_norm = 0;
-              two_norm = std::sqrt(std::pow(eigvecs[0][col], 2) + std::pow(eigvecs[1][col], 2));
-              for (size_t row = 0; row < 2; ++row)
-                eigvecs[row][col] /= two_norm;
-            }
+            compute_2x2_block_eigenvectors(
+                (*jacobian_)[dd].block(jj), eigenvalues_[dd][jj], eigenvectors_[dd].block(jj));
           } else {
             // For the small matrices (usually 4x4) used here it causes a lot of overhead to call into LAPACK every
             // time, so we just use our own eigensolver most of the time. Occasionally, however, our eigensolver fails
