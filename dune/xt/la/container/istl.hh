@@ -436,12 +436,12 @@ public:
       build_sparse_matrix(mat.N(), mat.M(), pruned_patt);
       for (size_t ii = 0; ii < pruned_patt.size(); ++ii) {
         const auto& row_indices = pruned_patt.inner(ii);
-        if (row_indices.size() > 0) {
-          const auto& mat_row = mat[ii];
-          auto& backend_row = backend_->operator[](ii);
-          for (const auto& jj : row_indices)
-            backend_row[jj][0][0] = mat_row[jj][0][0];
-        }
+        if (row_indices.size() == 0)
+          continue;
+        const auto& mat_row = mat[ii];
+        auto& backend_row = backend_->operator[](ii);
+        for (const auto& jj : row_indices)
+          backend_row[jj][0][0] = mat_row[jj][0][0];
       }
     } else
       backend_ = std::shared_ptr<BackendType>(new BackendType(mat));
@@ -696,12 +696,13 @@ public:
   {
     for (size_t ii = 0; ii < rows(); ++ii) {
       const auto& row_vec = backend_->operator[](ii);
-      for (size_t jj = 0; jj < cols(); ++jj)
-        if (backend_->exists(ii, jj)) {
-          const auto& entry = row_vec[jj][0];
-          if (Common::isnan(entry[0]) || Common::isinf(entry[0]))
-            return false;
-        }
+      for (size_t jj = 0; jj < cols(); ++jj) {
+        if (!backend_->exists(ii, jj))
+          continue;
+        const auto& entry = row_vec[jj][0];
+        if (Common::isnan(entry[0]) || Common::isinf(entry[0]))
+          return false;
+      }
     }
     return true;
   } // ... valid(...)
@@ -769,14 +770,14 @@ private:
   {
     SparsityPatternDefault ret(mat.N());
     for (size_t ii = 0; ii < mat.N(); ++ii) {
-      if (mat.getrowsize(ii) > 0) {
-        const auto& row = mat[ii];
-        const auto it_end = row.end();
-        for (auto it = row.begin(); it != it_end; ++it) {
-          const auto val = it->operator[](0)[0];
-          if (Common::FloatCmp::ne<Common::FloatCmp::Style::absolute>(val, decltype(val)(0), eps))
-            ret.insert(ii, it.index());
-        }
+      if (mat.getrowsize(ii) == 0)
+        continue;
+      const auto& row = mat[ii];
+      const auto it_end = row.end();
+      for (auto it = row.begin(); it != it_end; ++it) {
+        const auto val = it->operator[](0)[0];
+        if (Common::FloatCmp::ne<Common::FloatCmp::Style::absolute>(val, decltype(val)(0), eps))
+          ret.insert(ii, it.index());
       }
     }
     ret.sort();
@@ -826,29 +827,30 @@ std::ostream& operator<<(std::ostream& out, const IstlRowMajorSparseMatrix<S>& m
   out << "[";
   const size_t rows = matrix.rows();
   const size_t cols = matrix.cols();
-  if (rows > 0 && cols > 0) {
-    for (size_t ii = 0; ii < rows; ++ii) {
-      if (ii > 0)
-        out << "\n ";
-      out << "[";
-      if (matrix.backend().exists(ii, 0))
-        out << matrix.get_entry(ii, 0);
+  if (!(rows > 0 && cols > 0)) {
+    out << "[ ]]";
+    return out;
+  }
+  for (size_t ii = 0; ii < rows; ++ii) {
+    if (ii > 0)
+      out << "\n ";
+    out << "[";
+    if (matrix.backend().exists(ii, 0))
+      out << matrix.get_entry(ii, 0);
+    else
+      out << "0";
+    for (size_t jj = 1; jj < cols; ++jj) {
+      out << " ";
+      if (matrix.backend().exists(ii, jj))
+        out << matrix.get_entry(ii, jj);
       else
         out << "0";
-      for (size_t jj = 1; jj < cols; ++jj) {
-        out << " ";
-        if (matrix.backend().exists(ii, jj))
-          out << matrix.get_entry(ii, jj);
-        else
-          out << "0";
-      }
-      out << "]";
-      if (rows > 1 && ii < (rows - 1))
-        out << ",";
     }
     out << "]";
-  } else
-    out << "[ ]]";
+    if (rows > 1 && ii < (rows - 1))
+      out << ",";
+  }
+  out << "]";
   return out;
 } // ... operator<<(...)
 
