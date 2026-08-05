@@ -113,7 +113,7 @@ public:
     const auto FactoryName = XT::Common::to_camel_case(class_id);
     m.def(
         FactoryName.c_str(),
-        [](GP& grid,
+        [](GP& grid [[maybe_unused]],
            const RS& range_space,
            const double& symmetry_prefactor,
            const double& inner_penalty,
