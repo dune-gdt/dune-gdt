@@ -743,7 +743,9 @@ jobs:
       #
       # Deliberately does not stop at the first failure: the point is a full per-notebook verdict,
       # so one bad notebook cannot hide the state of the other fifteen. Failing here also skips the
-      # ~40 min sphinx build that was going to die anyway.
+      # ~40 min sphinx build that was going to die anyway. Each notebook gets its own `timeout` for
+      # the same reason: a hang -- as plausible a failure mode here as a crash -- would otherwise
+      # eat the whole job budget and take every later notebook's verdict down with it.
       env:
         # the notebooks import helper modules (discretize_elliptic_cg, ...) from next to themselves
         DUNE_GDT_NOTEBOOK_SOURCE_DIR: ${{ github.workspace }}/docs/source
@@ -762,12 +764,20 @@ jobs:
           echo "::group::${name}"
           start=${SECONDS}
           status=0
+          # 15 min per notebook: the slowest (the interpolation tutorial) runs ~2.5 min here, so
+          # this only ever fires on a genuine hang. --kill-after escalates to SIGKILL for a process
+          # that ignores the SIGTERM.
           DUNE_GDT_NOTEBOOK_WORKDIR="${GITHUB_WORKSPACE}/build/notebook_runs/${name}" \
+            timeout --kill-after=30s 900 \
             xvfb-run -a uv run --no-project \
             --python "${GITHUB_WORKSPACE}/.venv/bin/python" python "${script}" || status=$?
           echo "::endgroup::"
           if [ "${status}" -eq 0 ]; then
             echo "${name}: ok ($((SECONDS - start))s)"
+          elif [ "${status}" -eq 124 ] || [ "${status}" -eq 137 ]; then
+            # 124 is timeout(1)'s own status; 137 is a SIGKILL, i.e. --kill-after or the OOM killer
+            echo "::error::${name} did not finish within 900s (exit ${status})"
+            failed+=("${name} (timed out, exit ${status})")
           else
             echo "::error::${name} failed with exit status ${status} after $((SECONDS - start))s"
             failed+=("${name} (exit ${status})")

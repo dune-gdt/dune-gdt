@@ -49,6 +49,12 @@ _LINE_MAGIC_RE = re.compile(r"^(?P<indent>[ \t]*)%(?P<name>\w+)(?P<rest>\W.*)?$"
 _CELL_MAGIC_RE = re.compile(r"^[ \t]*%%(?P<name>\w+)")
 #: an IPython shell escape, e.g. ``!ls -l f.vtu``
 _SHELL_RE = re.compile(r"^(?P<indent>[ \t]*)!(?P<command>.+)$")
+#: IPython object introspection: ``?name``/``??name`` and ``name?``/``name??``. Deliberately narrow
+#: -- only a bare (dotted) name carrying the ? -- so an ordinary string with a question mark in it
+#: ("what?") is never mistaken for one.
+_HELP_RE = re.compile(
+    r"^[ \t]*(?:\?{1,2}[\w.]+|[A-Za-z_][\w.]*(?:\(\))?\?{1,2})[ \t]*$",
+)
 
 #: line magics that only affect how output is rendered inside a notebook frontend and that carry no
 #: meaning for a plain script: dropped (as a comment) rather than translated.
@@ -216,6 +222,10 @@ def _translate_line(line: str) -> list[str]:
     cell_magic = _CELL_MAGIC_RE.match(line)
     if cell_magic:
         raise ConversionError(f"cannot translate cell magic %%{cell_magic['name']}")
+    if _HELP_RE.match(line):
+        # valid IPython, invalid Python. Passing it through would produce a script that fails to
+        # compile with a bare SyntaxError, far from the notebook line that caused it.
+        raise ConversionError(f"cannot translate IPython help syntax {line.strip()!r}")
     magic = _LINE_MAGIC_RE.match(line)
     if magic:
         return _translate_magic(magic)

@@ -179,6 +179,30 @@ def test_untranslatable_magics_are_an_error(tmp_path):
         nb2s.translate_cell_source("%bookmark here", "nb.md:1")
 
 
+@pytest.mark.parametrize(
+    "line",
+    ["?grid", "??grid", "grid?", "grid??", "dune.gdt.Operator?", "make_cube_grid()??"],
+)
+def test_ipython_help_syntax_is_an_error(line):
+    # valid IPython, invalid Python: passing it through would only surface as a bare SyntaxError
+    with pytest.raises(nb2s.ConversionError, match="IPython help syntax"):
+        nb2s.translate_cell_source(line, "nb.md:1")
+
+
+@pytest.mark.parametrize(
+    "line",
+    [
+        'print("what?")',
+        'x = "?"',
+        "# is this right?",
+        'raise ValueError("missing?")',
+    ],
+)
+def test_question_marks_in_ordinary_python_are_left_alone(line):
+    # the help detection must not fire on a question mark inside a string or comment
+    assert nb2s.translate_cell_source(line, "nb.md:1") == line
+
+
 def test_translation_errors_point_at_a_1_based_cell_line(tmp_path):
     # the offset is 1-based, like every other line number this tool reports
     with pytest.raises(nb2s.ConversionError, match=r"nb\.md:7\+1:"):
