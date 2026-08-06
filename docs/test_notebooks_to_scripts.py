@@ -129,7 +129,15 @@ def test_missing_load_target_is_an_error(tmp_path):
 
 def test_unterminated_cell_is_an_error(tmp_path):
     notebook = _write(tmp_path, "nb.md", "\n```{code-cell}\nx = 1\n")
-    with pytest.raises(nb2s.ConversionError, match="unterminated"):
+    with pytest.raises(nb2s.ConversionError, match="unterminated code cell"):
+        nb2s.extract_cells(notebook)
+
+
+def test_unterminated_option_block_names_the_option_block(tmp_path):
+    # the failure is in the options, not the cell: reporting "unterminated code cell" here would
+    # point at the wrong construct entirely
+    notebook = _write(tmp_path, "nb.md", "\n```{code-cell}\n---\ntags: [remove-cell]\n")
+    with pytest.raises(nb2s.ConversionError, match="unterminated --- option block"):
         nb2s.extract_cells(notebook)
 
 
@@ -169,6 +177,14 @@ def test_untranslatable_magics_are_an_error(tmp_path):
         nb2s.translate_cell_source("%%writefile out.txt\nhi\n", "nb.md:1")
     with pytest.raises(nb2s.ConversionError, match="%bookmark"):
         nb2s.translate_cell_source("%bookmark here", "nb.md:1")
+
+
+def test_translation_errors_point_at_a_1_based_cell_line(tmp_path):
+    # the offset is 1-based, like every other line number this tool reports
+    with pytest.raises(nb2s.ConversionError, match=r"nb\.md:7\+1:"):
+        nb2s.translate_cell_source("%bookmark here", "nb.md:7")
+    with pytest.raises(nb2s.ConversionError, match=r"nb\.md:7\+3:"):
+        nb2s.translate_cell_source("x = 1\ny = 2\n%bookmark here", "nb.md:7")
 
 
 def test_generated_script_is_valid_python_and_marks_every_cell(tmp_path):

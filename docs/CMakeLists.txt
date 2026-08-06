@@ -42,10 +42,11 @@ endif()
 execute_process(
   COMMAND ${Python_EXECUTABLE} ${NOTEBOOK_CONVERTER} --source-dir ${SPHINX_SOURCE_DIR} --list-paths
   OUTPUT_VARIABLE _notebook_paths
+  ERROR_VARIABLE _notebook_paths_error
   RESULT_VARIABLE _notebook_paths_result
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(NOT _notebook_paths_result EQUAL 0)
-  message(FATAL_ERROR "listing the documentation notebook paths failed")
+  message(FATAL_ERROR "listing the documentation notebook paths failed: ${_notebook_paths_error}")
 endif()
 string(REPLACE "\n" ";" NOTEBOOK_NAMES "${_notebook_names}")
 string(REPLACE "\n" ";" NOTEBOOK_SOURCES "${_notebook_paths}")

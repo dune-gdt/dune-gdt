@@ -125,6 +125,10 @@ def _parse_options(lines: list[str], position: int) -> tuple[dict[str, str], int
             if separator:
                 options[key.strip()] = value.strip()
             position += 1
+        if position >= len(lines):
+            # without this the position runs off the end and _read_body reports the far more
+            # confusing "unterminated code cell" for what is really a broken options block
+            raise ConversionError("unterminated --- option block")
         return options, position + 1  # skip the closing ---
     while position < len(lines) and (option := _OPTION_RE.match(lines[position])):
         options[option.group("name")] = option.group("value").strip()
@@ -230,7 +234,8 @@ def translate_cell_source(source: str, where: str) -> str:
     generated tests worthless.
     """
     translated: list[str] = []
-    for offset, line in enumerate(source.splitlines()):
+    # 1-based, like every other line number this tool reports: "+1" is the cell's first line
+    for offset, line in enumerate(source.splitlines(), start=1):
         try:
             translated.extend(_translate_line(line))
         except ConversionError as error:
