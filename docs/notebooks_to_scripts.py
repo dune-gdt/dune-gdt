@@ -42,8 +42,9 @@ DEFAULT_SOURCE_DIR = Path(__file__).resolve().parent / "source"
 _CELL_OPEN_RE = re.compile(r"^(?P<fence>`{3,}|~{3,})\{code-cell\}(?P<language>.*)$")
 #: a directive option line directly below the opening fence, e.g. ``:tags: [remove-cell]``
 _OPTION_RE = re.compile(r"^:(?P<name>[\w-]+):(?P<value>.*)$")
-#: an IPython line magic, e.g. ``%load_ext wurlitzer``
-_LINE_MAGIC_RE = re.compile(r"^(?P<indent>[ \t]*)%(?P<name>\w+)(?P<rest>.*)$")
+#: an IPython line magic, e.g. ``%load_ext wurlitzer``; the argument tail starts with a non-word
+#: character so the name's \w+ has nothing to backtrack into, and is absent for a bare ``%magic``
+_LINE_MAGIC_RE = re.compile(r"^(?P<indent>[ \t]*)%(?P<name>\w+)(?P<rest>\W.*)?$")
 #: an IPython cell magic, e.g. ``%%time``
 _CELL_MAGIC_RE = re.compile(r"^[ \t]*%%(?P<name>\w+)")
 #: an IPython shell escape, e.g. ``!ls -l f.vtu``
@@ -193,7 +194,7 @@ def extract_cells(path: Path, source_dir: Path | None = None) -> list[Cell]:
 
 def _translate_magic(match: re.Match[str]) -> list[str]:
     """Turn a line magic into the plain-Python lines standing in for it."""
-    name, indent, rest = match["name"], match["indent"], match["rest"].strip()
+    name, indent, rest = match["name"], match["indent"], (match["rest"] or "").strip()
     if name in _COSMETIC_MAGICS:
         return [
             f"{indent}# [notebook-script] dropped frontend magic: %{name} {rest}".rstrip()

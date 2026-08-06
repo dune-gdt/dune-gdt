@@ -150,6 +150,15 @@ def test_statement_prefix_magics_keep_their_statement(tmp_path):
     assert not any(line.strip().startswith("%") for line in translated.splitlines())
 
 
+def test_argumentless_magics_are_dropped(tmp_path):
+    # the magic's argument tail is optional; a bare %magic must not fall through as a statement
+    translated = nb2s.translate_cell_source("%matplotlib\n  %load_ext x", "nb.md:1")
+    assert translated.splitlines()[0].startswith("# ")
+    # indentation of an indented magic is preserved, so it stays inside its block
+    assert translated.splitlines()[1].startswith("  # ")
+    compile(translated, "cell.py", "exec")
+
+
 def test_shell_escapes_become_subprocess_calls(tmp_path):
     translated = nb2s.translate_cell_source("!ls -l f.vtu", "nb.md:1")
     assert translated == '_shell("ls -l f.vtu")'
