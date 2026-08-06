@@ -101,6 +101,14 @@ add_test(NAME notebook_scripts_setup COMMAND ${Python_EXECUTABLE} ${NOTEBOOK_CON
                                              ${SPHINX_SOURCE_DIR} --output-dir ${NOTEBOOK_SCRIPT_DIR})
 set_tests_properties(notebook_scripts_setup PROPERTIES FIXTURES_SETUP notebook_scripts LABELS "dune-gdt-test;notebook")
 
+# example__gmsh_grid is the one notebook that shells out to an external program: pyMOR's discretize_gmsh runs the `gmsh`
+# binary to produce the mesh, and without it the cell dies with pymor.core.exceptions.GmshMissingError. The docs CI job
+# installs gmsh, but the C++ build job -- which runs this same CTest suite -- does not, and neither does a typical
+# development box. Disable that single test where the binary is absent rather than let a missing system package turn the
+# whole ctest run red; the notebook is still executed in full by the docs CI job.
+find_program(DXT_GMSH_EXECUTABLE gmsh)
+set(NOTEBOOK_NEEDING_GMSH example__gmsh_grid)
+
 foreach(notebook ${NOTEBOOK_NAMES})
   add_test(NAME notebook_${notebook} COMMAND ${UV_EXECUTABLE} run --frozen --python ${Python_EXECUTABLE} --group
                                              notebooks python ${NOTEBOOK_SCRIPT_DIR}/${notebook}.py)
@@ -116,4 +124,8 @@ foreach(notebook ${NOTEBOOK_NAMES})
                notebook_scripts
                TIMEOUT
                ${DXT_NOTEBOOK_TEST_TIMEOUT})
+  if(notebook STREQUAL "${NOTEBOOK_NEEDING_GMSH}" AND NOT DXT_GMSH_EXECUTABLE)
+    message(STATUS "notebook_${notebook}: disabled, no gmsh binary on PATH")
+    set_tests_properties(notebook_${notebook} PROPERTIES DISABLED TRUE)
+  endif()
 endforeach()
