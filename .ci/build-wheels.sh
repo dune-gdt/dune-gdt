@@ -73,9 +73,32 @@ DUNE_BUILD_DIR="${DUNE_SRC_DIR}/build/wheelbuilder-release"
 # xt is an exact-version dependency of gdt -> needs `--find-links`
 "${PYTHON_BIN}" -m pip install "${TMP_WHEEL_DIR}"/dune_xt*whl
 "${PYTHON_BIN}" -m pip wheel "${DUNE_BUILD_DIR}/python/gdt/" -w "${TMP_WHEEL_DIR}" --find-links "${TMP_WHEEL_DIR}/"
+
+# The wheelbuilder preset builds the dune module libraries and the vcpkg dependencies shared (BUILD_SHARED_LIBS=ON +
+# the x64-linux-shared triplet) so that ALUGrid, boost, dunext & co. are bundled into the wheel *once* instead of
+# being statically linked into each of the ~100 extension modules. auditwheel resolves those NEEDED entries through
+# the dynamic loader, so point it at the build tree: the module .so files carry a build-tree RUNPATH, but relying on
+# it alone breaks as soon as a toolchain strips or rewrites it during packaging.
+VCPKG_LIB_DIRS="$(find "${DUNE_BUILD_DIR}/vcpkg_installed" -mindepth 2 -maxdepth 2 -type d -name lib -printf '%p:' 2>/dev/null || true)"
+export LD_LIBRARY_PATH="${DUNE_BUILD_DIR}/lib:${VCPKG_LIB_DIRS}${LD_LIBRARY_PATH:-}"
+
 # Bundle external shared libraries into the wheels
 "${PYTHON_BIN}" -m auditwheel repair --plat "${PLATFORM}" "${TMP_WHEEL_DIR}"/*xt*.whl -w "${WHEEL_DIR}/final"
 "${PYTHON_BIN}" -m auditwheel repair --plat "${PLATFORM}" "${TMP_WHEEL_DIR}"/*gdt*.whl -w "${WHEEL_DIR}/final"
+
+# Wheels above the PyPI per-file limit cannot be published, and the failure only surfaces at upload time (i.e. on a
+# push to main, long after the change that caused it merged). Fail the build instead, and warn early enough that
+# there is room to react.
+for whl in "${WHEEL_DIR}"/final/*.whl; do
+  size_mb=$(( $(stat -c %s "${whl}") / 1000000 ))
+  echo "wheel size: ${size_mb} MB  $(basename "${whl}")"
+  if [ "${size_mb}" -ge 100 ]; then
+    echo "ERROR: $(basename "${whl}") is ${size_mb} MB, above the 100 MB PyPI per-file limit." >&2
+    exit 1
+  elif [ "${size_mb}" -ge 85 ]; then
+    echo "WARNING: $(basename "${whl}") is ${size_mb} MB, approaching the 100 MB PyPI per-file limit." >&2
+  fi
+done
 
 deactivate
 ccache -s
