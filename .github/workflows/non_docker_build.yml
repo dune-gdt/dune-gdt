@@ -595,6 +595,39 @@ jobs:
         path: build/wheelhouse/cache
         key: ${{ runner.os }}-wheels-ccache-${{ matrix.python-version }}-main
 
+    - name: Report wheel sizes
+      # Surface the size of every built wheel in the job summary. PyPI refuses any
+      # file above 100 MB per project, and that rejection would otherwise only show
+      # up in the publish job on a push to main -- long after the change that caused
+      # it merged. build-wheels.sh already fails the build past that limit; this step
+      # makes the trend visible while there is still headroom.
+      if: always()
+      shell: bash
+      run: |
+        shopt -s nullglob
+        wheels=(build/wheelhouse/final/*.whl)
+        if [ ${#wheels[@]} -eq 0 ]; then
+          echo "no wheels were built" >> "${GITHUB_STEP_SUMMARY}"
+          exit 0
+        fi
+        {
+          echo "### Wheel sizes (Python ${{ matrix.python-version }})"
+          echo
+          echo "| wheel | size | PyPI limit |"
+          echo "| --- | ---: | ---: |"
+        } >> "${GITHUB_STEP_SUMMARY}"
+        for whl in "${wheels[@]}"; do
+          size_mb=$(( $(stat -c %s "${whl}") / 1000000 ))
+          if [ "${size_mb}" -ge 100 ]; then
+            verdict="over"
+          elif [ "${size_mb}" -ge 85 ]; then
+            verdict="close"
+          else
+            verdict="ok"
+          fi
+          echo "| \`$(basename "${whl}")\` | ${size_mb} MB | ${verdict} (100 MB) |" >> "${GITHUB_STEP_SUMMARY}"
+        done
+
     - name: Upload wheels
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
