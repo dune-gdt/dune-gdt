@@ -79,8 +79,12 @@ DUNE_BUILD_DIR="${DUNE_SRC_DIR}/build/wheelbuilder-release"
 # being statically linked into each of the ~100 extension modules. auditwheel resolves those NEEDED entries through
 # the dynamic loader, so point it at the build tree: the module .so files carry a build-tree RUNPATH, but relying on
 # it alone breaks as soon as a toolchain strips or rewrites it during packaging.
+# Every element is appended conditionally and the trailing separator `find -printf` leaves behind is stripped: an
+# empty element in LD_LIBRARY_PATH means "the current working directory" to the dynamic loader, which would let
+# anything lying around in the build directory shadow a real dependency during the repair.
 VCPKG_LIB_DIRS="$(find "${DUNE_BUILD_DIR}/vcpkg_installed" -mindepth 2 -maxdepth 2 -type d -name lib -printf '%p:' 2>/dev/null || true)"
-export LD_LIBRARY_PATH="${DUNE_BUILD_DIR}/lib:${VCPKG_LIB_DIRS}${LD_LIBRARY_PATH:-}"
+VCPKG_LIB_DIRS="${VCPKG_LIB_DIRS%:}"
+export LD_LIBRARY_PATH="${DUNE_BUILD_DIR}/lib${VCPKG_LIB_DIRS:+:${VCPKG_LIB_DIRS}}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 
 # Bundle external shared libraries into the wheels
 "${PYTHON_BIN}" -m auditwheel repair --plat "${PLATFORM}" "${TMP_WHEEL_DIR}"/*xt*.whl -w "${WHEEL_DIR}/final"
