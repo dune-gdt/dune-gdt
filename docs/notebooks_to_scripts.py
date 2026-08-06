@@ -30,24 +30,24 @@ from __future__ import annotations
 
 import argparse
 import re
-import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 DEFAULT_SOURCE_DIR = Path(__file__).resolve().parent / "source"
 
+# All of these keep their variable-width parts unambiguous ([ \t]* followed by a character that is
+# neither, a trailing .* that nothing competes with) so matching stays linear -- these run over every
+# line of every notebook on each configure.
 #: opening fence of a MyST-NB code cell, e.g. ```{code-cell} or ```{code-cell} ipython3
-_CELL_OPEN_RE = re.compile(
-    r"^(?P<fence>`{3,}|~{3,})\{code-cell\}\s*(?P<language>\S+)?\s*$"
-)
+_CELL_OPEN_RE = re.compile(r"^(?P<fence>`{3,}|~{3,})\{code-cell\}(?P<language>.*)$")
 #: a directive option line directly below the opening fence, e.g. ``:tags: [remove-cell]``
-_OPTION_RE = re.compile(r"^:(?P<name>[\w-]+):\s*(?P<value>.*)$")
+_OPTION_RE = re.compile(r"^:(?P<name>[\w-]+):(?P<value>.*)$")
 #: an IPython line magic, e.g. ``%load_ext wurlitzer``
-_LINE_MAGIC_RE = re.compile(r"^(?P<indent>\s*)%(?P<name>\w+)(?P<rest>.*)$")
+_LINE_MAGIC_RE = re.compile(r"^(?P<indent>[ \t]*)%(?P<name>\w+)(?P<rest>.*)$")
 #: an IPython cell magic, e.g. ``%%time``
-_CELL_MAGIC_RE = re.compile(r"^\s*%%(?P<name>\w+)")
+_CELL_MAGIC_RE = re.compile(r"^[ \t]*%%(?P<name>\w+)")
 #: an IPython shell escape, e.g. ``!ls -l f.vtu``
-_SHELL_RE = re.compile(r"^(?P<indent>\s*)!(?P<command>.+)$")
+_SHELL_RE = re.compile(r"^(?P<indent>[ \t]*)!(?P<command>.+)$")
 
 #: line magics that only affect how output is rendered inside a notebook frontend and that carry no
 #: meaning for a plain script: dropped (as a comment) rather than translated.
@@ -110,6 +110,46 @@ def notebook_paths(source_dir: Path = DEFAULT_SOURCE_DIR) -> list[Path]:
     return sorted(path for path in source_dir.glob("*.md") if is_notebook(path))
 
 
+def _parse_options(lines: list[str], position: int) -> tuple[dict[str, str], int]:
+    """Read a directive's options, either as ``:key: value`` lines or as a --- delimited YAML block.
+
+    ``position`` points at the line directly below the opening fence; the returned position points
+    at the first line of the cell body.
+    """
+    options: dict[str, str] = {}
+    if position < len(lines) and lines[position].rstrip() == "---":
+        position += 1
+        while position < len(lines) and lines[position].rstrip() != "---":
+            key, separator, value = lines[position].partition(":")
+            if separator:
+                options[key.strip()] = value.strip()
+            position += 1
+        return options, position + 1  # skip the closing ---
+    while position < len(lines) and (option := _OPTION_RE.match(lines[position])):
+        options[option.group("name")] = option.group("value").strip()
+        position += 1
+    return options, position
+
+
+def _read_body(lines: list[str], position: int, fence: str) -> tuple[list[str], int]:
+    """Read a cell body up to its closing ``fence``; the returned position is past that fence."""
+    body: list[str] = []
+    while position < len(lines) and lines[position].rstrip() != fence:
+        body.append(lines[position])
+        position += 1
+    if position >= len(lines):
+        raise ConversionError("unterminated code cell")
+    return body, position + 1
+
+
+def _load_body(source_dir: Path, target: str) -> list[str]:
+    """Read the body a ``:load:`` option points at, as myst-nb would."""
+    loaded = (source_dir / target).resolve()
+    if not loaded.is_file():
+        raise ConversionError(f"':load: {target}' not found")
+    return loaded.read_text(encoding="utf-8").splitlines()
+
+
 def extract_cells(path: Path, source_dir: Path | None = None) -> list[Cell]:
     """Extract the code cells of the notebook at ``path``.
 
@@ -118,54 +158,24 @@ def extract_cells(path: Path, source_dir: Path | None = None) -> list[Cell]:
     """
     source_dir = source_dir or path.parent
     lines = path.read_text(encoding="utf-8").splitlines()
-    _, start = _read_front_matter(lines)
+    _, position = _read_front_matter(lines)
 
     cells: list[Cell] = []
-    position = start
     while position < len(lines):
         opening = _CELL_OPEN_RE.match(lines[position])
         if not opening:
             position += 1
             continue
-        fence = opening.group("fence")
-        open_line = (
-            position + 1
-        )  # 1-based, for the marker printed by the generated script
-        position += 1
-
-        # directive options, either as ``:key: value`` lines or as a YAML block delimited by ---
-        options: dict[str, str] = {}
-        if position < len(lines) and lines[position].rstrip() == "---":
-            position += 1
-            while position < len(lines) and lines[position].rstrip() != "---":
-                key, separator, value = lines[position].partition(":")
-                if separator:
-                    options[key.strip()] = value.strip()
-                position += 1
-            position += 1  # skip the closing ---
-        else:
-            while position < len(lines) and (
-                option := _OPTION_RE.match(lines[position])
-            ):
-                options[option.group("name")] = option.group("value")
-                position += 1
-
-        body: list[str] = []
-        while position < len(lines) and lines[position].rstrip() != fence:
-            body.append(lines[position])
-            position += 1
-        if position >= len(lines):
-            raise ConversionError(f"{path.name}:{open_line}: unterminated code cell")
-        position += 1  # skip the closing fence
-
-        loaded_from = options.get("load")
-        if loaded_from:
-            loaded = (source_dir / loaded_from).resolve()
-            if not loaded.is_file():
-                raise ConversionError(
-                    f"{path.name}:{open_line}: ':load: {loaded_from}' not found"
-                )
-            body = loaded.read_text(encoding="utf-8").splitlines()
+        # 1-based, for the marker printed by the generated script
+        open_line = position + 1
+        try:
+            options, position = _parse_options(lines, position + 1)
+            body, position = _read_body(lines, position, opening.group("fence"))
+            loaded_from = options.get("load")
+            if loaded_from:
+                body = _load_body(source_dir, loaded_from)
+        except ConversionError as error:
+            raise ConversionError(f"{path.name}:{open_line}: {error}") from error
 
         source = "\n".join(body).strip("\n")
         if not source.strip():
@@ -181,6 +191,36 @@ def extract_cells(path: Path, source_dir: Path | None = None) -> list[Cell]:
     return cells
 
 
+def _translate_magic(match: re.Match[str]) -> list[str]:
+    """Turn a line magic into the plain-Python lines standing in for it."""
+    name, indent, rest = match["name"], match["indent"], match["rest"].strip()
+    if name in _COSMETIC_MAGICS:
+        return [
+            f"{indent}# [notebook-script] dropped frontend magic: %{name} {rest}".rstrip()
+        ]
+    if name in _STATEMENT_PREFIX_MAGICS:
+        lines = [f"{indent}# [notebook-script] dropped magic prefix: %{name}"]
+        if rest:
+            lines.append(f"{indent}{rest}")
+        return lines
+    raise ConversionError(f"cannot translate line magic %{name}")
+
+
+def _translate_line(line: str) -> list[str]:
+    """Translate one cell line, raising for IPython syntax with no faithful plain-Python form."""
+    cell_magic = _CELL_MAGIC_RE.match(line)
+    if cell_magic:
+        raise ConversionError(f"cannot translate cell magic %%{cell_magic['name']}")
+    magic = _LINE_MAGIC_RE.match(line)
+    if magic:
+        return _translate_magic(magic)
+    shell = _SHELL_RE.match(line)
+    if shell:
+        command = shell["command"].strip().replace("\\", "\\\\").replace('"', '\\"')
+        return [f'{shell["indent"]}_shell("{command}")']
+    return [line]
+
+
 def translate_cell_source(source: str, where: str) -> str:
     """Translate IPython-only syntax in a cell body into plain Python.
 
@@ -188,36 +228,12 @@ def translate_cell_source(source: str, where: str) -> str:
     silently dropped -- a converter that quietly changes what a notebook does would make the
     generated tests worthless.
     """
-    translated = []
+    translated: list[str] = []
     for offset, line in enumerate(source.splitlines()):
-        location = f"{where}+{offset}"
-        cell_magic = _CELL_MAGIC_RE.match(line)
-        if cell_magic:
-            raise ConversionError(
-                f"{location}: cannot translate cell magic %%{cell_magic['name']}"
-            )
-        magic = _LINE_MAGIC_RE.match(line)
-        if magic:
-            name, indent, rest = magic["name"], magic["indent"], magic["rest"].strip()
-            if name in _COSMETIC_MAGICS:
-                translated.append(
-                    f"{indent}# [notebook-script] dropped frontend magic: %{name} {rest}".rstrip()
-                )
-                continue
-            if name in _STATEMENT_PREFIX_MAGICS:
-                translated.append(
-                    f"{indent}# [notebook-script] dropped magic prefix: %{name}"
-                )
-                if rest:
-                    translated.append(f"{indent}{rest}")
-                continue
-            raise ConversionError(f"{location}: cannot translate line magic %{name}")
-        shell = _SHELL_RE.match(line)
-        if shell:
-            command = shell["command"].strip().replace("\\", "\\\\").replace('"', '\\"')
-            translated.append(f'{shell["indent"]}_shell("{command}")')
-            continue
-        translated.append(line)
+        try:
+            translated.extend(_translate_line(line))
+        except ConversionError as error:
+            raise ConversionError(f"{where}+{offset}: {error}") from error
     return "\n".join(translated)
 
 
@@ -242,6 +258,7 @@ last marker on stderr say where.
 import builtins
 import faulthandler
 import os
+import resource
 import subprocess
 import sys
 
@@ -281,10 +298,21 @@ if _WORKDIR:
     os.chdir(_WORKDIR)
 
 
+def _peak_rss_mb():
+    """Peak resident set size so far, in MiB (ru_maxrss is in KiB on Linux)."""
+    return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024
+
+
 def _cell(index, line):
-    """Announce the cell that is about to run; the last one printed is the one that died."""
+    """Announce the cell that is about to run; the last one printed is the one that died.
+
+    The running peak RSS goes out with it, so a process that is killed outright still leaves a
+    memory trace up to its last surviving line -- which is the only evidence an OOM kill leaves
+    inside the process.
+    """
     print(
-        f"[notebook-script] {{_NOTEBOOK}}:{{line}} cell {{index}}/{{_CELL_COUNT}}",
+        f"[notebook-script] {{_NOTEBOOK}}:{{line}} cell {{index}}/{{_CELL_COUNT}}"
+        f" (peak RSS {{_peak_rss_mb():.0f}} MiB)",
         file=sys.stderr,
         flush=True,
     )
@@ -301,7 +329,10 @@ def _shell(command):
 
 _EPILOGUE = """
 print(
-    f"[notebook-script] {_NOTEBOOK}: all {_CELL_COUNT} cells completed", file=sys.stderr, flush=True
+    f"[notebook-script] {_NOTEBOOK}: all {_CELL_COUNT} cells completed"
+    f" (peak RSS {_peak_rss_mb():.0f} MiB)",
+    file=sys.stderr,
+    flush=True,
 )
 """
 
@@ -336,10 +367,16 @@ def convert_notebook(path: Path, source_dir: Path | None = None) -> str:
 
 def write_scripts(source_dir: Path, output_dir: Path) -> list[Path]:
     """Convert every notebook in ``source_dir`` and write the scripts into ``output_dir``."""
+    output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
     written = []
     for notebook in notebook_paths(source_dir):
-        script = output_dir / (notebook.stem + ".py")
+        script = (output_dir / (notebook.stem + ".py")).resolve()
+        # the script name is derived from a notebook file name, so it cannot escape output_dir --
+        # but this is the only place this tool writes, so make that a checked property rather than
+        # an assumption about what a future --source-dir can contain
+        if script.parent != output_dir:
+            raise ConversionError(f"{notebook.name}: would write outside {output_dir}")
         content = convert_notebook(notebook, source_dir)
         # only touch the file when the content actually changed, so a build system watching the
         # generated scripts does not re-run the (expensive) tests on every configure
@@ -349,7 +386,8 @@ def write_scripts(source_dir: Path, output_dir: Path) -> list[Path]:
     return written
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None) -> None:
+    """Run the converter's CLI; a ConversionError propagates and fails the caller."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--source-dir",
@@ -375,17 +413,14 @@ def main(argv: list[str] | None = None) -> int:
     notebooks = notebook_paths(args.source_dir)
     if args.list:
         print("\n".join(notebook.stem for notebook in notebooks))
-        return 0
-    if args.list_paths:
+    elif args.list_paths:
         print("\n".join(str(notebook) for notebook in notebooks))
-        return 0
-    if not args.output_dir:
+    elif not args.output_dir:
         parser.error("one of --output-dir, --list or --list-paths is required")
-
-    for script in write_scripts(args.source_dir, args.output_dir):
-        print(script)
-    return 0
+    else:
+        for script in write_scripts(args.source_dir, args.output_dir):
+            print(script)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

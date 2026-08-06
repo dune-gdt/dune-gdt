@@ -177,9 +177,31 @@ def test_generated_script_is_valid_python_and_marks_every_cell(tmp_path):
     )  # the notebook dir lands on sys.path
 
 
-def test_repeated_conversion_is_stable(tmp_path):
-    notebook = _write(tmp_path, "nb.md", "\n```{code-cell}\nx = 1\n```\n")
-    assert nb2s.convert_notebook(notebook) == nb2s.convert_notebook(notebook)
+def test_unchanged_notebooks_are_not_rewritten(tmp_path):
+    # write_scripts must be idempotent down to the file mtime: the generated scripts are a build
+    # input, so rewriting identical content would invalidate the stamp and re-run every notebook
+    # test on each configure
+    _write(tmp_path, "nb.md", "\n```{code-cell}\nx = 1\n```\n")
+    output_dir = tmp_path / "out"
+    (script,) = nb2s.write_scripts(tmp_path, output_dir)
+    first = script.read_text(encoding="utf-8")
+    mtime = script.stat().st_mtime_ns
+
+    nb2s.write_scripts(tmp_path, output_dir)
+    assert script.read_text(encoding="utf-8") == first
+    assert script.stat().st_mtime_ns == mtime
+
+
+def test_edited_notebooks_are_rewritten(tmp_path):
+    _write(tmp_path, "nb.md", "\n```{code-cell}\nx = 1\n```\n")
+    output_dir = tmp_path / "out"
+    (script,) = nb2s.write_scripts(tmp_path, output_dir)
+    before = script.read_text(encoding="utf-8")
+
+    _write(tmp_path, "nb.md", "\n```{code-cell}\nx = 2\n```\n")
+    nb2s.write_scripts(tmp_path, output_dir)
+    assert script.read_text(encoding="utf-8") != before
+    assert "x = 2" in script.read_text(encoding="utf-8")
 
 
 def test_only_notebooks_are_picked_up(tmp_path):
