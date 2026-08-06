@@ -87,6 +87,27 @@ test = [
   "xmljson",
 ]
 
+# Runtime dependencies of the documentation notebooks, used by the `notebook_*` CTest tests (docs/CMakeLists.txt), which
+# run the scripts docs/notebooks_to_scripts.py transcribes from docs/source/*.md. This is the notebook half of the
+# dune.xt `docs` extra -- what the notebook cells themselves import, without the Sphinx toolchain (sphinx, myst-nb,
+# furo, clangquill, ...) that only the docs build needs.
+notebooks = [
+  # pyMOR backs the tutorials' discretizers (and discretize_gmsh in example__gmsh_grid), meshio re-writes the mesh
+  # that produces into the version 2.2 file dune-grid can read.
+  "pymor",
+  "meshio>=4.4",
+  # the k3d/vtk visualisation chain behind visualize_function, same as in the `test` group above
+  "k3d>=2.15.2",
+  "matplotlib",
+  "vtk",
+  "lxml",
+  "xmljson",
+  # k3d renders into an ipywidgets Output(), and the generated scripts restore IPython's builtin display() that the
+  # widget machinery expects (see the preamble in docs/notebooks_to_scripts.py)
+  "ipywidgets",
+  "ipython",
+]
+
 # uv runs the gdt suite in project mode (cmake/modules/DuneXTTesting.cmake) and resolves the project's
 # optional-dependencies universally -- the same reason the xt `docs` extra needs a clangquill marker. dune.gdt's extras
 # re-export dune.xt[...] pinned to this build's exact version (see hatch_build.py), which exists only as the freshly

@@ -739,14 +739,17 @@ jobs:
       # set whose per-worker environment copies under "-j auto" OOM-killed the 16 GB box
       # mid-write. Single-threaded keeps peak RAM bounded; the 60 min timeout is ample.
       #
-      # PYTHONFAULTHANDLER: a notebook kernel that dies from a deadly signal (segfault,
-      # abort) surfaces to sphinx only as nbclient.exceptions.DeadKernelError: Kernel died,
-      # with no traceback -- nb_execution_raise_on_error=False only covers python-level
-      # cell errors, never a killed kernel process. faulthandler installs handlers for
-      # SIGSEGV/SIGABRT/SIGFPE/SIGBUS that dump the C-level Python stack to the kernel's
-      # inherited stderr (this job's own log) before the process dies, turning an
-      # otherwise undiagnosable failure into one with an actual traceback. It cannot catch
-      # SIGKILL (the OOM-killer's signal); "Dump dmesg on docs failure" below covers that.
+      # PYTHONFAULTHANDLER is kept for the sphinx process itself, but -- contrary to what it
+      # was added for -- it does not rescue a dying notebook kernel. The kernel's stderr is
+      # not this job's stderr: ipykernel's capture_fd_output replaces the kernel process'
+      # fd 1/2 with pipes drained by an in-process thread and forwarded over iopub, so a
+      # faulthandler dump written on the way down dies with the process. Sphinx still reports
+      # nothing but nbclient.exceptions.DeadKernelError: Kernel died (nb_execution_raise_on_error
+      # =False only covers python-level cell errors, never a killed kernel process).
+      # The `notebook_scripts` job is what diagnoses those deaths: it runs each notebook as a
+      # standalone script in a plain process, where the faulthandler traceback, the exit status
+      # (128+signal) and the peak RSS all survive. "Dump dmesg on docs failure" below still
+      # covers the OOM-killer case, which no in-process handler can catch.
       env:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
         PYTHONFAULTHANDLER: "1"
@@ -779,10 +782,14 @@ jobs:
     - name: Dump dmesg on docs failure
       # A notebook kernel killed by SIGKILL (the OOM-killer) leaves no report above and no
       # faulthandler output either (PYTHONFAULTHANDLER only catches signals a process can
-      # trap); the kernel log is the only place that death is recorded. Non-fatal if dmesg
-      # is unavailable or empty (e.g. a signal faulthandler already caught).
+      # trap); the kernel log is the only place that death is recorded. Grep for the OOM
+      # records explicitly first -- a bare tail is mostly the runner's boot messages, and an
+      # absence of "Killed process" there reads as "not an OOM" when it may just be off-screen.
+      # Non-fatal if dmesg is unavailable or empty.
       if: failure()
-      run: sudo dmesg --time-format iso | tail -n 200 || true
+      run: |
+        sudo dmesg --time-format iso | grep -iE 'out of memory|killed process|oom-kill' || echo "no OOM records in dmesg"
+        sudo dmesg --time-format iso | tail -n 200 || true
 
     - name: Upload built docs HTML
       if: always()
@@ -790,6 +797,165 @@ jobs:
       with:
         name: docs_html
         path: build/docs_html
+        if-no-files-found: warn
+
+  notebook_scripts:
+    name: Run the documentation notebooks as standalone scripts
+    needs: [build_wheels, changes]
+    # same gates as build_docs below/above: fork-trust, a usable wheel, and any code or docs change
+    if: >-
+      !cancelled() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && (needs.build_wheels.result == 'success' || needs.build_wheels.result == 'skipped') && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+       needs.changes.outputs.non_docs == 'true' || needs.changes.outputs.docs == 'true')
+    # This job exists because build_docs is undebuggable when a notebook kernel dies. myst-nb executes the notebooks
+    # through a Jupyter kernel, and ipykernel replaces that kernel process' fd 1/2 with pipes drained by an in-process
+    # thread: when the kernel dies from a deadly signal, whatever faulthandler wrote into the pipe dies with it, and
+    # sphinx reports nothing but `nbclient.exceptions.DeadKernelError: Kernel died` — no traceback, no cell, no notebook
+    # boundaries, and a rerun costs a full docs build. (This is why PYTHONFAULTHANDLER on the build_docs step below does
+    # not produce the traceback it promises.)
+    #
+    # docs/notebooks_to_scripts.py transcribes the code cells of every notebook into a standalone script; each is run
+    # here in its very own plain-interpreter process, so fd 2 lands directly in this log. A crash therefore shows up as
+    # the faulthandler traceback plus the shell's exit status (128+signal — 139 for a segfault, 137 for an OOM kill),
+    # attributed to one notebook and, through the per-cell markers the scripts print, to one cell of it. The peak RSS of
+    # each notebook is reported too, so an OOM is visible as a number rather than a guess.
+    #
+    # The notebooks are executed here and again in build_docs; that duplication is deliberate. This job is the one that
+    # says what broke, build_docs is the one that renders the outputs into the manual.
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      # needed to look up and download the wheel artifact from another run on docs-only PRs
+      actions: read
+    env:
+      PYTHON_VERSION: "3.13"
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+        fetch-tags: true
+        fetch-depth: 0
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      with:
+        enable-cache: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+
+    - name: Download freshly built wheels
+      if: needs.build_wheels.result == 'success'
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: wheels_${{ env.PYTHON_VERSION }}
+        path: wheelhouse/
+
+    - name: Resolve last successful main build
+      # docs-only change: build_wheels was skipped, so source the wheels from the last successful main run
+      if: needs.build_wheels.result == 'skipped'
+      id: last_main
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          const runs = await github.rest.actions.listWorkflowRuns({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'non_docker_build.yml',
+            branch: 'main',
+            status: 'success',
+            per_page: 1,
+          });
+          if (runs.data.total_count === 0) {
+            core.setFailed('no successful main build found to source wheels from');
+            return;
+          }
+          core.setOutput('run_id', String(runs.data.workflow_runs[0].id));
+
+    - name: Download wheels from last successful main build
+      if: needs.build_wheels.result == 'skipped' && steps.last_main.outcome == 'success'
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      with:
+        name: wheels_${{ env.PYTHON_VERSION }}
+        path: wheelhouse/
+        run-id: ${{ steps.last_main.outputs.run_id }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update || true
+        # xvfb for headless rendering, gmsh for pymor's gmsh discretizer (example__gmsh_grid);
+        # `time` provides /usr/bin/time -v, which reports each notebook's peak RSS below
+        sudo apt-get install -y xvfb gmsh time
+
+    - name: Create the uv-managed virtualenv
+      run: uv venv --python "${PYTHON_VERSION}" "${GITHUB_WORKSPACE}/.venv"
+
+    - name: Install bindings and notebook dependencies
+      run: |
+        uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
+          --find-links wheelhouse/ wheelhouse/*.whl
+        # the notebooks need the visualisation stack plus pyMOR/meshio; `docs` carries those alongside the Sphinx
+        # toolchain this job does not use (the CMake build gets the same set from the leaner `notebooks` dependency
+        # group in python/gdt/pyproject.toml, which cannot be installed from a wheel)
+        uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
+          --find-links wheelhouse/ "dune-gdt[docs,visualisation]"
+
+    - name: Convert the notebooks into standalone scripts
+      run: |
+        python3 docs/notebooks_to_scripts.py --output-dir "${GITHUB_WORKSPACE}/build/notebook_scripts"
+
+    - name: Execute every notebook in its own process
+      # Deliberately does not stop at the first failure: the point of this job is a full per-notebook verdict, so a
+      # single bad notebook cannot hide the state of the other fifteen.
+      run: |
+        set -u
+        shopt -s nullglob
+        scripts=("${GITHUB_WORKSPACE}"/build/notebook_scripts/*.py)
+        if [ ${#scripts[@]} -eq 0 ]; then
+          echo "::error::the converter produced no notebook scripts"
+          exit 1
+        fi
+        echo "running ${#scripts[@]} notebooks"
+        failed=()
+        for script in "${scripts[@]}"; do
+          name="$(basename "${script}" .py)"
+          echo "::group::${name}"
+          free -m
+          start=${SECONDS}
+          workdir="${GITHUB_WORKSPACE}/build/notebook_runs/${name}"
+          mkdir -p "${workdir}"
+          status=0
+          DUNE_GDT_NOTEBOOK_WORKDIR="${workdir}" \
+            xvfb-run -a /usr/bin/time -v uv run --no-project \
+            --python "${GITHUB_WORKSPACE}/.venv/bin/python" python "${script}" || status=$?
+          echo "::endgroup::"
+          if [ "${status}" -eq 0 ]; then
+            echo "${name}: ok ($((SECONDS - start))s)"
+          else
+            # 128+N means the process died from signal N: 139 = SIGSEGV, 134 = SIGABRT, 137 = SIGKILL (the OOM killer)
+            echo "::error::${name} failed with exit status ${status} after $((SECONDS - start))s"
+            failed+=("${name} (exit ${status})")
+          fi
+        done
+        if [ ${#failed[@]} -gt 0 ]; then
+          echo "::error::${#failed[@]} of ${#scripts[@]} notebooks failed: ${failed[*]}"
+          exit 1
+        fi
+        echo "all ${#scripts[@]} notebooks completed"
+
+    - name: Dump kernel log on failure
+      # An OOM kill is recorded nowhere but the kernel log; grep for it explicitly rather than hoping it lands in the
+      # last lines of a dmesg tail that the runner's own boot messages can push it out of.
+      if: failure()
+      run: |
+        sudo dmesg --time-format iso | grep -iE 'out of memory|killed process|oom-kill' || echo "no OOM records in dmesg"
+        sudo dmesg --time-format iso | tail -n 50 || true
+
+    - name: Upload the generated notebook scripts
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: notebook_scripts
+        path: build/notebook_scripts
         if-no-files-found: warn
 
   deploy_docs:
@@ -898,7 +1064,7 @@ jobs:
     runs-on: ubuntu-26.04
     permissions: {}
     if: always()
-    needs: [changes, config, build-linux, build_wheels, build_docs]
+    needs: [changes, config, build-linux, build_wheels, build_docs, notebook_scripts]
     steps:
     - name: Decide gate result
       env:
