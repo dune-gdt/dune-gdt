@@ -109,11 +109,12 @@ nb_execution_excludepatterns = []
 # All clangquill paths are resolved relative to this srcdir (docs/source),
 # so "../.." is the repository root: the input glob covers dune/{gdt,xt}/**/*.hh
 # and the include dir lets the intra-tree `#include <dune/...>` headers resolve.
-# The external DUNE dependency headers (dune-common, dune-grid, ...) are not
-# present in the docs environment; libclang reports those as non-fatal
-# diagnostics and still extracts every symbol it can parse (they are filtered
-# out of the -W build via suppress_warnings below). Should the wheel be built
-# without libclang, the extension writes a placeholder page and warns
+# The external dependency headers (dune-common, dune-grid, boost, Eigen, ...)
+# are not present in the docs environment; libclang reports those as errors and
+# still extracts every symbol it can parse. Those diagnostics are deliberately
+# *not* suppressed -- they are real gaps in what the C++ API pages can document,
+# so the -W build surfaces them rather than hiding them. Should the wheel be
+# built without libclang, the extension writes a placeholder page and warns
 # (clangquill.libclang); that warning is deliberately left unfiltered, so a
 # build that would silently publish the manual without any C++ API at all fails
 # under -W instead of quietly shipping the placeholder.
@@ -238,6 +239,15 @@ clangquill_group_by = "namespace"
 clangquill_include_undocumented = True
 # Persist the SQLite IR + page hashes so local rebuilds are incremental.
 clangquill_cache_dir = "_clangquill_cache"
+# Full libclang diagnostics of the run -- every severity, plus the `note:` chain
+# attached to each -- written here (clangquill >= 0.14). The Sphinx warning
+# stream only ever carries the errors, and only their top-level message, so this
+# file is where the context needed to actually fix one lives: which include
+# failed, and the notes explaining what it made unparseable. Written under the
+# git-ignored build/ next to the generated compilation database rather than into
+# the srcdir, and uploaded by the docs CI job (see non_docker_build.yml) so a red
+# build's diagnostics are retrievable instead of only scrollable in the log.
+clangquill_diagnostics_log = "../../build/clangquill-diagnostics.log"
 
 # -----------------------------------------------------------------------------
 # Warnings
@@ -245,26 +255,11 @@ clangquill_cache_dir = "_clangquill_cache"
 # The docs are built with `-W` (see the build_docs job in
 # .github/workflows/non_docker_build.yml), so every warning fails the build. Only
 # warnings the documentation itself cannot fix are filtered out -- by type here,
-# and by where they come from in _UnactionableWarningFilter below.
+# and by where they come from in _UnactionableWarningFilter below. libclang's
+# parse diagnostics (clangquill.parse) are deliberately *not* among them: they
+# mark C++ the API pages could not read, which is fixable by making the missing
+# headers available to the parse, so the build reports them.
 suppress_warnings = [
-    # One warning per libclang diagnostic. The external DUNE dependency headers
-    # (dune-common, dune-grid, ...) are not installed in a docs environment, so
-    # every `#include <dune/common/...>` in the parsed in-tree headers is reported
-    # as unresolved. That is expected and non-fatal -- clangquill still extracts
-    # every symbol it can parse.
-    #
-    # This deliberately covers the whole type rather than only the "file not
-    # found" message: a missing external header is not one diagnostic but a
-    # cascade. Parsing 7 of the dune/gdt headers emits 140 diagnostics, of which
-    # only 49 are "file not found" -- the other 91 are its consequences (the base
-    # class is now unknown, so "expected class name"; `Dune::Exception` no longer
-    # resolves; DUNE feature macros are undefined; clang hits -ferror-limit).
-    # Matching on the message would therefore leave the majority of them fatal and
-    # keep the docs build permanently red, while still not distinguishing a real
-    # in-tree parse error from a downstream effect of the absent dependency stack.
-    # The DUNE headers would have to be installed in the docs environment for that
-    # distinction to mean anything.
-    "clangquill.parse",
     # Cosmetic, and only reachable when the notebooks are *not* executed. The
     # tutorials use IPython shell escapes (`!ls -l f.vtu`), which the plain
     # "python" pygments lexer cannot tokenise. Executing a notebook records

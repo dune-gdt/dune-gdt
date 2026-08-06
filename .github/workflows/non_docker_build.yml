@@ -790,6 +790,19 @@ jobs:
       if: failure()
       run: sudo dmesg --time-format iso | tail -n 200 || true
 
+    - name: Upload clangquill diagnostics log
+      # Every libclang diagnostic of the C++ API parse, at every severity, with the
+      # note: chains the Sphinx warning stream drops (clangquill_diagnostics_log in
+      # docs/source/conf.py). These are not suppressed, so under -W they fail the
+      # job -- which is exactly when this artifact is wanted, hence always(): the
+      # log survives the failure and carries the context the one-line warnings lack.
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: clangquill_diagnostics
+        path: build/clangquill-diagnostics.log
+        if-no-files-found: warn
+
     - name: Upload built docs HTML
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
