@@ -606,7 +606,7 @@ jobs:
       run: |
         shopt -s nullglob
         wheels=(build/wheelhouse/final/*.whl)
-        if [ ${#wheels[@]} -eq 0 ]; then
+        if [[ ${#wheels[@]} -eq 0 ]]; then
           echo "no wheels were built" >> "${GITHUB_STEP_SUMMARY}"
           exit 0
         fi
@@ -618,9 +618,9 @@ jobs:
         } >> "${GITHUB_STEP_SUMMARY}"
         for whl in "${wheels[@]}"; do
           size_mb=$(( $(stat -c %s "${whl}") / 1000000 ))
-          if [ "${size_mb}" -ge 100 ]; then
+          if [[ "${size_mb}" -ge 100 ]]; then
             verdict="over"
-          elif [ "${size_mb}" -ge 85 ]; then
+          elif [[ "${size_mb}" -ge 85 ]]; then
             verdict="close"
           else
             verdict="ok"

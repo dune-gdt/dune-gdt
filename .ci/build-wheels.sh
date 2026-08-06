@@ -92,10 +92,10 @@ export LD_LIBRARY_PATH="${DUNE_BUILD_DIR}/lib:${VCPKG_LIB_DIRS}${LD_LIBRARY_PATH
 for whl in "${WHEEL_DIR}"/final/*.whl; do
   size_mb=$(( $(stat -c %s "${whl}") / 1000000 ))
   echo "wheel size: ${size_mb} MB  $(basename "${whl}")"
-  if [ "${size_mb}" -ge 100 ]; then
+  if [[ "${size_mb}" -ge 100 ]]; then
     echo "ERROR: $(basename "${whl}") is ${size_mb} MB, above the 100 MB PyPI per-file limit." >&2
     exit 1
-  elif [ "${size_mb}" -ge 85 ]; then
+  elif [[ "${size_mb}" -ge 85 ]]; then
     echo "WARNING: $(basename "${whl}") is ${size_mb} MB, approaching the 100 MB PyPI per-file limit." >&2
   fi
 done
