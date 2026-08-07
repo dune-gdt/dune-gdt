@@ -60,7 +60,9 @@
         "ninja-base"
       ],
       "cacheVariables": {
-        "VCPKG_MANIFEST_FEATURES": ""
+        "VCPKG_MANIFEST_FEATURES": "",
+        "BUILD_SHARED_LIBS": "ON",
+        "VCPKG_TARGET_TRIPLET": "x64-linux-shared"
       }
     },
     {
