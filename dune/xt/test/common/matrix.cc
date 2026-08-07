@@ -30,6 +30,27 @@ using MatrixTypes =
                      std::tuple<Dune::DynamicMatrix<int>, Int<3>, Int<1>>>;
 
 
+namespace {
+
+
+template <class MatrixType>
+void fill_block_matrix(MatrixType& matrix, const size_t num_blocks, const size_t block_rows, const size_t block_cols)
+{
+  using M = Dune::XT::Common::MatrixAbstraction<MatrixType>;
+  using ScalarType = typename M::ScalarType;
+  for (size_t jj = 0; jj < num_blocks; ++jj)
+    for (size_t ll = 0; ll < block_rows; ++ll)
+      for (size_t mm = 0; mm < block_cols; ++mm) {
+        const size_t row = jj * block_rows + ll;
+        const size_t col = jj * block_cols + mm;
+        M::set_entry(matrix, row, col, static_cast<ScalarType>(100 * row + col));
+      }
+}
+
+
+} // namespace
+
+
 template <class Tuple>
 struct SerializeTest : public ::testing::Test
 {
@@ -51,13 +72,7 @@ struct SerializeTest : public ::testing::Test
     if constexpr (is_block_matrix) {
       constexpr size_t block_rows = rows / num_blocks;
       constexpr size_t block_cols = cols / num_blocks;
-      for (size_t jj = 0; jj < num_blocks; ++jj)
-        for (size_t ll = 0; ll < block_rows; ++ll)
-          for (size_t mm = 0; mm < block_cols; ++mm) {
-            const size_t row = jj * block_rows + ll;
-            const size_t col = jj * block_cols + mm;
-            M::set_entry(matrix_, row, col, static_cast<ScalarType>(100 * row + col));
-          }
+      fill_block_matrix(matrix_, num_blocks, block_rows, block_cols);
     } else {
       for (size_t ii = 0; ii < rows; ++ii)
         for (size_t jj = 0; jj < cols; ++jj)
