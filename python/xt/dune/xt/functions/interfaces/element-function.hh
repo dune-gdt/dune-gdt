@@ -11,6 +11,8 @@
 #ifndef PYTHON_DUNE_XT_FUNCTIONS_INTERFACES_ELEMENT_FUNCTION_HH
 #define PYTHON_DUNE_XT_FUNCTIONS_INTERFACES_ELEMENT_FUNCTION_HH
 
+#include <type_traits>
+
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 
@@ -20,6 +22,26 @@
 #include <python/xt/dune/xt/common/parameter.hh>
 
 namespace Dune::XT::Functions::bindings {
+namespace internal {
+
+
+// Recursively writes the scalar entries of a (possibly nested) DUNE range/derivative container into a
+// row-major buffer, advancing the write pointer. This keeps the pybind11 bindings free of deeply nested
+// index loops (cpp:S134) without duplicating one copy loop per range dimensionality.
+template <class V, class Out>
+void flatten_into(const V& value, Out*& out)
+{
+  if constexpr (std::is_arithmetic_v<V>) {
+    *out = value;
+    ++out;
+  } else {
+    for (const auto& entry : value)
+      flatten_into(entry, out);
+  }
+}
+
+
+} // namespace internal
 
 
 template <class E, size_t r = 1, size_t rC = 1, class R = double>
@@ -148,20 +170,13 @@ public:
               point_in_reference_element_dune[dd] = access_to_points_in_reference_element(dd);
             auto values = self.evaluate_set(point_in_reference_element_dune, mu);
             const size_t num_functions_in_set = values.size();
-            if constexpr (rC == 1) {
+            if constexpr (rC == 1)
               result = py::array_t<double>(/*shape=*/{num_functions_in_set, r});
-              auto access_to_result = result.template mutable_unchecked<2>();
-              for (size_t ff = 0; ff < num_functions_in_set; ++ff)
-                for (size_t ii = 0; ii < r; ++ii)
-                  access_to_result(ff, ii) = values[ff][ii];
-            } else {
+            else
               result = py::array_t<double>(/*shape=*/{num_functions_in_set, r, rC});
-              auto access_to_result = result.template mutable_unchecked<3>();
-              for (size_t ff = 0; ff < num_functions_in_set; ++ff)
-                for (size_t ii = 0; ii < r; ++ii)
-                  for (size_t jj = 0; jj < rC; ++jj)
-                    access_to_result(ff, ii, jj) = values[ff][ii][jj];
-            }
+            auto* out = result.mutable_data();
+            for (size_t ff = 0; ff < num_functions_in_set; ++ff)
+              internal::flatten_into(values[ff], out);
           } else if (points_in_reference_element.ndim() == 2) {
             // a list of points
             DUNE_THROW_IF(points_in_reference_element.shape(1) != d,
@@ -173,29 +188,17 @@ public:
             const size_t num_functions_in_set = self.size(mu);
             XT::Common::FieldVector<double, d> point_in_reference_element_dune;
             std::vector<typename type::RangeType> values(num_functions_in_set);
-            if constexpr (rC == 1) {
+            if constexpr (rC == 1)
               result = py::array_t<double>(/*shape=*/{num_points, num_functions_in_set, r});
-              auto access_to_result = result.template mutable_unchecked<3>();
-              for (size_t pp = 0; pp < num_points; ++pp) {
-                for (size_t ii = 0; ii < d; ++ii)
-                  point_in_reference_element_dune[ii] = access_to_points_in_reference_element(pp, ii);
-                self.evaluate(point_in_reference_element_dune, values);
-                for (size_t ff = 0; ff < num_functions_in_set; ++ff)
-                  for (size_t ii = 0; ii < r; ++ii)
-                    access_to_result(pp, ff, ii) = values[ff][ii];
-              }
-            } else {
+            else
               result = py::array_t<double>(/*shape=*/{num_points, num_functions_in_set, r, rC});
-              auto access_to_result = result.template mutable_unchecked<4>();
-              for (size_t pp = 0; pp < num_points; ++pp) {
-                for (size_t ii = 0; ii < d; ++ii)
-                  point_in_reference_element_dune[ii] = access_to_points_in_reference_element(pp, ii);
-                self.evaluate(point_in_reference_element_dune, values);
-                for (size_t ff = 0; ff < num_functions_in_set; ++ff)
-                  for (size_t ii = 0; ii < r; ++ii)
-                    for (size_t jj = 0; jj < rC; ++jj)
-                      access_to_result(pp, ff, ii, jj) = values[ff][ii][jj];
-              }
+            auto* out = result.mutable_data();
+            for (size_t pp = 0; pp < num_points; ++pp) {
+              for (size_t ii = 0; ii < d; ++ii)
+                point_in_reference_element_dune[ii] = access_to_points_in_reference_element(pp, ii);
+              self.evaluate(point_in_reference_element_dune, values);
+              for (size_t ff = 0; ff < num_functions_in_set; ++ff)
+                internal::flatten_into(values[ff], out);
             }
           } else
             DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
@@ -222,22 +225,13 @@ public:
               point_in_reference_element_dune[dd] = access_to_points_in_reference_element(dd);
             auto jacobians = self.jacobians_of_set(point_in_reference_element_dune, mu);
             const size_t num_functions_in_set = jacobians.size();
-            if constexpr (rC == 1) {
+            if constexpr (rC == 1)
               result = py::array_t<double>(/*shape=*/{num_functions_in_set, r, d});
-              auto access_to_result = result.template mutable_unchecked<3>();
-              for (size_t ff = 0; ff < num_functions_in_set; ++ff)
-                for (size_t ii = 0; ii < r; ++ii)
-                  for (size_t jj = 0; jj < d; ++jj)
-                    access_to_result(ff, ii, jj) = jacobians[ff][ii][jj];
-            } else {
+            else
               result = py::array_t<double>(/*shape=*/{num_functions_in_set, r, rC, d});
-              auto access_to_result = result.template mutable_unchecked<4>();
-              for (size_t ff = 0; ff < num_functions_in_set; ++ff)
-                for (size_t ii = 0; ii < r; ++ii)
-                  for (size_t jj = 0; jj < rC; ++jj)
-                    for (size_t kk = 0; kk < d; ++kk)
-                      access_to_result(ff, ii, jj, kk) = jacobians[ff][ii][jj][kk];
-            }
+            auto* out = result.mutable_data();
+            for (size_t ff = 0; ff < num_functions_in_set; ++ff)
+              internal::flatten_into(jacobians[ff], out);
           } else if (points_in_reference_element.ndim() == 2) {
             // a list of points
             DUNE_THROW_IF(points_in_reference_element.shape(1) != d,
@@ -249,31 +243,17 @@ public:
             const size_t num_functions_in_set = self.size(mu);
             XT::Common::FieldVector<double, d> point_in_reference_element_dune;
             std::vector<typename type::DerivativeRangeType> jacobians(num_functions_in_set);
-            if constexpr (rC == 1) {
+            if constexpr (rC == 1)
               result = py::array_t<double>(/*shape=*/{num_points, num_functions_in_set, r, d});
-              auto access_to_result = result.template mutable_unchecked<4>();
-              for (size_t pp = 0; pp < num_points; ++pp) {
-                for (size_t ii = 0; ii < d; ++ii)
-                  point_in_reference_element_dune[ii] = access_to_points_in_reference_element(pp, ii);
-                self.jacobians(point_in_reference_element_dune, jacobians);
-                for (size_t ff = 0; ff < num_functions_in_set; ++ff)
-                  for (size_t ii = 0; ii < r; ++ii)
-                    for (size_t jj = 0; jj < d; ++jj)
-                      access_to_result(pp, ff, ii, jj) = jacobians[ff][ii][jj];
-              }
-            } else {
+            else
               result = py::array_t<double>(/*shape=*/{num_points, num_functions_in_set, r, rC, d});
-              auto access_to_result = result.template mutable_unchecked<5>();
-              for (size_t pp = 0; pp < num_points; ++pp) {
-                for (size_t ii = 0; ii < d; ++ii)
-                  point_in_reference_element_dune[ii] = access_to_points_in_reference_element(pp, ii);
-                self.jacobians(point_in_reference_element_dune, jacobians);
-                for (size_t ff = 0; ff < num_functions_in_set; ++ff)
-                  for (size_t ii = 0; ii < r; ++ii)
-                    for (size_t jj = 0; jj < rC; ++jj)
-                      for (size_t kk = 0; kk < d; ++kk)
-                        access_to_result(pp, ff, ii, jj, kk) = jacobians[ff][ii][jj][kk];
-              }
+            auto* out = result.mutable_data();
+            for (size_t pp = 0; pp < num_points; ++pp) {
+              for (size_t ii = 0; ii < d; ++ii)
+                point_in_reference_element_dune[ii] = access_to_points_in_reference_element(pp, ii);
+              self.jacobians(point_in_reference_element_dune, jacobians);
+              for (size_t ff = 0; ff < num_functions_in_set; ++ff)
+                internal::flatten_into(jacobians[ff], out);
             }
           } else
             DUNE_THROW(XT::Common::Exceptions::shapes_do_not_match,
