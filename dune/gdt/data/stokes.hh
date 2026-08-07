@@ -59,12 +59,12 @@ struct StokesDirichletProblem
   using DomainType = typename ScalarGridFunction::LocalFunctionType::DomainType;
   using DiffusionTensor = XT::Functions::GridFunctionInterface<E, d, d, RangeField>;
 
-  StokesDirichletProblem(std::shared_ptr<const DiffusionTensor> diffusion_in = default_diffusion(),
-                         std::shared_ptr<const VectorGridFunction> rhs_f_in = default_rhs_f(),
-                         std::shared_ptr<const VectorGridFunction> rhs_g_in = default_rhs_g(),
-                         std::shared_ptr<const VectorGridFunction> dirichlet_in = default_dirichlet_values(),
-                         std::shared_ptr<const VectorGridFunction> reference_sol_u = nullptr,
-                         std::shared_ptr<const ScalarGridFunction> reference_sol_p = nullptr)
+  explicit StokesDirichletProblem(std::shared_ptr<const DiffusionTensor> diffusion_in = default_diffusion(),
+                                  std::shared_ptr<const VectorGridFunction> rhs_f_in = default_rhs_f(),
+                                  std::shared_ptr<const VectorGridFunction> rhs_g_in = default_rhs_g(),
+                                  std::shared_ptr<const VectorGridFunction> dirichlet_in = default_dirichlet_values(),
+                                  std::shared_ptr<const VectorGridFunction> reference_sol_u = nullptr,
+                                  std::shared_ptr<const ScalarGridFunction> reference_sol_p = nullptr)
     : diffusion_(diffusion_in)
     , rhs_f_(rhs_f_in)
     , rhs_g_(rhs_g_in)

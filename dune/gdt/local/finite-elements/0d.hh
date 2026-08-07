@@ -163,7 +163,7 @@ class Local0dFiniteElementCoefficients : public LocalFiniteElementCoefficientsIn
   using BaseType = LocalFiniteElementCoefficientsInterface<D, 0>;
 
 public:
-  Local0dFiniteElementCoefficients(const size_t r = 1)
+  explicit Local0dFiniteElementCoefficients(const size_t r = 1)
     : geometry_type_(GeometryTypes::simplex(0))
     , local_keys_(r)
   {

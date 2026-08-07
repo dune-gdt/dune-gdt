@@ -112,7 +112,7 @@ template <class T>
 class ValidateLess : public ValidatorInterface<T, ValidateLess<T>>
 {
 public:
-  ValidateLess(const T& lhs)
+  explicit ValidateLess(const T& lhs)
     : lhs_(lhs)
   {
   }
@@ -135,7 +135,7 @@ template <class T>
 class ValidateGreater : public ValidatorInterface<T, ValidateGreater<T>>
 {
 public:
-  ValidateGreater(const T& lhs)
+  explicit ValidateGreater(const T& lhs)
     : lhs_(lhs)
   {
   }
@@ -159,11 +159,11 @@ template <class T, class Validator>
 class ValidateInverse : public ValidatorInterface<T, ValidateInverse<T, Validator>>
 {
 public:
-  ValidateInverse(const Validator validator = Validator())
+  explicit ValidateInverse(const Validator validator = Validator())
     : validator_(validator)
   {
   }
-  ValidateInverse(const T arg)
+  explicit ValidateInverse(const T arg)
     : validator_(Validator(arg))
   {
   }

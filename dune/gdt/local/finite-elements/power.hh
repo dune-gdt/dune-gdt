@@ -63,7 +63,7 @@ public:
 
   using UnpoweredType = LocalFiniteElementBasisInterface<D, d, R, r>;
 
-  LocalPowerFiniteElementBasis(const UnpoweredType& unpowered)
+  explicit LocalPowerFiniteElementBasis(const UnpoweredType& unpowered)
     : unpowered_(unpowered.copy())
   {
   }
@@ -165,7 +165,7 @@ public:
 
   using UnpoweredType = LocalFiniteElementInterpolationInterface<D, d, R, r, 1>;
 
-  LocalPowerFiniteElementInterpolation(const UnpoweredType& unpowered)
+  explicit LocalPowerFiniteElementInterpolation(const UnpoweredType& unpowered)
     : unpowered_(unpowered.copy())
   {
   }
@@ -335,7 +335,7 @@ public:
 
   using UnpoweredType = LocalFiniteElementInterface<D, d, R, r, rC>;
 
-  LocalPowerFiniteElement(const UnpoweredType& unpowered)
+  explicit LocalPowerFiniteElement(const UnpoweredType& unpowered)
     : BaseType(unpowered.order(),
                unpowered.basis().copy(),
                unpowered.coefficients().copy(),
@@ -359,7 +359,7 @@ public:
 
   using UnpoweredType = LocalFiniteElementInterface<D, d, R, r>;
 
-  LocalPowerFiniteElement(const UnpoweredType& unpowered)
+  explicit LocalPowerFiniteElement(const UnpoweredType& unpowered)
     : BaseType(unpowered.order(),
                std::make_unique<LocalPowerFiniteElementBasis<power, D, d, R, r>>(unpowered.basis()),
                std::make_unique<LocalPowerFiniteElementCoefficients<D, d>>(unpowered.coefficients(), power),

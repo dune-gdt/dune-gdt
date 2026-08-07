@@ -35,7 +35,7 @@ class BochnerSpace
 {
 public:
   template <class... TemporalGridArgs>
-  BochnerSpace(const SpaceInterface<GV, r, rC, R>& spatial_space, TemporalGridArgs&&... temporal_grid_args)
+  explicit BochnerSpace(const SpaceInterface<GV, r, rC, R>& spatial_space, TemporalGridArgs&&... temporal_grid_args)
     : spatial_space_(spatial_space)
     , temporal_grid_(std::forward<TemporalGridArgs>(temporal_grid_args)...)
     , temporal_space_(temporal_grid_.leafGridView(), /*order=*/1)

@@ -94,7 +94,7 @@ public:
   using RealMatrixType = RealMatrixImp;
   using ComplexMatrixType = ComplexMatrixImp;
 
-  EigenSolverBase(const MatrixType& matrix, const std::string& type = "")
+  explicit EigenSolverBase(const MatrixType& matrix, const std::string& type = "")
     : EigenSolverBase(matrix, EigenSolverOptions<MatrixType, true>::options(type))
   {
   }

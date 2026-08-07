@@ -151,7 +151,7 @@ public:
     return c;
   } // ... bind(...)
 
-  VectorizedLocalElementIntegralBilinearForm(
+  explicit VectorizedLocalElementIntegralBilinearForm(
       IntegrandType integrand,
       const int integrand_order = 0,
       const XT::Common::ParameterType& integrand_parameters = {},

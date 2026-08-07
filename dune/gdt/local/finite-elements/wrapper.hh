@@ -93,13 +93,13 @@ public:
   using typename BaseType::DomainType;
   using typename BaseType::RangeType;
 
-  LocalFiniteElementBasisWrapper(std::shared_ptr<const Implementation> imp)
+  explicit LocalFiniteElementBasisWrapper(std::shared_ptr<const Implementation> imp)
     : imp_(imp)
     , geometry_type_(imp_->type())
   {
   }
 
-  LocalFiniteElementBasisWrapper(Implementation*&& imp_ptr)
+  explicit LocalFiniteElementBasisWrapper(Implementation*&& imp_ptr)
     : LocalFiniteElementBasisWrapper(std::shared_ptr<Implementation>(std::move(imp_ptr)))
   {
   }
@@ -107,7 +107,7 @@ public:
   template <class ImpType,
             typename = typename std::enable_if<std::is_same<ImpType, Implementation>::value
                                                && std::is_copy_constructible<ImpType>::value>::type>
-  LocalFiniteElementBasisWrapper(const ImpType& imp)
+  explicit LocalFiniteElementBasisWrapper(const ImpType& imp)
     : LocalFiniteElementBasisWrapper(new ImpType(imp))
   {
   }
@@ -192,14 +192,14 @@ public:
   using typename BaseType::DomainType;
   using typename BaseType::RangeType;
 
-  LocalFiniteElementInterpolationWrapper(std::shared_ptr<const Implementation> imp)
+  explicit LocalFiniteElementInterpolationWrapper(std::shared_ptr<const Implementation> imp)
     : imp_(imp)
     , geometry_type_(imp_->type())
     , dofs_(imp_->size())
   {
   }
 
-  LocalFiniteElementInterpolationWrapper(Implementation*&& imp_ptr)
+  explicit LocalFiniteElementInterpolationWrapper(Implementation*&& imp_ptr)
     : LocalFiniteElementInterpolationWrapper(std::shared_ptr<Implementation>(std::move(imp_ptr)))
   {
   }
@@ -207,7 +207,7 @@ public:
   template <class ImpType,
             typename = typename std::enable_if<std::is_same<ImpType, Implementation>::value
                                                && std::is_copy_constructible<ImpType>::value>::type>
-  LocalFiniteElementInterpolationWrapper(const ImpType& imp)
+  explicit LocalFiniteElementInterpolationWrapper(const ImpType& imp)
     : LocalFiniteElementInterpolationWrapper(new ImpType(imp))
   {
   }
@@ -272,13 +272,13 @@ class LocalFiniteElementCoefficientsWrapper : public LocalFiniteElementCoefficie
   using BaseType = LocalFiniteElementCoefficientsInterface<D, d>;
 
 public:
-  LocalFiniteElementCoefficientsWrapper(std::shared_ptr<const Implementation> imp)
+  explicit LocalFiniteElementCoefficientsWrapper(std::shared_ptr<const Implementation> imp)
     : imp_(imp)
     , geometry_type_(imp_->type())
   {
   }
 
-  LocalFiniteElementCoefficientsWrapper(Implementation*&& imp_ptr)
+  explicit LocalFiniteElementCoefficientsWrapper(Implementation*&& imp_ptr)
     : LocalFiniteElementCoefficientsWrapper(std::shared_ptr<Implementation>(std::move(imp_ptr)))
   {
   }
@@ -286,7 +286,7 @@ public:
   template <class ImpType,
             typename = typename std::enable_if<std::is_same<ImpType, Implementation>::value
                                                && std::is_copy_constructible<ImpType>::value>::type>
-  LocalFiniteElementCoefficientsWrapper(const ImpType& imp)
+  explicit LocalFiniteElementCoefficientsWrapper(const ImpType& imp)
     : LocalFiniteElementCoefficientsWrapper(new ImpType(imp))
   {
   }

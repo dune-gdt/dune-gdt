@@ -64,7 +64,7 @@ struct ElementVisualization
   {
   public:
     using Element = extract_entity_t<GridViewType>;
-    FunctorBase(std::string filename = "Functor", std::string dirname = ".")
+    explicit FunctorBase(std::string filename = "Functor", std::string dirname = ".")
       : filename_(std::move(filename))
       , dir_(std::move(dirname))
     {
@@ -99,7 +99,7 @@ struct ElementVisualization
   {
   public:
     using Element = typename FunctorBase<GridViewType>::Element;
-    VolumeFunctor(const std::string& filename = "VolumeFunctor", const std::string& dirname = ".")
+    explicit VolumeFunctor(const std::string& filename = "VolumeFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
     {
     }
@@ -115,7 +115,7 @@ struct ElementVisualization
   {
   public:
     using Element = typename FunctorBase<GridViewType>::Element;
-    ProcessIdFunctor(const std::string& filename = "ProcessIDFunctor", const std::string& dirname = ".")
+    explicit ProcessIdFunctor(const std::string& filename = "ProcessIDFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
     {
     }
@@ -133,9 +133,9 @@ struct ElementVisualization
 
   public:
     using Element = typename FunctorBase<GridViewType>::Element;
-    BoundaryIDFunctor(const GridViewType& view,
-                      const std::string& filename = "BoundaryIDFunctor",
-                      const std::string& dirname = ".")
+    explicit BoundaryIDFunctor(const GridViewType& view,
+                               const std::string& filename = "BoundaryIDFunctor",
+                               const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
       , gridview_(view)
     {
@@ -168,9 +168,9 @@ struct ElementVisualization
 
   public:
     using Element = typename FunctorBase<GridViewType>::Element;
-    BoundaryIDFunctor(const GridViewType& view,
-                      const std::string& filename = "BoundaryIDFunctor",
-                      const std::string& dirname = ".")
+    explicit BoundaryIDFunctor(const GridViewType& view,
+                               const std::string& filename = "BoundaryIDFunctor",
+                               const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
       , gridview_(view)
     {
@@ -228,7 +228,7 @@ struct ElementVisualization
 
   public:
     using Element = typename FunctorBase<GridViewType>::Element;
-    AreaMarker(const std::string& filename = "AreaFunctor", const std::string& dirname = ".")
+    explicit AreaMarker(const std::string& filename = "AreaFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
     {
     }
@@ -261,7 +261,7 @@ struct ElementVisualization
   {
   public:
     using Element = typename FunctorBase<GridViewType>::Element;
-    GeometryFunctor(const std::string& filename = "GeometryFunctor", const std::string& dirname = ".")
+    explicit GeometryFunctor(const std::string& filename = "GeometryFunctor", const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
     {
     }
@@ -288,7 +288,8 @@ struct ElementVisualization
   {
   public:
     using Element = typename FunctorBase<GridViewType>::Element;
-    PartitionTypeFunctor(const std::string& filename = "PartitionTypeFunctor", const std::string& dirname = ".")
+    explicit PartitionTypeFunctor(const std::string& filename = "PartitionTypeFunctor",
+                                  const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
     {
     }
@@ -308,9 +309,9 @@ struct ElementVisualization
 
   public:
     using Element = typename FunctorBase<GridViewType>::Element;
-    IndexFunctor(const GridViewType& view,
-                 const std::string& filename = "IndexFunctor",
-                 const std::string& dirname = ".")
+    explicit IndexFunctor(const GridViewType& view,
+                          const std::string& filename = "IndexFunctor",
+                          const std::string& dirname = ".")
       : FunctorBase<GridViewType>(filename, dirname)
       , gridview_(view)
     {

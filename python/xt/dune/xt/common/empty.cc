@@ -26,7 +26,7 @@
 
 struct Pet
 {
-  Pet(std::string name_)
+  explicit Pet(std::string name_)
     : name(std::move(name_))
   {
   }
@@ -43,7 +43,7 @@ struct Pet
 };
 struct Dog : Pet
 {
-  Dog(const std::string& name_)
+  explicit Dog(const std::string& name_)
     : Pet(name_)
   {
   }

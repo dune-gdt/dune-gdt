@@ -52,7 +52,7 @@ struct PgfCoordWrapper : Dune::FieldVector<double, 2>
 class PgfEntityFunctor
 {
 public:
-  PgfEntityFunctor(std::ostream& output)
+  explicit PgfEntityFunctor(std::ostream& output)
     : file_(output)
   {
   }
@@ -227,7 +227,7 @@ template <class GridType>
 class PgfOutput
 {
 public:
-  PgfOutput(GridType& grid)
+  explicit PgfOutput(GridType& grid)
     : grid_(grid)
   {
   }

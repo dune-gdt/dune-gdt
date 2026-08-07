@@ -158,7 +158,7 @@ public:
   MinMaxAvg() = default;
 
   template <class stl_container_type>
-  MinMaxAvg(const stl_container_type& elements)
+  explicit MinMaxAvg(const stl_container_type& elements)
   {
     static_assert((std::is_same<ElementType, typename stl_container_type::value_type>::value),
                   "cannot assign mismatching types");

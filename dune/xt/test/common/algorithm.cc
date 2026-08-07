@@ -19,7 +19,7 @@ using namespace Dune::XT::Common;
 
 struct Moveable
 {
-  Moveable(int i)
+  explicit Moveable(int i)
     : v(i)
   {
   }

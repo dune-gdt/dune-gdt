@@ -32,7 +32,7 @@ class DiscreteFunctionDataHandle
                                   typename DiscreteFunctionType::SpaceType::R>
 {
 public:
-  DiscreteFunctionDataHandle(DiscreteFunctionType& discrete_function, bool fixed_size = true)
+  explicit DiscreteFunctionDataHandle(DiscreteFunctionType& discrete_function, bool fixed_size = true)
     : discrete_function_(discrete_function)
     , mapper_(discrete_function_.space().mapper())
     , vector_(discrete_function_.dofs().vector())

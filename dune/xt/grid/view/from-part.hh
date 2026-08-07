@@ -43,7 +43,7 @@ class TemporaryConstView
   {
     using type = GridLayerType;
 
-    const_storage(const GridLayerType& grid_view)
+    explicit const_storage(const GridLayerType& grid_view)
       : value(grid_view)
     {
     }
@@ -56,7 +56,7 @@ class TemporaryConstView
   {
     using type = typename GridLayerType::GridViewType;
 
-    const_storage(const GridLayerType& grid_part)
+    explicit const_storage(const GridLayerType& grid_part)
       : grid_part_(grid_part)
       , value(grid_part_)
     {
@@ -69,7 +69,7 @@ class TemporaryConstView
 public:
   using type = typename const_storage<>::type;
 
-  TemporaryConstView(const GridLayerType& grid_layer)
+  explicit TemporaryConstView(const GridLayerType& grid_layer)
     : const_storage_(grid_layer)
   {
   }
@@ -100,7 +100,7 @@ class TemporaryView : public TemporaryConstView<GridLayerType>
   {
     using type = GridLayerType;
 
-    storage(GridLayerType& grid_view)
+    explicit storage(GridLayerType& grid_view)
       : value(grid_view)
     {
     }
@@ -113,7 +113,7 @@ class TemporaryView : public TemporaryConstView<GridLayerType>
   {
     using type = typename GridLayerType::GridViewType;
 
-    storage(GridLayerType& grid_part)
+    explicit storage(GridLayerType& grid_part)
       : value(grid_part)
     {
     }
@@ -126,7 +126,7 @@ class TemporaryView : public TemporaryConstView<GridLayerType>
 public:
   using type = typename storage<>::type;
 
-  TemporaryView(GridLayerType& grid_layer)
+  explicit TemporaryView(GridLayerType& grid_layer)
     : BaseType(grid_layer)
     , storage_(grid_layer)
   {

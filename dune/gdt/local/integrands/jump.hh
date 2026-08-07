@@ -46,10 +46,10 @@ public:
   using typename BaseType::LocalAnsatzBasisType;
   using typename BaseType::LocalTestBasisType;
 
-  Inner(const std::function<double(const I&)>& intersection_diameter =
-            LocalIPDGIntegrands::internal::default_intersection_diameter<I>(),
-        const std::string& logging_prefix = "",
-        const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+  explicit Inner(const std::function<double(const I&)>& intersection_diameter =
+                     LocalIPDGIntegrands::internal::default_intersection_diameter<I>(),
+                 const std::string& logging_prefix = "",
+                 const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType({}, logging_prefix.empty() ? "LocalJumpIntegrands::Inner" : logging_prefix, logging_state)
     , intersection_diameter_(intersection_diameter)
   {
@@ -185,10 +185,10 @@ public:
   using typename BaseType::LocalAnsatzBasisType;
   using typename BaseType::LocalTestBasisType;
 
-  Boundary(const std::function<double(const I&)>& intersection_diameter =
-               LocalIPDGIntegrands::internal::default_intersection_diameter<I>(),
-           const std::string& logging_prefix = "",
-           const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
+  explicit Boundary(const std::function<double(const I&)>& intersection_diameter =
+                        LocalIPDGIntegrands::internal::default_intersection_diameter<I>(),
+                    const std::string& logging_prefix = "",
+                    const std::array<bool, 3>& logging_state = XT::Common::default_logger_state())
     : BaseType({}, logging_prefix.empty() ? "LocalJumpIntegrands::Boundary" : logging_prefix, logging_state)
     , intersection_diameter_(intersection_diameter)
   {
