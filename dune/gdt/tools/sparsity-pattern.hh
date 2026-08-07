@@ -28,6 +28,47 @@
 
 namespace Dune {
 namespace GDT {
+namespace internal {
+
+
+// Inserts all (row_indices[i], col_indices[j]) pairs for i in [0, n_rows), j in [0, n_cols) into the pattern.
+template <class P, class V>
+void insert_index_cross_product(
+    P& pattern, const size_t n_rows, const size_t n_cols, const V& row_indices, const V& col_indices)
+{
+  for (size_t i = 0; i < n_rows; ++i)
+    for (size_t j = 0; j < n_cols; ++j)
+      pattern.insert(row_indices[i], col_indices[j]);
+}
+
+
+// Adds the coupling entries between an element and all its (existing) neighbours to the pattern. Keeping this in a
+// dedicated helper avoids deeply nested control flow (cpp:S134) and the duplication of this loop between the
+// intersection-only and element-and-intersection pattern builders.
+template <class P, class TestSpace, class AnsatzSpace, class GV, class Element, class V>
+void insert_intersection_couplings(P& pattern,
+                                   const TestSpace& test_space,
+                                   const AnsatzSpace& ansatz_space,
+                                   const GV& grid_view,
+                                   const Element& element,
+                                   const V& row_indices,
+                                   V& column_indices)
+{
+  for (auto&& intersection : intersections(grid_view, element)) {
+    if (!intersection.neighbor())
+      continue;
+    const auto neighbour = intersection.outside();
+    ansatz_space.mapper().global_indices(neighbour, column_indices);
+    insert_index_cross_product(pattern,
+                               test_space.mapper().local_size(element),
+                               ansatz_space.mapper().local_size(neighbour),
+                               row_indices,
+                               column_indices);
+  }
+}
+
+
+} // namespace internal
 
 
 /**
@@ -84,15 +125,8 @@ make_intersection_sparsity_pattern(const SpaceInterface<TGV, t_r, t_rC, TR>& tes
   DynamicVector<size_t> column_indices(ansatz_space.mapper().max_local_size(), 0);
   for (auto&& element : elements(grid_view)) {
     test_space.mapper().global_indices(element, row_indices);
-    for (auto&& intersection : intersections(grid_view, element)) {
-      if (intersection.neighbor()) {
-        const auto neighbour = intersection.outside();
-        ansatz_space.mapper().global_indices(neighbour, column_indices);
-        for (size_t ii = 0; ii < test_space.mapper().local_size(element); ++ii)
-          for (size_t jj = 0; jj < ansatz_space.mapper().local_size(neighbour); ++jj)
-            pattern.insert(row_indices[ii], column_indices[jj]);
-      }
-    }
+    internal::insert_intersection_couplings(
+        pattern, test_space, ansatz_space, grid_view, element, row_indices, column_indices);
   }
   pattern.sort();
   return pattern;
@@ -133,15 +167,8 @@ make_element_and_intersection_sparsity_pattern(const SpaceInterface<TGV, t_r, t_
     for (size_t ii = 0; ii < test_space.mapper().local_size(element); ++ii)
       for (size_t jj = 0; jj < ansatz_space.mapper().local_size(element); ++jj)
         pattern.insert(row_indices[ii], column_indices[jj]);
-    for (auto&& intersection : intersections(grid_view, element)) {
-      if (intersection.neighbor()) {
-        const auto neighbour = intersection.outside();
-        ansatz_space.mapper().global_indices(neighbour, column_indices);
-        for (size_t ii = 0; ii < test_space.mapper().local_size(element); ++ii)
-          for (size_t jj = 0; jj < ansatz_space.mapper().local_size(neighbour); ++jj)
-            pattern.insert(row_indices[ii], column_indices[jj]);
-      }
-    }
+    internal::insert_intersection_couplings(
+        pattern, test_space, ansatz_space, grid_view, element, row_indices, column_indices);
   }
   pattern.sort();
   return pattern;
@@ -220,18 +247,12 @@ XT::LA::SparsityPatternDefault make_coupling_sparsity_pattern(const SpaceInterfa
       const auto outside = intersection.outside();
       test_space.mapper().global_indices(inside, global_indices_in);
       ansatz_space.mapper().global_indices(outside, global_indices_out);
-      for (size_t ii = 0; ii < test_space.mapper().local_size(inside); ++ii)
-        for (size_t jj = 0; jj < test_space.mapper().local_size(inside); ++jj)
-          pattern.insert(global_indices_in[ii], global_indices_in[jj]);
-      for (size_t ii = 0; ii < test_space.mapper().local_size(inside); ++ii)
-        for (size_t jj = 0; jj < ansatz_space.mapper().local_size(outside); ++jj)
-          pattern.insert(global_indices_in[ii], global_indices_out[jj]);
-      for (size_t ii = 0; ii < ansatz_space.mapper().local_size(outside); ++ii)
-        for (size_t jj = 0; jj < test_space.mapper().local_size(inside); ++jj)
-          pattern.insert(global_indices_out[jj], global_indices_in[ii]);
-      for (size_t ii = 0; ii < ansatz_space.mapper().local_size(outside); ++ii)
-        for (size_t jj = 0; jj < ansatz_space.mapper().local_size(outside); ++jj)
-          pattern.insert(global_indices_out[ii], global_indices_out[jj]);
+      const auto inside_size = test_space.mapper().local_size(inside);
+      const auto outside_size = ansatz_space.mapper().local_size(outside);
+      internal::insert_index_cross_product(pattern, inside_size, inside_size, global_indices_in, global_indices_in);
+      internal::insert_index_cross_product(pattern, inside_size, outside_size, global_indices_in, global_indices_out);
+      internal::insert_index_cross_product(pattern, inside_size, outside_size, global_indices_out, global_indices_in);
+      internal::insert_index_cross_product(pattern, outside_size, outside_size, global_indices_out, global_indices_out);
     }
   }
   pattern.sort();
