@@ -226,6 +226,18 @@ def test_generated_script_is_valid_python_and_marks_every_cell(tmp_path):
     )  # the notebook dir lands on sys.path
 
 
+def test_cell_marker_flushes_stdout_before_writing(tmp_path):
+    # ordering is load-bearing: stdout is block-buffered on a pipe, the marker goes to stderr. If
+    # stdout were flushed after the marker, the previous cell's output would appear under the next
+    # cell's marker and a crash would be attributed to the wrong cell.
+    notebook = _write(tmp_path, "nb.md", "\n```{code-cell}\nx = 1\n```\n")
+    body = nb2s.convert_notebook(notebook)
+    marker = body.index("def _cell(")
+    flush = body.index("sys.stdout.flush()", marker)
+    write = body.index("file=sys.stderr", marker)
+    assert flush < write
+
+
 def test_unchanged_notebooks_are_not_rewritten(tmp_path):
     # write_scripts must be idempotent down to the file mtime: the generated scripts are a build
     # input, so rewriting identical content would invalidate the stamp and re-run every notebook

@@ -326,13 +326,17 @@ def _cell(index, line):
     memory trace up to its last surviving line -- which is the only evidence an OOM kill leaves
     inside the process.
     """
+    # Flush stdout BEFORE writing the marker, never after. stdout is a pipe under CTest/CI and so
+    # is block-buffered, while the marker goes to unbuffered stderr: flushing afterwards lets the
+    # previous cell's output surface below this marker, which reads as output of the cell that is
+    # only about to start. That mis-attribution is exactly what a crash report must not do.
+    sys.stdout.flush()
     print(
         f"[notebook-script] {{_NOTEBOOK}}:{{line}} cell {{index}}/{{_CELL_COUNT}}"
         f" (peak RSS {{_peak_rss_mb():.0f}} MiB)",
         file=sys.stderr,
         flush=True,
     )
-    sys.stdout.flush()
 
 
 def _shell(command):
