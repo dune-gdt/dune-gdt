@@ -75,7 +75,7 @@ public:
 
   static constexpr bool available = false;
 
-  FluxFunctionInterface(const Common::ParameterType& param_type = {})
+  explicit FluxFunctionInterface(const Common::ParameterType& param_type = {})
     : Common::ParametricInterface(param_type)
   {
   }

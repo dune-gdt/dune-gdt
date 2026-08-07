@@ -266,7 +266,7 @@ public:
     }
   }
 
-  DataGatherScatter(GatherScatter gather_scatter = GatherScatter())
+  explicit DataGatherScatter(GatherScatter gather_scatter = GatherScatter())
     : _gather_scatter(gather_scatter)
   {
   }
@@ -323,7 +323,7 @@ public:
     }
   }
 
-  DataEntityGatherScatter(GatherScatter gather_scatter = GatherScatter())
+  explicit DataEntityGatherScatter(GatherScatter gather_scatter = GatherScatter())
     : gather_scatter_(gather_scatter)
   {
   }
@@ -520,7 +520,7 @@ public:
   /**
    * \param rank  The MPI rank of the current process.
    */
-  DisjointPartitioningGatherScatter(RankIndex rank)
+  explicit DisjointPartitioningGatherScatter(RankIndex rank)
     : rank_(rank)
   {
   }

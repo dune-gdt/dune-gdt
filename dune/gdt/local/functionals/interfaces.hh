@@ -60,7 +60,7 @@ public:
   using ElementType = Element;
   using LocalBasisType = XT::Functions::ElementFunctionSetInterface<E, r, rC, R>;
 
-  LocalElementFunctionalInterface(const XT::Common::ParameterType& param_type = {})
+  explicit LocalElementFunctionalInterface(const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type)
   {
   }
@@ -122,7 +122,7 @@ public:
 
   using LocalBasisType = XT::Functions::ElementFunctionSetInterface<E, r, rC, R>;
 
-  LocalIntersectionFunctionalInterface(const XT::Common::ParameterType& param_type = {})
+  explicit LocalIntersectionFunctionalInterface(const XT::Common::ParameterType& param_type = {})
     : XT::Common::ParametricInterface(param_type)
   {
   }

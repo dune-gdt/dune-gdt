@@ -108,7 +108,7 @@ private:
   }
 
 public:
-  EntityInlevelSearch(const GridLayerType& grid_layer)
+  explicit EntityInlevelSearch(const GridLayerType& grid_layer)
     : grid_layer_(grid_layer)
     , it_last_(grid_layer_.template begin<codim>())
   {
@@ -187,7 +187,7 @@ private:
   }
 
 public:
-  FallbackEntityInlevelSearch(const GridLayerType& grid_layer)
+  explicit FallbackEntityInlevelSearch(const GridLayerType& grid_layer)
     : grid_layer_(grid_layer)
     , it_last_(grid_layer_.template begin<0>())
   {
@@ -263,7 +263,7 @@ class EntityHierarchicSearch : public EntitySearchBase<GridLayerType>
   const int start_level_;
 
 public:
-  EntityHierarchicSearch(const GridLayerType& grid_layer)
+  explicit EntityHierarchicSearch(const GridLayerType& grid_layer)
     : grid_layer_(grid_layer)
     , start_level_(0)
   {

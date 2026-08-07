@@ -57,7 +57,7 @@ class GenericParallelHelper
 
 
 public:
-  GenericParallelHelper(const SpaceType& space, int verbose = 1)
+  explicit GenericParallelHelper(const SpaceType& space, int verbose = 1)
     : space_(space)
     , rank_(space.grid_view().comm().rank())
     , rank_vector_(space.mapper().size(), rank_)

@@ -56,7 +56,7 @@ public:
   ThisType& operator=(const ThisType&) = delete;
   ThisType& operator=(ThisType&&) = delete;
 
-  FiniteVolumeGlobalBasis(const GridViewType& grd_vw)
+  explicit FiniteVolumeGlobalBasis(const GridViewType& grd_vw)
     : grid_view_(grd_vw)
     , local_finite_elements_()
   {
@@ -98,7 +98,7 @@ private:
     using typename BaseType::RangeType;
     using typename BaseType::SingleDerivativeRangeType;
 
-    LocalizedFiniteVolumeGlobalBasis(const FiniteVolumeGlobalBasis<GV, r, R>& self)
+    explicit LocalizedFiniteVolumeGlobalBasis(const FiniteVolumeGlobalBasis<GV, r, R>& self)
       : BaseType()
       , self_(self)
     {

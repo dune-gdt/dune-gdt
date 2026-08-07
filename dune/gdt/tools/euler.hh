@@ -71,7 +71,7 @@ class EulerTools
 public:
   static constexpr size_t m = d + 2;
 
-  EulerTools(const double& gmma) // air or water at roughly 20 deg Cels.: gmma = 1.4
+  explicit EulerTools(const double& gmma) // air or water at roughly 20 deg Cels.: gmma = 1.4
     : gamma_(gmma)
   {
   }

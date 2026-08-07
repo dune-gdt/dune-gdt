@@ -43,7 +43,7 @@ struct Statistics
   size_t numberOfBoundaryIntersections;
   double maxGridWidth;
   template <class GridLayerType>
-  Statistics(const GridLayerType& grid_layer)
+  explicit Statistics(const GridLayerType& grid_layer)
     : numberOfEntities(grid_layer.size(0))
     , numberOfIntersections(0)
     , numberOfInnerIntersections(0)
@@ -145,7 +145,7 @@ struct Dimensions
     return entity_volume.min() != 0.0 ? entity_volume.max() / entity_volume.min() : -1;
   }
 
-  Dimensions(const GridLayerType& grid_layer)
+  explicit Dimensions(const GridLayerType& grid_layer)
   {
     GridDimensionsFunctor f(coord_limits, entity_volume, entity_width);
     Walker<GridLayerType> gw(grid_layer);
@@ -153,7 +153,7 @@ struct Dimensions
     gw.walk();
   }
 
-  Dimensions(const ElementType& entity)
+  explicit Dimensions(const ElementType& entity)
   {
     GridDimensionsFunctor f(coord_limits, entity_volume, entity_width);
     f.apply_local(entity);

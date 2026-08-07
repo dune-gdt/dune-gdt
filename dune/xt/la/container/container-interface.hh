@@ -34,7 +34,7 @@ namespace internal {
 
 struct VectorLockGuard
 {
-  VectorLockGuard(std::vector<std::mutex>& mutexes)
+  explicit VectorLockGuard(std::vector<std::mutex>& mutexes)
     : mutexes_(mutexes)
   {
     boost::lock(mutexes_.begin(), mutexes_.end());

@@ -176,13 +176,13 @@ public:
   using GenericDerivativeFunctionType = std::function<DerivativeRangeReturnType(
       const std::array<size_t, d>&, const DomainType&, const XT::Common::Parameter&)>;
 
-  GenericGridFunction(const int ord,
-                      GenericPostBindFunctionType post_bind_func = default_post_bind_function(),
-                      GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
-                      const Common::ParameterType& param_type = Common::ParameterType(),
-                      std::string nm = "GenericGridFunction",
-                      GenericJacobianFunctionType jacobian_func = default_jacobian_function(),
-                      GenericDerivativeFunctionType derivative_func = default_derivative_function())
+  explicit GenericGridFunction(const int ord,
+                               GenericPostBindFunctionType post_bind_func = default_post_bind_function(),
+                               GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
+                               const Common::ParameterType& param_type = Common::ParameterType(),
+                               std::string nm = "GenericGridFunction",
+                               GenericJacobianFunctionType jacobian_func = default_jacobian_function(),
+                               GenericDerivativeFunctionType derivative_func = default_derivative_function())
     : BaseType(param_type)
     , order_(default_order_lambda(ord))
     , post_bind_(std::move(post_bind_func))
@@ -193,13 +193,13 @@ public:
   {
   }
 
-  GenericGridFunction(GenericOrderFunctionType order_func,
-                      GenericPostBindFunctionType post_bind_func = default_post_bind_function(),
-                      GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
-                      const Common::ParameterType& param_type = Common::ParameterType(),
-                      std::string nm = "GenericGridFunction",
-                      GenericJacobianFunctionType jacobian_func = default_jacobian_function(),
-                      GenericDerivativeFunctionType derivative_func = default_derivative_function())
+  explicit GenericGridFunction(GenericOrderFunctionType order_func,
+                               GenericPostBindFunctionType post_bind_func = default_post_bind_function(),
+                               GenericEvaluateFunctionType evaluate_func = default_evaluate_function(),
+                               const Common::ParameterType& param_type = Common::ParameterType(),
+                               std::string nm = "GenericGridFunction",
+                               GenericJacobianFunctionType jacobian_func = default_jacobian_function(),
+                               GenericDerivativeFunctionType derivative_func = default_derivative_function())
     : BaseType(param_type)
     , order_(std::move(order_func))
     , post_bind_(std::move(post_bind_func))

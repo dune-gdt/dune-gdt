@@ -103,7 +103,7 @@ public:
   /// \}
 
 
-  ElementFluxFunctionSetInterface(const XT::Common::ParameterType& param_type = {})
+  explicit ElementFluxFunctionSetInterface(const XT::Common::ParameterType& param_type = {})
     : Common::ParametricInterface(param_type)
   {
   }
@@ -400,7 +400,7 @@ public:
 
   /// \}
 
-  ElementFluxFunctionInterface(const XT::Common::ParameterType& param_type = {})
+  explicit ElementFluxFunctionInterface(const XT::Common::ParameterType& param_type = {})
     : BaseType(param_type)
   {
   }

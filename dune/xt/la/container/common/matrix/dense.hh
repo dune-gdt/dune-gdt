@@ -229,7 +229,7 @@ public:
   }
 
   template <class T>
-  CommonDenseMatrix(const DenseMatrix<T>& other, const size_t num_mutexes = 1)
+  explicit CommonDenseMatrix(const DenseMatrix<T>& other, const size_t num_mutexes = 1)
     : backend_(std::make_unique<BackendType>(other.rows(), other.cols()))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
   {
@@ -239,7 +239,7 @@ public:
   } // CommonDenseMatrix(...)
 
   template <class T, class F>
-  CommonDenseMatrix(const MatrixInterface<T, F>& other, const size_t num_mutexes = 1)
+  explicit CommonDenseMatrix(const MatrixInterface<T, F>& other, const size_t num_mutexes = 1)
     : backend_(std::make_unique<BackendType>(other.rows(), other.cols()))
     , mutexes_(std::make_unique<MutexesType>(num_mutexes))
   {
