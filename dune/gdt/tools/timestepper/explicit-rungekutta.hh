@@ -16,6 +16,7 @@
 #ifndef DUNE_GDT_TIMESTEPPER_EXPLICIT_RUNGEKUTTA_HH
 #define DUNE_GDT_TIMESTEPPER_EXPLICIT_RUNGEKUTTA_HH
 
+#include <cmath>
 #include <utility>
 
 #include "enums.hh"
@@ -142,6 +143,16 @@ struct ButcherArrayProvider<RangeFieldType, TimeStepperMethods::explicit_rungeku
     return {0., 0.5, 0.5, 1.};
   }
 };
+
+
+template <class Vector, class RangeFieldType>
+bool any_entry_above_threshold(const Vector& vector, const RangeFieldType treshold)
+{
+  for (size_t kk = 0; kk < vector.size(); ++kk)
+    if (std::abs(vector[kk]) > treshold)
+      return true;
+  return false;
+}
 
 
 } // namespace internal
@@ -297,12 +308,9 @@ public:
         step(current_dt, current_dt);
         ++num_steps;
         // ... unless there is a value above threshold
-        for (size_t kk = 0; kk < u_n.dofs().vector().size(); ++kk) {
-          if (std::abs(u_n.dofs().vector()[kk]) > treshold) {
-            unlikely_value_occured = true;
-            std::cout << "failed" << std::endl;
-            break;
-          }
+        if (internal::any_entry_above_threshold(u_n.dofs().vector(), treshold)) {
+          unlikely_value_occured = true;
+          std::cout << "failed" << std::endl;
         }
         // if we are able to do max_steps_per_dt time steps with this dt, we accept this dt
         if (num_steps == max_steps_per_dt) {

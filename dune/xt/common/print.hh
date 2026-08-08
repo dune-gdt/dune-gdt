@@ -291,25 +291,25 @@ public:
 
   void str(std::ostream& out) const override
   {
-    if (!this->opts.get("oneline", false))
+    if (!this->opts.get("oneline", false)) {
       this->repr(out);
-    else {
-      const auto key_value_map = this->value.flatten();
-      const auto sz = key_value_map.size();
-      if (sz == 0)
-        out << "{}";
-      else {
-        out << "{";
-        size_t counter = 0;
-        for (const auto& key_value_pair : key_value_map) {
-          out << "\"" << key_value_pair.first << "\": \"" << key_value_pair.second << "\"";
-          if (counter < sz - 1)
-            out << ", ";
-          ++counter;
-        }
-        out << "}";
-      }
+      return;
     }
+    const auto key_value_map = this->value.flatten();
+    const auto sz = key_value_map.size();
+    if (sz == 0) {
+      out << "{}";
+      return;
+    }
+    out << "{";
+    size_t counter = 0;
+    for (const auto& key_value_pair : key_value_map) {
+      out << "\"" << key_value_pair.first << "\": \"" << key_value_pair.second << "\"";
+      if (counter < sz - 1)
+        out << ", ";
+      ++counter;
+    }
+    out << "}";
   } // ... str(...)
 }; // class Printer
 
