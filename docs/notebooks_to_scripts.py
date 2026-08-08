@@ -294,6 +294,26 @@ else:
     if not hasattr(builtins, "display"):
         builtins.display = _display
 
+# pyMOR chooses its visualisation backend from whether it is running inside Jupyter
+# (pymor.core.config.is_jupyter): the notebooks are, these scripts are not. Left alone, fom.visualize()
+# resolves "jupyter_or_gl" to the Qt backend and dies with QtMissingError, and PatchVisualizer imports
+# Qt on every branch except the jupyter one. docs/source/myst_code_init.py loads pyMOR's jupyter
+# extension for exactly this reason, but only `if get_ipython() is not None`. Select the same backend
+# explicitly through pyMOR's own defaults mechanism, so the rendering code still runs rather than
+# being stubbed out. The module has to be imported first: that is what registers the defaults keys.
+try:
+    import pymor.discretizers.builtin.gui.visualizers  # noqa: F401
+    from pymor.core.defaults import set_defaults as _set_defaults
+except ImportError:  # pragma: no cover - pyMOR is a notebook dependency, not a hard requirement
+    pass
+else:
+    _set_defaults(
+        {{
+            "pymor.discretizers.builtin.gui.visualizers.PatchVisualizer.backend": "jupyter",
+            "pymor.discretizers.builtin.gui.visualizers.OnedVisualizer.backend": "jupyter",
+        }}
+    )
+
 _NOTEBOOK = "{notebook}"
 _CELL_COUNT = {cell_count}
 
