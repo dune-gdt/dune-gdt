@@ -916,9 +916,9 @@ visualisation = [
 requires-dist = [
     { name = "bokeh", marker = "extra == 'all'" },
     { name = "bokeh", marker = "extra == 'parallel'" },
-    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'all'", specifier = ">=0.6.0" },
-    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'docs'", specifier = ">=0.6.0" },
-    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'infrastructure'", specifier = ">=0.6.0" },
+    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'all'", specifier = ">=0.6.0,<0.10.0" },
+    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'docs'", specifier = ">=0.6.0,<0.10.0" },
+    { name = "clangquill", marker = "python_full_version >= '3.13' and extra == 'infrastructure'", specifier = ">=0.6.0,<0.10.0" },
     { name = "cmake-format", marker = "extra == 'all'", specifier = "==0.4.1" },
     { name = "cmake-format", marker = "extra == 'infrastructure'", specifier = "==0.4.1" },
     { name = "codecov", marker = "extra == 'all'" },
