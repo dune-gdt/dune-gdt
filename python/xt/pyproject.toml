@@ -47,6 +47,10 @@ docs = [
     'clangquill>=0.6.0,<0.10.0; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
+    # the documentation notebooks are jupytext MyST documents; docs/notebooks_to_scripts.py parses
+    # them with jupytext to transcribe them into the standalone scripts the docs CI job runs before
+    # sphinx (see .github/workflows/non_docker_build.yml). Part of the docs toolchain, like myst-nb.
+    "jupytext",
 ]
 examples = ['pymor==2022.2.0; python_version < "3.11"', 'pymor; python_version >= "3.11"']
 infrastructure = [
@@ -146,7 +150,7 @@ test = [
   "matplotlib",
 ]
 # Deps for docs_test_python (cmake/modules/DuneXTTesting.cmake), which runs docs/test_benchmark_plots.py -- a
-# pure-Python unit test suite for the benchmark-plots Sphinx extension (docs/source/_ext/benchmark_plots.py) that
+# pure-Python unit test suite for the benchmark-plots (and docs/test_notebooks_to_scripts.py, the notebook converter) Sphinx extension (docs/source/_ext/benchmark_plots.py) that
 # needs neither the dune-gdt bindings nor a full docs build. docutils/sphinx are the extension's own imports; plotly
 # is what test_plot_html_renders_plotly's `pytest.importorskip("plotly")` guards on (#392: previously present only in
 # the `docs` extra, which nothing installed for testing, so that guard silently skipped forever).
@@ -155,6 +159,9 @@ docs_test = [
   "docutils",
   "sphinx",
   "plotly",
+  # docs/test_notebooks_to_scripts.py converts every docs/source notebook, and the converter parses
+  # them with jupytext (docs/notebooks_to_scripts.py)
+  "jupytext",
 ]
 
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.

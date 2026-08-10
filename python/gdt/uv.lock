@@ -791,6 +791,21 @@ visualisation = [
 ]
 
 [package.dev-dependencies]
+notebooks = [
+    { name = "ipython", version = "8.39.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "ipython", version = "9.15.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "ipywidgets" },
+    { name = "jupytext" },
+    { name = "k3d" },
+    { name = "lxml" },
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "meshio" },
+    { name = "pymor", version = "2022.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "pymor", version = "2025.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "vtk" },
+    { name = "xmljson" },
+]
 test = [
     { name = "hatchling" },
     { name = "hypothesis" },
@@ -822,6 +837,18 @@ requires-dist = [
 provides-extras = ["all", "docs", "examples", "infrastructure", "parallel", "visualisation"]
 
 [package.metadata.requires-dev]
+notebooks = [
+    { name = "ipython" },
+    { name = "ipywidgets" },
+    { name = "jupytext" },
+    { name = "k3d", specifier = ">=2.15.2" },
+    { name = "lxml" },
+    { name = "matplotlib" },
+    { name = "meshio", specifier = ">=4.4" },
+    { name = "pymor" },
+    { name = "vtk" },
+    { name = "xmljson" },
+]
 test = [
     { name = "hatchling" },
     { name = "hypothesis" },
@@ -853,6 +880,7 @@ dependencies = [
 docs = [
     { name = "clangquill", marker = "python_full_version >= '3.13'" },
     { name = "furo" },
+    { name = "jupytext" },
     { name = "meshio" },
     { name = "myst-nb" },
     { name = "plotly" },
@@ -877,6 +905,7 @@ infrastructure = [
     { name = "hypothesis" },
     { name = "ipywidgets" },
     { name = "jinja2" },
+    { name = "jupytext" },
     { name = "k3d" },
     { name = "lxml" },
     { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -940,6 +969,9 @@ requires-dist = [
     { name = "ipywidgets", marker = "extra == 'visualisation'" },
     { name = "jinja2", marker = "extra == 'all'" },
     { name = "jinja2", marker = "extra == 'infrastructure'" },
+    { name = "jupytext", marker = "extra == 'all'" },
+    { name = "jupytext", marker = "extra == 'docs'" },
+    { name = "jupytext", marker = "extra == 'infrastructure'" },
     { name = "k3d", marker = "extra == 'all'", specifier = ">=2.15.2" },
     { name = "k3d", marker = "extra == 'infrastructure'", specifier = ">=2.15.2" },
     { name = "k3d", marker = "extra == 'visualisation'", specifier = ">=2.15.2" },
@@ -1000,6 +1032,7 @@ provides-extras = ["all", "docs", "examples", "infrastructure", "parallel", "vis
 [package.metadata.requires-dev]
 docs-test = [
     { name = "docutils" },
+    { name = "jupytext" },
     { name = "plotly" },
     { name = "pytest" },
     { name = "sphinx" },
@@ -1565,6 +1598,24 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/26/2d/ef58fed122b268c69c0aa099da20bc67657cdfb2e222688d5731bd5b971d/jupyterlab_widgets-3.0.16.tar.gz", hash = "sha256:423da05071d55cf27a9e602216d35a3a65a3e41cdf9c5d3b643b814ce38c19e0", size = 897423, upload-time = "2025-11-01T21:11:29.724Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ab/b5/36c712098e6191d1b4e349304ef73a8d06aed77e56ceaac8c0a306c7bda1/jupyterlab_widgets-3.0.16-py3-none-any.whl", hash = "sha256:45fa36d9c6422cf2559198e4db481aa243c7a32d9926b500781c830c80f7ecf8", size = 914926, upload-time = "2025-11-01T21:11:28.008Z" },
+]
+
+[[package]]
+name = "jupytext"
+version = "1.19.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "markdown-it-py", version = "3.0.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "markdown-it-py", version = "4.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "mdit-py-plugins" },
+    { name = "nbformat" },
+    { name = "packaging" },
+    { name = "pyyaml" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a1/ca/473f8ebb101553fb2ea6ab1d34324d6677844c968947ac050c759d539f2c/jupytext-1.19.5.tar.gz", hash = "sha256:605026446d605aa54fd7f7fc69df6ae51c7a46053d4cebf05afdc64d66de3df0", size = 4600916, upload-time = "2026-07-21T22:00:29.198Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7c/c6/76ee9dacedcd8c67d8fa53dd975613733bdd28242a4c41518ff1c8aeaa64/jupytext-1.19.5-py3-none-any.whl", hash = "sha256:af22351202171116b986fe1f4f9233a13ca4a85d5eec57a87900ed48521dbae4", size = 229246, upload-time = "2026-07-21T22:00:27.218Z" },
 ]
 
 [[package]]

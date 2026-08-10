@@ -726,6 +726,85 @@ jobs:
       run: |
         ./.ci/fetch_benchmark_reports.sh "${GITHUB_WORKSPACE}/build/benchmark_data"
 
+    - name: Convert the notebooks into standalone scripts
+      # docs/notebooks_to_scripts.py transcribes the code cells of every docs/source notebook into a
+      # standalone script. Same code, no Jupyter kernel: see the step below for why that matters.
+      #
+      # The converter parses the notebooks with jupytext, which the `docs` extra installed into the
+      # venv above provides -- it is part of the docs toolchain, like myst-nb. Deliberately not a
+      # separate `uv run --with jupytext`: that resolves a dependency at run time instead of from
+      # the locked extra, which is both what SonarCloud's githubactions:S8544 flags and a second,
+      # silently drifting source of the version this job converts with.
+      run: |
+        "${GITHUB_WORKSPACE}/.venv/bin/python" \
+          docs/notebooks_to_scripts.py --output-dir "${GITHUB_WORKSPACE}/build/notebook_scripts"
+
+    - name: Execute every notebook in its own process
+      # This runs *before* sphinx on purpose. When a notebook kernel dies, the sphinx step below can
+      # say nothing but `nbclient.exceptions.DeadKernelError: Kernel died` -- ipykernel's
+      # capture_fd_output replaces the kernel process' fd 1/2 with pipes drained by an in-process
+      # thread, so a faulthandler dump written on the way down dies with the process and never
+      # reaches this log. Here each notebook is a plain interpreter whose fd 2 is this log, so a
+      # crash leaves the faulthandler traceback, an exit status (128+signal -- 139 SIGSEGV, 134
+      # SIGABRT, 137 the OOM killer) and a per-cell marker carrying the running peak RSS.
+      #
+      # Deliberately does not stop at the first failure: the point is a full per-notebook verdict,
+      # so one bad notebook cannot hide the state of the other fifteen. Failing here also skips the
+      # ~40 min sphinx build that was going to die anyway. Each notebook gets its own `timeout` for
+      # the same reason: a hang -- as plausible a failure mode here as a crash -- would otherwise
+      # eat the whole job budget and take every later notebook's verdict down with it.
+      env:
+        # the notebooks import helper modules (discretize_elliptic_cg, ...) from next to themselves
+        DUNE_GDT_NOTEBOOK_SOURCE_DIR: ${{ github.workspace }}/docs/source
+      run: |
+        set -u
+        shopt -s nullglob
+        scripts=("${GITHUB_WORKSPACE}"/build/notebook_scripts/*.py)
+        if [ ${#scripts[@]} -eq 0 ]; then
+          echo "::error::the converter produced no notebook scripts"
+          exit 1
+        fi
+        echo "running ${#scripts[@]} notebooks"
+        failed=()
+        for script in "${scripts[@]}"; do
+          name="$(basename "${script}" .py)"
+          echo "::group::${name}"
+          start=${SECONDS}
+          status=0
+          # 15 min per notebook: the slowest (the interpolation tutorial) runs ~2.5 min here, so
+          # this only ever fires on a genuine hang. --kill-after escalates to SIGKILL for a process
+          # that ignores the SIGTERM.
+          DUNE_GDT_NOTEBOOK_WORKDIR="${GITHUB_WORKSPACE}/build/notebook_runs/${name}" \
+            timeout --kill-after=30s 900 \
+            xvfb-run -a uv run --no-project \
+            --python "${GITHUB_WORKSPACE}/.venv/bin/python" python "${script}" || status=$?
+          echo "::endgroup::"
+          if [ "${status}" -eq 0 ]; then
+            echo "${name}: ok ($((SECONDS - start))s)"
+          elif [ "${status}" -eq 124 ] || [ "${status}" -eq 137 ]; then
+            # 124 is timeout(1)'s own status; 137 is a SIGKILL, i.e. --kill-after or the OOM killer
+            echo "::error::${name} did not finish within 900s (exit ${status})"
+            failed+=("${name} (timed out, exit ${status})")
+          else
+            echo "::error::${name} failed with exit status ${status} after $((SECONDS - start))s"
+            failed+=("${name} (exit ${status})")
+          fi
+        done
+        if [ ${#failed[@]} -gt 0 ]; then
+          echo "::error::${#failed[@]} of ${#scripts[@]} notebooks failed: ${failed[*]}"
+          exit 1
+        fi
+        echo "all ${#scripts[@]} notebooks completed"
+
+    - name: Upload the generated notebook scripts
+      # the exact scripts the step above ran, so a CI-only failure can be reproduced verbatim
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: notebook_scripts
+        path: build/notebook_scripts
+        if-no-files-found: warn
+
     - name: Build docs (sphinx + myst-nb notebook execution)
       # Run from a neutral directory so the repo-root `dune/` source tree does not
       # shadow the installed bindings. Notebook execution is the actual test: myst-nb
@@ -739,14 +818,17 @@ jobs:
       # set whose per-worker environment copies under "-j auto" OOM-killed the 16 GB box
       # mid-write. Single-threaded keeps peak RAM bounded; the 60 min timeout is ample.
       #
-      # PYTHONFAULTHANDLER: a notebook kernel that dies from a deadly signal (segfault,
-      # abort) surfaces to sphinx only as nbclient.exceptions.DeadKernelError: Kernel died,
-      # with no traceback -- nb_execution_raise_on_error=False only covers python-level
-      # cell errors, never a killed kernel process. faulthandler installs handlers for
-      # SIGSEGV/SIGABRT/SIGFPE/SIGBUS that dump the C-level Python stack to the kernel's
-      # inherited stderr (this job's own log) before the process dies, turning an
-      # otherwise undiagnosable failure into one with an actual traceback. It cannot catch
-      # SIGKILL (the OOM-killer's signal); "Dump dmesg on docs failure" below covers that.
+      # PYTHONFAULTHANDLER is kept for the sphinx process itself, but -- contrary to what it
+      # was added for -- it does not rescue a dying notebook kernel. The kernel's stderr is
+      # not this job's stderr: ipykernel's capture_fd_output replaces the kernel process'
+      # fd 1/2 with pipes drained by an in-process thread and forwarded over iopub, so a
+      # faulthandler dump written on the way down dies with the process. Sphinx still reports
+      # nothing but nbclient.exceptions.DeadKernelError: Kernel died (nb_execution_raise_on_error
+      # =False only covers python-level cell errors, never a killed kernel process).
+      # The "Execute every notebook in its own process" step above is what diagnoses those deaths:
+      # it runs each notebook as a standalone script in a plain process, where the faulthandler
+      # traceback, the exit status (128+signal) and the peak RSS all survive. "Dump dmesg on docs
+      # failure" below still covers the OOM-killer case, which no in-process handler can catch.
       env:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
         PYTHONFAULTHANDLER: "1"
@@ -779,10 +861,14 @@ jobs:
     - name: Dump dmesg on docs failure
       # A notebook kernel killed by SIGKILL (the OOM-killer) leaves no report above and no
       # faulthandler output either (PYTHONFAULTHANDLER only catches signals a process can
-      # trap); the kernel log is the only place that death is recorded. Non-fatal if dmesg
-      # is unavailable or empty (e.g. a signal faulthandler already caught).
+      # trap); the kernel log is the only place that death is recorded. Grep for the OOM
+      # records explicitly first -- a bare tail is mostly the runner's boot messages, and an
+      # absence of "Killed process" there reads as "not an OOM" when it may just be off-screen.
+      # Non-fatal if dmesg is unavailable or empty.
       if: failure()
-      run: sudo dmesg --time-format iso | tail -n 200 || true
+      run: |
+        sudo dmesg --time-format iso | grep -iE 'out of memory|killed process|oom-kill' || echo "no OOM records in dmesg"
+        sudo dmesg --time-format iso | tail -n 200 || true
 
     - name: Upload built docs HTML
       if: always()
