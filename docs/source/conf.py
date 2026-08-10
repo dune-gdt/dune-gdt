@@ -134,7 +134,10 @@ nb_execution_excludepatterns = []
 # near-miss lookup is a same-directory <stem>.cpp -- of which this repository
 # has none. A database is required all the same: since clangquill 0.10 the
 # Sphinx extension refuses to guess compile flags and aborts without one.
-_cpp_std = "c++17"
+# Tracks CMAKE_CXX_STANDARD in CMakePresets.json: the headers are written
+# against that standard, so parsing them at an older one fails on constructs
+# that are perfectly valid in the build.
+_cpp_std = "c++20"
 _cpp_include_dirs = ["../.."]
 
 

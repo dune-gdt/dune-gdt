@@ -787,9 +787,13 @@ jobs:
       # non-zero at the end -- so the whole warning list is in the log (--keep-going is
       # a no-op there, kept for an older Sphinx, which would abort on the first
       # warning without it). Warnings this repository cannot act on are filtered in
-      # conf.py: libclang's diagnostics about the absent external DUNE headers, the
-      # Sphinx C++ domain choking on the generated C++ API pages, and intersphinx's
-      # network-dependent inventory fetches. Everything else fails the job.
+      # conf.py: the Sphinx C++ domain choking on the generated C++ API pages, the
+      # cosmetic lexer failure on the notebooks' IPython shell escapes, and
+      # intersphinx's network-dependent inventory fetches (only while every
+      # configured inventory is remote). libclang's own parse diagnostics
+      # (clangquill.parse) are deliberately NOT among them -- each marks C++ the
+      # API pages could not read -- so they fail this job until the external
+      # dependency headers are reachable by the parse. Everything else fails it too.
       # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
       # it (4 vCPU / 16 GB GitHub-hosted runner), and the clangquill C++ API now
       # emits one page per class/function (group_by="namespace"), a far larger document
