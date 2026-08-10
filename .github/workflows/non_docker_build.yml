@@ -715,29 +715,6 @@ jobs:
         # configure step below.
         sudo apt-get install -y xvfb gmsh clang ninja-build
 
-    - name: Create the uv-managed virtualenv
-      # uv downloads the requested CPython itself (no actions/setup-python needed).
-      run: uv venv --python "${PYTHON_VERSION}" "${GITHUB_WORKSPACE}/.venv"
-
-    - name: Install bindings and docs/visualisation extras
-      run: |
-        # install the built dune-xt/dune-gdt wheels (xt is an exact-version dep of gdt)
-        uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
-          --find-links wheelhouse/ wheelhouse/*.whl
-        # docs + visualisation extras of the just-installed dune-gdt; the extra
-        # contents are the single source of truth in python/xt/pyproject.toml
-        # (myst-nb executes the notebook cells; k3d provides visualize_function
-        # rendering when the wheels were built with K3D).
-        uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
-          --find-links wheelhouse/ "dune-gdt[docs,visualisation]"
-
-    - name: Fetch published benchmark reports
-      # The benchmark-plots Sphinx directive reads the per-run nanobench JSON reports from this
-      # directory. They live on the orphan `benchmarks` branch; if that branch does not exist yet
-      # the script is a no-op and the docs render a placeholder note.
-      run: |
-        ./.ci/fetch_benchmark_reports.sh "${GITHUB_WORKSPACE}/build/benchmark_data"
-
     - name: Configure CMake (exports the compilation database)
       id: configure_cmake
       # docs/source/conf.py parses the in-tree C++ headers with clangquill, which
@@ -746,6 +723,16 @@ jobs:
       # preset sets CMAKE_EXPORT_COMPILE_COMMANDS=ON into build/<preset>/ (see
       # CMakePresets.json) and CMake's Ninja generator writes the database at
       # generate time -- no compilation is involved.
+      #
+      # ORDER MATTERS -- this must stay BEFORE "Create the uv-managed virtualenv".
+      # The configure's test-setup codegen shells out through
+      # build/release/run-in-dune-env, which picks up an existing
+      # ${GITHUB_WORKSPACE}/.venv; the docs venv holds only the dune-gdt/dune-xt
+      # wheels, not dune-common's `dune` python package, so running after it dies
+      # with "Dune python package could not be found" (return code 77 out of
+      # dune_extract_static.py). benchmarks.yml configures this same preset
+      # successfully because nothing has created a venv at that point either.
+      # It does need uv (see "Set up uv") and ninja (installed above) on PATH.
       #
       # The cost is real: the configure runs vcpkg's manifest install, which
       # builds every dependency from source (~30 min on this runner, measured
@@ -776,6 +763,29 @@ jobs:
           ${{ github.workspace }}/build/release/vcpkg-*.log
           ${{ github.workspace }}/.vcpkg-root/buildtrees/*/*.log
         if-no-files-found: warn
+
+    - name: Create the uv-managed virtualenv
+      # uv downloads the requested CPython itself (no actions/setup-python needed).
+      run: uv venv --python "${PYTHON_VERSION}" "${GITHUB_WORKSPACE}/.venv"
+
+    - name: Install bindings and docs/visualisation extras
+      run: |
+        # install the built dune-xt/dune-gdt wheels (xt is an exact-version dep of gdt)
+        uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
+          --find-links wheelhouse/ wheelhouse/*.whl
+        # docs + visualisation extras of the just-installed dune-gdt; the extra
+        # contents are the single source of truth in python/xt/pyproject.toml
+        # (myst-nb executes the notebook cells; k3d provides visualize_function
+        # rendering when the wheels were built with K3D).
+        uv pip install --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
+          --find-links wheelhouse/ "dune-gdt[docs,visualisation]"
+
+    - name: Fetch published benchmark reports
+      # The benchmark-plots Sphinx directive reads the per-run nanobench JSON reports from this
+      # directory. They live on the orphan `benchmarks` branch; if that branch does not exist yet
+      # the script is a no-op and the docs render a placeholder note.
+      run: |
+        ./.ci/fetch_benchmark_reports.sh "${GITHUB_WORKSPACE}/build/benchmark_data"
 
     - name: Build docs (sphinx + myst-nb notebook execution)
       # Run from a neutral directory so the repo-root `dune/` source tree does not
