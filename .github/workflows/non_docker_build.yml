@@ -619,7 +619,11 @@ jobs:
     # single-threaded (sphinx -j 1), so the standard runner is plenty (it only
     # downloads the wheels artifact and renders HTML).
     runs-on: ubuntu-26.04
-    timeout-minutes: 60
+    # The sphinx run alone is ~31 min (notebook execution dominates). The
+    # configure-only CMake step below adds ~30 min of vcpkg dependency builds --
+    # measured against build-linux's own "Configure CMake" step -- which puts
+    # this job past the previous 60.
+    timeout-minutes: 120
     permissions:
       contents: read
       # needed to look up and download the wheel artifact from another run on
@@ -637,6 +641,12 @@ jobs:
         persist-credentials: false
         fetch-tags: true
         fetch-depth: 0
+
+    - name: Free disk space
+      # The CMake configure below builds every vcpkg dependency from source; the
+      # runner's preinstalled SDKs (Android, .NET, Haskell, ...) are unused here
+      # and just eat into that budget. Same reason as in build-linux/build_wheels.
+      run: ./.ci/free_disk_space.bash
 
     # uv provides and manages the Python interpreter itself, so there is no
     # separate actions/setup-python step; all execution below goes through uv.
@@ -700,8 +710,10 @@ jobs:
         # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
         # discretizer used in example__gmsh_grid; clang provides the builtin-header
         # resource dir (stddef.h & co.) that clangquill's bundled libclang needs to
-        # parse the C++ API headers (see docs/source/conf.py:_clang_resource_dir)
-        sudo apt-get install -y xvfb gmsh clang
+        # parse the C++ API headers (see docs/source/conf.py:_clang_resource_dir);
+        # ninja-build is the generator every CMake preset uses, needed by the
+        # configure step below.
+        sudo apt-get install -y xvfb gmsh clang ninja-build
 
     - name: Create the uv-managed virtualenv
       # uv downloads the requested CPython itself (no actions/setup-python needed).
@@ -726,13 +738,58 @@ jobs:
       run: |
         ./.ci/fetch_benchmark_reports.sh "${GITHUB_WORKSPACE}/build/benchmark_data"
 
+    - name: Configure CMake (exports the compilation database)
+      id: configure_cmake
+      # docs/source/conf.py parses the in-tree C++ headers with clangquill, which
+      # requires a real compile_commands.json and refuses to guess compile flags.
+      # This job never builds the project, so it configures a tree here: every
+      # preset sets CMAKE_EXPORT_COMPILE_COMMANDS=ON into build/<preset>/ (see
+      # CMakePresets.json) and CMake's Ninja generator writes the database at
+      # generate time -- no compilation is involved.
+      #
+      # The cost is real: the configure runs vcpkg's manifest install, which
+      # builds every dependency from source (~30 min on this runner, measured
+      # against build-linux's own configure step). The vcpkg tree is deliberately
+      # not cached anywhere in this repository (see build-linux's "Install
+      # dependencies" comment), so there is nothing to restore.
+      #
+      # `release` is the preset benchmarks.yml also configures on a stock runner:
+      # the default gcc, no clang-22 apt repo, no coverage instrumentation.
+      run: |
+        cmake --preset=release
+        db="${GITHUB_WORKSPACE}/build/release/compile_commands.json"
+        if [[ ! -s "${db}" ]]; then
+          echo "::error::the configure did not export ${db}"
+          exit 1
+        fi
+        # clangquill rejects an empty database; fail here rather than after 30
+        # minutes of notebook execution.
+        python3 -c "import json,sys; sys.exit(0 if json.load(open(sys.argv[1])) else 1)" "${db}" \
+          || { echo "::error::${db} holds no entries"; exit 1; }
+
+    - name: Upload vcpkg error logs (in case of failure)
+      if: failure() && steps.configure_cmake.outcome == 'failure'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: docs_vcpkg_error-log
+        path: |
+          ${{ github.workspace }}/build/release/vcpkg-*.log
+          ${{ github.workspace }}/.vcpkg-root/buildtrees/*/*.log
+        if-no-files-found: warn
+
     - name: Build docs (sphinx + myst-nb notebook execution)
       # Run from a neutral directory so the repo-root `dune/` source tree does not
       # shadow the installed bindings. Notebook execution is the actual test: myst-nb
       # is configured with nb_execution_raise_on_error=False, so a failing notebook
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
-      # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
-      # inventory fetches emit network-dependent warnings unrelated to the docs build.
+      # on those below. -W turns every warning into a build failure; since Sphinx 8 that
+      # no longer aborts on the first one -- the build runs to completion and exits
+      # non-zero at the end -- so the whole warning list is in the log (--keep-going is
+      # a no-op there, kept for an older Sphinx, which would abort on the first
+      # warning without it). Warnings this repository cannot act on are filtered in
+      # conf.py: libclang's diagnostics about the absent external DUNE headers, the
+      # Sphinx C++ domain choking on the generated C++ API pages, and intersphinx's
+      # network-dependent inventory fetches. Everything else fails the job.
       # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
       # it (4 vCPU / 16 GB GitHub-hosted runner), and the clangquill C++ API now
       # emits one page per class/function (group_by="namespace"), a far larger document
@@ -750,13 +807,16 @@ jobs:
       env:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
         PYTHONFAULTHANDLER: "1"
+        # the database exported by the configure step above; conf.py hard-errors
+        # without one and would otherwise scan build/*/ for the newest build tree
+        CLANGQUILL_COMPILE_COMMANDS: ${{ github.workspace }}/build/release
       run: |
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/docs_html"
         # --no-project: ignore the repo-root pyproject stub; run in the venv built above
         xvfb-run -a uv run --no-project \
           --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
-          python -m sphinx --keep-going -j 1 -b html \
+          python -m sphinx -W --keep-going -j 1 -b html \
           "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
           echo "::error::one or more executed documentation notebooks failed (see dumped reports below)"
@@ -783,6 +843,19 @@ jobs:
       # is unavailable or empty (e.g. a signal faulthandler already caught).
       if: failure()
       run: sudo dmesg --time-format iso | tail -n 200 || true
+
+    - name: Upload clangquill diagnostics log
+      # Every libclang diagnostic of the C++ API parse, at every severity, with the
+      # note: chains the Sphinx warning stream drops (clangquill_diagnostics_log in
+      # docs/source/conf.py). These are not suppressed, so under -W they fail the
+      # job -- which is exactly when this artifact is wanted, hence always(): the
+      # log survives the failure and carries the context the one-line warnings lack.
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: clangquill_diagnostics
+        path: build/clangquill-diagnostics.log
+        if-no-files-found: warn
 
     - name: Upload built docs HTML
       if: always()
