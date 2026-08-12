@@ -48,7 +48,9 @@ docs = [
     # now points clangquill at the database CMake exports into build/<preset>/ (CMAKE_EXPORT_COMPILE_COMMANDS is on in
     # every preset), and the build_docs CI job produces one with a configure-only `cmake --preset=release`; an
     # unconfigured tree fails the docs build with an actionable error instead of a guessed set of flags.
-    'clangquill>=0.14.0; python_version >= "3.13"',
+    # 0.15.0 is a packaging-only release (Windows CI, vcpkg bootstrap for building clangquill itself); its src/ is
+    # byte-for-byte identical to 0.14.0's, so this bump changes nothing about how headers are parsed here.
+    'clangquill>=0.15.0; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
 ]
