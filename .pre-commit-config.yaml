@@ -29,7 +29,7 @@ repos:
   hooks:
   - id: actionlint
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: 65dbdb59d2f2d9c3bdc343c566821ad3319ddaa3  # frozen: v0.16.3
+  rev: 65dbdb59d2f2d9c3bdc343c566821ad3319ddaa3 # frozen: v0.16.3
   hooks:
   - id: ruff
   - id: ruff-format
@@ -45,7 +45,7 @@ repos:
     exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
     args: ["--config-files=.cmake_format.py"]
 - repo: https://github.com/python-jsonschema/check-jsonschema
-  rev: c4654a7e007c9619a5eb63c39a456572a0fa1851  # frozen: 0.38.0
+  rev: c4654a7e007c9619a5eb63c39a456572a0fa1851 # frozen: 0.38.0
   hooks:
   - id: check-github-actions
     additional_dependencies:
