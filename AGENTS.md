@@ -48,21 +48,27 @@ Linux ones are `debug`, `release` and `release_coverage` (gcc/Ninja), `clang-deb
 `clang-release`, and `clang22-debug` / `clang22-release_coverage` (what CI's matrix runs).
 All of them use C++20 and set `CMAKE_EXPORT_COMPILE_COMMANDS=ON`.
 
+Cap the compile concurrency — an unbounded `--parallel` will OOM a 16 GB machine. These are
+the same limits CI derives in the `config` job of `.github/workflows/non_docker_build.yml`:
+
 ```bash
-cmake --preset=debug                                            # configure
-cmake --build --preset=debug --parallel                         # the library
-cmake --build --preset=debug --target test_binaries --parallel   # ~520 test binaries
-cmake --build --preset=debug --target bindings --parallel        # python bindings
-xvfb-run -a ctest --preset=debug --parallel                      # run the suite
+JOBS=$(( $(nproc) - 1 ))          # ordinary TUs peak ~2 GB each
+BINDING_JOBS=$(( $(nproc) / 2 ))  # pybind11 TUs peak well above 4 GB each
+CTEST_JOBS=$(( $(nproc) * 2 ))    # tests are short and IO-light, so oversubscribe
+
+cmake --preset=debug                                                            # configure
+cmake --build --preset=debug --parallel -- -j "${JOBS}"                         # the library
+cmake --build --preset=debug --target test_binaries --parallel -- -j "${JOBS}"   # ~520 binaries
+cmake --build --preset=debug --target bindings --parallel -- -j "${BINDING_JOBS}"
+xvfb-run -a ctest --preset=debug --parallel "${CTEST_JOBS}"                      # run the suite
 ```
 
-Two things to budget for, both visible in `.github/workflows/non_docker_build.yml`:
+The bindings get their own tighter cap because their translation units instantiate
+deeply-nested DUNE templates; building them at the shared `nproc - 1` OOM-killed CI's 16 GB
+runner. The `-- -j` form assumes the Ninja generator, which every Linux preset uses.
 
-* A cold configure builds **every** vcpkg dependency from source. That is tens of minutes
-  (~27 min on CI) before a single line of this project compiles.
-* The pybind11 binding translation units instantiate deeply-nested DUNE templates and peak
-  well above 4 GB each. CI builds them at half the vCPU count while everything else runs at
-  `nproc - 1`; an unbounded `-j` will OOM a 16 GB machine.
+Also budget for the cold configure: it builds **every** vcpkg dependency from source, tens of
+minutes (~27 min on CI) before a single line of this project compiles.
 
 Other targets worth knowing: `check` / `recheck` (build and run tests per subdir),
 `dxt_headercheck`, `benchmarks` / `run_benchmarks`, `tidy` (clang-tidy),
