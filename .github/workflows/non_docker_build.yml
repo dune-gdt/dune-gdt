@@ -724,9 +724,11 @@ jobs:
       # as "unknown argument", the dominant class of clangquill.parse diagnostics.
       # clang-22 is not in the stock ubuntu-26.04 apt repositories, so add the
       # official LLVM apt repo via the upstream llvm.sh helper, exactly as
-      # build-linux's clang22-* legs do.
+      # build-linux's clang22-* legs do. --max-redirect=0: apt.llvm.org serves
+      # the script directly and is not expected to redirect; disabling
+      # redirects outright avoids silently following one to an untrusted host.
       run: |
-        wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+        wget -q --max-redirect=0 -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh
         chmod +x /tmp/llvm.sh
         sudo /tmp/llvm.sh 22
         sudo apt-get install -y clang-22 llvm-22
