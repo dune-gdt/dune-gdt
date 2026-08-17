@@ -708,12 +708,29 @@ jobs:
         # Ubuntu repos that provide xvfb/gmsh update fine.
         sudo apt-get update || true
         # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
-        # discretizer used in example__gmsh_grid; clang provides the builtin-header
-        # resource dir (stddef.h & co.) that clangquill's bundled libclang needs to
-        # parse the C++ API headers (see docs/source/conf.py:_clang_resource_dir);
-        # ninja-build is the generator every CMake preset uses, needed by the
-        # configure step below.
-        sudo apt-get install -y xvfb gmsh clang ninja-build
+        # discretizer used in example__gmsh_grid; ninja-build is the generator
+        # every CMake preset uses, needed by the configure step below. clang-22
+        # (the version clangquill's bundled libclang matches) is installed
+        # separately below, mirroring build-linux's clang22-* legs.
+        sudo apt-get install -y xvfb gmsh ninja-build
+
+    - name: Install Clang 22
+      # The clang22-debug preset configured below compiles the project with
+      # clang-22/clang++-22, so its exported compile_commands.json entries carry
+      # clang driver flags -- flags libclang (which clangquill bundles) understands.
+      # Configuring with the gcc-based `release` preset instead produced database
+      # entries with gcc-only driver flags (e.g. -fmodule-mapper=... from CMake's
+      # C++20 module dependency scanning) that libclang's parse rejected outright
+      # as "unknown argument", the dominant class of clangquill.parse diagnostics.
+      # clang-22 is not in the stock ubuntu-26.04 apt repositories, so add the
+      # official LLVM apt repo via the upstream llvm.sh helper, exactly as
+      # build-linux's clang22-* legs do.
+      run: |
+        wget -qO /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+        chmod +x /tmp/llvm.sh
+        sudo /tmp/llvm.sh 22
+        sudo apt-get install -y clang-22 llvm-22
+        clang-22 --version
 
     - name: Configure CMake (exports the compilation database)
       id: configure_cmake
@@ -726,7 +743,7 @@ jobs:
       #
       # ORDER MATTERS -- this must stay BEFORE "Create the uv-managed virtualenv".
       # The configure's test-setup codegen shells out through
-      # build/release/run-in-dune-env, which picks up an existing
+      # build/clang22-debug/run-in-dune-env, which picks up an existing
       # ${GITHUB_WORKSPACE}/.venv; the docs venv holds only the dune-gdt/dune-xt
       # wheels, not dune-common's `dune` python package, so running after it dies
       # with "Dune python package could not be found" (return code 77 out of
@@ -740,11 +757,15 @@ jobs:
       # not cached anywhere in this repository (see build-linux's "Install
       # dependencies" comment), so there is nothing to restore.
       #
-      # `release` is the preset benchmarks.yml also configures on a stock runner:
-      # the default gcc, no clang-22 apt repo, no coverage instrumentation.
+      # `clang22-debug` (see CMakePresets.json) compiles with clang-22/clang++-22
+      # -- see "Install Clang 22" above for why that toolchain choice matters here.
+      # It is preferred over clang22-release_coverage, the other clang22 preset,
+      # which additionally sets -fprofile-instr-generate -fcoverage-mapping; those
+      # coverage-instrumentation flags would end up in every database entry for no
+      # benefit here, since this job never runs the instrumented binaries.
       run: |
-        cmake --preset=release
-        db="${GITHUB_WORKSPACE}/build/release/compile_commands.json"
+        cmake --preset=clang22-debug
+        db="${GITHUB_WORKSPACE}/build/clang22-debug/compile_commands.json"
         if [[ ! -s "${db}" ]]; then
           echo "::error::the configure did not export ${db}"
           exit 1
@@ -760,7 +781,7 @@ jobs:
       with:
         name: docs_vcpkg_error-log
         path: |
-          ${{ github.workspace }}/build/release/vcpkg-*.log
+          ${{ github.workspace }}/build/clang22-debug/vcpkg-*.log
           ${{ github.workspace }}/.vcpkg-root/buildtrees/*/*.log
         if-no-files-found: warn
 
@@ -823,7 +844,7 @@ jobs:
         PYTHONFAULTHANDLER: "1"
         # the database exported by the configure step above; conf.py hard-errors
         # without one and would otherwise scan build/*/ for the newest build tree
-        CLANGQUILL_COMPILE_COMMANDS: ${{ github.workspace }}/build/release
+        CLANGQUILL_COMPILE_COMMANDS: ${{ github.workspace }}/build/clang22-debug
       run: |
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/docs_html"

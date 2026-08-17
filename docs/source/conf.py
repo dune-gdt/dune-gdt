@@ -109,14 +109,23 @@ nb_execution_excludepatterns = []
 # All clangquill paths are resolved relative to this srcdir (docs/source),
 # so "../.." is the repository root: the input glob covers dune/{gdt,xt}/**/*.hh
 # and the include dir lets the intra-tree `#include <dune/...>` headers resolve.
-# The external dependency headers (dune-common, dune-grid, boost, Eigen, ...)
-# are not reachable by the parse: the compilation database keys its entries on
-# translation units, and clangquill's only near-miss lookup for a header is a
-# same-directory <stem>.cpp, of which this repository has none -- so every
-# header is parsed with clangquill_std / clangquill_include_dirs below rather
-# than with the flags the database records for it. libclang reports the
-# unresolved includes as errors and still extracts every symbol it can parse
-# around them. Those diagnostics are deliberately
+# The compilation database below does hold entries for some in-tree headers:
+# dune-common's ENABLE_HEADERCHECK mechanism compiles one generated
+# <build>/headercheck/<...>.hh.cc stub per header, keyed to the header it
+# checks -- confirmed directly from the diagnostics log, which reports flags
+# belonging to headercheck__dune_gdt_algorithms_newton.hh. Third-party headers
+# (boost, Eigen, gtest, tbb, config.h, pybind11) have no such stub -- nothing
+# in this build compiles them standalone -- so they always fall through to the
+# clangquill_std / clangquill_include_dirs / clangquill_clang_resource_dir
+# fallback below.
+# A matched header's database entry was produced by whatever compiler the
+# configure below used; if that differs from the libclang clangquill parses
+# with, its driver flags can include ones libclang rejects outright as
+# "unknown argument" -- this is why the docs job configures with a clang
+# preset (see non_docker_build.yml) rather than the gcc-based default.
+# libclang reports every include it cannot resolve, and every flag it
+# rejects, as errors, while still extracting every symbol it can parse around
+# them. Those diagnostics are deliberately
 # *not* suppressed -- they are real gaps in what the C++ API pages can document,
 # so the -W build surfaces them rather than hiding them. Should the wheel be
 # built without libclang, the extension writes a placeholder page and warns
@@ -127,13 +136,14 @@ nb_execution_excludepatterns = []
 # The C++ standard and include dirs the in-tree headers are parsed with.
 # clangquill falls back to these -- plus clangquill_clang_resource_dir, which
 # only ever reaches libclang on this same fallback path -- for every input the
-# compilation database holds no entry for. Here that is every input: CMake keys
-# its entries on translation units (the in-tree .cc sources, the generated
-# test/binding TUs, and dune-common's headercheck stubs under
-# <build>/headercheck/<...>.hh.cc), never on a header, and clangquill's only
-# near-miss lookup is a same-directory <stem>.cpp -- of which this repository
-# has none. A database is required all the same: since clangquill 0.10 the
-# Sphinx extension refuses to guess compile flags and aborts without one.
+# compilation database holds no entry for: every third-party header (boost,
+# Eigen, gtest, tbb, config.h, pybind11 -- nothing compiles them standalone,
+# so no database entry ever names them) and any in-tree header dune-common's
+# ENABLE_HEADERCHECK stubs do not cover. clangquill's only near-miss lookup
+# beyond an exact path match is a same-directory <stem>.cpp -- of which this
+# repository has none, so it never fires. A database is required all the
+# same: since clangquill 0.10 the Sphinx extension refuses to guess compile
+# flags and aborts without one.
 # Tracks CMAKE_CXX_STANDARD in CMakePresets.json: the headers are written
 # against that standard, so parsing them at an older one fails on constructs
 # that are perfectly valid in the build.
@@ -147,10 +157,13 @@ def _clang_resource_dir():
     clangquill's bundled libclang ships no builtin headers, so any system
     ``#include`` (``<cstddef>``, ``<vector>``, ...) fails with ``'stddef.h' file
     not found`` unless we point clang at a resource directory. Prefer an explicit
-    ``CLANGQUILL_CLANG_RESOURCE_DIR`` override, otherwise ask any ``clang`` on
-    ``PATH`` where its builtins live. Returns ``None`` when none is found, which
-    leaves clang to its own (here unset) default — generation still runs, just
-    with more diagnostics.
+    ``CLANGQUILL_CLANG_RESOURCE_DIR`` override, otherwise ask ``clang`` on
+    ``PATH`` where its builtins live, preferring ``clang-22`` -- the version
+    clangquill currently bundles (libclang-*.so.22.1.8) -- since a resource dir
+    from a different clang major version can be missing headers this libclang
+    expects, or carry ones it does not. Returns ``None`` when none is found,
+    which leaves clang to its own (here unset) default — generation still
+    runs, just with more diagnostics.
     """
     import shutil  # noqa: PLC0415
     import subprocess  # noqa: PLC0415
@@ -159,7 +172,10 @@ def _clang_resource_dir():
     if override:
         return override
     clang = (
-        shutil.which("clang") or shutil.which("clang-18") or shutil.which("clang-19")
+        shutil.which("clang-22")
+        or shutil.which("clang")
+        or shutil.which("clang-18")
+        or shutil.which("clang-19")
     )
     if not clang:
         return None
