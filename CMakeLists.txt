@@ -27,8 +27,13 @@ include(cmake/VcpkgBootStrap.cmake)
 # ~520 test binaries and the Python bindings, and mold is dramatically faster at that than GNU ld/lld. CMAKE_LINKER_TYPE
 # (CMake >= 3.29) must be set before the first project()/enable_language() call to take effect, and only respected for
 # the GNU/Clang compiler frontends this project actually uses (mold does not support MSVC, so skip it on Windows).
+# CMAKE_HOST_WIN32 guards the native-Windows preset (windows-debug/windows-release, Visual Studio generator) that this
+# repo actually uses -- it is reliably set this early, unlike the target-oriented WIN32, which this project has no
+# toolchain file establishing pre-project() anyway. CMAKE_SYSTEM_NAME additionally covers a hypothetical
+# -DCMAKE_SYSTEM_NAME=Windows cross-compile (e.g. MinGW from Linux), which no preset here sets up today, but which
+# would otherwise slip past the host check since the host stays non-Windows in that scenario.
 # Respect an explicit -DCMAKE_LINKER_TYPE=... override instead of clobbering it.
-if(NOT CMAKE_LINKER_TYPE AND NOT CMAKE_HOST_WIN32)
+if(NOT CMAKE_LINKER_TYPE AND NOT CMAKE_HOST_WIN32 AND NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
   find_program(MOLD_LINKER mold)
   if(MOLD_LINKER)
     set(CMAKE_LINKER_TYPE MOLD)
