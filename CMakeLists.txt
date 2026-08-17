@@ -23,6 +23,18 @@ cmake_policy(SET CMP0167 NEW)
 include(cmake/DuneGdtVersioneer.cmake)
 include(cmake/VcpkgBootStrap.cmake)
 
+# Prefer the mold linker (https://github.com/rui314/mold) when it is installed: this project links a shared library,
+# ~520 test binaries and the Python bindings, and mold is dramatically faster at that than GNU ld/lld. CMAKE_LINKER_TYPE
+# (CMake >= 3.29) must be set before the first project()/enable_language() call to take effect, and only respected for
+# the GNU/Clang compiler frontends this project actually uses (mold does not support MSVC, so skip it on Windows).
+# Respect an explicit -DCMAKE_LINKER_TYPE=... override instead of clobbering it.
+if(NOT CMAKE_LINKER_TYPE AND NOT CMAKE_HOST_WIN32)
+  find_program(MOLD_LINKER mold)
+  if(MOLD_LINKER)
+    set(CMAKE_LINKER_TYPE MOLD)
+  endif()
+endif()
+
 project(
   dune-gdt
   VERSION ${PROJECT_VERSION}

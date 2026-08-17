@@ -43,7 +43,10 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build
+        # mold is picked up automatically by the top-level CMakeLists.txt
+        # (CMAKE_LINKER_TYPE) when present, and links the benchmark binaries
+        # much faster than GNU ld/lld.
+        sudo apt-get install -y ninja-build mold
 
     - name: Set up uv
       # The configure step expands the templated test suites through `uv run` (see

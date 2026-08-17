@@ -34,6 +34,12 @@ git config --global --add safe.directory "${DUNE_SRC_DIR}"
 git config --global --add safe.directory '*'
 
 yum install -y curl zip unzip tar ccache
+# mold (https://github.com/rui314/mold) is not in the manylinux_2_28 (AlmaLinux 8)
+# base repos, only in EPEL. It is picked up automatically by the top-level
+# CMakeLists.txt (CMAKE_LINKER_TYPE) when present, and links the release LTO
+# bindings much faster than GNU ld/lld.
+yum install -y epel-release
+yum install -y mold
 
 # some of our vcpkg deps don't build with cmake 4 yet
 # the container's cmake is managed with pipx already
