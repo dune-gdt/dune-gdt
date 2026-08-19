@@ -815,18 +815,12 @@ jobs:
       # shadow the installed bindings. Notebook execution is the actual test: myst-nb
       # is configured with nb_execution_raise_on_error=False, so a failing notebook
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
-      # on those below. -W turns every warning into a build failure; since Sphinx 8 that
-      # no longer aborts on the first one -- the build runs to completion and exits
-      # non-zero at the end -- so the whole warning list is in the log (--keep-going is
-      # a no-op there, kept for an older Sphinx, which would abort on the first
-      # warning without it). Warnings this repository cannot act on are filtered in
-      # conf.py: the Sphinx C++ domain choking on the generated C++ API pages, the
-      # cosmetic lexer failure on the notebooks' IPython shell escapes, and
-      # intersphinx's network-dependent inventory fetches (only while every
-      # configured inventory is remote). libclang's own parse diagnostics
-      # (clangquill.parse) are deliberately NOT among them -- each marks C++ the
-      # API pages could not read -- so they fail this job until the external
-      # dependency headers are reachable by the parse. Everything else fails it too.
+      # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
+      # inventory fetches emit network-dependent warnings unrelated to the docs build.
+      # libclang's own parse diagnostics (clangquill.parse) are visible in this log
+      # regardless -- each marks C++ the API pages could not read -- and the full
+      # diagnostics (including the `note:` chains) are archived as the
+      # clangquill_diagnostics artifact below.
       # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
       # it (4 vCPU / 16 GB GitHub-hosted runner), and the clangquill C++ API now
       # emits one page per class/function (group_by="namespace"), a far larger document
@@ -853,7 +847,7 @@ jobs:
         # --no-project: ignore the repo-root pyproject stub; run in the venv built above
         xvfb-run -a uv run --no-project \
           --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
-          python -m sphinx -W --keep-going -j 1 -b html \
+          python -m sphinx --keep-going -j 1 -b html \
           "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
           echo "::error::one or more executed documentation notebooks failed (see dumped reports below)"
@@ -884,9 +878,9 @@ jobs:
     - name: Upload clangquill diagnostics log
       # Every libclang diagnostic of the C++ API parse, at every severity, with the
       # note: chains the Sphinx warning stream drops (clangquill_diagnostics_log in
-      # docs/source/conf.py). These are not suppressed, so under -W they fail the
-      # job -- which is exactly when this artifact is wanted, hence always(): the
-      # log survives the failure and carries the context the one-line warnings lack.
+      # docs/source/conf.py) -- the context needed to actually fix one, which the
+      # one-line warnings in the job log lack. Uploaded with always() so it is
+      # retrievable on every run, not only a failing one.
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
