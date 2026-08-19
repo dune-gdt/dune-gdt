@@ -22,6 +22,9 @@
       "pattern": "^https://zivgitlab.uni-muenster.de"
     },
     {
+      "pattern": "^https://gitlab\\.dune-project\\.org(?:/|$)"
+    },
+    {
       "pattern": "^tutorials$"
     },
     {
