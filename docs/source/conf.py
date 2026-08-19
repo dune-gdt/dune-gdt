@@ -5,6 +5,7 @@ from pathlib import Path
 
 import slugify
 import sphinx
+from sphinx.errors import ConfigError
 
 import dune.gdt
 
@@ -19,6 +20,9 @@ needs_sphinx = "3.4"
 # -----------------------------------------------------------------------------
 
 this_dir = Path(__file__).resolve().parent
+# repository root: this file lives in docs/source (used for the C++ API parse
+# below and for the linkcode source links at the bottom of this file)
+_repo_root = (this_dir / ".." / "..").resolve()
 src_dir = (this_dir / ".." / ".." / "src").resolve()
 sys.path.insert(0, str(src_dir))
 sys.path.insert(0, str(this_dir))
@@ -103,11 +107,44 @@ nb_execution_excludepatterns = []
 # All clangquill paths are resolved relative to this srcdir (docs/source),
 # so "../.." is the repository root: the input glob covers dune/{gdt,xt}/**/*.hh
 # and the include dir lets the intra-tree `#include <dune/...>` headers resolve.
-# The external DUNE dependency headers (dune-common, dune-grid, ...) are not
-# present in the docs environment; libclang reports those as non-fatal
-# diagnostics and still extracts every symbol it can parse. Should the wheel be
-# built without libclang, the extension degrades to a placeholder page rather
-# than failing the build.
+# The compilation database below does hold entries for some in-tree headers:
+# dune-common's ENABLE_HEADERCHECK mechanism compiles one generated
+# <build>/headercheck/<...>.hh.cc stub per header, keyed to the header it
+# checks -- confirmed directly from the diagnostics log, which reports flags
+# belonging to headercheck__dune_gdt_algorithms_newton.hh. Third-party headers
+# (boost, Eigen, gtest, tbb, config.h, pybind11) have no such stub -- nothing
+# in this build compiles them standalone -- so they always fall through to the
+# clangquill_std / clangquill_include_dirs / clangquill_clang_resource_dir
+# fallback below.
+# A matched header's database entry was produced by whatever compiler the
+# configure below used; if that differs from the libclang clangquill parses
+# with, its driver flags can include ones libclang rejects outright as
+# "unknown argument" -- this is why the docs job configures with a clang
+# preset (see non_docker_build.yml) rather than the gcc-based default.
+# libclang reports every include it cannot resolve, and every flag it
+# rejects, as errors, while still extracting every symbol it can parse around
+# them -- these are real gaps in what the C++ API pages can document, so they
+# are surfaced as Sphinx warnings rather than hidden. Should the wheel be built
+# without libclang, the extension writes a placeholder page and warns
+# (clangquill.libclang) rather than silently publishing the manual without any
+# C++ API at all.
+
+# The C++ standard and include dirs the in-tree headers are parsed with.
+# clangquill falls back to these -- plus clangquill_clang_resource_dir, which
+# only ever reaches libclang on this same fallback path -- for every input the
+# compilation database holds no entry for: every third-party header (boost,
+# Eigen, gtest, tbb, config.h, pybind11 -- nothing compiles them standalone,
+# so no database entry ever names them) and any in-tree header dune-common's
+# ENABLE_HEADERCHECK stubs do not cover. clangquill's only near-miss lookup
+# beyond an exact path match is a same-directory <stem>.cpp -- of which this
+# repository has none, so it never fires. A database is required all the
+# same: since clangquill 0.10 the Sphinx extension refuses to guess compile
+# flags and aborts without one.
+# Tracks CMAKE_CXX_STANDARD in CMakePresets.json: the headers are written
+# against that standard, so parsing them at an older one fails on constructs
+# that are perfectly valid in the build.
+_cpp_std = "c++20"
+_cpp_include_dirs = ["../.."]
 
 
 def _clang_resource_dir():
@@ -116,10 +153,13 @@ def _clang_resource_dir():
     clangquill's bundled libclang ships no builtin headers, so any system
     ``#include`` (``<cstddef>``, ``<vector>``, ...) fails with ``'stddef.h' file
     not found`` unless we point clang at a resource directory. Prefer an explicit
-    ``CLANGQUILL_CLANG_RESOURCE_DIR`` override, otherwise ask any ``clang`` on
-    ``PATH`` where its builtins live. Returns ``None`` when none is found, which
-    leaves clang to its own (here unset) default — generation still runs, just
-    with more diagnostics.
+    ``CLANGQUILL_CLANG_RESOURCE_DIR`` override, otherwise ask ``clang`` on
+    ``PATH`` where its builtins live, preferring ``clang-22`` -- the version
+    clangquill currently bundles (libclang-*.so.22.1.8) -- since a resource dir
+    from a different clang major version can be missing headers this libclang
+    expects, or carry ones it does not. Returns ``None`` when none is found,
+    which leaves clang to its own (here unset) default — generation still
+    runs, just with more diagnostics.
     """
     import shutil  # noqa: PLC0415
     import subprocess  # noqa: PLC0415
@@ -128,7 +168,10 @@ def _clang_resource_dir():
     if override:
         return override
     clang = (
-        shutil.which("clang") or shutil.which("clang-18") or shutil.which("clang-19")
+        shutil.which("clang-22")
+        or shutil.which("clang")
+        or shutil.which("clang-18")
+        or shutil.which("clang-19")
     )
     if not clang:
         return None
@@ -144,10 +187,54 @@ def _clang_resource_dir():
     return out.stdout.strip() or None
 
 
+def _compile_commands_dir():
+    """Locate the CMake-exported compilation database clangquill parses with.
+
+    Every preset configures with ``CMAKE_EXPORT_COMPILE_COMMANDS=ON`` into
+    ``build/<preset>/`` (see CMakePresets.json), and CMake's Ninja generator
+    writes the database at *generate* time -- configuring a build tree is
+    enough, nothing has to be compiled. ``CLANGQUILL_COMPILE_COMMANDS`` names
+    one explicitly (a directory holding a ``compile_commands.json``, or that
+    file itself); otherwise the most recently configured build tree is used. A
+    database that exists but is unreadable, malformed or empty is rejected by
+    clangquill itself with a message naming the file, so only the
+    nothing-found case is handled here.
+    """
+    override = os.environ.get("CLANGQUILL_COMPILE_COMMANDS")
+    if override:
+        return override
+    build_dir = _repo_root / "build"
+    # A CMakeCache.txt beside it is what makes a directory a configured build
+    # tree; it also keeps any hand-written database from being picked up.
+    databases = [
+        path
+        for path in build_dir.glob("*/compile_commands.json")
+        if (path.parent / "CMakeCache.txt").is_file()
+    ]
+    if not databases:
+        raise ConfigError(
+            "no CMake compilation database found. The C++ API pages are parsed "
+            "with clangquill, which requires one and does not guess compile "
+            "flags.\n"
+            f"Looked for: {build_dir}/*/compile_commands.json (next to a "
+            "CMakeCache.txt)\n"
+            "Configure a build tree once -- configuring is enough, nothing has "
+            "to be compiled:\n"
+            "    cmake --preset=release\n"
+            "(any preset in CMakePresets.json exports the database; see "
+            "`cmake --list-presets`). Alternatively point "
+            "CLANGQUILL_COMPILE_COMMANDS at an existing database (a directory "
+            "holding a compile_commands.json, or that file itself)."
+        )
+    # Newest wins: the tree configured last is the one being worked in.
+    return str(max(databases, key=lambda path: path.stat().st_mtime).parent)
+
+
 clangquill_input = ["../../dune/**/*.hh"]
-clangquill_include_dirs = ["../.."]
-clangquill_std = "c++17"
+clangquill_include_dirs = _cpp_include_dirs
+clangquill_std = _cpp_std
 clangquill_clang_resource_dir = _clang_resource_dir()
+clangquill_compile_commands = _compile_commands_dir()
 clangquill_output_dir = "cpp_api"
 # Build a browsable namespace hierarchy (clangquill >= 0.6.0): the index lists
 # only the top namespaces, each namespace hub links its sub-namespaces, classes,
@@ -161,6 +248,15 @@ clangquill_group_by = "namespace"
 clangquill_include_undocumented = True
 # Persist the SQLite IR + page hashes so local rebuilds are incremental.
 clangquill_cache_dir = "_clangquill_cache"
+# Full libclang diagnostics of the run -- every severity, plus the `note:` chain
+# attached to each -- written here (clangquill >= 0.14). The Sphinx warning
+# stream only ever carries the errors, and only their top-level message, so this
+# file is where the context needed to actually fix one lives: which include
+# failed, and the notes explaining what it made unparseable. Written under the
+# git-ignored build/ next to the generated compilation database rather than into
+# the srcdir, and uploaded by the docs CI job (see non_docker_build.yml) so the
+# full diagnostics are retrievable instead of only scrollable in the log.
+clangquill_diagnostics_log = "../../build/clangquill-diagnostics.log"
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
@@ -373,7 +469,6 @@ try_on_binder_slug = os.environ.get(
 
 # repository hosting both the tutorial sources and the python bindings
 _linkcode_baseurl = "https://github.com/dune-gdt/dune-gdt"
-_repo_root = (this_dir / ".." / "..").resolve()
 
 
 def linkcode_resolve(domain, info):

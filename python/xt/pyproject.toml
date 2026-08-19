@@ -40,11 +40,17 @@ docs = [
     # clangquill only supports Python >=3.13. Mark it so that resolving the project's extras (which `uv run --group test`
     # does in project mode, see cmake/modules/DuneXTTesting.cmake) stays satisfiable on the Python 3.12 test builds; the
     # docs themselves are built on 3.13. Without the marker the test resolution fails with an unsatisfiable requirement.
-    # >=0.6.0 for the hierarchical group_by="namespace" page layout (docs/source/conf.py). <0.10.0: 0.10.0 made
-    # clangquill_compile_commands mandatory instead of optional, and the docs build here never sets it (the build_docs CI
-    # job only installs the prebuilt wheels, it never runs CMake, so there is no compile_commands.json to point at) --
-    # breaking every docs build with "clangquill_compile_commands is not configured".
-    'clangquill>=0.6.0,<0.10.0; python_version >= "3.13"',
+    # >=0.14.0: 0.10.0 made clangquill_compile_commands required (the Sphinx extension no longer guesses compile flags)
+    # and 0.14.0 added clangquill_diagnostics_log, which docs/source/conf.py configures; on top of that comes the
+    # hierarchical group_by="namespace" page layout. All of it is set up in docs/source/conf.py. The floor deliberately
+    # drops the `<0.10.0` cap main added as a stopgap: that cap was there because nothing configured
+    # clangquill_compile_commands and the docs build died with "clangquill_compile_commands is not configured". conf.py
+    # now points clangquill at the database CMake exports into build/<preset>/ (CMAKE_EXPORT_COMPILE_COMMANDS is on in
+    # every preset), and the build_docs CI job produces one with a configure-only `cmake --preset=release`; an
+    # unconfigured tree fails the docs build with an actionable error instead of a guessed set of flags.
+    # 0.15.0 is a packaging-only release (Windows CI, vcpkg bootstrap for building clangquill itself); its src/ is
+    # byte-for-byte identical to 0.14.0's, so this bump changes nothing about how headers are parsed here.
+    'clangquill>=0.15.0; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
 ]

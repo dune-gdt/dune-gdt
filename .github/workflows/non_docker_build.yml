@@ -622,7 +622,11 @@ jobs:
     # single-threaded (sphinx -j 1), so the standard runner is plenty (it only
     # downloads the wheels artifact and renders HTML).
     runs-on: ubuntu-26.04
-    timeout-minutes: 60
+    # The sphinx run alone is ~31 min (notebook execution dominates). The
+    # configure-only CMake step below adds ~30 min of vcpkg dependency builds --
+    # measured against build-linux's own "Configure CMake" step -- which puts
+    # this job past the previous 60.
+    timeout-minutes: 120
     permissions:
       contents: read
       # needed to look up and download the wheel artifact from another run on
@@ -640,6 +644,12 @@ jobs:
         persist-credentials: false
         fetch-tags: true
         fetch-depth: 0
+
+    - name: Free disk space
+      # The CMake configure below builds every vcpkg dependency from source; the
+      # runner's preinstalled SDKs (Android, .NET, Haskell, ...) are unused here
+      # and just eat into that budget. Same reason as in build-linux/build_wheels.
+      run: ./.ci/free_disk_space.bash
 
     # uv provides and manages the Python interpreter itself, so there is no
     # separate actions/setup-python step; all execution below goes through uv.
@@ -701,10 +711,84 @@ jobs:
         # Ubuntu repos that provide xvfb/gmsh update fine.
         sudo apt-get update || true
         # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
-        # discretizer used in example__gmsh_grid; clang provides the builtin-header
-        # resource dir (stddef.h & co.) that clangquill's bundled libclang needs to
-        # parse the C++ API headers (see docs/source/conf.py:_clang_resource_dir)
-        sudo apt-get install -y xvfb gmsh clang
+        # discretizer used in example__gmsh_grid; ninja-build is the generator
+        # every CMake preset uses, needed by the configure step below. clang-22
+        # (the version clangquill's bundled libclang matches) is installed
+        # separately below, mirroring build-linux's clang22-* legs.
+        sudo apt-get install -y xvfb gmsh ninja-build
+
+    - name: Install Clang 22
+      # The clang22-debug preset configured below compiles the project with
+      # clang-22/clang++-22, so its exported compile_commands.json entries carry
+      # clang driver flags -- flags libclang (which clangquill bundles) understands.
+      # Configuring with the gcc-based `release` preset instead produced database
+      # entries with gcc-only driver flags (e.g. -fmodule-mapper=... from CMake's
+      # C++20 module dependency scanning) that libclang's parse rejected outright
+      # as "unknown argument", the dominant class of clangquill.parse diagnostics.
+      # clang-22 is not in the stock ubuntu-26.04 apt repositories, so add the
+      # official LLVM apt repo via the upstream llvm.sh helper, exactly as
+      # build-linux's clang22-* legs do. --max-redirect=0: apt.llvm.org serves
+      # the script directly and is not expected to redirect; disabling
+      # redirects outright avoids silently following one to an untrusted host.
+      run: |
+        wget -q --max-redirect=0 -O /tmp/llvm.sh https://apt.llvm.org/llvm.sh
+        chmod +x /tmp/llvm.sh
+        sudo /tmp/llvm.sh 22
+        sudo apt-get install -y clang-22 llvm-22
+        clang-22 --version
+
+    - name: Configure CMake (exports the compilation database)
+      id: configure_cmake
+      # docs/source/conf.py parses the in-tree C++ headers with clangquill, which
+      # requires a real compile_commands.json and refuses to guess compile flags.
+      # This job never builds the project, so it configures a tree here: every
+      # preset sets CMAKE_EXPORT_COMPILE_COMMANDS=ON into build/<preset>/ (see
+      # CMakePresets.json) and CMake's Ninja generator writes the database at
+      # generate time -- no compilation is involved.
+      #
+      # ORDER MATTERS -- this must stay BEFORE "Create the uv-managed virtualenv".
+      # The configure's test-setup codegen shells out through
+      # build/clang22-debug/run-in-dune-env, which picks up an existing
+      # ${GITHUB_WORKSPACE}/.venv; the docs venv holds only the dune-gdt/dune-xt
+      # wheels, not dune-common's `dune` python package, so running after it dies
+      # with "Dune python package could not be found" (return code 77 out of
+      # dune_extract_static.py). benchmarks.yml configures this same preset
+      # successfully because nothing has created a venv at that point either.
+      # It does need uv (see "Set up uv") and ninja (installed above) on PATH.
+      #
+      # The cost is real: the configure runs vcpkg's manifest install, which
+      # builds every dependency from source (~30 min on this runner, measured
+      # against build-linux's own configure step). The vcpkg tree is deliberately
+      # not cached anywhere in this repository (see build-linux's "Install
+      # dependencies" comment), so there is nothing to restore.
+      #
+      # `clang22-debug` (see CMakePresets.json) compiles with clang-22/clang++-22
+      # -- see "Install Clang 22" above for why that toolchain choice matters here.
+      # It is preferred over clang22-release_coverage, the other clang22 preset,
+      # which additionally sets -fprofile-instr-generate -fcoverage-mapping; those
+      # coverage-instrumentation flags would end up in every database entry for no
+      # benefit here, since this job never runs the instrumented binaries.
+      run: |
+        cmake --preset=clang22-debug
+        db="${GITHUB_WORKSPACE}/build/clang22-debug/compile_commands.json"
+        if [[ ! -s "${db}" ]]; then
+          echo "::error::the configure did not export ${db}"
+          exit 1
+        fi
+        # clangquill rejects an empty database; fail here rather than after 30
+        # minutes of notebook execution.
+        python3 -c "import json,sys; sys.exit(0 if json.load(open(sys.argv[1])) else 1)" "${db}" \
+          || { echo "::error::${db} holds no entries"; exit 1; }
+
+    - name: Upload vcpkg error logs (in case of failure)
+      if: failure() && steps.configure_cmake.outcome == 'failure'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: docs_vcpkg_error-log
+        path: |
+          ${{ github.workspace }}/build/clang22-debug/vcpkg-*.log
+          ${{ github.workspace }}/.vcpkg-root/buildtrees/*/*.log
+        if-no-files-found: warn
 
     - name: Create the uv-managed virtualenv
       # uv downloads the requested CPython itself (no actions/setup-python needed).
@@ -736,6 +820,10 @@ jobs:
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
       # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
       # inventory fetches emit network-dependent warnings unrelated to the docs build.
+      # libclang's own parse diagnostics (clangquill.parse) are visible in this log
+      # regardless -- each marks C++ the API pages could not read -- and the full
+      # diagnostics (including the `note:` chains) are archived as the
+      # clangquill_diagnostics artifact below.
       # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
       # it (4 vCPU / 16 GB GitHub-hosted runner), and the clangquill C++ API now
       # emits one page per class/function (group_by="namespace"), a far larger document
@@ -753,6 +841,9 @@ jobs:
       env:
         DUNE_GDT_BENCHMARK_DATA: ${{ github.workspace }}/build/benchmark_data
         PYTHONFAULTHANDLER: "1"
+        # the database exported by the configure step above; conf.py hard-errors
+        # without one and would otherwise scan build/*/ for the newest build tree
+        CLANGQUILL_COMPILE_COMMANDS: ${{ github.workspace }}/build/clang22-debug
       run: |
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/docs_html"
@@ -786,6 +877,19 @@ jobs:
       # is unavailable or empty (e.g. a signal faulthandler already caught).
       if: failure()
       run: sudo dmesg --time-format iso | tail -n 200 || true
+
+    - name: Upload clangquill diagnostics log
+      # Every libclang diagnostic of the C++ API parse, at every severity, with the
+      # note: chains the Sphinx warning stream drops (clangquill_diagnostics_log in
+      # docs/source/conf.py) -- the context needed to actually fix one, which the
+      # one-line warnings in the job log lack. Uploaded with always() so it is
+      # retrievable on every run, not only a failing one.
+      if: always()
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: clangquill_diagnostics
+        path: build/clangquill-diagnostics.log
+        if-no-files-found: warn
 
     - name: Upload built docs HTML
       if: always()
