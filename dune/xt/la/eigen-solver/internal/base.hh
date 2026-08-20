@@ -30,6 +30,7 @@
 #include <dune/xt/la/container/conversion.hh>
 #include <dune/xt/la/container/matrix-interface.hh>
 #include <dune/xt/la/exceptions.hh>
+#include <dune/xt/la/internal/real-eigenvectors.hh>
 #include <dune/xt/la/matrix-inverter.hh>
 
 namespace Dune::XT::LA {
@@ -446,102 +447,6 @@ protected:
   template <class T>
   struct real_eigenvectors_helper<true, T>
   {
-    // Group the indices of equal real eigenvalues together (kept as a separate helper to limit nesting depth).
-    static std::pair<std::vector<std::vector<size_t>>, std::vector<size_t>>
-    compute_eigenvalue_groups(const ThisType& self, const size_t rows)
-    {
-      struct Cmp
-      {
-        bool operator()(const RealType& a, const RealType& b) const
-        {
-          return XT::Common::FloatCmp::lt(a, b);
-        }
-      };
-      std::vector<std::vector<size_t>> eigenvalue_groups;
-      std::vector<size_t> eigenvalue_multiplicity;
-      std::set<RealType, Cmp> eigenvalues_done;
-      for (size_t jj = 0; jj < rows; ++jj) {
-        const auto curr_eigenvalue = (*self.real_eigenvalues_)[jj];
-        if (eigenvalues_done.count(curr_eigenvalue))
-          continue;
-        std::vector<size_t> curr_group;
-        curr_group.push_back(jj);
-        eigenvalue_multiplicity.push_back(1);
-        for (size_t kk = jj + 1; kk < rows; ++kk) {
-          if (XT::Common::FloatCmp::eq(curr_eigenvalue, (*self.real_eigenvalues_)[kk])) {
-            curr_group.push_back(kk);
-            ++(eigenvalue_multiplicity.back());
-          }
-        } // kk
-        eigenvalue_groups.push_back(curr_group);
-        eigenvalues_done.insert(curr_eigenvalue);
-      } // jj
-      return {eigenvalue_groups, eigenvalue_multiplicity};
-    } // ... compute_eigenvalue_groups(...)
-
-    // For a single eigenvalue, calculate an orthogonal basis of the real eigenspace from the real and imaginary
-    // parts of the complex eigenvectors (kept as a separate helper to limit nesting depth).
-    static void process_eigenvalue_group(const ThisType& self,
-                                         const std::vector<size_t>& group,
-                                         const size_t multiplicity,
-                                         const size_t rows,
-                                         const size_t cols)
-    {
-      using RM = XT::Common::MatrixAbstraction<RealMatrixType>;
-      using CM = XT::Common::MatrixAbstraction<ComplexMatrixType>;
-      using RealVectorType = typename XT::LA::CommonDenseVector<RealType>;
-      std::vector<RealVectorType> input_vectors(2 * multiplicity, RealVectorType(rows, 0.));
-      size_t index = 0;
-      for (const auto& jj : group) {
-        for (size_t ll = 0; ll < cols; ++ll) {
-          input_vectors[index][ll] = CM::get_entry(*self.eigenvectors_, ll, jj).real();
-          input_vectors[index + 1][ll] = CM::get_entry(*self.eigenvectors_, ll, jj).imag();
-        }
-        index += 2;
-      } // jj
-
-      // orthonormalize
-      for (size_t ii = 0; ii < input_vectors.size(); ++ii) {
-        auto& v_i = input_vectors[ii];
-        for (size_t jj = 0; jj < ii; ++jj) {
-          const auto& v_j = input_vectors[jj];
-          const auto vj_vj = v_j.dot(v_j);
-          if (XT::Common::FloatCmp::eq(vj_vj, 0.))
-            continue;
-          const auto vj_vi = v_j.dot(v_i);
-          for (size_t rr = 0; rr < rows; ++rr)
-            v_i[rr] -= vj_vi / vj_vj * v_j[rr];
-        } // jj
-        RealType l2_norm = std::sqrt(
-            Common::reduce(v_i.begin(), v_i.end(), 0., [](const RealType& a, const RealType& b) { return a + b * b; }));
-        if (XT::Common::FloatCmp::ne(l2_norm, 0.))
-          v_i *= 1. / l2_norm;
-      } // ii
-      // copy eigenvectors back to eigenvectors matrix
-      index = 0;
-      for (size_t ii = 0; ii < input_vectors.size(); ++ii) {
-        if (XT::Common::FloatCmp::eq(input_vectors[ii], RealVectorType(rows, 0.)))
-          continue;
-        if (index >= multiplicity)
-          DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
-                     "Eigenvectors are complex and calculating real eigenvectors failed!"
-                         << "These were the given options:\n\n"
-                         << *self.options_ << "\n\nThis was the given matrix: " << std::setprecision(17) << self.matrix_
-                         << "\nThese are the computed eigenvectors:\n\n"
-                         << std::setprecision(17) << *self.eigenvectors_);
-        for (size_t rr = 0; rr < rows; ++rr)
-          RM::set_entry(*self.real_eigenvectors_, rr, group[index], input_vectors[ii].get_entry(rr));
-        index++;
-      } // ii
-      if (index < multiplicity)
-        DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
-                   "Eigenvectors are complex and calculating real eigenvectors failed!"
-                       << "These were the given options:\n\n"
-                       << *self.options_ << "\n\nThis was the given matrix: " << std::setprecision(17) << self.matrix_
-                       << "\nThese are the computed eigenvectors:\n\n"
-                       << std::setprecision(17) << *self.eigenvectors_);
-    } // ... process_eigenvalue_group(...)
-
     static void compute(const ThisType& self, const double& tolerance)
     {
       using RM = XT::Common::MatrixAbstraction<RealMatrixType>;
@@ -572,14 +477,28 @@ protected:
       self.compute_real_eigenvalues();
 
       // form groups of equal eigenvalues
-      const auto groups_and_multiplicity = compute_eigenvalue_groups(self, rows);
+      const auto groups_and_multiplicity = compute_eigenvalue_groups(*self.real_eigenvalues_, rows);
       const auto& eigenvalue_groups = groups_and_multiplicity.first;
       const auto& eigenvalue_multiplicity = groups_and_multiplicity.second;
 
       // For each eigenvalue, calculate a orthogonal basis of the n-dim real eigenspace from the 2n real
       // and imaginary parts of the complex eigenvectors
       for (size_t kk = 0; kk < eigenvalue_groups.size(); ++kk)
-        process_eigenvalue_group(self, eigenvalue_groups[kk], eigenvalue_multiplicity[kk], rows, cols);
+        process_eigenvalue_group<RealType>(
+            *self.eigenvectors_,
+            *self.real_eigenvectors_,
+            [&self]() {
+              DUNE_THROW(Exceptions::eigen_solver_failed_bc_eigenvectors_are_not_real_as_requested,
+                         "Eigenvectors are complex and calculating real eigenvectors failed!"
+                             << "These were the given options:\n\n"
+                             << *self.options_ << "\n\nThis was the given matrix: " << std::setprecision(17)
+                             << self.matrix_ << "\nThese are the computed eigenvectors:\n\n"
+                             << std::setprecision(17) << *self.eigenvectors_);
+            },
+            eigenvalue_groups[kk],
+            eigenvalue_multiplicity[kk],
+            rows,
+            cols);
     } // static void compute(...)
   }; // real_eigenvectors_helper<true, ...>
 
