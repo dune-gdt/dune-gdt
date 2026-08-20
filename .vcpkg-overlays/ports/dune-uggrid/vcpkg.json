@@ -2,7 +2,7 @@
   "name": "dune-uggrid",
   "version": "2.10",
   "description": "Local overlay port for dune-uggrid",
-  "homepage": "https://gitlab.dune-project.org/staging/dune-uggrid",
+  "homepage": "https://github.com/dune-mirrors/dune-uggrid.git",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
