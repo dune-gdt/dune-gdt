@@ -28,8 +28,8 @@ the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
 > Note: `update_ports.bash` clones every module, including the GitLab-hosted
 > `dune-alugrid`. Networks that block `gitlab.dune-project.org` (e.g. the
 > Claude Code web sandbox) cannot run the full regeneration; in that case edit
-> `deps/module_list.bash` and the affected `portfile.cmake` together by hand,
-> keeping them in sync.
+> `deps/module_list.bash` and the affected `portfile.cmake` and `vcpkg.json`
+> together by hand, keeping them in sync.
 
 ## Hand-maintained ports (not generated)
 
