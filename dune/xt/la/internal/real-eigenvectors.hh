@@ -19,7 +19,6 @@
 #ifndef DUNE_XT_LA_INTERNAL_REAL_EIGENVECTORS_HH
 #define DUNE_XT_LA_INTERNAL_REAL_EIGENVECTORS_HH
 
-#include <functional>
 #include <set>
 #include <utility>
 #include <vector>
@@ -81,10 +80,10 @@ compute_eigenvalue_groups(const std::vector<RealType>& real_eigenvalues, const s
  *                        the message here) so that DUNE_THROW's "#E" stringification of the exception type and the
  *                        exact (implementation-specific) message text are preserved unchanged at each call site.
  */
-template <class RealType, class RealMatrixType, class ComplexMatrixType>
+template <class RealType, class RealMatrixType, class ComplexMatrixType, class RaiseNotReal>
 void process_eigenvalue_group(const ComplexMatrixType& eigenvectors,
                               RealMatrixType& real_eigenvectors,
-                              const std::function<void()>& raise_not_real,
+                              const RaiseNotReal& raise_not_real,
                               const std::vector<size_t>& group,
                               const size_t multiplicity,
                               const size_t rows,
@@ -94,6 +93,7 @@ void process_eigenvalue_group(const ComplexMatrixType& eigenvectors,
   using CM = XT::Common::MatrixAbstraction<ComplexMatrixType>;
   using RealVectorType = typename XT::LA::CommonDenseVector<RealType>;
   std::vector<RealVectorType> input_vectors(2 * multiplicity, RealVectorType(rows, 0.));
+  const size_t num_vectors = input_vectors.size();
   size_t index = 0;
   for (const auto& jj : group) {
     for (size_t ll = 0; ll < cols; ++ll) {
@@ -104,7 +104,7 @@ void process_eigenvalue_group(const ComplexMatrixType& eigenvectors,
   } // jj
 
   // orthonormalize
-  for (size_t ii = 0; ii < input_vectors.size(); ++ii) {
+  for (size_t ii = 0; ii < num_vectors; ++ii) {
     auto& v_i = input_vectors[ii];
     for (size_t jj = 0; jj < ii; ++jj) {
       const auto& v_j = input_vectors[jj];
@@ -123,7 +123,7 @@ void process_eigenvalue_group(const ComplexMatrixType& eigenvectors,
 
   // copy eigenvectors back to eigenvectors matrix
   index = 0;
-  for (size_t ii = 0; ii < input_vectors.size(); ++ii) {
+  for (size_t ii = 0; ii < num_vectors; ++ii) {
     if (XT::Common::FloatCmp::eq(input_vectors[ii], RealVectorType(rows, 0.)))
       continue;
     if (index >= multiplicity)
