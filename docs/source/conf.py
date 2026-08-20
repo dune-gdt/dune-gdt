@@ -575,7 +575,7 @@ intersphinx_mapping = {
     "PyQt5": ("https://www.riverbankcomputing.com/static/Docs/PyQt5", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "matplotlib": ("https://matplotlib.org", None),
-    "Sphinx": (" https://www.sphinx-doc.org/en/master/", None),
+    "Sphinx": ("https://www.sphinx-doc.org/en/master/", None),
 }
 
 modindex_common_prefix = ["dune."]
