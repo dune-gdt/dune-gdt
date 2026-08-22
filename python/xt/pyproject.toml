@@ -49,8 +49,16 @@ docs = [
     # every preset), and the build_docs CI job produces one with a configure-only `cmake --preset=release`; an
     # unconfigured tree fails the docs build with an actionable error instead of a guessed set of flags.
     # 0.15.0 is a packaging-only release (Windows CI, vcpkg bootstrap for building clangquill itself); its src/ is
-    # byte-for-byte identical to 0.14.0's, so this bump changes nothing about how headers are parsed here.
-    'clangquill>=0.15.0; python_version >= "3.13"',
+    # byte-for-byte identical to 0.14.0's. 0.17.0 (there is no 0.16.0) is not: it changes how a header with no
+    # compile-database entry of its own gets its flags. The previous same-directory <stem>.cpp sibling lookup (of
+    # which this repository has none) is gone; every such header now goes through libclang's own interpolating
+    # database lookup instead (the nearest listed file's command, filename substituted), and clangquill reports a
+    # new warning -- "no compilation database entry for ...; libclang supplied the command of another file
+    # instead" -- whenever it does. It also makes a database entry's relative -I/-D paths resolve against that
+    # entry's own `directory` rather than the docs build's cwd, and drops flags whose only effect is to write a
+    # file (-o/-MF/-MD/...), which a parse should never do. Expect the diagnostics count to move; see the PR for
+    # CI-verified numbers rather than a guess here.
+    'clangquill>=0.17.0; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
 ]
