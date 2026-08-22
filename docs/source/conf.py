@@ -351,7 +351,11 @@ class _UnactionableWarningFilter(logging.Filter):
         self._filter_inventory_failures = filter_inventory_failures
 
     def filter(self, record):
-        if record.levelno < logging.WARNING:
+        # Only ever suppress an exact WARNING: an ERROR/CRITICAL record falling
+        # into one of the two categories below (e.g. an untyped intersphinx
+        # error) would otherwise be dropped right alongside the warnings this
+        # filter targets, which the class's own contract above rules out.
+        if record.levelno != logging.WARNING:
             return True
         if (
             self._filter_inventory_failures
