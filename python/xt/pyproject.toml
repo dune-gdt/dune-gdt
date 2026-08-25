@@ -163,18 +163,6 @@ docs_test = [
   "plotly",
 ]
 
-# Deps for the per-notebook docs_notebook_* CTest tests (cmake/modules/DuneXTTesting.cmake), which run
-# docs/test_notebooks.py -- it converts each docs/source/*.md notebook with jupytext and exec's it
-# against the freshly built bindings. jupytext is the only tool this adds; everything the notebook
-# cells themselves import (pymor, meshio, k3d, matplotlib, wurlitzer, ...) is exactly what the Sphinx
-# build already installs, so both extras are pulled in wholesale rather than re-listed here and left
-# to drift. dune.xt itself is not listed: uv resolves it from the binary-dir editable assembly point.
-notebook_test = [
-  "pytest",
-  "jupytext",
-  "dune.xt[docs,visualisation]",
-]
-
 # Migrated from the former setup.cfg [tool:pytest]. python_files is load-bearing: the test modules are named e.g.
 # test/base.py (not test_*.py), so without this pattern pytest would collect nothing. The `make xt_test_python` target
 # runs pytest from the binary dir, where this pyproject.toml is the assembly-point config. (The obsolete pytest-pep8
