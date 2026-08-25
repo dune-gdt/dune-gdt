@@ -57,7 +57,17 @@
     "nanobench",
     "eigen3",
     "tbb",
-    "openblas",
+    {
+      "name": "openblas",
+      "features": [
+        "dynamic-arch"
+      ],
+      "platform": "!windows | mingw"
+    },
+    {
+      "name": "openblas",
+      "platform": "windows & !mingw"
+    },
     "suitesparse",
     "lapack"
   ],
