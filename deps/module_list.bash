@@ -19,4 +19,4 @@ SUBMODULE_INFO_URL['dune-alugrid']='https://gitlab.dune-project.org/extensions/d
 SUBMODULE_INFO_HASH['dune-grid-glue']='ba82e60a4c7b334668697370c769409dbfbc2bba'
 SUBMODULE_INFO_URL['dune-grid-glue']='https://github.com/dune-mirrors/dune-grid-glue.git'
 SUBMODULE_INFO_HASH['dune-uggrid']='cf2513efb6497dc95744649e0658cedef2980bff'
-SUBMODULE_INFO_URL['dune-uggrid']='https://gitlab.dune-project.org/staging/dune-uggrid'
+SUBMODULE_INFO_URL['dune-uggrid']='https://github.com/dune-mirrors/dune-uggrid.git'

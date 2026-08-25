@@ -1,6 +1,6 @@
 set(VCPKG_BUILD_TYPE release)
 
-vcpkg_from_git(OUT_SOURCE_PATH SOURCE_PATH URL "https://gitlab.dune-project.org/staging/dune-uggrid" REF
+vcpkg_from_git(OUT_SOURCE_PATH SOURCE_PATH URL "https://github.com/dune-mirrors/dune-uggrid.git" REF
                cf2513efb6497dc95744649e0658cedef2980bff)
 
 vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_TESTING=OFF -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE)

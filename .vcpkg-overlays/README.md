@@ -26,10 +26,10 @@ the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
 ```
 
 > Note: `update_ports.bash` clones every module, including the GitLab-hosted
-> `dune-alugrid` and `dune-uggrid`. Networks that block `gitlab.dune-project.org`
-> (e.g. the Claude Code web sandbox) cannot run the full regeneration; in that
-> case edit `deps/module_list.bash` and the affected `portfile.cmake` together by
-> hand, keeping them in sync.
+> `dune-alugrid`. Networks that block `gitlab.dune-project.org` (e.g. the
+> Claude Code web sandbox) cannot run the full regeneration; in that case edit
+> `deps/module_list.bash` and the affected `portfile.cmake` and `vcpkg.json`
+> together by hand, keeping them in sync.
 
 ## Hand-maintained ports (not generated)
 
@@ -108,7 +108,7 @@ branch** (i.e. 2.10.x plus accumulated bugfixes), not the exact `v2.10.0` tags.
 | dune-localfunctions | `dune-mirrors/dune-localfunctions` | `releases/2.10` HEAD |
 | dune-grid-glue | `dune-mirrors/dune-grid-glue` | `releases/2.10` HEAD |
 | dune-alugrid | `gitlab .../extensions/dune-alugrid` | 2.10 |
-| dune-uggrid | `gitlab .../staging/dune-uggrid` | 2.10 |
+| dune-uggrid | `dune-mirrors/dune-uggrid` | `releases/2.10` HEAD |
 | dune-testtools | `dune-community/dune-testtools` | community fork |
 
 The core modules are sourced from GitHub mirrors (`dune-mirrors/*`,
