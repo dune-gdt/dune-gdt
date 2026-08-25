@@ -57,7 +57,12 @@
     "nanobench",
     "eigen3",
     "tbb",
-    "openblas",
+    {
+      "name": "openblas",
+      "features": [
+        "dynamic-arch"
+      ]
+    },
     "suitesparse",
     "lapack"
   ],

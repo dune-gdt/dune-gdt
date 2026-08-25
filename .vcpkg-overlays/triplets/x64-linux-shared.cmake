@@ -25,10 +25,13 @@ set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 # already relies on by linking the release lapack into the Debug build.
 set(VCPKG_BUILD_TYPE release)
 
-# openblas: its DYNAMIC_ARCH AVX512 kernels fail to compile as a shared build with gcc-13 ("inlining failed in call to
+# openblas: vcpkg.json requests the "dynamic-arch" feature (DYNAMIC_ARCH) so the wheel built on one
+# GitHub-hosted runner works on whichever different-generation runner later loads it -- see #456.
+# DYNAMIC_ARCH's AVX512 kernels fail to compile as a shared build with gcc-13 ("inlining failed in call to
 # 'always_inline' '_mm512_add_pd': target specific option mismatch"). openblas is plain C/Fortran with no C++
 # vague-linkage globals, so a static copy does not cause the at-exit double free the dynamic linkage is meant to avoid;
-# build it static to dodge the shared-build compile error.
+# build it static to dodge the shared-build compile error. This static pin is why DYNAMIC_ARCH compiles here at all;
+# do not drop it without re-checking the shared build still fails without it.
 if(PORT STREQUAL "openblas")
   set(VCPKG_LIBRARY_LINKAGE static)
 endif()

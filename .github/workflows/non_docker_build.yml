@@ -497,6 +497,16 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
 
+    - name: Log CPU capabilities
+      # GitHub's hosted runner pool is heterogeneous across Intel/AMD generations. openblas
+      # (built with the "dynamic-arch" feature, see vcpkg.json) dispatches on the running CPU's
+      # ISA, but a SIGILL here would still mean a kernel dispatch bug -- and this is the only
+      # record of which ISA this leg's wheel was actually built/tested against; compare it
+      # against build_docs's own "Log CPU capabilities" step on a failure there. See #456.
+      run: |
+        lscpu
+        grep -m1 '^flags' /proc/cpuinfo
+
     - name: Free disk space
       # vcpkg builds every dependency from source and the LTO release bindings spill
       # link scratch to /tmp; the runner's preinstalled SDKs (Android, .NET, Haskell,
@@ -644,6 +654,16 @@ jobs:
         persist-credentials: false
         fetch-tags: true
         fetch-depth: 0
+
+    - name: Log CPU capabilities
+      # This job installs the wheel built by build_wheels on a *different* GitHub-hosted
+      # runner, and the hosted pool is heterogeneous across Intel/AMD generations. openblas
+      # (built with the "dynamic-arch" feature, see vcpkg.json) dispatches on the running
+      # CPU's ISA, but comparing this against build_wheels's own "Log CPU capabilities" step
+      # self-diagnoses a future SIGILL here instead of it reading as a random flake. See #456.
+      run: |
+        lscpu
+        grep -m1 '^flags' /proc/cpuinfo
 
     - name: Free disk space
       # The CMake configure below builds every vcpkg dependency from source; the
