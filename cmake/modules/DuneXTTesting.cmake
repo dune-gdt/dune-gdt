@@ -467,6 +467,45 @@ macro(DXT_ADD_PYTHON_TESTS)
   set_tests_properties(docs_test_python PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/xt LABELS
                                                    "dune-gdt-test;python_test")
 
+  # One CTest test per documentation notebook. docs/test_notebooks.py converts each docs/source/*.md with jupytext and
+  # exec's the resulting script against the freshly built bindings; the notebooks are the only end-to-end exercise of
+  # the bindings on a realistic grid -> space -> assemble -> solve -> visualize workflow, and they previously only ran
+  # inside the ~31 min Sphinx build (the build_docs CI job, which keeps executing them via myst-nb -- it has to, to
+  # render the cell outputs).
+  #
+  # Split per notebook rather than one test for the whole module so `ctest -j` runs the 16 of them concurrently, a
+  # failure names the notebook in the CTest summary instead of one collective red line, and `ctest -R
+  # docs_notebook_example__gmsh_grid` reruns just the one. The cost is a configure-time glob: a newly added notebook
+  # needs a re-configure before ctest picks it up.
+  #
+  # A notebook is any source/*.md carrying jupytext front matter -- index.md, examples.md, tutorials.md and
+  # benchmarks.md are prose pages with no code cells. test_notebooks.py applies the identical rule when it parametrizes,
+  # so the two stay in sync without a hand-maintained list in either place. The `notebook_test` dependency group is
+  # declared in python/gdt/pyproject.toml.
+  file(GLOB dxt_notebook_pages ${CMAKE_SOURCE_DIR}/docs/source/*.md)
+  foreach(dxt_notebook ${dxt_notebook_pages})
+    file(READ ${dxt_notebook} dxt_notebook_head LIMIT 512)
+    if(NOT dxt_notebook_head MATCHES "jupytext")
+      continue()
+    endif()
+    get_filename_component(dxt_notebook_name ${dxt_notebook} NAME_WE)
+    add_test(
+      NAME docs_notebook_${dxt_notebook_name}
+      COMMAND
+        ${UV_EXECUTABLE} run --frozen --python ${Python_EXECUTABLE} --group notebook_test python -m pytest
+        "${CMAKE_SOURCE_DIR}/docs/test_notebooks.py::test_notebook[${dxt_notebook_name}]"
+        --junitxml=${CMAKE_BINARY_DIR}/pytest_results_notebook_${dxt_notebook_name}.xml)
+    # WORKING_DIRECTORY is the *gdt* assembly point, not the xt one docs_test_python uses: uv runs in project mode, so
+    # the notebooks can only import dune.gdt (ContinuousLagrangeSpace, DiscreteFunction, ...) from here -- under
+    # python/xt they resolve dune.xt alone and die with ModuleNotFoundError on the first dune.gdt cell. The test itself
+    # chdir's into a pytest tmp dir, because several notebooks write and read back .vtu/.msh files. TIMEOUT: the slowest
+    # notebooks run a few minutes of assembly/solves, well past CTest's 1500s default once a loaded `ctest -j` shares
+    # the box.
+    set_tests_properties(
+      docs_notebook_${dxt_notebook_name} PROPERTIES WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/python/gdt TIMEOUT 1800
+                                                    LABELS "dune-gdt-test;python_test;notebook_test")
+  endforeach()
+
   # Coverage-processing targets (moved here from the CI workflow). Run them after `ctest`: the pytest tests above write
   # the coverage.py data files (coverage-xt, coverage-gdt) into the build dir, and the instrumented C++ tests (the
   # release_coverage preset) write the gcov .gcda/.gcno files under the build tree. Both gcovr and coverage.py are

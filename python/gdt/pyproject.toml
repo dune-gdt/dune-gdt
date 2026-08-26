@@ -94,6 +94,21 @@ test = [
 # the extras' exact pins alike -- at that local build (../xt is the sibling assembly dir in the binary tree) so the
 # resolution stays solvable without `--with-editable` on the uv command line. This [tool.uv] table is ignored by the
 # hatchling wheel build, so the published wheel still depends on dune.xt from an index.
+# Deps for the per-notebook docs_notebook_* CTest tests (cmake/modules/DuneXTTesting.cmake), which run
+# docs/test_notebooks.py -- it converts each docs/source/*.md notebook with jupytext and exec's it against
+# the freshly built bindings. This lives in the *gdt* project, not xt: the notebooks import dune.gdt
+# (ContinuousLagrangeSpace, DiscreteFunction, ...), which only the gdt assembly point provides in uv's
+# project mode -- the xt one resolves dune.xt alone. jupytext is the only tool this adds; everything the
+# notebook cells themselves import (pymor, meshio, k3d, matplotlib, wurlitzer, ...) comes from the two
+# extras, pulled in wholesale rather than re-listed here and left to drift out of sync with what the
+# Sphinx build installs. Both re-export the exact-version dune.xt[...] that [tool.uv.sources] below
+# routes to the sibling binary-dir editable.
+notebook_test = [
+  "pytest",
+  "jupytext",
+  "dune.gdt[docs,visualisation]",
+]
+
 [tool.uv.sources]
 "dune.xt" = { path = "../xt", editable = true }
 

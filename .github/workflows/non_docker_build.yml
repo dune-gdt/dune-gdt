@@ -200,8 +200,10 @@ jobs:
         # coverage_python target (coverage leg only). mold is picked up
         # automatically by the top-level CMakeLists.txt (CMAKE_LINKER_TYPE) when
         # present, and links this project's ~520 test binaries much faster than
-        # GNU ld/lld.
-        sudo apt-get install -y ninja-build ccache xvfb mold
+        # GNU ld/lld. gmsh is a binary pymor's discretize_gmsh shells out to; the
+        # docs_notebook_example__gmsh_grid ctest test hits that path (the build_docs
+        # job installs it for the same reason).
+        sudo apt-get install -y ninja-build ccache xvfb mold gmsh
 
     - name: Install Clang 22
       # Only the clang22-* leg needs clang-22; skip the (slow) apt repo add elsewhere.
