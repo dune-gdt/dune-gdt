@@ -266,7 +266,7 @@ _ = visualize_function(h_h_numpy)
 ## performance considerations
 
 The way a function is constructed may have a large impact on its performance. Let us consider the function $h(x) = exp(x_0\,x_1)$ from above.
-We should use a finer grid to obtain some representative timings.
+We should use a finer grid to obtain some representative timings. The size below is deliberately kept modest, because this tutorial also runs as part of the test suite (see `docs/test_notebooks.py`), where an unoptimised debug build is roughly an order of magnitude slower; raise `num_elements` locally if you want timings with a wider spread.
 
 **Note**: by choosing a `Simplex` grid, we obtain an instance of an unstructured `dune-alugrid` grid, which may be runtime efficient, but at the cost of a higher memory footprint.
 Choosing a `Cube` grid, on the other hand, would give us an instance of `dune-grid`s structured `YaspGrid` with nearly no memory footprint, at the price of lower runtime performance.
@@ -276,7 +276,7 @@ from timeit import default_timer as timer
 
 tic = timer()
 grid = make_cube_grid(Dim(d), Simplex(),
-                      lower_left=omega[0], upper_right=omega[1], num_elements=[512, 512])
+                      lower_left=omega[0], upper_right=omega[1], num_elements=[128, 128])
 grid.global_refine(1)
 toc = timer() - tic
 
