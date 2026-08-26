@@ -42,13 +42,52 @@ def _notebooks():
 
 
 @pytest.fixture(autouse=True)
-def _k3d_display_builtin(monkeypatch):
-    """See python/xt/test/conftest.py::_k3d_display_builtin -- dune.xt.common.vtk.plot calls a bare
-    `display(...)` (plot.py, via k3d's Plot.display()), which a Jupyter frontend installs into
-    builtins but ctest does not. 13 of the notebooks call visualize()."""
+def _kernel_equivalents(monkeypatch):
+    """Supply the two things a Jupyter kernel provides that a plain script does not.
+
+    Both stand in for the `:load: myst_code_init.py` init cell, which every notebook carries and
+    which jupytext renders as an empty cell -- and which is a no-op outside IPython anyway, since
+    its whole body is guarded on `get_ipython() is not None`.
+
+    `display`: see python/xt/test/conftest.py::_k3d_display_builtin -- dune.xt.common.vtk.plot
+    calls a bare `display(...)` (via k3d's Plot.display()), which a frontend installs into builtins
+    but ctest does not. 13 notebooks call visualize().
+
+    See also _headless_pymor_visualizers below for the third one, which is applied only to the
+    notebooks that need it.
+    """
     import IPython.display
 
     monkeypatch.setattr(builtins, "display", IPython.display.display, raising=False)
+
+
+def _headless_pymor_visualizers():
+    """Point pymor's builtin visualizers at a backend that does not need a GUI toolkit.
+
+    Both visualizer classes choose their backend with `is_jupyter()` (pymor/core/config.py) and,
+    off-kernel, fall back to `gl` -- so example__gmsh_grid's `fom.visualize(fom.solve())` dies with
+    `QtMissingError: cannot visualize: import of Qt bindings failed`. Pinning them to `jupyter` is
+    what the kernel picks in the myst-nb docs build, so the notebook renders the same way here.
+
+    It also has to be `jupyter` specifically: PatchVisualizer.visualize only skips Qt on that one
+    branch, and routes every other backend -- `matplotlib` included -- through
+    pymor.discretizers.builtin.gui.qt, so `matplotlib` means matplotlib inside a Qt window and
+    fails identically.
+
+    Setting the `backend` default is pymor's own supported knob (both __init__s are decorated with
+    `@defaults('backend')`), so this configures pymor rather than patching it. The tempting
+    alternative, PYMOR_FORCE_JUPYTER, does not work: it makes pymor/__init__.py call
+    `get_ipython().run_line_magic(...)` at import time, and that is None in a plain script.
+    """
+    from pymor.core.defaults import set_defaults
+
+    prefix = "pymor.discretizers.builtin.gui.visualizers"
+    set_defaults(
+        {
+            f"{prefix}.PatchVisualizer.backend": "jupyter",
+            f"{prefix}.OnedVisualizer.backend": "jupyter",
+        }
+    )
 
 
 @pytest.mark.parametrize("notebook", _notebooks(), ids=lambda p: p.stem)
@@ -59,6 +98,8 @@ def test_notebook(notebook, tmp_path, monkeypatch):
     )
     # written out so tracebacks resolve to real source lines, and so a failing notebook leaves the
     # exact script that failed in the pytest tmp dir for reproduction
+    if "pymor" in source:
+        _headless_pymor_visualizers()
     script = tmp_path / f"{notebook.stem}.py"
     script.write_text(source)
     # notebooks write (and read back) .vtu/.msh files under the cwd -- keep that out of the source
