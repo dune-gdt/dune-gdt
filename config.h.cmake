@@ -71,6 +71,9 @@
 #cmakedefine01 DUNE_XT_WITH_PYTHON_BINDINGS
 
 /*** Silence implicitly False evaluation of undefined macro warnings ****/
+/* dune-grid-glue is a mandatory dependency (see dune.module and CMakeLists.txt), so this
+ * fallback never fires for in-tree builds. It is kept for downstream consumers who compile
+ * against installed dune-gdt headers with their own, possibly glue-less, config.h. */
 #ifndef HAVE_DUNE_GRID_GLUE
 #define HAVE_DUNE_GRID_GLUE 0
 #endif
