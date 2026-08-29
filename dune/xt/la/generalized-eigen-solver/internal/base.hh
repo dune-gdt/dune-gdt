@@ -46,27 +46,29 @@ namespace internal {
 static inline void ensure_generalized_eigen_solver_type(const std::string& type,
                                                         const std::vector<std::string>& available_types)
 {
-  bool contained = false;
   for (const auto& tp : available_types)
     if (type == tp)
-      contained = true;
-  if (!contained)
-    DUNE_THROW(Exceptions::generalized_eigen_solver_failed_bc_it_was_not_set_up_correctly,
-               "Given type '" << type << "' is not one of the available types: " << available_types);
+      return;
+  DUNE_THROW(Exceptions::generalized_eigen_solver_failed_bc_it_was_not_set_up_correctly,
+             "Given type '" << type << "' is not one of the available types: " << available_types);
 } // ... ensure_generalized_eigen_solver_type(...)
 
 
-static inline Common::Configuration default_generalized_eigen_solver_options()
+/// \sa default_eigen_solver_options() on why this is cached.
+static inline const Common::Configuration& default_generalized_eigen_solver_options()
 {
-  Common::Configuration opts;
-  opts["compute_eigenvalues"] = "true";
-  opts["compute_eigenvectors"] = "false";
-  opts["check_for_inf_nan"] = "true";
-  opts["real_tolerance"] = "1e-15"; // is only used if the respective assert_... is negative
-  opts["assert_real_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-  opts["assert_positive_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-  opts["assert_negative_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-  opts["assert_real_eigenvectors"] = "-1"; // if positive, this is the check tolerance
+  static const Common::Configuration opts = []() {
+    Common::Configuration ret;
+    ret["compute_eigenvalues"] = "true";
+    ret["compute_eigenvectors"] = "false";
+    ret["check_for_inf_nan"] = "true";
+    ret["real_tolerance"] = "1e-15"; // is only used if the respective assert_... is negative
+    ret["assert_real_eigenvalues"] = "-1"; // if positive, this is the check tolerance
+    ret["assert_positive_eigenvalues"] = "-1"; // if positive, this is the check tolerance
+    ret["assert_negative_eigenvalues"] = "-1"; // if positive, this is the check tolerance
+    ret["assert_real_eigenvectors"] = "-1"; // if positive, this is the check tolerance
+    return ret;
+  }();
   return opts;
 } // ... default_generalized_eigen_solver_options(...)
 
@@ -322,8 +324,8 @@ protected:
                        << *options_);
       internal::ensure_generalized_eigen_solver_type(options_->get<std::string>("type"),
                                                      GeneralizedEigenSolverOptions<MatrixType, true>::types());
-      const Common::Configuration default_opts =
-          GeneralizedEigenSolverOptions<MatrixType, true>::options(options_->get<std::string>("type"));
+      // \sa EigenSolverBase::pre_checks() on why the defaults are merged directly instead of through options().
+      const Common::Configuration& default_opts = internal::default_generalized_eigen_solver_options();
       for (const std::string& default_key : default_opts.getValueKeys()) {
         if (!options_->has_key(default_key))
           (*options_)[default_key] = default_opts.get<std::string>(default_key);

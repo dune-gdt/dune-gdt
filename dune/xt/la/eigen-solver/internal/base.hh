@@ -45,29 +45,32 @@ namespace internal {
 
 static inline void ensure_eigen_solver_type(const std::string& type, const std::vector<std::string>& available_types)
 {
-  bool contained = false;
   for (const auto& tp : available_types)
     if (type == tp)
-      contained = true;
-  if (!contained)
-    DUNE_THROW(Exceptions::eigen_solver_failed_bc_it_was_not_set_up_correctly,
-               "Given type '" << type << "' is not one of the available types: " << available_types);
+      return;
+  DUNE_THROW(Exceptions::eigen_solver_failed_bc_it_was_not_set_up_correctly,
+             "Given type '" << type << "' is not one of the available types: " << available_types);
 } // ... ensure_eigen_solver_type(...)
 
 
-static inline Common::Configuration default_eigen_solver_options()
+/// \note Cached: this is rebuilt for every eigen solver construction, which happens once per quadrature point in
+///       some element-local code paths (see ElementwiseMinimumFunction). Callers copy it into their own options.
+static inline const Common::Configuration& default_eigen_solver_options()
 {
-  Common::Configuration opts;
-  opts["compute_eigenvalues"] = "true";
-  opts["compute_eigenvectors"] = "true";
-  opts["check_for_inf_nan"] = "true";
-  opts["real_tolerance"] = "1e-15"; // is only used if the respective assert_... is negative
-  opts["assert_real_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-  opts["assert_positive_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-  opts["assert_negative_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-  opts["assert_real_eigenvectors"] = "-1"; // if positive, this is the check tolerance
-  opts["assert_eigendecomposition"] = "1e-10"; // if positive, this is the check tolerance
-  opts["assert_real_eigendecomposition"] = "-1"; // if positive, this is the check tolerance
+  static const Common::Configuration opts = []() {
+    Common::Configuration ret;
+    ret["compute_eigenvalues"] = "true";
+    ret["compute_eigenvectors"] = "true";
+    ret["check_for_inf_nan"] = "true";
+    ret["real_tolerance"] = "1e-15"; // is only used if the respective assert_... is negative
+    ret["assert_real_eigenvalues"] = "-1"; // if positive, this is the check tolerance
+    ret["assert_positive_eigenvalues"] = "-1"; // if positive, this is the check tolerance
+    ret["assert_negative_eigenvalues"] = "-1"; // if positive, this is the check tolerance
+    ret["assert_real_eigenvectors"] = "-1"; // if positive, this is the check tolerance
+    ret["assert_eigendecomposition"] = "1e-10"; // if positive, this is the check tolerance
+    ret["assert_real_eigendecomposition"] = "-1"; // if positive, this is the check tolerance
+    return ret;
+  }();
   return opts;
 } // ... default_eigen_solver_options(...)
 
@@ -313,8 +316,10 @@ protected:
                        << *options_);
       internal::ensure_eigen_solver_type(options_->get<std::string>("type"),
                                          EigenSolverOptions<MatrixType, true>::types());
-      const Common::Configuration default_opts =
-          EigenSolverOptions<MatrixType, true>::options(options_->get<std::string>("type"));
+      // Merging the defaults directly is equivalent to merging EigenSolverOptions<>::options(type): that differs only
+      // by a "type" key, which is guaranteed to be present in options_ already (checked right above), so the loop below
+      // could never copy it. Going through options() would rebuild the whole Configuration for nothing.
+      const Common::Configuration& default_opts = internal::default_eigen_solver_options();
       for (const std::string& default_key : default_opts.getValueKeys()) {
         if (!options_->has_key(default_key))
           (*options_)[default_key] = default_opts.get<std::string>(default_key);
