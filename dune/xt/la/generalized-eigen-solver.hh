@@ -45,7 +45,7 @@ class GeneralizedEigenSolverOptions
 
 /// \brief Returns the list of available generalized eigen solver types for the given matrix.
 template <class MatrixType>
-std::vector<std::string> generalized_eigen_solver_types(const MatrixType& /*matrix*/)
+const std::vector<std::string>& generalized_eigen_solver_types(const MatrixType& /*matrix*/)
 {
   return GeneralizedEigenSolverOptions<MatrixType>::types();
 }

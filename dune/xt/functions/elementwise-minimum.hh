@@ -65,12 +65,16 @@ public:
       // approximate minimum eigenvalue over the element (evaluate at some points)
       double min_EV = std::numeric_limits<double>::max();
       const auto quadrature_rule_ev = QuadratureRules<double, d>::rule(func.element().type(), order);
+      // The eigen solver options do not depend on the quadrature point, so build them once instead of once per point
+      // (this runs per element of a grid walk). Function-local statics are initialized thread-safely, and
+      // EigenSolverBase copies the Configuration it is given, so sharing this across the threads of a parallel walk is
+      // safe -- unlike handing out a Configuration*, which pre_checks() would mutate.
+      using ValueType = typename FunctionType::RangeReturnType;
+      static const XT::Common::Configuration eigen_solver_options(
+          {{"type", XT::LA::EigenSolverOptions<ValueType>::types().at(0)}, {"assert_positive_eigenvalues", "1e-15"}});
       for (auto&& quadrature_point : quadrature_rule_ev) {
         auto value = func.evaluate(quadrature_point.position(), param);
-        auto eigen_solver =
-            XT::LA::make_eigen_solver(value,
-                                      {{"type", XT::LA::EigenSolverOptions<decltype(value)>::types().at(0)},
-                                       {"assert_positive_eigenvalues", "1e-15"}});
+        auto eigen_solver = XT::LA::make_eigen_solver(value, eigen_solver_options);
         min_EV = std::min(min_EV, eigen_solver.min_eigenvalues(1).at(0));
       }
       return min_EV;

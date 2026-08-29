@@ -55,7 +55,7 @@ class EigenSolverOptions
 
 /// \brief Returns the list of available eigen solver types for the given matrix.
 template <class MatrixType>
-std::vector<std::string> eigen_solver_types(const MatrixType& /*matrix*/)
+const std::vector<std::string>& eigen_solver_types(const MatrixType& /*matrix*/)
 {
   return EigenSolverOptions<MatrixType>::types();
 }
