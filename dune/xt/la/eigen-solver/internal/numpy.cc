@@ -18,20 +18,19 @@ namespace Dune::XT::LA::internal {
 
 bool numpy_eigensolver_available()
 {
-  // GlobalInterpreter() *embeds* an interpreter, which is only meaningful in a standalone C++ program. Called from
-  // inside a running interpreter (i.e. through the Python bindings) pybind11's precheck_interpreter() rejects it with
-  // pybind11_fail(), whose assert(!PyErr_Occurred()) touches the C-API -- and the bindings release the GIL around
-  // grid walks (py::call_guard<py::gil_scoped_release>), so there is no thread state and PyErr_Occurred() segfaults.
-  // Release builds only survive this because -DNDEBUG drops that assert. So do not go there at all when an
-  // interpreter is already running; the answer is the same one the throwing path produced.
-  //
-  // The result is cached because this is called per quadrature point per element (see
-  // ElementwiseMinimumFunctionHelper) and cannot change over the lifetime of the process.
+  // Cached: this is queried once per quadrature point per element in some code paths (see
+  // ElementwiseMinimumFunctionHelper), and neither the interpreter nor numpy can appear or disappear over the lifetime
+  // of the process. Static initialization is thread-safe, so the probe runs exactly once even under a parallel walk.
   static const bool available = []() {
-    if (Py_IsInitialized() != 0)
-      return false;
     try {
-      PybindXI::GlobalInterpreter().import_module("numpy.linalg");
+      // Constructing the global interpreter embeds one only if the process does not already run one, so this works
+      // both from a standalone C++ program and from inside Python. It has to happen before the GIL is acquired --
+      // there is nothing to acquire until an interpreter exists.
+      auto& interpreter = PybindXI::GlobalInterpreter();
+      // Held here rather than only inside import_module(), because the module it hands back is released again at the
+      // end of this statement, and dropping a reference also requires the GIL.
+      pybind11::gil_scoped_acquire acquire_gil;
+      interpreter.import_module("numpy.linalg");
     } catch (...) {
       return false;
     }
