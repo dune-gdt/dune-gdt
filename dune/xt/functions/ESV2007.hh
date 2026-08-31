@@ -308,17 +308,18 @@ private:
       {
         local_diffusion_->bind(ele);
         value_ = std::numeric_limits<R>::max();
+        // \sa ElementwiseMinimumFunction on why the eigen solver options are built once rather than per quadrature
+        // point, and on why sharing them across a parallel grid walk is safe.
+        static const Common::Configuration eigen_solver_options(
+            {{"type", LA::EigenSolverOptions<Common::FieldMatrix<R, d, d>>::types().at(0)},
+             {"assert_positive_eigenvalues", "1e-15"}});
         for (const auto& quadrature_point :
              Dune::QuadratureRules<double, d>::rule(ele.type(), local_diffusion_->order() + 2)) {
           const auto point_in_reference_element = quadrature_point.position();
           Common::FieldMatrix<R, d, d> diffusion_tensor_value(0.);
           diffusion_tensor_value = local_diffusion_->evaluate(point_in_reference_element);
-          value_ = std::min(value_,
-                            LA::make_eigen_solver(diffusion_tensor_value,
-                                                  {{"type", LA::eigen_solver_types(diffusion_tensor_value).at(0)},
-                                                   {"assert_positive_eigenvalues", "1e-15"}})
-                                .min_eigenvalues(1)
-                                .at(0));
+          value_ = std::min(
+              value_, LA::make_eigen_solver(diffusion_tensor_value, eigen_solver_options).min_eigenvalues(1).at(0));
         }
         const auto hh = Grid::entity_diameter(ele);
         value_ = (poincare_constant_ * hh * hh) / value_;
