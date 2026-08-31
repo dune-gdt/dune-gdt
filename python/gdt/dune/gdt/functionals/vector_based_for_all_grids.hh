@@ -156,10 +156,10 @@ public:
           py::is_operator());
     c.def("__iadd__", // function ptr signature required for the right return type
           (type
-           & (type::*)(const std::tuple<
-                       const LocalIntersectionFunctionalInterface<I, s_r, 1, F, typename type::DofFieldType>&,
-                       const XT::Common::Parameter&,
-                       const XT::Grid::IntersectionFilter<GV>&>&))
+           & (type::*)(
+               const std::tuple<const LocalIntersectionFunctionalInterface<I, s_r, 1, F, typename type::DofFieldType>&,
+                                const XT::Common::Parameter&,
+                                const XT::Grid::IntersectionFilter<GV>&>&))
               & type::append,
           "tuple_of_localintersectionfunctional_param_filter"_a,
           py::is_operator());

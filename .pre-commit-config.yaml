@@ -15,7 +15,7 @@ repos:
   - id: check-added-large-files
   - id: debug-statements
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: '34b241d706d24e4ccb69e38f9f0fa190b5f486ec'  # frozen: v23.1.0
+  rev: '34b241d706d24e4ccb69e38f9f0fa190b5f486ec' # frozen: v23.1.0
   hooks:
   - id: clang-format
     exclude: "^(pybind11)|^\\.vcpkg-overlays/ports/mpfr/"
@@ -29,7 +29,7 @@ repos:
   hooks:
   - id: actionlint
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: 1f1e8bf348ff38fc88619a38d3ca4d9c56abea49  # frozen: v0.16.5
+  rev: 1f1e8bf348ff38fc88619a38d3ca4d9c56abea49 # frozen: v0.16.5
   hooks:
   - id: ruff
   - id: ruff-format
