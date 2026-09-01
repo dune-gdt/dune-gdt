@@ -67,7 +67,15 @@ docs = [
     # preprocessor state can now leak into a header that is not self-contained, which the docs explicitly call out
     # as a way warnings (not errors) can shift. Expect the diagnostics count to move, if at all, only on that axis;
     # see the PR for CI-verified numbers rather than a guess here.
-    'clangquill>=1.0.0; python_version >= "3.13"',
+    # 1.1.0 fixes clangquill/clangquill#348 (filed from this project's CI): clangquill_clang_resource_dir was only
+    # ever applied on the no-compile-database fallback path, so a header matched via a real compile_commands.json
+    # entry -- which is every ENABLE_HEADERCHECK-covered header here -- parsed with clangquill's bundled libclang
+    # and no builtin headers, failing on any transitively-included system header ('stddef.h' file not found, then
+    # size_t, ...). newton.hh hit exactly this in the PR #449 CI run. #349 appends -resource-dir to
+    # database-matched commands too (after the entry's own args, so our configured value wins); std/include_dirs/
+    # defines are unchanged, still database-first. The floor moves to 1.1.0 because that fix is the reason for this
+    # bump -- older clangquill will not build the C++ API pages under -W here.
+    'clangquill>=1.1.0; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
 ]
