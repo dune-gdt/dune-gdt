@@ -238,6 +238,33 @@ clangquill_input = ["../../dune/**/*.hh"]
 clangquill_include_dirs = _cpp_include_dirs
 clangquill_std = _cpp_std
 clangquill_clang_resource_dir = _clang_resource_dir()
+# Every ENABLE_HEADERCHECK compile-database entry is keyed to a generated
+# <header>.hh.cc stub (see _compile_commands_dir above), not the header itself;
+# clangquill's near-miss lookup for the header substitutes the header path
+# straight into that entry's command, dropping the stub's own body -- an
+# unconditional `#include<config.h>` -- with nothing to replace it (clangquill
+# >= 1.1.0). Headers whose content is gated on a HAVE_*/ENABLE_* macro then
+# parse as if every one of them were unset (e.g. dune/xt/grid/grids.hh's
+# `#if HAVE_DUNE_UGGRID` block, and by extension UG_2D/UG_3D wherever a header
+# uses them, disappear even though this build's config.h defines it), because
+# `-DHAVE_CONFIG_H` alone has nothing to act on once the #include that guards
+# it is gone. -include force-includes it into every parsed TU regardless, the
+# standard fix for "this header must always be visible" and exactly what the
+# discarded stub did.
+clangquill_compile_args = ["-include", "config.h"]
+# clangquill >= 1.0.0 batches headers that resolve to the identical database
+# command into one shared translation unit (a parse-time optimisation); two
+# ENABLE_HEADERCHECK stubs differ only in which header they #include, so any
+# pair of headers on the same directory/flags qualifies. dune/xt/common/
+# fmatrix-2.6.hh and fmatrix-2.7.hh are exactly such a pair -- and are
+# mutually exclusive by design (fmatrix.hh #includes whichever one
+# DUNE_VERSION_GTE(DUNE_COMMON, 2, 7) selects, never both) -- so batching them
+# together redefines every symbol the loser's include guard would otherwise
+# have kept out. tu_batch=1 restores one fully isolated TU per header, i.e.
+# what ENABLE_HEADERCHECK actually compiles in a real build; the parse-time
+# cost of forgoing the shared-preamble optimisation is paid once per docs
+# build, not per warning this would otherwise risk hiding.
+clangquill_tu_batch = 1
 clangquill_compile_commands = _compile_commands_dir()
 clangquill_output_dir = "cpp_api"
 # Build a browsable namespace hierarchy (clangquill >= 0.6.0): the index lists
