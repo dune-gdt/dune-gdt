@@ -10,7 +10,7 @@ index 46937b2..67ddec5 100644
    if(MSVC)
      set_target_properties(lib PROPERTIES DEBUG_POSTFIX d)
      if(ENABLE_MSVC_STATIC_RUNTIME)
-@@ -1793,26 +1794,23 @@ endif()
+@@ -1793,26 +1794,24 @@ endif()
  
  # binary targets
  if(HAVE_FLTK)
@@ -40,7 +40,8 @@ index 46937b2..67ddec5 100644
 +elseif(TARGET lib)
 +  target_link_libraries(gmsh lib)
 +else()
-+  target_sources(gmsh ${GMSH_SRC})
++  target_sources(gmsh PRIVATE ${GMSH_SRC})
++  target_link_libraries(gmsh ${LINK_LIBRARIES})
  endif()
 -target_link_libraries(gmsh ${LINK_LIBRARIES})
 +set_target_properties(gmsh PROPERTIES PDB_NAME gmsh.exe)
