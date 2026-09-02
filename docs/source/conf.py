@@ -1,10 +1,12 @@
 import glob
+import logging
 import os
 import sys
 from pathlib import Path
 
 import slugify
 import sphinx
+import sphinx.util.logging
 from sphinx.errors import ConfigError
 
 import dune.gdt
@@ -123,11 +125,13 @@ nb_execution_excludepatterns = []
 # preset (see non_docker_build.yml) rather than the gcc-based default.
 # libclang reports every include it cannot resolve, and every flag it
 # rejects, as errors, while still extracting every symbol it can parse around
-# them -- these are real gaps in what the C++ API pages can document, so they
-# are surfaced as Sphinx warnings rather than hidden. Should the wheel be built
-# without libclang, the extension writes a placeholder page and warns
-# (clangquill.libclang) rather than silently publishing the manual without any
-# C++ API at all.
+# them. Those diagnostics are deliberately
+# *not* suppressed -- they are real gaps in what the C++ API pages can document,
+# so the -W build surfaces them rather than hiding them. Should the wheel be
+# built without libclang, the extension writes a placeholder page and warns
+# (clangquill.libclang); that warning is deliberately left unfiltered, so a
+# build that would silently publish the manual without any C++ API at all fails
+# under -W instead of quietly shipping the placeholder.
 
 # The C++ standard and include dirs the in-tree headers are parsed with.
 # clangquill falls back to these -- plus clangquill_clang_resource_dir, which
@@ -234,6 +238,33 @@ clangquill_input = ["../../dune/**/*.hh"]
 clangquill_include_dirs = _cpp_include_dirs
 clangquill_std = _cpp_std
 clangquill_clang_resource_dir = _clang_resource_dir()
+# Every ENABLE_HEADERCHECK compile-database entry is keyed to a generated
+# <header>.hh.cc stub (see _compile_commands_dir above), not the header itself;
+# clangquill's near-miss lookup for the header substitutes the header path
+# straight into that entry's command, dropping the stub's own body -- an
+# unconditional `#include<config.h>` -- with nothing to replace it (clangquill
+# >= 1.1.0). Headers whose content is gated on a HAVE_*/ENABLE_* macro then
+# parse as if every one of them were unset (e.g. dune/xt/grid/grids.hh's
+# `#if HAVE_DUNE_UGGRID` block, and by extension UG_2D/UG_3D wherever a header
+# uses them, disappear even though this build's config.h defines it), because
+# `-DHAVE_CONFIG_H` alone has nothing to act on once the #include that guards
+# it is gone. -include force-includes it into every parsed TU regardless, the
+# standard fix for "this header must always be visible" and exactly what the
+# discarded stub did.
+clangquill_compile_args = ["-include", "config.h"]
+# clangquill >= 1.0.0 batches headers that resolve to the identical database
+# command into one shared translation unit (a parse-time optimisation); two
+# ENABLE_HEADERCHECK stubs differ only in which header they #include, so any
+# pair of headers on the same directory/flags qualifies. dune/xt/common/
+# fmatrix-2.6.hh and fmatrix-2.7.hh are exactly such a pair -- and are
+# mutually exclusive by design (fmatrix.hh #includes whichever one
+# DUNE_VERSION_GTE(DUNE_COMMON, 2, 7) selects, never both) -- so batching them
+# together redefines every symbol the loser's include guard would otherwise
+# have kept out. tu_batch=1 restores one fully isolated TU per header, i.e.
+# what ENABLE_HEADERCHECK actually compiles in a real build; the parse-time
+# cost of forgoing the shared-preamble optimisation is paid once per docs
+# build, not per warning this would otherwise risk hiding.
+clangquill_tu_batch = 1
 clangquill_compile_commands = _compile_commands_dir()
 clangquill_output_dir = "cpp_api"
 # Build a browsable namespace hierarchy (clangquill >= 0.6.0): the index lists
@@ -254,9 +285,131 @@ clangquill_cache_dir = "_clangquill_cache"
 # file is where the context needed to actually fix one lives: which include
 # failed, and the notes explaining what it made unparseable. Written under the
 # git-ignored build/ next to the generated compilation database rather than into
-# the srcdir, and uploaded by the docs CI job (see non_docker_build.yml) so the
-# full diagnostics are retrievable instead of only scrollable in the log.
+# the srcdir, and uploaded by the docs CI job (see non_docker_build.yml) so a red
+# build's diagnostics are retrievable instead of only scrollable in the log.
 clangquill_diagnostics_log = "../../build/clangquill-diagnostics.log"
+
+# -----------------------------------------------------------------------------
+# Warnings
+# -----------------------------------------------------------------------------
+# The docs are built with `-W` (see the build_docs job in
+# .github/workflows/non_docker_build.yml), so every warning fails the build. Only
+# warnings the documentation itself cannot fix are filtered out -- by type here,
+# and by where they come from in _UnactionableWarningFilter below. libclang's
+# parse diagnostics (clangquill.parse) are deliberately *not* among them: they
+# mark C++ the API pages could not read, which is fixable by making the missing
+# headers available to the parse, so the build reports them.
+suppress_warnings = [
+    # Cosmetic, and only reachable when the notebooks are *not* executed. The
+    # tutorials use IPython shell escapes (`!ls -l f.vtu`), which the plain
+    # "python" pygments lexer cannot tokenise. Executing a notebook records
+    # language_info.pygments_lexer = "ipython3" -- which handles them -- so this
+    # never fires in CI; without execution the lexer falls back to
+    # kernelspec.language ("python") and the escapes fail to lex. Sphinx retries
+    # in relaxed mode either way, so the rendered page is fine.
+    "misc.highlighting_failure",
+]
+
+
+def _warning_location(record):
+    """Best-effort source location of a Sphinx log ``record``, as a string.
+
+    ``location=`` is passed as a docname, a ``(docname, lineno)`` pair or a
+    docutils node, depending on who logs the warning; Sphinx normalises all of
+    them, but only in a handler filter that runs after the one counting warnings
+    (see :func:`setup`), so this filter has to do it itself.
+    """
+    location = getattr(record, "location", None)
+    if location is None:
+        return ""
+    if isinstance(location, tuple):
+        return str(location[0] or "")
+    if isinstance(location, str):
+        return location
+    return sphinx.util.logging.get_node_location(location) or ""
+
+
+def _inventories_are_all_https(mapping):
+    """Whether every configured intersphinx inventory is fetched over HTTPS.
+
+    Guards the inventory-failure rule in :class:`_UnactionableWarningFilter`:
+    Sphinx reports *any* exhausted inventory the same way, so with a local
+    ``objects.inv`` configured that one warning would also cover an unreadable or
+    malformed file -- a real misconfiguration, and one this build should fail on.
+    While every target is a URL, the warning can only mean the network. A
+    plain-``http://`` target deliberately does not qualify: this project has none,
+    and the stricter reading (inventory failures stay fatal) is the safe default.
+    """
+    for target_uri, inventories in mapping.values():
+        if not isinstance(inventories, tuple):
+            inventories = (inventories,)
+        for location in (target_uri, *inventories):
+            if location is not None and not location.strip().startswith("https://"):
+                return False
+    return True
+
+
+class _UnactionableWarningFilter(logging.Filter):
+    """Drop the warnings this documentation build has no way to act on.
+
+    Everything else stays fatal under `-W`; the two exceptions are:
+
+    * Warnings about a page under ``clangquill_output_dir``. Those pages are
+      generated from the C++ headers, and the bulk of them are the Sphinx C++
+      domain balking at declarations libclang extracted verbatim (deeply nested
+      DUNE templates it cannot re-parse, specialisations it sees as duplicates)
+      or MyST reading braces in C++ code as a substitution. None of that is
+      fixable from this repository, and none of it comes from a hand-written
+      page -- which keeps failing the build for its own warnings.
+    * intersphinx exhausting the locations for an inventory, which with the
+      all-HTTPS mapping this project configures means the network was in the
+      way rather than the documentation. That warning carries no type/subtype,
+      so ``suppress_warnings`` cannot address it; every intersphinx warning that
+      does report a documentation problem (an unresolvable cross-reference) is
+      typed, so dropping only the untyped ones keeps `-W` meaningful here too.
+      Should a local inventory ever be configured, the same warning starts
+      covering an unreadable or malformed file as well, and this rule turns
+      itself off rather than hide it.
+    """
+
+    def __init__(self, generated_dir, *, filter_inventory_failures):
+        super().__init__()
+        self._generated = f"{generated_dir}/"
+        self._filter_inventory_failures = filter_inventory_failures
+
+    def filter(self, record):
+        # Only ever suppress an exact WARNING: an ERROR/CRITICAL record falling
+        # into one of the two categories below (e.g. an untyped intersphinx
+        # error) would otherwise be dropped right alongside the warnings this
+        # filter targets, which the class's own contract above rules out.
+        if record.levelno != logging.WARNING:
+            return True
+        if (
+            self._filter_inventory_failures
+            and "intersphinx" in record.name
+            and getattr(record, "type", None) is None
+        ):
+            return False
+        location = _warning_location(record).replace(os.sep, "/")
+        return not (
+            location.startswith(self._generated) or f"/{self._generated}" in location
+        )
+
+
+def setup(_app):
+    """Sphinx entry point for conf.py-local setup (called with the app)."""
+    # Sphinx counts a warning -- and, under `-W`, fails the build for it -- in a
+    # filter on the handlers of its "sphinx" logger, so ours has to run before
+    # those: insert it at the front of each chain rather than appending it.
+    # intersphinx_mapping is defined further down; setup() runs after conf.py has
+    # been executed in full, so the module global is there by then.
+    warning_filter = _UnactionableWarningFilter(
+        clangquill_output_dir,
+        filter_inventory_failures=_inventories_are_all_https(intersphinx_mapping),
+    )
+    for handler in logging.getLogger("sphinx").handlers:
+        handler.filters.insert(0, warning_filter)
+
 
 bibtex_bibfiles = ["bibliography.bib"]
 # Add any paths that contain templates here, relative to this directory.
@@ -453,7 +606,7 @@ intersphinx_mapping = {
     "PyQt5": ("https://www.riverbankcomputing.com/static/Docs/PyQt5", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/reference", None),
     "matplotlib": ("https://matplotlib.org", None),
-    "Sphinx": (" https://www.sphinx-doc.org/en/master/", None),
+    "Sphinx": ("https://www.sphinx-doc.org/en/master/", None),
 }
 
 modindex_common_prefix = ["dune."]

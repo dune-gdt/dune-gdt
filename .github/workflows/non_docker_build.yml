@@ -763,14 +763,18 @@ jobs:
       run: |
         # Do not fail the whole job if an unrelated third-party apt repo (e.g.
         # google-chrome on the GitHub runner) has a transient index mismatch; the
-        # Ubuntu repos that provide xvfb/gmsh update fine.
+        # Ubuntu repos that provide xvfb update fine.
         sudo apt-get update || true
-        # xvfb for headless rendering; gmsh is shelled out to by pymor's gmsh
-        # discretizer used in example__gmsh_grid; ninja-build is the generator
-        # every CMake preset uses, needed by the configure step below. clang-22
-        # (the version clangquill's bundled libclang matches) is installed
-        # separately below, mirroring build-linux's clang22-* legs.
-        sudo apt-get install -y xvfb gmsh ninja-build
+        # xvfb for headless rendering; ninja-build is the generator every CMake
+        # preset uses, needed by the configure step below. clang-22 (the version
+        # clangquill's bundled libclang matches) is installed separately below,
+        # mirroring build-linux's clang22-* legs. gmsh -- shelled out to by
+        # pymor's gmsh discretizer used in example__gmsh_grid -- comes from the
+        # vcpkg `gmsh` manifest feature the configure step below requests
+        # instead of apt, to keep dependency provenance in one place; see
+        # .vcpkg-overlays/README.md for why that needed a portfile.cmake change
+        # (upstream vcpkg's own gmsh port builds an unusable placeholder CLI).
+        sudo apt-get install -y xvfb ninja-build
 
     - name: Install Clang 22
       # The clang22-debug preset configured below compiles the project with
@@ -823,8 +827,16 @@ jobs:
       # which additionally sets -fprofile-instr-generate -fcoverage-mapping; those
       # coverage-instrumentation flags would end up in every database entry for no
       # benefit here, since this job never runs the instrumented binaries.
+      #
+      # VCPKG_MANIFEST_FEATURES adds "gmsh" on top of the preset's own
+      # "alberta;uggrid" (an override, not a replacement, since -D on the same
+      # command line wins over a preset's cacheVariables): only this job needs
+      # the gmsh CLI (see "Install system dependencies" above), so it is
+      # requested here rather than in CMakePresets.json's shared `base` preset,
+      # which would otherwise build it for every other clang22-debug/-release
+      # job too.
       run: |
-        cmake --preset=clang22-debug
+        cmake --preset=clang22-debug -DVCPKG_MANIFEST_FEATURES="alberta;uggrid;gmsh"
         db="${GITHUB_WORKSPACE}/build/clang22-debug/compile_commands.json"
         if [[ ! -s "${db}" ]]; then
           echo "::error::the configure did not export ${db}"
@@ -873,12 +885,18 @@ jobs:
       # shadow the installed bindings. Notebook execution is the actual test: myst-nb
       # is configured with nb_execution_raise_on_error=False, so a failing notebook
       # writes <out>/reports/<name>.err.log instead of aborting, and we fail the job
-      # on those below. We intentionally do NOT pass sphinx -W, because intersphinx
-      # inventory fetches emit network-dependent warnings unrelated to the docs build.
-      # libclang's own parse diagnostics (clangquill.parse) are visible in this log
-      # regardless -- each marks C++ the API pages could not read -- and the full
-      # diagnostics (including the `note:` chains) are archived as the
-      # clangquill_diagnostics artifact below.
+      # on those below. -W turns every warning into a build failure; since Sphinx 8 that
+      # no longer aborts on the first one -- the build runs to completion and exits
+      # non-zero at the end -- so the whole warning list is in the log (--keep-going is
+      # a no-op there, kept for an older Sphinx, which would abort on the first
+      # warning without it). Warnings this repository cannot act on are filtered in
+      # conf.py: the Sphinx C++ domain choking on the generated C++ API pages, the
+      # cosmetic lexer failure on the notebooks' IPython shell escapes, and
+      # intersphinx's network-dependent inventory fetches (only while every
+      # configured inventory is remote). libclang's own parse diagnostics
+      # (clangquill.parse) are deliberately NOT among them -- each marks C++ the
+      # API pages could not read -- so they fail this job until the external
+      # dependency headers are reachable by the parse. Everything else fails it too.
       # Sphinx runs single-threaded (-j 1) on purpose: this job's runner is sized for
       # it (4 vCPU / 16 GB GitHub-hosted runner), and the clangquill C++ API now
       # emits one page per class/function (group_by="namespace"), a far larger document
@@ -899,13 +917,19 @@ jobs:
         # the database exported by the configure step above; conf.py hard-errors
         # without one and would otherwise scan build/*/ for the newest build tree
         CLANGQUILL_COMPILE_COMMANDS: ${{ github.workspace }}/build/clang22-debug
+        # the vcpkg `gmsh` feature requested in the configure step above installs
+        # the CLI here (vcpkg_copy_tools in .vcpkg-overlays/ports/gmsh/portfile.cmake);
+        # pymor's discretize_gmsh (example__gmsh_grid) shells out to a bare `gmsh`
+        # on PATH, not a configurable path
+        GMSH_TOOLS_DIR: ${{ github.workspace }}/build/clang22-debug/vcpkg_installed/x64-linux-shared/tools/gmsh
       run: |
         cd "${RUNNER_TEMP}"
         OUT="${GITHUB_WORKSPACE}/build/docs_html"
+        export PATH="${GMSH_TOOLS_DIR}:${PATH}"
         # --no-project: ignore the repo-root pyproject stub; run in the venv built above
         xvfb-run -a uv run --no-project \
           --python "${GITHUB_WORKSPACE}/.venv/bin/python" \
-          python -m sphinx --keep-going -j 1 -b html \
+          python -m sphinx -W --keep-going -j 1 -b html \
           "${GITHUB_WORKSPACE}/docs/source" "${OUT}"
         if compgen -G "${OUT}/reports/*.err.log" > /dev/null; then
           echo "::error::one or more executed documentation notebooks failed (see dumped reports below)"
@@ -936,9 +960,9 @@ jobs:
     - name: Upload clangquill diagnostics log
       # Every libclang diagnostic of the C++ API parse, at every severity, with the
       # note: chains the Sphinx warning stream drops (clangquill_diagnostics_log in
-      # docs/source/conf.py) -- the context needed to actually fix one, which the
-      # one-line warnings in the job log lack. Uploaded with always() so it is
-      # retrievable on every run, not only a failing one.
+      # docs/source/conf.py). These are not suppressed, so under -W they fail the
+      # job -- which is exactly when this artifact is wanted, hence always(): the
+      # log survives the failure and carries the context the one-line warnings lack.
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:

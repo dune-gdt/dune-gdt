@@ -40,8 +40,9 @@ docs = [
     # clangquill only supports Python >=3.13. Mark it so that resolving the project's extras (which `uv run --group test`
     # does in project mode, see cmake/modules/DuneXTTesting.cmake) stays satisfiable on the Python 3.12 test builds; the
     # docs themselves are built on 3.13. Without the marker the test resolution fails with an unsatisfiable requirement.
-    # >=0.14.0: 0.10.0 made clangquill_compile_commands required (the Sphinx extension no longer guesses compile flags)
-    # and 0.14.0 added clangquill_diagnostics_log, which docs/source/conf.py configures; on top of that comes the
+    # >=1.0.0, historically >=0.14.0: 0.10.0 made clangquill_compile_commands required (the Sphinx extension no
+    # longer guesses compile flags) and 0.14.0 added clangquill_diagnostics_log, which docs/source/conf.py
+    # configures; on top of that comes the
     # hierarchical group_by="namespace" page layout. All of it is set up in docs/source/conf.py. The floor deliberately
     # drops the `<0.10.0` cap main added as a stopgap: that cap was there because nothing configured
     # clangquill_compile_commands and the docs build died with "clangquill_compile_commands is not configured". conf.py
@@ -49,8 +50,32 @@ docs = [
     # every preset), and the build_docs CI job produces one with a configure-only `cmake --preset=release`; an
     # unconfigured tree fails the docs build with an actionable error instead of a guessed set of flags.
     # 0.15.0 is a packaging-only release (Windows CI, vcpkg bootstrap for building clangquill itself); its src/ is
-    # byte-for-byte identical to 0.14.0's, so this bump changes nothing about how headers are parsed here.
-    'clangquill>=0.15.0; python_version >= "3.13"',
+    # byte-for-byte identical to 0.14.0's. 0.17.0 (there is no 0.16.0) is not: it changes how a header with no
+    # compile-database entry of its own gets its flags. The previous same-directory <stem>.cpp sibling lookup (of
+    # which this repository has none) is gone; every such header now goes through libclang's own interpolating
+    # database lookup instead (the nearest listed file's command, filename substituted), and clangquill reports a
+    # new warning -- "no compilation database entry for ...; libclang supplied the command of another file
+    # instead" -- whenever it does. It also makes a database entry's relative -I/-D paths resolve against that
+    # entry's own `directory` rather than the docs build's cwd, and drops flags whose only effect is to write a
+    # file (-o/-MF/-MD/...), which a parse should never do.
+    # 1.0.0 is a stabilisation release (mostly a Doxygen-comment-parsing rewrite; no removed config, no
+    # requires-python change). The one change on the exact path this project uses (a real compile_commands.json):
+    # tu_batch (left at its default here) used to be forced to 1 -- one fully isolated translation unit per header
+    # -- whenever compile_commands was set; now it groups headers by the compiler command the database resolves
+    # for them, so a CMake project's per-target headers batch together instead. Each header still gets its own
+    # borrowed-flags warning regardless of batching, and errors are documented as stable, but a batch-mate's
+    # preprocessor state can now leak into a header that is not self-contained, which the docs explicitly call out
+    # as a way warnings (not errors) can shift. Expect the diagnostics count to move, if at all, only on that axis;
+    # see the PR for CI-verified numbers rather than a guess here.
+    # 1.1.0 fixes clangquill/clangquill#348 (filed from this project's CI): clangquill_clang_resource_dir was only
+    # ever applied on the no-compile-database fallback path, so a header matched via a real compile_commands.json
+    # entry -- which is every ENABLE_HEADERCHECK-covered header here -- parsed with clangquill's bundled libclang
+    # and no builtin headers, failing on any transitively-included system header ('stddef.h' file not found, then
+    # size_t, ...). newton.hh hit exactly this in the PR #449 CI run. #349 appends -resource-dir to
+    # database-matched commands too (after the entry's own args, so our configured value wins); std/include_dirs/
+    # defines are unchanged, still database-first. The floor moves to 1.1.0 because that fix is the reason for this
+    # bump -- older clangquill will not build the C++ API pages under -W here.
+    'clangquill>=1.1.0; python_version >= "3.13"',
     "plotly",
     "meshio>=4.4",
 ]
