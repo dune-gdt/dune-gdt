@@ -30,6 +30,7 @@
 #include <dune/xt/la/container/conversion.hh>
 #include <dune/xt/la/container/matrix-interface.hh>
 #include <dune/xt/la/exceptions.hh>
+#include <dune/xt/la/internal/eigen-solver-options.hh>
 #include <dune/xt/la/matrix-inverter.hh>
 
 namespace Dune::XT::LA {
@@ -46,31 +47,28 @@ namespace internal {
 static inline void ensure_generalized_eigen_solver_type(const std::string& type,
                                                         const std::vector<std::string>& available_types)
 {
-  for (const auto& tp : available_types)
-    if (type == tp)
-      return;
-  DUNE_THROW(Exceptions::generalized_eigen_solver_failed_bc_it_was_not_set_up_correctly,
-             "Given type '" << type << "' is not one of the available types: " << available_types);
+  DUNE_THROW_IF(!solver_type_available(type, available_types),
+                Exceptions::generalized_eigen_solver_failed_bc_it_was_not_set_up_correctly,
+                "Given type '" << type << "' is not one of the available types: " << available_types);
 } // ... ensure_generalized_eigen_solver_type(...)
 
 
 /// \sa default_eigen_solver_options() on why this is cached.
 static inline const Common::Configuration& default_generalized_eigen_solver_options()
 {
-  static const Common::Configuration opts = []() {
-    Common::Configuration ret;
-    ret["compute_eigenvalues"] = "true";
-    ret["compute_eigenvectors"] = "false";
-    ret["check_for_inf_nan"] = "true";
-    ret["real_tolerance"] = "1e-15"; // is only used if the respective assert_... is negative
-    ret["assert_real_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-    ret["assert_positive_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-    ret["assert_negative_eigenvalues"] = "-1"; // if positive, this is the check tolerance
-    ret["assert_real_eigenvectors"] = "-1"; // if positive, this is the check tolerance
-    return ret;
-  }();
+  static const Common::Configuration opts = common_eigen_solver_options(/*compute_eigenvectors=*/false);
   return opts;
 } // ... default_generalized_eigen_solver_options(...)
+
+
+/// \brief Assembles the options of a generalized eigen solver of the given type, \sa eigen_solver_options_for_type().
+static inline Common::Configuration
+generalized_eigen_solver_options_for_type(const std::vector<std::string>& available_types, const std::string& type)
+{
+  const std::string actual_type = type.empty() ? available_types[0] : type;
+  ensure_generalized_eigen_solver_type(actual_type, available_types);
+  return solver_options_with_type(default_generalized_eigen_solver_options(), actual_type);
+} // ... generalized_eigen_solver_options_for_type(...)
 
 
 /**
