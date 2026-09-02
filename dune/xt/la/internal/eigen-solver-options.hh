@@ -15,7 +15,6 @@
 #ifndef DUNE_XT_LA_INTERNAL_EIGEN_SOLVER_OPTIONS_HH
 #define DUNE_XT_LA_INTERNAL_EIGEN_SOLVER_OPTIONS_HH
 
-#include <algorithm>
 #include <initializer_list>
 #include <string>
 #include <utility>
@@ -52,7 +51,10 @@ assemble_solver_types(std::initializer_list<std::pair<std::string, bool>> candid
  */
 static inline bool solver_type_available(const std::string& type, const std::vector<std::string>& available_types)
 {
-  return std::find(available_types.begin(), available_types.end(), type) != available_types.end();
+  for (const auto& tp : available_types)
+    if (type == tp)
+      return true;
+  return false;
 } // ... solver_type_available(...)
 
 
