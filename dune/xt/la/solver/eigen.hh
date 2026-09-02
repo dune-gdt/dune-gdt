@@ -203,21 +203,23 @@ public:
       }
     }
     // check for symmetry (if solver needs it)
-    const R pre_check_symmetry_threshhold = opts.get("pre_check_symmetry", default_opts.get<R>("pre_check_symmetry"));
-    if ((type == "ldlt" || type == "llt") && pre_check_symmetry_threshhold > 0) {
-      const MatrixType tmp(matrix_.backend() - matrix_.backend().adjoint());
-      // serialize difference to compute L^\infty error (no copy done here)
-      const R error = std::max(tmp.backend().cwiseAbs().minCoeff(), tmp.backend().cwiseAbs().maxCoeff());
-      if (error > pre_check_symmetry_threshhold) {
-        std::stringstream msg;
-        msg << "Given matrix is not symmetric and you requested checking (see options below)!\n"
-            << "If you want to disable this check, set 'pre_check_symmetry = 0' in the options.\n\n"
-            << "  (A - A').sup_norm() = " << error << "\n\n"
-            << "Those were the given options:\n\n"
-            << opts;
-        if (rhs.size() <= internal::max_size_to_print)
-          msg << "\nThis was the given matrix A:\n\n" << matrix_ << "\n";
-        DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
+    if (type == "ldlt" || type == "llt") {
+      const R pre_check_symmetry_threshhold = opts.get("pre_check_symmetry", default_opts.get<R>("pre_check_symmetry"));
+      if (pre_check_symmetry_threshhold > 0) {
+        const MatrixType tmp(matrix_.backend() - matrix_.backend().adjoint());
+        // serialize difference to compute L^\infty error (no copy done here)
+        const R error = std::max(tmp.backend().cwiseAbs().minCoeff(), tmp.backend().cwiseAbs().maxCoeff());
+        if (error > pre_check_symmetry_threshhold) {
+          std::stringstream msg;
+          msg << "Given matrix is not symmetric and you requested checking (see options below)!\n"
+              << "If you want to disable this check, set 'pre_check_symmetry = 0' in the options.\n\n"
+              << "  (A - A').sup_norm() = " << error << "\n\n"
+              << "Those were the given options:\n\n"
+              << opts;
+          if (rhs.size() <= internal::max_size_to_print)
+            msg << "\nThis was the given matrix A:\n\n" << matrix_ << "\n";
+          DUNE_THROW(Exceptions::linear_solver_failed_bc_data_did_not_fulfill_requirements, msg.str());
+        }
       }
     }
     // solve
