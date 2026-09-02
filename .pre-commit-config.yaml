@@ -6,10 +6,10 @@ repos:
   rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
   hooks:
   - id: trailing-whitespace
-    # mpfr and lapack-reference are verbatim copies of the upstream vcpkg ports;
-    # do not rewrite their patches (stripping context-line whitespace corrupts
-    # the diffs -- a blank context line is a single space).
-    exclude: "^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
+    # mpfr, lapack-reference and gmsh are verbatim copies of the upstream vcpkg
+    # ports; do not rewrite their patches (stripping context-line whitespace
+    # corrupts the diffs -- a blank context line is a single space).
+    exclude: "^\\.vcpkg-overlays/ports/(mpfr|lapack-reference|gmsh)/"
   - id: check-yaml
     args: [--allow-multiple-documents]
   - id: check-added-large-files
@@ -18,7 +18,7 @@ repos:
   rev: 'f4d7745e17a28aad7eed2f4874ca8d1568c11c4c' # frozen: v22.1.8
   hooks:
   - id: clang-format
-    exclude: "^(pybind11)|^\\.vcpkg-overlays/ports/mpfr/"
+    exclude: "^(pybind11)|^\\.vcpkg-overlays/ports/(mpfr|gmsh)/"
 - repo: https://github.com/google/yamlfmt
   rev: b5ca1890231d5e1e5181fef75a1be609d1e25029 # frozen: v0.21.0
   hooks:
@@ -38,11 +38,11 @@ repos:
   hooks:
   - id: cmake-format
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
+    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference|gmsh)/"
     args: ["-i", "--config-files=.cmake_format.py"]
   - id: cmake-lint
     additional_dependencies: [pyyaml>=5.1] # see https://github.com/cheshirekow/cmake-format-precommit/pull/4#issuecomment-943444582
-    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference)/"
+    exclude: "config.h.cmake|pybind11|^\\.vcpkg-overlays/ports/(mpfr|lapack-reference|gmsh)/"
     args: ["--config-files=.cmake_format.py"]
 - repo: https://github.com/python-jsonschema/check-jsonschema
   rev: c4654a7e007c9619a5eb63c39a456572a0fa1851 # frozen: 0.38.0

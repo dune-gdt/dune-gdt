@@ -28,6 +28,13 @@
           ]
         }
       ]
+    },
+    "gmsh": {
+      "description":
+        "Build the gmsh CLI (docs build only: pymor's discretize_gmsh shells out to it for the gmsh tutorial notebook, see .vcpkg-overlays/README.md)",
+      "dependencies": [
+        "gmsh"
+      ]
     }
   },
   "dependencies": [

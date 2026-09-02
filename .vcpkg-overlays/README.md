@@ -34,9 +34,9 @@ the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
 ## Hand-maintained ports (not generated)
 
 A handful of ports in `ports/` are **not** produced by `update_ports.bash` and
-are edited by hand: `pybind11`, `uv`, `libtirpc`, `alberta`, `mpfr`, and the GNU
-autotools host tools below. `update_ports.bash` only touches the DUNE modules
-listed in `deps/module_list.bash`, so it leaves these alone.
+are edited by hand: `pybind11`, `uv`, `libtirpc`, `alberta`, `mpfr`, `gmsh`, and
+the GNU autotools host tools below. `update_ports.bash` only touches the DUNE
+modules listed in `deps/module_list.bash`, so it leaves these alone.
 
 ### GNU autotools host tools
 
@@ -88,6 +88,38 @@ upstream `portfile.cmake` still matches apart from the autotools wiring block.
 
 To bump a version: update `version` in the port's `vcpkg.json`, the URL/SHA-512
 in its `portfile.cmake` (`sha512sum` of the new `.tar.xz`), and rebuild.
+
+### gmsh
+
+Only requested via the `gmsh` manifest feature (see `vcpkg.json`), and only by
+the docs build's CMake configure (see `non_docker_build.yml`'s `build_docs`
+job): pymor's `discretize_gmsh`, used by the `example__gmsh_grid` tutorial
+notebook, shells out to a bare `gmsh` on `PATH` to turn a plain polygonal 2D
+domain into a mesh.
+
+Upstream's own vcpkg port (`.vcpkg-root/ports/gmsh/`) builds `gmsh` with
+`ENABLE_PARSER=OFF` and `ENABLE_MESH=OFF` -- it exists there only to produce
+`libgmsh` for C++ consumers to link against, and the CLI it also builds under
+those flags cannot read a `.geo` file at all ("Gmsh parser is not compiled in
+this version"), let alone mesh one. It is overlaid here as a copy of the
+upstream port (`*.diff` patches, `usage` verbatim) with `portfile.cmake`
+flipping `ENABLE_PARSER`/`ENABLE_MESH` to `ON`, plus `ENABLE_EIGEN=ON` (and
+`eigen3` added to `vcpkg.json`'s dependencies) -- meshing a plain rectangle
+with both off still failed with "Matrix inversion requires Eigen or LAPACK"
+during the mesher's element-quality step. `eigen3` is header-only and already
+a project-wide dependency (see the top-level `vcpkg.json`, pinned by the
+`overrides` block there), so this reuses the exact copy every other target in
+this project links against rather than building a second one.
+Verified end-to-end locally: `pymor.discretizers.builtin.domaindiscretizers
+.gmsh.discretize_gmsh` against the `x64-linux-shared`-built binary correctly
+meshes `example__gmsh_grid`'s L-shaped domain.
+
+GRAPHICS/POST/PLUGINS/OCC and everything else upstream disables stay off:
+nothing here needs a GUI, post-processing views, or CAD import, only reading a
+`.geo` script and writing a `.msh` mesh. When bumping the vcpkg baseline,
+re-sync the patches/`usage`/`vcpkg.json` base from `.vcpkg-root/ports/gmsh/` if
+upstream changed them, and re-check that the upstream `portfile.cmake` still
+matches apart from the `ENABLE_PARSER`/`ENABLE_MESH`/`ENABLE_EIGEN` flags.
 
 > Note: the bare `libtool` entry in the repo's top-level `.gitignore` (an
 > autotools-generated script name) also matches `ports/libtool/`, so that path is
