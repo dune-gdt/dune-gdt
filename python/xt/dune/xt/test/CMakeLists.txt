@@ -14,3 +14,4 @@
 dune_pybindxi_add_module(_test_grid_element grid_element.cc)
 dune_pybindxi_add_module(_test_grid_intersection grid_intersection.cc)
 dune_pybindxi_add_module(_test_grid_types grid_types.cc)
+dune_pybindxi_add_module(_test_eigensolver_numpy eigensolver_numpy.cc)
