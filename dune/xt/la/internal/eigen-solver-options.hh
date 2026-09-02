@@ -15,8 +15,10 @@
 #ifndef DUNE_XT_LA_INTERNAL_EIGEN_SOLVER_OPTIONS_HH
 #define DUNE_XT_LA_INTERNAL_EIGEN_SOLVER_OPTIONS_HH
 
+#include <algorithm>
 #include <initializer_list>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -49,12 +51,9 @@ assemble_solver_types(std::initializer_list<std::pair<std::string, bool>> candid
  * \note  The associated DUNE_THROW is left to the callers: the exception type has to be spelled out at the throwing
  *        site, since DUNE_THROW stringifies it into the message.
  */
-static inline bool solver_type_available(const std::string& type, const std::vector<std::string>& available_types)
+static inline bool solver_type_available(const std::string_view type, const std::vector<std::string>& available_types)
 {
-  for (const auto& tp : available_types)
-    if (type == tp)
-      return true;
-  return false;
+  return std::ranges::find(available_types, type) != available_types.end();
 } // ... solver_type_available(...)
 
 
