@@ -160,8 +160,8 @@ public:
 #  error Macro LOG_ already defined, open an issue at https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-xt/-/issues !
 #else
 #  define LOG__(base, type)                                                                                            \
-    if (base ::logger.type##_enabled())                                                                                \
-    base ::logger.type()
+    if (base::logger.type##_enabled())                                                                                 \
+    base::logger.type()
 #endif
 
 

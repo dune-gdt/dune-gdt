@@ -98,8 +98,8 @@ public:
           py::is_operator());
     c.def("__iadd__", // function ptr signature required for the right return type
           (type
-           & (type::*)(const std::tuple<const LocalIntersectionBilinearFormType&,
-                                        const XT::Grid::IntersectionFilter<AGV>&>&))
+           & (type::*)(
+               const std::tuple<const LocalIntersectionBilinearFormType&, const XT::Grid::IntersectionFilter<AGV>&>&))
               & type::operator+=,
           "tuple_of_localintersectionbilinearform_intersectionfilter"_a,
           py::is_operator());

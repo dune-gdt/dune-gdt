@@ -35,7 +35,7 @@ As part of [#320](https://github.com/dune-gdt/dune-gdt/issues/320) the bindings 
 `Nonconforming()` selector:
 
 ```python
-make_cube_grid(Dim(3), Cube())                   # structured YaspGrid (default)
+make_cube_grid(Dim(3), Cube())  # structured YaspGrid (default)
 make_cube_grid(Dim(3), Cube(), Nonconforming())  # unstructured ALU hexahedral grid
 ```
 
