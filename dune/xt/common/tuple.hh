@@ -93,18 +93,6 @@ struct RightTrimTuple<T1, T2, T3, T4, T5, T6, T7, T8, T9, 1>
   using type = std::tuple<T1>;
 };
 
-#define TUPLE_TYPEDEFS_2_TUPLE(t_, s_)                                                                                 \
-  typename RightTrimTuple<TELE(t_, s_, 0),                                                                             \
-                          TELE(t_, s_, 1),                                                                             \
-                          TELE(t_, s_, 2),                                                                             \
-                          TELE(t_, s_, 3),                                                                             \
-                          TELE(t_, s_, 4),                                                                             \
-                          TELE(t_, s_, 5),                                                                             \
-                          TELE(t_, s_, 6),                                                                             \
-                          TELE(t_, s_, 7),                                                                             \
-                          TELE(t_, s_, 8),                                                                             \
-                          std::tuple_size<t_>::value>::type
-
 /**
  * @def TUPLE_TYPEDEFS_2_TUPLE( t_, s_ )
  *
@@ -157,6 +145,17 @@ struct RightTrimTuple<T1, T2, T3, T4, T5, T6, T7, T8, T9, 1>
  * without (general) restriction to the size
  * of the tuple @c MyTuple. Enjoy it!
  */
+#define TUPLE_TYPEDEFS_2_TUPLE(t_, s_)                                                                                 \
+  typename RightTrimTuple<TELE(t_, s_, 0),                                                                             \
+                          TELE(t_, s_, 1),                                                                             \
+                          TELE(t_, s_, 2),                                                                             \
+                          TELE(t_, s_, 3),                                                                             \
+                          TELE(t_, s_, 4),                                                                             \
+                          TELE(t_, s_, 5),                                                                             \
+                          TELE(t_, s_, 6),                                                                             \
+                          TELE(t_, s_, 7),                                                                             \
+                          TELE(t_, s_, 8),                                                                             \
+                          std::tuple_size<t_>::value>::type
 
 namespace Dune::XT::Common {
 
