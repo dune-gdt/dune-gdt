@@ -51,27 +51,17 @@ public:
   ///       once. Static initialization of a function-local static is thread-safe.
   static const std::vector<std::string>& types()
   {
-    static const std::vector<std::string> tps = []() {
-      std::vector<std::string> ret;
-      if (Common::Lapacke::available())
-        ret.emplace_back("lapack");
-      ret.emplace_back("eigen");
-      if (internal::numpy_eigensolver_available())
-        ret.emplace_back("numpy");
-      ret.emplace_back("shifted_qr");
-      return ret;
-    }();
+    static const std::vector<std::string> tps =
+        internal::assemble_solver_types({{"lapack", Common::Lapacke::available()},
+                                         {"eigen", true},
+                                         {"numpy", internal::numpy_eigensolver_available()},
+                                         {"shifted_qr", true}});
     return tps;
   }
 
   static Common::Configuration options(const std::string& type = "")
   {
-    const auto& tps = types();
-    const std::string actual_type = type.empty() ? tps[0] : type;
-    internal::ensure_eigen_solver_type(actual_type, tps);
-    Common::Configuration opts = internal::default_eigen_solver_options();
-    opts["type"] = actual_type;
-    return opts;
+    return internal::eigen_solver_options_for_type(types(), type);
   }
 }; // class EigenSolverOptions<Dune::FieldMatrix<K, SIZE, SIZE>>
 
