@@ -34,9 +34,10 @@ the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
 ## Hand-maintained ports (not generated)
 
 A handful of ports in `ports/` are **not** produced by `update_ports.bash` and
-are edited by hand: `pybind11`, `uv`, `libtirpc`, `alberta`, `mpfr`, `gmsh`, and
-the GNU autotools host tools below. `update_ports.bash` only touches the DUNE
-modules listed in `deps/module_list.bash`, so it leaves these alone.
+are edited by hand: `pybind11`, `uv`, `libtirpc`, `alberta`, `mpfr`, `gmp`,
+`gmsh`, and the GNU autotools host tools below. `update_ports.bash` only
+touches the DUNE modules listed in `deps/module_list.bash`, so it leaves these
+alone.
 
 ### GNU autotools host tools
 
@@ -88,6 +89,20 @@ upstream `portfile.cmake` still matches apart from the autotools wiring block.
 
 To bump a version: update `version` in the port's `vcpkg.json`, the URL/SHA-512
 in its `portfile.cmake` (`sha512sum` of the new `.tar.xz`), and rebuild.
+
+### gmp
+
+`mpfr` depends on `gmp`, which otherwise comes from the upstream vcpkg
+registry port (`.vcpkg-root/ports/gmp/`). That port's `URLS` list tries
+`ftpmirror.gnu.org` first, and that redirector has intermittently returned
+502/504 or timed out entirely on ephemeral CI runners, which stalls or fails
+an otherwise cold, from-source configure (see #470). `gmp` is overlaid here
+as a byte-for-byte copy of the upstream port (`vcpkg.json`, all `*.patch`
+files, `usage` verbatim) with a single change to `portfile.cmake`: the
+`URLS` list is reordered to try `ftp.gnu.org` first, then `gmplib.org`, with
+`ftpmirror.gnu.org` moved to last as a final fallback rather than removed
+outright. When bumping the vcpkg baseline, re-sync everything from
+`.vcpkg-root/ports/gmp/` and re-apply just that reordering.
 
 ### gmsh
 
