@@ -61,9 +61,27 @@ wheels = [
 name = "attrs"
 version = "22.2.0"
 source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version < '3.11'",
+]
 sdist = { url = "https://files.pythonhosted.org/packages/21/31/3f468da74c7de4fcf9b25591e682856389b3400b4b62f201e65f15ea3e07/attrs-22.2.0.tar.gz", hash = "sha256:c9227bfc2f01993c03f68db37d1d15c9690188323c067c641f1a35ca58185f99", size = 215900, upload-time = "2022-12-21T09:48:51.773Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/fb/6e/6f83bf616d2becdf333a1640f1d463fef3150e2e926b7010cb0f81c95e88/attrs-22.2.0-py3-none-any.whl", hash = "sha256:29e95c7f6778868dbd49170f98f8818f78f3dc5e0e37c0b1f474e3561b240836", size = 60018, upload-time = "2022-12-21T09:48:49.401Z" },
+]
+
+[[package]]
+name = "attrs"
+version = "26.1.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.14'",
+    "python_full_version == '3.13.*'",
+    "python_full_version == '3.12.*'",
+    "python_full_version == '3.11.*'",
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9a/8e/82a0fe20a541c03148528be8cac2408564a6c9a0cc7e9171802bc1d26985/attrs-26.1.0.tar.gz", hash = "sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32", size = 952055, upload-time = "2026-03-19T14:22:25.026Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl", hash = "sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309", size = 67548, upload-time = "2026-03-19T14:22:23.645Z" },
 ]
 
 [[package]]
@@ -673,6 +691,21 @@ wheels = [
 ]
 
 [[package]]
+name = "cyclopts"
+version = "4.25.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs", version = "26.1.0", source = { registry = "https://pypi.org/simple" } },
+    { name = "docstring-parser" },
+    { name = "rich" },
+    { name = "rich-rst" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/97/62/92422b2ed96d82492dc3e22c0d481f14eba3846a099fd5204575a0a4ffa2/cyclopts-4.25.0.tar.gz", hash = "sha256:251e6120d1baf4504ef0e74c0fa96837793898393870784dcaa77957adcde41d", size = 201456, upload-time = "2026-09-06T15:21:38.151Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/54/6f/41baab9dbb4825d2b5fde85fb6f8e46453a969912cf13368f60dc6b26278/cyclopts-4.25.0-py3-none-any.whl", hash = "sha256:fc718173321964a34a37e3a1eef09080b2f30cd59a8cc0f860d5dc9123efdb15", size = 241363, upload-time = "2026-09-06T15:21:36.555Z" },
+]
+
+[[package]]
 name = "debugpy"
 version = "1.8.21"
 source = { registry = "https://pypi.org/simple" }
@@ -735,6 +768,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/e4/50/8d6806cf13138127692ae6ff79ddeb4e25eb3b0bcc3c1bd033e7e04531a9/docopt_ng-0.9.0.tar.gz", hash = "sha256:91c6da10b5bb6f2e9e25345829fb8278c78af019f6fc40887ad49b060483b1d7", size = 32264, upload-time = "2023-05-30T20:46:25.064Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6c/4a/c3b77fc1a24510b08918b43a473410c0168f6e657118807015f1f1edceea/docopt_ng-0.9.0-py3-none-any.whl", hash = "sha256:bfe4c8b03f9fca424c24ee0b4ffa84bf7391cb18c29ce0f6a8227a3b01b81ff9", size = 16689, upload-time = "2023-05-30T20:46:45.294Z" },
+]
+
+[[package]]
+name = "docstring-parser"
+version = "0.18.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e0/4d/f332313098c1de1b2d2ff91cf2674415cc7cddab2ca1b01ae29774bd5fdf/docstring_parser-0.18.0.tar.gz", hash = "sha256:292510982205c12b1248696f44959db3cdd1740237a968ea1e2e7a900eeb2015", size = 29341, upload-time = "2026-04-14T04:09:19.867Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a7/5f/ed01f9a3cdffbd5a008556fc7b2a08ddb1cc6ace7effa7340604b1d16699/docstring_parser-0.18.0-py3-none-any.whl", hash = "sha256:b3fcbed555c47d8479be0796ef7e19c2670d428d72e96da63f3a40122860374b", size = 22484, upload-time = "2026-04-14T04:09:18.638Z" },
 ]
 
 [[package]]
@@ -802,7 +844,7 @@ all = [
     { name = "plotly" },
     { name = "pylicense3" },
     { name = "pymor", version = "2022.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "pymor", version = "2025.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pymor", version = "2026.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-regressions" },
@@ -820,13 +862,13 @@ docs = [
     { name = "myst-nb" },
     { name = "plotly" },
     { name = "pymor", version = "2022.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "pymor", version = "2025.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pymor", version = "2026.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "python-slugify" },
     { name = "sphinxcontrib-bibtex" },
 ]
 examples = [
     { name = "pymor", version = "2022.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "pymor", version = "2025.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pymor", version = "2026.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
 ]
 infrastructure = [
     { name = "clangquill", marker = "python_full_version >= '3.13'" },
@@ -849,7 +891,7 @@ infrastructure = [
     { name = "plotly" },
     { name = "pylicense3" },
     { name = "pymor", version = "2022.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
-    { name = "pymor", version = "2025.2.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pymor", version = "2026.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-regressions" },
@@ -955,13 +997,14 @@ requires-dist = [
     { name = "plotly", marker = "extra == 'infrastructure'" },
     { name = "pylicense3", marker = "extra == 'all'", specifier = ">=0.4.1" },
     { name = "pylicense3", marker = "extra == 'infrastructure'", specifier = ">=0.4.1" },
-    { name = "pymor", marker = "python_full_version >= '3.11' and extra == 'all'" },
-    { name = "pymor", marker = "python_full_version >= '3.11' and extra == 'examples'" },
+    { name = "pymor", marker = "python_full_version >= '3.11' and extra == 'all'", specifier = "==2026.1.0" },
+    { name = "pymor", marker = "python_full_version >= '3.11' and extra == 'docs'", specifier = "==2026.1.0" },
+    { name = "pymor", marker = "python_full_version >= '3.11' and extra == 'examples'", specifier = "==2026.1.0" },
+    { name = "pymor", marker = "python_full_version >= '3.11' and extra == 'infrastructure'", specifier = "==2026.1.0" },
     { name = "pymor", marker = "python_full_version < '3.11' and extra == 'all'", specifier = "==2022.2.0" },
+    { name = "pymor", marker = "python_full_version < '3.11' and extra == 'docs'", specifier = "==2022.2.0" },
     { name = "pymor", marker = "python_full_version < '3.11' and extra == 'examples'", specifier = "==2022.2.0" },
-    { name = "pymor", marker = "extra == 'all'" },
-    { name = "pymor", marker = "extra == 'docs'" },
-    { name = "pymor", marker = "extra == 'infrastructure'" },
+    { name = "pymor", marker = "python_full_version < '3.11' and extra == 'infrastructure'", specifier = "==2022.2.0" },
     { name = "pytest", marker = "extra == 'all'" },
     { name = "pytest", marker = "extra == 'infrastructure'" },
     { name = "pytest-cov", marker = "extra == 'all'" },
@@ -1462,7 +1505,8 @@ name = "jsonschema"
 version = "4.26.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "attrs" },
+    { name = "attrs", version = "22.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "attrs", version = "26.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "jsonschema-specifications" },
     { name = "referencing" },
     { name = "rpds-py", version = "0.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
@@ -1490,7 +1534,8 @@ name = "jupyter-cache"
 version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "attrs" },
+    { name = "attrs", version = "22.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "attrs", version = "26.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "click" },
     { name = "importlib-metadata" },
     { name = "nbclient" },
@@ -2841,7 +2886,7 @@ wheels = [
 
 [[package]]
 name = "pymor"
-version = "2025.2.2"
+version = "2026.1.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -2850,6 +2895,7 @@ resolution-markers = [
     "python_full_version == '3.11.*'",
 ]
 dependencies = [
+    { name = "cyclopts" },
     { name = "diskcache" },
     { name = "matplotlib", version = "3.11.0", source = { registry = "https://pypi.org/simple" } },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
@@ -2861,11 +2907,10 @@ dependencies = [
     { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "scipy", version = "1.18.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "threadpoolctl" },
-    { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/98/09/d12ad674b47a8d0248c90332c20327b9961af8618173b5866502a110c56d/pymor-2025.2.2.tar.gz", hash = "sha256:48d6e556675eb867ff2465a97eddbd7d5b204e05aae5a6a5c0711d2abc01a421", size = 826040, upload-time = "2026-06-10T15:13:14.787Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/56/79/14af4cb406c8f2ffc7e8b4a355486d2e2bcac80cfe423441e1285910fafd/pymor-2026.1.0.tar.gz", hash = "sha256:bd28df82424763543e12a80000a855b7203cc2ab67f71a217973496317abfdaa", size = 845951, upload-time = "2026-09-04T17:14:35.891Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ae/4c/bb5eaef89a7a966dc1a9eaa06d234c96e087fc081494cd27f8f3131a7c04/pymor-2025.2.2-py3-none-any.whl", hash = "sha256:56d158445aa0d9d1afe7cbc2b65826f11bd5764f72d3708bac6f840acca1aa8b", size = 620911, upload-time = "2026-06-10T15:13:18.468Z" },
+    { url = "https://files.pythonhosted.org/packages/46/61/bbec9e4ebd88b84b070f4e5e76b50b05cf88a76efd7fdf79f37432c98247/pymor-2026.1.0-py3-none-any.whl", hash = "sha256:3e66364f1729d3089beb8653c4629df5318c2b7542c6f7af6e01987f6896c946", size = 646425, upload-time = "2026-09-04T17:14:38.955Z" },
 ]
 
 [[package]]
@@ -3122,7 +3167,8 @@ name = "referencing"
 version = "0.37.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "attrs" },
+    { name = "attrs", version = "22.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "attrs", version = "26.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "rpds-py", version = "0.30.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "rpds-py", version = "2026.6.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
@@ -3159,6 +3205,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c0/8f/0722ca900cc807c13a6a0c696dacf35430f72e0ec571c4275d2371fca3e9/rich-15.0.0.tar.gz", hash = "sha256:edd07a4824c6b40189fb7ac9bc4c52536e9780fbbfbddf6f1e2502c31b068c36", size = 230680, upload-time = "2026-04-12T08:24:00.75Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/82/3b/64d4899d73f91ba49a8c18a8ff3f0ea8f1c1d75481760df8c68ef5235bf5/rich-15.0.0-py3-none-any.whl", hash = "sha256:33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb", size = 310654, upload-time = "2026-04-12T08:24:02.83Z" },
+]
+
+[[package]]
+name = "rich-rst"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pygments" },
+    { name = "rich" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e2/d6/d0b9fafc73b65767200da027acab1db1bdb1048f4fea5ebf659df01c700e/rich_rst-2.1.0.tar.gz", hash = "sha256:f4d117b49697f338769759fa5cacf5197da4888b347b9fda2e50aef5cd8d93bd", size = 302732, upload-time = "2026-07-05T02:59:44.308Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2a/68/1fc93dd759605b5d00fc98b50200739e41ed32bd22d6ba35ca6c3932371b/rich_rst-2.1.0-py3-none-any.whl", hash = "sha256:7ecd1343ee12c879d0e7ae74c3eb6d263b023d2929c6d114212eb1fd91057255", size = 272987, upload-time = "2026-07-05T02:59:42.792Z" },
 ]
 
 [[package]]

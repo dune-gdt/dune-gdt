@@ -24,9 +24,11 @@ dynamic = ["version", "dependencies"]
 Homepage = "https://zivgitlab.uni-muenster.de/ag-ohlberger/dune-community/dune-gdt"
 
 [project.optional-dependencies]
-# The examples were validated against pyMOR 2022.2.0 (the minimal version that installs in a 3.10 venv), so we keep that
-# exact pin only on older Python via an environment marker; on 3.11+ (e.g. the 3.13 used by the docs build/CI wheels)
-# pyMOR is left unpinned so a compatible newer release is resolved.
+# docs and examples were validated against pyMOR 2022.2.0 (the minimal version that installs in a 3.10 venv), so we keep
+# that exact pin only on older Python via an environment marker; on 3.11+ (e.g. the 3.13 used by the docs build/CI
+# wheels) pyMOR is pinned to the current release too (==2026.1.0) rather than left unconstrained, so a pyMOR release
+# with a breaking API change (e.g. #471, PolygonalDomain's boundary_types kwarg renamed to boundary_description in
+# 2026.1.0) doesn't silently break CI -- bumping this pin is now a deliberate, reviewed step instead.
 visualisation = ["k3d>=2.15.2", "vtk", "ipywidgets", "lxml", "xmljson", "matplotlib", "wurlitzer"]
 # clangquill parses the in-tree dune-gdt/dune-xt C++ headers with libclang and renders the MyST C++ API pages consumed by
 # the Sphinx build (see docs/source/conf.py); it replaces the previous Doxygen-based API setup. meshio is required by
@@ -36,7 +38,8 @@ docs = [
     "sphinxcontrib-bibtex",
     "furo",
     "myst-nb>=0.16",
-    "pymor",
+    'pymor==2022.2.0; python_version < "3.11"',
+    'pymor==2026.1.0; python_version >= "3.11"',
     # clangquill only supports Python >=3.13. Mark it so that resolving the project's extras (which `uv run --group test`
     # does in project mode, see cmake/modules/DuneXTTesting.cmake) stays satisfiable on the Python 3.12 test builds; the
     # docs themselves are built on 3.13. Without the marker the test resolution fails with an unsatisfiable requirement.
@@ -79,7 +82,7 @@ docs = [
     "plotly",
     "meshio>=4.4",
 ]
-examples = ['pymor==2022.2.0; python_version < "3.11"', 'pymor; python_version >= "3.11"']
+examples = ['pymor==2022.2.0; python_version < "3.11"', 'pymor==2026.1.0; python_version >= "3.11"']
 infrastructure = [
     "pylicense3>=0.4.1",
     "pytest",
