@@ -51,7 +51,7 @@ L_shaped_domain = PolygonalDomain(points=[
     [-1, -1],
     [1, -1],
     [1, 0],
-], boundary_types={'dirichlet': [1, 2, 3, 4, 5, 6]})
+], boundary_description={'dirichlet': [1, 2, 3, 4, 5, 6]})
 ```
 
 ```{code-cell}
