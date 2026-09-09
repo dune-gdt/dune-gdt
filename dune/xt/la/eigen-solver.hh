@@ -47,9 +47,9 @@ class EigenSolverOptions
   static_assert(AlwaysFalse<MatrixType>::value,
                 "Please implement for given MatrixType and add the respective include below!");
 
-  static std::vector<std::string> types();
+  static const std::vector<std::string>& types();
 
-  static Common::Configuration options(const std::string /*type*/ = "");
+  static Common::Configuration options(const std::string& /*type*/ = "");
 }; // class EigenSolverOptions
 
 
