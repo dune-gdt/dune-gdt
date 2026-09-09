@@ -70,5 +70,37 @@ for md in dune.xt dune.gdt; do
     bash -c "pip install /wheelhouse/dune* && python -c 'from ${md} import *'"
 done
 
+# ... and that they still run on the oldest CPU in the GitHub-hosted pool.
+#
+# This wheel is built on one hosted runner and installed by build_docs on another,
+# and the pool spans Intel/AMD generations. A dependency whose kernels are pinned
+# to the *build* host's ISA then yields a wheel that dies with SIGILL on an older
+# runner -- a coin flip, surfacing only as "nbclient DeadKernelError: Kernel died"
+# with no cause. openblas without the "dynamic-arch" feature was exactly that; see
+# #456 and #467. Grepping the shared objects for AVX-512 cannot replace this:
+# with dynamic-arch openblas deliberately *contains* AVX-512 kernels and picks
+# among them at runtime, so only executing the code answers the question.
+#
+# qemu-user fixes what CPUID reports, so a library that dispatches at runtime
+# selects baseline kernels and passes, while anything pinned above the baseline
+# raises SIGILL right here, on every wheel build, deterministically.
+#
+# -cpu Nehalem (x86-64-v2) is stricter than the pool actually needs, which costs
+# nothing while the wheel is genuinely portable -- numpy/scipy's own manylinux
+# wheels dispatch at runtime and pass it. If a third-party wheel ever forces it,
+# relax to Haswell (AVX2, no AVX-512), which still catches the class that bit us;
+# expect TCG "doesn't support requested feature" warnings for hle/rtm there.
+# qemu resolves no PATH, hence the absolute interpreter path.
+# ponytail: models CPUID, not the microarchitecture -- catches a statically
+# pinned ISA, not an illegal instruction reached only on some data path. Run
+# whole notebooks under qemu if that ever turns out to matter.
+docker run ${DT} -v "${WHEEL_DIR_ABSOLUTE}"/final:/wheelhouse:ro \
+  -v "${THISDIR}/check_baseline_isa.py":/check_baseline_isa.py:ro -i "${TEST_IMAGE}" \
+  bash -c "export DEBIAN_FRONTEND=noninteractive \
+    && apt-get update -qq && apt-get install -y -qq qemu-user-static \
+    && pip install /wheelhouse/dune* \
+    && OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 \
+       qemu-x86_64-static -cpu Nehalem \"\$(command -v python)\" /check_baseline_isa.py"
+
 echo '************************************'
 echo "Wheels are in ${WHEEL_DIR_ABSOLUTE}/final"
