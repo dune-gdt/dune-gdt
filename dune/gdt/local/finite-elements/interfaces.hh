@@ -116,7 +116,7 @@ public:
   using DomainType = FieldVector<D, d>;
   using RangeType = typename XT::Functions::RangeTypeSelector<R, r, rC>::type;
 
-  LocalFiniteElementInterpolationInterface() {}
+  LocalFiniteElementInterpolationInterface() = default;
 
   virtual ~LocalFiniteElementInterpolationInterface() = default;
 
