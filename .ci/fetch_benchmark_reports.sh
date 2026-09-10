@@ -32,7 +32,7 @@ if ! git clone --depth 1 --branch "${branch}" "${remote}" "${tmp}"; then
 fi
 
 mkdir -p "${dest}"
-if [ -d "${tmp}/reports" ]; then
+if [[ -d "${tmp}/reports" ]]; then
   cp -r "${tmp}/reports/." "${dest}/"
   echo "copied benchmark reports from ${branch} into ${dest}"
 else
