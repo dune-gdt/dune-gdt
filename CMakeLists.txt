@@ -230,7 +230,7 @@ add_subdirectory(examples)
 add_subdirectory(benchmarks)
 add_subdirectory(docs)
 
-add_tidy(${CMAKE_CURRENT_SOURCE_DIR})
+add_tidy()
 add_pylicense()
 
 dxt_exclude_from_headercheck(${CMAKE_SOURCE_DIR}/.vcpkg-root)

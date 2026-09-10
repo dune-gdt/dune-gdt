@@ -22,93 +22,43 @@ function(dxt_path_to_headercheck_name arg)
       PARENT_SCOPE)
 endfunction()
 
-# Creates targets tidy_* and fix_tidy_* for all source files. These targets apply clang-tidy and clang-tidy -fix,
-# respectively, to that file. This macro also creates unqualified tidy and fix_tidy targets which apply clang-tidy to
-# all source files. In addition, a target fix_tidy_parallel is created which may be used to run several clang-tidy -fix
-# targets in parallel (Parallelity is controlled by the build system, e.g. ninja -j8 fix_tidy_parallel will run 8
-# targets in parallel). Note that fix_tidy_parallel may apply the fixes several times to each header (once for each
-# compilation unit in which the header is included) and thus often produces broken source files. So if you expect more
-# than a few fixes you probably want to avoid clang_tidy_parallel and just do something else while waiting for the
-# fix_tidy command to be finished.
+# Creates the targets `tidy` and `fix_tidy`, which run clang-tidy over this build's compilation database. All the logic
+# lives in .ci/clang_tidy.bash (see its header): the database is pruned to the translation units that exist in the
+# repository, clang-tidy itself is pinned to a PyPI wheel and run through `uv run --no-project` the same way the
+# coverage targets get gcovr, and three artefacts are written to the build directory -- clang-tidy.log,
+# clang-tidy-fixes.yaml and a deduplicated clang-tidy-issues.md.
+#
+# DXT_TIDY_EXTRA_ARGS forwards further script flags, e.g. --full to include the generated test suites or --filter
+# <regex> to narrow the run to a subtree. `fix_tidy` applies the fixes via clang-apply-replacements, which merges the
+# duplicate replacements a header collects from every including translation unit -- but review the result: checks such
+# as misc-unused-using-decls are inherently per-unit, which is why the NOLINTs in dune/xt/*/print.hh exist.
 macro(ADD_TIDY)
-  find_package(ClangTidy 12)
-  if(ClangTidy_FOUND)
-    dune_symlink_to_source_files(FILES .clang-tidy)
-    message(STATUS "adding tidy target")
-    set(BASE ${PROJECT_SOURCE_DIR}/dune/xt/)
-    file(
-      GLOB_RECURSE
-      _files
-      "${BASE}/*.hh"
-      "${BASE}/*.h"
-      "${BASE}/*.cc"
-      "${BASE}/*.cxx"
-      "${BASE}/*.cpp"
-      "${BASE}/*.c")
-    set(BASE ${PROJECT_SOURCE_DIR}/dune/gdt/)
-    file(
-      GLOB_RECURSE
-      _gdt_files
-      "${BASE}/*.hh"
-      "${BASE}/*.h"
-      "${BASE}/*.cc"
-      "${BASE}/*.cxx"
-      "${BASE}/*.cpp"
-      "${BASE}/*.c")
-    set(BASE ${PROJECT_SOURCE_DIR}/python/)
-    list(APPEND _files ${_gdt_files})
-    file(
-      GLOB_RECURSE
-      _pyfiles
-      "${BASE}/*.hh"
-      "${BASE}/*.h"
-      "${BASE}/*.cc"
-      "${BASE}/*.cxx"
-      "${BASE}/*.cpp"
-      "${BASE}/*.c")
-    list(APPEND _files ${_pyfiles})
-    list(REMOVE_DUPLICATES _files)
-    set(TIDY_ARGS --quiet --config-file=${CMAKE_SOURCE_DIR}/.clang-tidy -extra-arg-before='-includeconfig.h'
-                  -p=${CMAKE_BINARY_DIR})
-    set(fix_tidy_commands)
-    add_custom_target(tidy)
+  set(DXT_TIDY_VERSION
+      "22.1.8"
+      CACHE STRING "Version of the pinned clang-tidy wheel used by the tidy targets")
+  set(DXT_TIDY_EXTRA_ARGS
+      ""
+      CACHE STRING "Additional arguments passed to .ci/clang_tidy.bash (e.g. --full, --filter <regex>)")
+  # keep the config discoverable from the build tree for editors and clangd
+  dune_symlink_to_source_files(FILES .clang-tidy)
+  set(_tidy_command ${CMAKE_SOURCE_DIR}/.ci/clang_tidy.bash --build-dir ${CMAKE_BINARY_DIR} --source-dir
+                    ${CMAKE_SOURCE_DIR} --uv ${UV_EXECUTABLE} --version ${DXT_TIDY_VERSION} ${DXT_TIDY_EXTRA_ARGS})
+  if(NOT TARGET tidy)
     add_custom_target(
-      fix_tidy_parallel
-      COMMENT "If your fixes have been applied several times to each file, run this command sequentially (-j1)")
-    foreach(file ${_files})
-      set(targname ${file})
-      dxt_path_to_headercheck_name(targname)
-      # Add targets for individual files
-      add_custom_target(
-        tidy_${targname}
-        ${ClangTidy_EXECUTABLE} ${TIDY_ARGS} ${file}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-      add_custom_target(
-        fix_tidy_${targname}
-        ${ClangTidy_EXECUTABLE} ${TIDY_ARGS} -fix ${file}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-      # Add these targets as dependency to the global targets
-      add_dependencies(tidy tidy_${targname})
-      add_dependencies(fix_tidy_parallel fix_tidy_${targname})
-      # In addition, store the commands in a list to apply them all sequentially in the fix_tidy target)
-      list(
-        APPEND
-        fix_tidy_commands
-        COMMAND
-        ${ClangTidy_EXECUTABLE}
-        ${TIDY_ARGS}
-        -fix
-        ${file})
-    endforeach()
+      tidy
+      COMMAND ${_tidy_command}
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMENT "Running clang-tidy over the compilation database"
+      VERBATIM USES_TERMINAL)
+  endif()
+  if(NOT TARGET fix_tidy)
     add_custom_target(
       fix_tidy
-      ${fix_tidy_commands}
-      COMMENT "Running clang-tidy -fix for all files, this will take a very long time..."
-      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-  else()
-    message(WARNING "not adding tidy target because clang-tidy is missing or "
-                    "wrong version: ${ClangTidy_EXECUTABLE} ${ClangTidy_VERSION}")
-  endif(ClangTidy_FOUND)
+      COMMAND ${_tidy_command} --fix
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMENT "Running clang-tidy over the compilation database and applying its fixes"
+      VERBATIM USES_TERMINAL)
+  endif()
 endmacro()
 
 macro(DEPENDENCYCHECK)

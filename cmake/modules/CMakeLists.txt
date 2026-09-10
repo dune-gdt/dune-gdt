@@ -19,7 +19,6 @@ install(
         DuneGdtMacros.cmake
         DuneXTTesting.cmake
         DuneXtVersionHelper.cmake
-        FindClangTidy.cmake
         FindEigen3.cmake
         FindLAPACKE.cmake
         FindLIKWID.cmake

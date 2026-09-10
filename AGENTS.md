@@ -71,8 +71,22 @@ Also budget for the cold configure: it builds **every** vcpkg dependency from so
 minutes (~27 min on CI) before a single line of this project compiles.
 
 Other targets worth knowing: `check` / `recheck` (build and run tests per subdir),
-`dxt_headercheck`, `benchmarks` / `run_benchmarks`, `tidy` (clang-tidy),
+`dxt_headercheck`, `benchmarks` / `run_benchmarks`,
 `license` (license-header rewrite), `coverage_cpp`, `coverage_cpp_llvm`, `coverage_python`.
+
+`tidy` / `fix_tidy` run clang-tidy over this build's `compile_commands.json` via
+`.ci/clang_tidy.bash`. clang-tidy is **not** taken from the system: it is pinned to a PyPI
+wheel (`DXT_TIDY_VERSION`, default 22.1.8, matching the clang the presets compile with) and
+run through `uv run --no-project`, like the gcovr coverage targets. The database is pruned to
+the ~483 translation units that exist in the repository -- the other ~3600 are dxt-generated
+test suites that cannot be edited; pass `-DDXT_TIDY_EXTRA_ARGS=--full` to include them, or
+`--filter <regex>` to narrow to a subtree. Three artefacts land in the build dir:
+`clang-tidy.log`, `clang-tidy-fixes.yaml` (replayable with `clang-apply-replacements`) and
+`clang-tidy-issues.md`, a deduplicated per-file worklist with a by-check summary -- headers are
+analyzed once per including TU, so the raw log repeats each header finding many times.
+Requires a **built** tree, not just a configured one. Review what `fix_tidy` does before
+committing it: checks like `misc-unused-using-decls` are inherently per-TU, which is why the
+`NOLINT`s in `dune/xt/*/print.hh` exist.
 
 ## Tests
 
