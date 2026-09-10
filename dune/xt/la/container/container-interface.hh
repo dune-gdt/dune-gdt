@@ -40,6 +40,14 @@ struct VectorLockGuard
     boost::lock(mutexes_.begin(), mutexes_.end());
   }
 
+  // The guard does not own mutexes_, it only borrows the reference: a copy would unlock every
+  // mutex a second time in its destructor, which is undefined behaviour for a std::mutex that
+  // this thread no longer holds.
+  VectorLockGuard(const VectorLockGuard&) = delete;
+  VectorLockGuard(VectorLockGuard&&) = delete;
+  VectorLockGuard& operator=(const VectorLockGuard&) = delete;
+  VectorLockGuard& operator=(VectorLockGuard&&) = delete;
+
   ~VectorLockGuard()
   {
     for (auto& mutex : mutexes_)
@@ -60,6 +68,12 @@ struct LockGuard
       mutexes_[index_].lock();
     }
   }
+
+  // See VectorLockGuard: copying the guard would unlock mutexes_[index_] twice.
+  LockGuard(const LockGuard&) = delete;
+  LockGuard(LockGuard&&) = delete;
+  LockGuard& operator=(const LockGuard&) = delete;
+  LockGuard& operator=(LockGuard&&) = delete;
 
   ~LockGuard()
   {

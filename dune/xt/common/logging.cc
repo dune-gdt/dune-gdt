@@ -41,7 +41,13 @@ void Logging::deinit()
 
 Logging::~Logging()
 {
-  deinit();
+  // deinit() writes to and closes logfile_; an ofstream with exceptions enabled, or a full disk,
+  // would otherwise propagate out of the destructor and terminate the program during static
+  // teardown. There is nothing left to report to at this point, so swallow it.
+  try {
+    deinit();
+  } catch (...) {
+  }
 }
 
 void Logging::create(int logflags, const std::string& logfile, const std::string& datadir, const std::string& _logdir)

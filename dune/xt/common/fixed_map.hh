@@ -240,20 +240,15 @@ private:
 };
 
 
-} // namespace Dune::XT::Common
-
-namespace std {
-
-
 //! writes a FixedMap to an output stream via FixedMap::print
 template <class key_imp, class T, std::size_t nin>
-inline ostream& operator<<(ostream& out, const Dune::XT::Common::FixedMap<key_imp, T, nin>& map)
+inline std::ostream& operator<<(std::ostream& out, const FixedMap<key_imp, T, nin>& map)
 {
   map.print(out);
   return out;
 }
 
 
-} // namespace std
+} // namespace Dune::XT::Common
 
 #endif // DUNE_XT_COMMON_FIXED_MAP_HH
