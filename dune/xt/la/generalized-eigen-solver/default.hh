@@ -34,11 +34,12 @@ template <class MatrixType>
 class GeneralizedEigenSolverOptions<MatrixType, true>
 {
 public:
-  static std::vector<std::string> types()
+  /// \sa EigenSolverOptions<Dune::FieldMatrix<K, SIZE, SIZE>, true>::types() on why the list is cached. The throw
+  ///     stays outside the cached initializer, so an unavailable backend keeps throwing on every call.
+  static const std::vector<std::string>& types()
   {
-    std::vector<std::string> tps;
-    if (Common::Lapacke::available())
-      tps.emplace_back("lapack");
+    static const std::vector<std::string> tps =
+        internal::assemble_solver_types({{"lapack", Common::Lapacke::available()}});
     DUNE_THROW_IF(tps.empty(),
                   Exceptions::generalized_eigen_solver_failed,
                   "No backend available for generalized eigenvalue problems!");
@@ -47,11 +48,7 @@ public:
 
   static Common::Configuration options(const std::string& type = "")
   {
-    const std::string actual_type = type.empty() ? types()[0] : type;
-    internal::ensure_generalized_eigen_solver_type(actual_type, types());
-    Common::Configuration opts = internal::default_generalized_eigen_solver_options();
-    opts["type"] = actual_type;
-    return opts;
+    return internal::generalized_eigen_solver_options_for_type(types(), type);
   }
 }; // class GeneralizedEigenSolverOptions<>
 

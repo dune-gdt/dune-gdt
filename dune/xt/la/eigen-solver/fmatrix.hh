@@ -46,25 +46,22 @@ template <class K, int SIZE>
 class EigenSolverOptions<Dune::FieldMatrix<K, SIZE, SIZE>, true>
 {
 public:
-  static std::vector<std::string> types()
+  /// \note The available types cannot change over the lifetime of the process, and this is queried once per
+  ///       quadrature point in some element-local code paths (see ElementwiseMinimumFunction), so we compute the list
+  ///       once. Static initialization of a function-local static is thread-safe.
+  static const std::vector<std::string>& types()
   {
-    std::vector<std::string> tps;
-    if (Common::Lapacke::available())
-      tps.emplace_back("lapack");
-    tps.emplace_back("eigen");
-    if (internal::numpy_eigensolver_available())
-      tps.emplace_back("numpy");
-    tps.emplace_back("shifted_qr");
+    static const std::vector<std::string> tps =
+        internal::assemble_solver_types({{"lapack", Common::Lapacke::available()},
+                                         {"eigen", true},
+                                         {"numpy", internal::numpy_eigensolver_available()},
+                                         {"shifted_qr", true}});
     return tps;
   }
 
   static Common::Configuration options(const std::string& type = "")
   {
-    const std::string actual_type = type.empty() ? types()[0] : type;
-    internal::ensure_eigen_solver_type(actual_type, types());
-    Common::Configuration opts = internal::default_eigen_solver_options();
-    opts["type"] = actual_type;
-    return opts;
+    return internal::eigen_solver_options_for_type(types(), type);
   }
 }; // class EigenSolverOptions<Dune::FieldMatrix<K, SIZE, SIZE>>
 

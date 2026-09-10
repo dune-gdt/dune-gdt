@@ -35,22 +35,17 @@ template <class S>
 class EigenSolverOptions<EigenDenseMatrix<S>, true>
 {
 public:
-  static std::vector<std::string> types()
+  /// \sa EigenSolverOptions<Dune::FieldMatrix<K, SIZE, SIZE>, true>::types() on why this is cached.
+  static const std::vector<std::string>& types()
   {
-    std::vector<std::string> tps = {"eigen"};
-    if (Common::Lapacke::available())
-      tps.emplace_back("lapack");
-    tps.emplace_back("shifted_qr");
+    static const std::vector<std::string> tps = internal::assemble_solver_types(
+        {{"eigen", true}, {"lapack", Common::Lapacke::available()}, {"shifted_qr", true}});
     return tps;
   }
 
   static Common::Configuration options(const std::string& type = "")
   {
-    const std::string actual_type = type.empty() ? types()[0] : type;
-    internal::ensure_eigen_solver_type(actual_type, types());
-    Common::Configuration opts = internal::default_eigen_solver_options();
-    opts["type"] = actual_type;
-    return opts;
+    return internal::eigen_solver_options_for_type(types(), type);
   }
 }; // class EigenSolverOptions<EigenDenseMatrix<S>>
 
