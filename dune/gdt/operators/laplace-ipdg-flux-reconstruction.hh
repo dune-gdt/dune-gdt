@@ -227,13 +227,16 @@ public:
                                          * (rt_basis_values[local_key_index] * normal)
                                          * intersection_Pk_basis_values[jj]);
                 }
+                // The numerical flux of the theta-IPDG family is theta-independent (the symmetry prefactor only
+                // weights the symmetry term {K grad(v)}[u], which contributes to the potential, not to the flux),
+                // see e.g. [Arnold, Brezzi, Cockburn, Marini, 2002] or [Ern, Stephansen, Vohralik, 2010]:
+                // t_h . n = -{K grad(u_h)}_omega . n + penalty [u_h]
                 for (size_t jj = 0; jj < intersection_Pk_basis.size(); ++jj)
                   rhs[jj] += quadrature_weight * integration_factor
                              * (penalty * (source_value_element - source_value_neighbor)
-                                - symmetry_prefactor_
-                                      * (normal
-                                         * (weight_minus * (diffusion_element * source_grad_element)
-                                            + weight_plus * (diffusion_neighbor * source_grad_neighbor))))
+                                - (normal
+                                   * (weight_minus * (diffusion_element * source_grad_element)
+                                      + weight_plus * (diffusion_neighbor * source_grad_neighbor))))
                              * intersection_Pk_basis_values[jj];
               }
             } else {
@@ -281,10 +284,10 @@ public:
                                    quadrature_weight * integration_factor * (rt_basis_values[local_key_index] * normal)
                                        * intersection_Pk_basis_values[jj]);
               }
+              // as on inner intersections: the numerical flux is theta-independent
               for (size_t jj = 0; jj < intersection_Pk_basis.size(); ++jj)
                 rhs[jj] += quadrature_weight * integration_factor
-                           * (penalty * source_value_element
-                              - symmetry_prefactor_ * (normal * (diffusion_element * source_grad_element)))
+                           * (penalty * source_value_element - (normal * (diffusion_element * source_grad_element)))
                            * intersection_Pk_basis_values[jj];
             }
           }
