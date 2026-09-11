@@ -177,9 +177,10 @@ public:
     auto local_source = source_function.local_function();
     DynamicVector<size_t> global_DoF_indices(range_space_.mapper().max_local_size());
     // clear range on those DoFs associated with assembly_grid_view_ individually
-    // (might only be a subset, range *= 0 would clear too much)
-    for (const auto& DoF_id : global_DoF_id_to_global_LP_id_map_)
-      if (DoF_id != std::numeric_limits<size_t>::max())
+    // (might only be a subset, range *= 0 would clear too much); the map is indexed by global DoF id and its values
+    // are global Lagrange point ids, so we have to iterate over the indices here, not over the values
+    for (size_t DoF_id = 0; DoF_id < global_DoF_id_to_global_LP_id_map_.size(); ++DoF_id)
+      if (global_DoF_id_to_global_LP_id_map_[DoF_id] != std::numeric_limits<size_t>::max())
         range_vector[DoF_id] = 0;
     // walk the grid to average on all inner Lagrange points
     auto range_basis = range_space_.basis().localize();
