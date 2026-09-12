@@ -112,6 +112,13 @@ public:
       Logger().suspend(prio_);
     }
 
+    // Copying or moving the guard would resume() once per copy while suspend() ran only once,
+    // leaving the global logger un-suspended for the rest of the enclosing scope.
+    SuspendLocal(const SuspendLocal&) = delete;
+    SuspendLocal(SuspendLocal&&) = delete;
+    SuspendLocal& operator=(const SuspendLocal&) = delete;
+    SuspendLocal& operator=(SuspendLocal&&) = delete;
+
     ~SuspendLocal()
     {
       Logger().resume(prio_);
@@ -127,6 +134,12 @@ public:
     {
       Logger().resume(prio_);
     }
+
+    // See SuspendLocal: a copy would suspend() once per copy against a single resume().
+    ResumeLocal(const ResumeLocal&) = delete;
+    ResumeLocal(ResumeLocal&&) = delete;
+    ResumeLocal& operator=(const ResumeLocal&) = delete;
+    ResumeLocal& operator=(ResumeLocal&&) = delete;
 
     ~ResumeLocal()
     {
