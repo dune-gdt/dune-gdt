@@ -170,16 +170,6 @@ int EmptyBuffer::sync()
   return 0;
 }
 
-int CombinedBuffer::pubsync()
-{
-  if (!enabled())
-    return 0;
-  int ret = 0;
-  for (auto&& buffer_ptr : buffer_)
-    ret = buffer_ptr->pubsync();
-  return ret;
-}
-
 std::streamsize CombinedBuffer::xsputn(const char_type* s, std::streamsize count)
 {
   std::streamsize ret = 0;
