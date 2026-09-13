@@ -25,7 +25,7 @@ set -euxo pipefail
 IMAGE="${ML_IMAGE_BASE}:${ML_TAG}"
 TEST_IMAGE="docker.io/python:${PYTHON_VERSION}-slim"
 # check if we a have TTY first, else docker run would throw an error
-if [ -t 1 ] ; then
+if [[ -t 1 ]] ; then
   DT="-t"
 else
   DT=""
@@ -42,7 +42,7 @@ docker pull -q "${TEST_IMAGE}" &
 # make sure we only have one whl per module _after_ the build
 for md in xt gdt; do
   # shellcheck disable=SC2012
-  if [ "$(ls -1q "${WHEEL_DIR_ABSOLUTE}"/final/dune_"${md}"*.whl 2>/dev/null | wc -l)" -gt 1 ]; then
+  if [[ "$(ls -1q "${WHEEL_DIR_ABSOLUTE}"/final/dune_"${md}"*.whl 2>/dev/null | wc -l)" -gt 1 ]]; then
     echo "Error: More than one dune_${md} wheel file found in the final wheelhouse directory." >&2
     exit 1
   fi
