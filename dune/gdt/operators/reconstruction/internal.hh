@@ -118,7 +118,7 @@ public:
   {
   }
 
-  virtual ~EigenvectorWrapperBase() {}
+  virtual ~EigenvectorWrapperBase() = default;
 
   virtual void compute_eigenvectors(const E& entity,
                                     const DomainType& x_local,

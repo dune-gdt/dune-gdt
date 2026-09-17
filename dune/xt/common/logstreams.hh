@@ -122,8 +122,6 @@ public:
     }
   }
 
-  int pubsync();
-
 protected:
   std::streamsize xsputn(const char_type* s, std::streamsize count) override;
   int_type overflow(int_type ch = traits_type::eof()) override;
@@ -274,10 +272,11 @@ public:
   explicit EmptyLogStream(int& logflags);
 }; // class EmptyLogStream
 
-namespace {
-int dev_null_logflag;
-EmptyLogStream dev_null(dev_null_logflag);
-} // namespace
+// These are inline (and not in an anonymous namespace) on purpose: every translation unit that
+// includes this header used to get its own dev_null, so two TUs handing out `std::ostream&` to
+// "the" null stream were handing out different objects, each with its own flush-on-destruction.
+inline int dev_null_logflag;
+inline EmptyLogStream dev_null(dev_null_logflag);
 
 
 } // namespace Dune::XT::Common
