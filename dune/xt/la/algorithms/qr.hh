@@ -358,7 +358,7 @@ struct QrHelper
       auto w = W::create(num_rows, ScalarType(0.));
       // at most min(num_rows, num_cols) reflectors are stored (as for dormqr above); iterating up to num_cols would
       // access w (of length num_rows) out of bounds for matrices with num_cols > num_rows
-      const int num_reflectors = static_cast<int>(std::min(num_rows, num_cols));
+      const auto num_reflectors = static_cast<int>(std::min(num_rows, num_cols));
       if (transpose == XT::Common::Transpose::no)
         for (int jj = num_reflectors - 1; jj >= 0; --jj) {
           set_w_vector(QR, jj, w);

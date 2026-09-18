@@ -86,7 +86,7 @@ GTEST_TEST(QrTallFullRank, decomposes_4x1_matrix)
   // a single-column matrix received no reflection at all before the fix
   const FieldMatrix<double, 4, 1> matrix{{1.}, {2.}, {2.}, {4.}};
   check_qr_decomposition(matrix, 4, 1);
-  // additionally check R(0,0) = +-||A||_2 = +-5
+  // additionally, the single diagonal entry of R has to be the euclidean norm of the column (5) up to its sign
   auto QR = matrix;
   Dune::DynamicVector<double> tau(1, 0.);
   std::vector<int> permutations(1);
@@ -112,7 +112,8 @@ GTEST_TEST(QrTallFullRank, apply_q_from_qr_roundtrip)
   std::vector<int> permutations(3);
   qr(QR, tau, permutations);
   const FieldVector<double, 5> x{1., -2., 3., 0.5, -1.};
-  FieldVector<double, 5> Qx(0.), QtQx(0.);
+  FieldVector<double, 5> Qx(0.);
+  FieldVector<double, 5> QtQx(0.);
   apply_q_from_qr<Common::Transpose::no>(QR, tau, x, Qx);
   apply_q_from_qr<Common::Transpose::yes>(QR, tau, Qx, QtQx);
   for (size_t ii = 0; ii < 5; ++ii)
@@ -134,7 +135,9 @@ GTEST_TEST(QrTallFullRank, decomposes_12x2_matrix_and_applies_q)
   Dune::DynamicVector<double> tau(2, 0.);
   std::vector<int> permutations(2);
   qr(QR, tau, permutations);
-  FieldVector<double, 12> x(0.), Qx(0.), QtQx(0.);
+  FieldVector<double, 12> x(0.);
+  FieldVector<double, 12> Qx(0.);
+  FieldVector<double, 12> QtQx(0.);
   for (size_t ii = 0; ii < 12; ++ii)
     x[ii] = std::sin(double(ii));
   apply_q_from_qr<Common::Transpose::no>(QR, tau, x, Qx);
