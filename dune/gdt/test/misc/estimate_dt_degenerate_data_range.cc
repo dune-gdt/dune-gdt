@@ -45,7 +45,7 @@ struct EstimateDtForDegenerateDataRangeTest : public ::testing::Test
         [](const auto& u, const auto& /*param*/) { return u; },
         "linear",
         {},
-        [](const auto& u, const auto& /*param*/) { return decltype(u)(1.); });
+        []<class U>(const U& /*u*/, const auto& /*param*/) { return U(1.); });
     return estimate_dt_for_hyperbolic_system(grid_view, state, flux);
   }
 }; // struct EstimateDtForDegenerateDataRangeTest
