@@ -21,8 +21,10 @@
 
 #include <dune/grid/onedgrid.hh>
 
-#include "interface.hh"
+#include <dune/xt/common/float_cmp.hh>
 #include <dune/xt/common/type_traits.hh>
+
+#include "interface.hh"
 
 namespace Dune {
 namespace GDT {
@@ -89,7 +91,7 @@ public:
                            const auto& x,
                            const auto& s,
                            const std::function<double(const R&, const R&)>& min_max) {
-      if (s[0] == 0.)
+      if (XT::Common::FloatCmp::eq(s[0], R(0.)))
         return 0.;
       double ret = 0.;
       const OneDGrid state_grid(1, std::min(s[0], 0.), std::max(s[0], 0.));
