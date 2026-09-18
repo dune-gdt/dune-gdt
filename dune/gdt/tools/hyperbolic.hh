@@ -21,7 +21,6 @@
 #include <dune/grid/common/rangegenerators.hh>
 #include <dune/grid/yaspgrid.hh>
 
-#include <dune/xt/common/float_cmp.hh>
 #include <dune/xt/common/fvector.hh>
 #include <dune/xt/grid/gridprovider/cube.hh>
 #include <dune/xt/grid/type_traits.hh>
@@ -89,7 +88,9 @@ double estimate_dt_for_hyperbolic_system(
   // dt is no upper bound, e.g. 27% too large for Burgers' flux on the data range [0, 1])
   for (int ii = 0; ii < flux_range.geometry().corners(); ++ii)
     update_max_flux_derivative(flux_range.geometry().corner(ii));
-  if (XT::Common::FloatCmp::eq(max_flux_derivative, R(0.))) // constant flux, no transport at all
+  // max_flux_derivative is the maximum of nonnegative norms starting at exactly 0, so it is exactly 0 if and only if
+  // the flux is constant (no transport at all, hence no CFL restriction); no tolerance is wanted here
+  if (!(max_flux_derivative > 0.))
     return std::numeric_limits<double>::max();
   D perimeter_over_volume = std::numeric_limits<D>::min();
   for (auto&& element : elements(grid_view)) {
