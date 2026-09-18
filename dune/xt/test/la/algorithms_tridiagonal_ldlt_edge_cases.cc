@@ -4,6 +4,8 @@
 // License: Dual licensed as BSD 2-Clause License (http://opensource.org/licenses/BSD-2-Clause)
 //      or  GPL-2.0+ (http://opensource.org/licenses/gpl-license)
 //          with "runtime exception" (http://www.dune-project.org/license.html)
+// Authors:
+//   René Fritze    (2026)
 
 // This one has to come first (includes the config.h)!
 #include <dune/xt/test/main.hxx>
@@ -71,5 +73,9 @@ GTEST_TEST(TridiagonalLdlt, handles_empty_systems)
   EXPECT_NO_THROW(internal::tridiagonal_ldlt(diag, subdiag));
   VectorType rhs;
   EXPECT_NO_THROW(internal::solve_tridiag_ldlt(diag, subdiag, rhs));
+  EXPECT_EQ(rhs.size(), 0);
+  // same through the public interface, whose size checks used to evaluate diag.size() - 1 for an empty diag
+  EXPECT_NO_THROW(tridiagonal_ldlt(diag, subdiag));
+  EXPECT_NO_THROW(solve_tridiagonal_ldlt_factorized(diag, subdiag, rhs));
   EXPECT_EQ(rhs.size(), 0);
 }

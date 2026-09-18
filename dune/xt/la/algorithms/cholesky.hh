@@ -278,6 +278,8 @@ struct LDLTSolver
   static void tridiagonal_ldlt(FirstVectorType& diag, SecondVectorType& subdiag)
   {
     const size_t size = diag.size();
+    if (size == 0 && subdiag.size() == 0)
+      return; // nothing to factorize (and size - 1 would wrap around below)
     if (subdiag.size() != size - 1)
       DUNE_THROW(InvalidStateException, "Wrong size of diag and subdiag!");
 #if HAVE_MKL || HAVE_LAPACKE
@@ -294,6 +296,8 @@ struct LDLTSolver
   solve_tridiagonal_ldlt_factorized(const FirstVectorType& diag, const SecondVectorType& subdiag, RhsType& rhs)
   {
     const size_t size = diag.size();
+    if (size == 0)
+      return; // nothing to solve (and size - 1 would wrap around below)
     assert(subdiag.size() == size - 1);
     if (false) {
       ;
