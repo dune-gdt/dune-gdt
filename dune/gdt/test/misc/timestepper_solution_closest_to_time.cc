@@ -26,7 +26,7 @@ using DF = DiscreteFunction<V, GV>;
 
 struct DummyTimeStepper : public TimeStepperInterface<DF>
 {
-  DummyTimeStepper(DF& initial_values)
+  explicit DummyTimeStepper(DF& initial_values)
     : TimeStepperInterface<DF>(0., initial_values)
   {
   }
