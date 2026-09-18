@@ -62,3 +62,14 @@ GTEST_TEST(TridiagonalLdlt, solve_works_for_consecutive_systems_of_different_siz
   factorize_and_solve_tridiag_2_1(5); // <- used to access entries outside of the cached 3x3 sparsity pattern
   factorize_and_solve_tridiag_2_1(2); // <- used to iterate 5 rows over vectors of length 2
 }
+
+GTEST_TEST(TridiagonalLdlt, handles_empty_systems)
+{
+  // diag.size() - 1 used to underflow for an empty system, both functions return early now
+  VectorType diag;
+  VectorType subdiag;
+  EXPECT_NO_THROW(internal::tridiagonal_ldlt(diag, subdiag));
+  VectorType rhs;
+  EXPECT_NO_THROW(internal::solve_tridiag_ldlt(diag, subdiag, rhs));
+  EXPECT_EQ(rhs.size(), 0);
+}
