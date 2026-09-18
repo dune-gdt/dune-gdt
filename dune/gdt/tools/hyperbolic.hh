@@ -75,8 +75,8 @@ double estimate_dt_for_hyperbolic_system(
   const auto flux_range_grid = XT::Grid::make_cube_grid<YaspGrid<m, EquidistantOffsetCoordinates<double, m>>>(
       data_minimum, data_maximum, XT::Common::FieldVector<unsigned int, m>(1));
   const auto flux_range = *flux_range_grid.leaf_view().template begin<0>();
-  auto update_max_flux_derivative = [&](const auto& state) {
-    const auto df = flux.jacobian(state);
+  auto update_max_flux_derivative = [&](const auto& state_value) {
+    const auto df = flux.jacobian(state_value);
     for (size_t ss = 0; ss < d; ++ss)
       max_flux_derivative = std::max(max_flux_derivative, df[ss].infinity_norm());
   };

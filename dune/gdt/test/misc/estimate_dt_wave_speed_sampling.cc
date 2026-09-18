@@ -66,7 +66,7 @@ GTEST_TEST(EstimateDtForHyperbolicSystem, returns_max_for_constant_flux)
       [](const auto& /*u*/, const auto& /*param*/) { return 1.; },
       "constant",
       {},
-      [](const auto& u, const auto& /*param*/) { return decltype(u)(0.); });
+      []<class U>(const U& /*u*/, const auto& /*param*/) { return U(0.); });
   const auto dt = estimate_dt_for_hyperbolic_system(grid_view, state, constant_flux);
   EXPECT_EQ(dt, std::numeric_limits<double>::max());
 }
