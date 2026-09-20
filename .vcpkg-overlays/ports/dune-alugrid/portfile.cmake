@@ -1,6 +1,6 @@
 set(VCPKG_BUILD_TYPE release)
 
-vcpkg_from_git(OUT_SOURCE_PATH SOURCE_PATH URL "https://gitlab.dune-project.org/extensions/dune-alugrid.git" REF
+vcpkg_from_git(OUT_SOURCE_PATH SOURCE_PATH URL "https://github.com/dune-mirrors/dune-alugrid.git" REF
                60aa6fa7e9e146911b653f5dab0aafa6e7fe9fe8)
 
 vcpkg_cmake_configure(SOURCE_PATH "${SOURCE_PATH}" OPTIONS -DBUILD_TESTING=OFF -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE)

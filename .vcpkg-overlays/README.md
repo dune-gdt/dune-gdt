@@ -25,11 +25,12 @@ the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
 .vcpkg-overlays/update_ports.bash
 ```
 
-> Note: `update_ports.bash` clones every module, including the GitLab-hosted
-> `dune-alugrid`. Networks that block `gitlab.dune-project.org` (e.g. the
-> Claude Code web sandbox) cannot run the full regeneration; in that case edit
-> `deps/module_list.bash` and the affected `portfile.cmake` and `vcpkg.json`
-> together by hand, keeping them in sync.
+> Note: `update_ports.bash` clones every module listed in
+> `deps/module_list.bash`. All of them are now hosted on GitHub
+> (`dune-mirrors/*`, `dune-community/*`), so the regeneration no longer needs
+> `gitlab.dune-project.org` to be reachable. Where the script cannot be run at
+> all, edit `deps/module_list.bash` and the affected `portfile.cmake` and
+> `vcpkg.json` together by hand, keeping them in sync.
 
 ## Hand-maintained ports (not generated)
 
@@ -154,13 +155,19 @@ branch** (i.e. 2.10.x plus accumulated bugfixes), not the exact `v2.10.0` tags.
 | dune-istl | `dune-mirrors/dune-istl` | `releases/2.10` HEAD |
 | dune-localfunctions | `dune-mirrors/dune-localfunctions` | `releases/2.10` HEAD |
 | dune-grid-glue | `dune-mirrors/dune-grid-glue` | `releases/2.10` HEAD |
-| dune-alugrid | `gitlab .../extensions/dune-alugrid` | 2.10 |
+| dune-alugrid | `dune-mirrors/dune-alugrid` | `releases/2.10` HEAD |
 | dune-uggrid | `dune-mirrors/dune-uggrid` | `releases/2.10` HEAD |
 | dune-testtools | `dune-community/dune-testtools` | community fork |
 
-The core modules are sourced from GitHub mirrors (`dune-mirrors/*`,
+Every module is sourced from GitHub mirrors (`dune-mirrors/*`,
 `dune-community/*`) rather than upstream `gitlab.dune-project.org` so that builds
 work on networks where GitLab is not reachable.
+
+The `dune-mirrors/*` mirrors are refreshed from upstream GitLab by the
+[`dune-mirrors/mirrorer`](https://github.com/dune-mirrors/mirrorer) workflow,
+which mirrors every repository listed in that repo's `repos.json` once a day. A
+module that is pointed at a `dune-mirrors/*` URL here must also be listed there,
+or its mirror goes stale and the pinned commit eventually becomes unreachable.
 
 ### Pin policy caveat
 
