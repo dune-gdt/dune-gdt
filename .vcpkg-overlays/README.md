@@ -1,232 +1,38 @@
-# vcpkg overlay ports for DUNE modules
+# vcpkg overlay triplets
 
-dune-gdt builds its DUNE dependencies from source through local vcpkg overlay
-ports in `ports/`. This document explains how those ports are produced, the pin
-policy in effect, and the work required to move from DUNE 2.10 to a newer
-release.
+`triplets/` holds the vcpkg triplets this project adds on top of the ones vcpkg
+ships. `CMakePresets.json` points `VCPKG_OVERLAY_TRIPLETS` here.
 
-## How the ports are generated
+| Triplet | Purpose |
+|---------|---------|
+| `x64-linux-shared` | `x64-linux` with dynamic library linkage and a release-only dependency build. Selected by the `debug`, `release` and `wheelbuilder-*` presets (and everything inheriting from them): the Python bindings need the dune libraries shared, which in turn requires the vcpkg dependencies to be shared. The file itself documents each deviation (including why `openblas` is pinned static). |
 
-The ports are **generated, not hand-edited**. The canonical source of truth is
-`deps/module_list.bash`, which maps each DUNE module to a git URL and a commit
-hash:
+## The ports are not here any more
 
-```bash
-SUBMODULE_INFO_HASH['dune-istl']='...'
-SUBMODULE_INFO_URL['dune-istl']='https://github.com/dune-mirrors/dune-istl.git'
-```
+dune-gdt's DUNE modules and its patched copies of `gmsh`, `mpfr`, `gmp`,
+`pybind11`, `lapack-reference`, `uv`, `alberta`, `libtirpc` and the GNU
+autotools used to live next to this file as overlay ports. They now live in a
+vcpkg git registry:
 
-`update_ports.bash` reads that file and (re)writes
-`ports/<module>/vcpkg.json` + `ports/<module>/portfile.cmake` for every module.
-The port `version` is taken from each module's `dune.module` `Version:` field at
-the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
+**<https://github.com/dune-gdt/vcpkg-registry>**
 
-```bash
-.vcpkg-overlays/update_ports.bash
-```
+That repo's `README.md` is the reference for how the DUNE ports are generated,
+why each hand-maintained port deviates from upstream vcpkg, the current DUNE
+2.10 pins, and the upgrade path to 2.11.
 
-> Note: `update_ports.bash` clones every module listed in
-> `deps/module_list.bash`. All of them are now hosted on GitHub
-> (`dune-mirrors/*`, `dune-community/*`), so the regeneration no longer needs
-> `gitlab.dune-project.org` to be reachable. Where the script cannot be run at
-> all, edit `deps/module_list.bash` and the affected `portfile.cmake` and
-> `vcpkg.json` together by hand, keeping them in sync.
+`vcpkg-configuration.json` in the repo root wires the registry up: it names the
+registry, the commit in it that this project pins (`baseline`), and every
+package the registry serves instead of upstream vcpkg. To pick up a port change,
+bump that `baseline` to the new commit in the registry.
 
-## Hand-maintained ports (not generated)
+Overlay *triplets* stay here because a vcpkg registry can only serve ports.
 
-A handful of ports in `ports/` are **not** produced by `update_ports.bash` and
-are edited by hand: `pybind11`, `uv`, `libtirpc`, `alberta`, `mpfr`, `gmp`,
-`gmsh`, and the GNU autotools host tools below. `update_ports.bash` only
-touches the DUNE modules listed in `deps/module_list.bash`, so it leaves these
-alone.
+## Changing a port
 
-### GNU autotools host tools
-
-`libtirpc` and `alberta` build with `vcpkg_configure_make`, which needs the GNU
-autotools. To avoid depending on whatever happens to be installed on the build
-machine, the following ports pin current upstream releases (downloaded from
-`ftp.gnu.org` and verified by SHA-512):
-
-| Port | Version | Notes |
-|------|---------|-------|
-| autoconf | 2.73 | `autoconf`, `autoreconf`, `autom4te`, ... under `tools/autoconf/bin` |
-| automake | 1.18.1 | `automake`/`aclocal`; depends on `autoconf` (host) |
-| libtool | 2.5.4 | `libtool`/`libtoolize` plus the `libltdl` loader library + `ltdl.h` |
-| autoconf-archive | 2024.10.16 | data-only: ~580 reusable m4 macros under `share/autoconf-archive/aclocal` |
-
-`vcpkg_configure_make` bakes the persistent `CURRENT_INSTALLED_DIR` into the
-installed scripts as their prefix and installs the executables under
-`tools/<port>/bin`, so the tools remain usable after the temporary build trees
-are gone. The aclocal macros for each port live in `share/<port>/aclocal`; a
-consumer that wires these tools onto `PATH` should also add those directories to
-`ACLOCAL_PATH` (for example `share/libtool/aclocal` and
-`share/autoconf-archive/aclocal`).
-
-Providing these ports is not enough on its own. Declaring them as `host`
-dependencies of a make-based port makes vcpkg *build and install* them into the
-host tree, but it does **not** put them to use: `vcpkg_run_autoreconf` locates
-`autoreconf`/`aclocal`/`libtoolize` with a plain `find_program`, and vcpkg does
-not add a host dependency's `tools/<port>/bin` to the consuming port's build
-`PATH`. The aclocal macros are also installed under per-port
-`share/<port>/aclocal` dirs that `aclocal` does not search by default. A consumer
-therefore has to do two things: declare the tools as `host` dependencies *and*,
-in its portfile, prepend `tools/autoconf|automake|libtool/bin` to `PATH` and set
-`ACLOCAL_PATH` to the `share/*/aclocal` dirs (so the `AX_*` macros from
-autoconf-archive are found).
-
-`libtirpc` and `alberta` happen to build against the autoconf/automake/libtool
-that the CI runners already ship, so they don't wire anything up. `mpfr` is the
-port that actually needs the overlay tools: it autoreconfs and its
-`configure.ac` uses an autoconf-archive (`AX_*`) macro that is **not** present on
-the runners. It is overlaid here as a copy of the upstream port (`dll.patch`,
-`src-only.patch`, `usage` verbatim) with two changes to `portfile.cmake` and
-`vcpkg.json`: the four autotools added as `host` dependencies, and a block before
-`vcpkg_make_configure` that prepends the tool `bin` dirs to `PATH` and points
-`ACLOCAL_PATH` at the installed `share/*/aclocal` dirs. Without this, `mpfr`
-falls back to the build machine's system autotools and fails on runners that lack
-`autoconf-archive`. When bumping the vcpkg baseline, re-sync the patches/usage
-from `.vcpkg-root/ports/mpfr/` if upstream changed them, and re-check that the
-upstream `portfile.cmake` still matches apart from the autotools wiring block.
-
-To bump a version: update `version` in the port's `vcpkg.json`, the URL/SHA-512
-in its `portfile.cmake` (`sha512sum` of the new `.tar.xz`), and rebuild.
-
-### gmp
-
-`mpfr` depends on `gmp`, which otherwise comes from the upstream vcpkg
-registry port (`.vcpkg-root/ports/gmp/`). That port's `URLS` list tries
-`ftpmirror.gnu.org` first, and that redirector has intermittently returned
-502/504 or timed out entirely on ephemeral CI runners, which stalls or fails
-an otherwise cold, from-source configure (see #470). `gmp` is overlaid here
-as a byte-for-byte copy of the upstream port (`vcpkg.json`, all `*.patch`
-files, `usage` verbatim) with a single change to `portfile.cmake`: the
-`URLS` list is reordered to try `ftp.gnu.org` first, then `gmplib.org`, with
-`ftpmirror.gnu.org` moved to last as a final fallback rather than removed
-outright. When bumping the vcpkg baseline, re-sync everything from
-`.vcpkg-root/ports/gmp/` and re-apply just that reordering.
-
-### gmsh
-
-Only requested via the `gmsh` manifest feature (see `vcpkg.json`), and only by
-the docs build's CMake configure (see `non_docker_build.yml`'s `build_docs`
-job): pymor's `discretize_gmsh`, used by the `example__gmsh_grid` tutorial
-notebook, shells out to a bare `gmsh` on `PATH` to turn a plain polygonal 2D
-domain into a mesh.
-
-Upstream's own vcpkg port (`.vcpkg-root/ports/gmsh/`) builds `gmsh` with
-`ENABLE_PARSER=OFF` and `ENABLE_MESH=OFF` -- it exists there only to produce
-`libgmsh` for C++ consumers to link against, and the CLI it also builds under
-those flags cannot read a `.geo` file at all ("Gmsh parser is not compiled in
-this version"), let alone mesh one. It is overlaid here as a copy of the
-upstream port (`*.diff` patches, `usage` verbatim) with `portfile.cmake`
-flipping `ENABLE_PARSER`/`ENABLE_MESH` to `ON`, plus `ENABLE_EIGEN=ON` (and
-`eigen3` added to `vcpkg.json`'s dependencies) -- meshing a plain rectangle
-with both off still failed with "Matrix inversion requires Eigen or LAPACK"
-during the mesher's element-quality step. `eigen3` is header-only and already
-a project-wide dependency (see the top-level `vcpkg.json`, pinned by the
-`overrides` block there), so this reuses the exact copy every other target in
-this project links against rather than building a second one.
-Verified end-to-end locally: `pymor.discretizers.builtin.domaindiscretizers
-.gmsh.discretize_gmsh` against the `x64-linux-shared`-built binary correctly
-meshes `example__gmsh_grid`'s L-shaped domain.
-
-GRAPHICS/POST/PLUGINS/OCC and everything else upstream disables stay off:
-nothing here needs a GUI, post-processing views, or CAD import, only reading a
-`.geo` script and writing a `.msh` mesh. When bumping the vcpkg baseline,
-re-sync the patches/`usage`/`vcpkg.json` base from `.vcpkg-root/ports/gmsh/` if
-upstream changed them, and re-check that the upstream `portfile.cmake` still
-matches apart from the `ENABLE_PARSER`/`ENABLE_MESH`/`ENABLE_EIGEN` flags.
-
-> Note: the bare `libtool` entry in the repo's top-level `.gitignore` (an
-> autotools-generated script name) also matches `ports/libtool/`, so that path is
-> re-included there with a `!` negation. Keep that negation when editing
-> `.gitignore`.
-
-## Current pins (DUNE 2.10)
-
-All core/staging modules currently track the **`releases/2.10` maintenance
-branch** (i.e. 2.10.x plus accumulated bugfixes), not the exact `v2.10.0` tags.
-
-| Port | Source repo | Notes |
-|------|-------------|-------|
-| dune-common | `dune-community/dune-common` | custom fork branch `releases/2.10_superbuild_hack` (carries downstream patches) |
-| dune-geometry | `dune-mirrors/dune-geometry` | `releases/2.10` HEAD |
-| dune-grid | `dune-mirrors/dune-grid` | `releases/2.10` HEAD |
-| dune-istl | `dune-mirrors/dune-istl` | `releases/2.10` HEAD |
-| dune-localfunctions | `dune-mirrors/dune-localfunctions` | `releases/2.10` HEAD |
-| dune-grid-glue | `dune-mirrors/dune-grid-glue` | `releases/2.10` HEAD |
-| dune-alugrid | `dune-mirrors/dune-alugrid` | `releases/2.10` HEAD, **rewritten hash** (see below) |
-| dune-uggrid | `dune-mirrors/dune-uggrid` | `releases/2.10` HEAD |
-| dune-testtools | `dune-community/dune-testtools` | community fork |
-
-Every module is sourced from GitHub mirrors (`dune-mirrors/*`,
-`dune-community/*`) rather than upstream `gitlab.dune-project.org` so that builds
-work on networks where GitLab is not reachable.
-
-The `dune-mirrors/*` mirrors are refreshed from upstream GitLab by the
-[`dune-mirrors/mirrorer`](https://github.com/dune-mirrors/mirrorer) workflow,
-which mirrors every repository listed in that repo's `repos.json` once a day. A
-module that is pointed at a `dune-mirrors/*` URL here must also be listed there,
-or its mirror goes stale and the pinned commit eventually becomes unreachable.
-
-### dune-alugrid's hash does not match upstream
-
-`dune-alugrid` is the one module whose mirror is **not** a byte-identical copy
-of upstream, and its pin is therefore not an upstream GitLab commit hash.
-
-Upstream carries two benchmark outputs (`results/mb_kway_314/mb.2048.out` at
-506 MB and `mb.4096.out` at 435 MB) that were committed in February 2014 and
-deleted a fortnight later. GitHub refuses any pushed blob over 100 MB (`GH001`)
-and declines the *entire* push when it finds one, so — although the files are
-absent from every current tree — their presence in the ancestry of 82 of the
-repo's 83 refs made the whole repository unmirrorable. (This is why
-`dune-mirrors/dune-alugrid` sat frozen at `releases/2.6` for years.)
-
-The mirrorer therefore runs `git-filter-repo` on this one repository to strip
-blobs over 100 MB before pushing, which rewrites every commit from February
-2014 onward. Consequences for this overlay:
-
-- The pin `bf551bd6740ba01d30feea9daaec4d77cdaed47c` is the **rewritten**
-  `releases/2.10` HEAD. Its upstream GitLab counterpart is
-  `60aa6fa7e9e146911b653f5dab0aafa6e7fe9fe8`; the two are not interchangeable
-  and only the rewritten one exists on the mirror.
-- **The built source is unaffected.** Both commits have the identical tree
-  (`d5a0f7549d19cf507b5d6bf273f958708ca362b7`) — only the stripped benchmark
-  outputs, which no tree at or after 2014 references, are gone.
-- The rewrite is reproducible (the mirrorer pins its `git-filter-repo`
-  version), so refreshes fast-forward and this pin stays valid. If that version
-  is ever bumped, re-check that the hashes are unchanged before assuming this
-  pin still resolves.
-- To map an upstream commit to its mirrored equivalent, re-run the same filter
-  locally and consult `.git/filter-repo/commit-map`.
-
-### Pin policy caveat
-
-Pins currently point at *moving branch HEADs* rather than immutable tags, so the
-same `portfile.cmake` can resolve to different sources as the mirrors advance.
-For reproducible builds, prefer pinning to the exact release tag commit
-(`v2.10.x`) and bumping deliberately.
-
-## Upgrade path to DUNE 2.11
-
-DUNE 2.11.0 was released 2026-02-07 (2.10.0 was 2024-10-23). Moving the ports to
-2.11 is gated on more than editing hashes:
-
-1. **The GitHub mirrors are stale.** `dune-mirrors/*` and `dune-community/*` have
-   no `releases/2.11` branch and no `v2.11.0` tag — only `releases/2.10` and
-   `master`. There is nothing 2.11-shaped to pin to on GitHub yet. Either push
-   `releases/2.11` to the mirrors, or allowlist `gitlab.dune-project.org` and
-   point the URLs upstream.
-2. **dune-common carries downstream patches.** It is pinned to the custom fork
-   branch `releases/2.10_superbuild_hack`. A `releases/2.11_superbuild_hack`
-   equivalent must be rebased on the fork first — this is the gating work item.
-3. **API churn.** The biggest porting risk in 2.10→2.11 is the
-   typetree → dune-common migration (`dune-functions`'s dependency on
-   `dune-typetree` is being downgraded/removed, completing in 2.12) and the
-   expanded C++20 concepts in dune-common/dune-grid. dune-gdt's grid-view and
-   local-function code is the likely friction point.
-
-Once mirrored and patched, the mechanical steps are: update the hashes/URLs in
-`deps/module_list.bash`, rerun `update_ports.bash`, build-test, bump the CI build
-cache key in `.github/workflows/non_docker_build.yml`, and (optionally) raise the
-`Depends`/`Suggests` floor in `dune.module` from `>= 2.8`.
+1. Open a PR against `dune-gdt/vcpkg-registry` (edit `ports/`, then run
+   `scripts/update-versions.py` there and commit `ports/` and `versions/`
+   together).
+2. Once it is merged, bump `baseline` in this repo's `vcpkg-configuration.json`
+   to the merge commit.
+3. Bump the CI build cache key in `.github/workflows/non_docker_build.yml` if
+   the change invalidates prebuilt dependencies.

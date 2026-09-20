@@ -1,0 +1,36 @@
+{
+  "default-registry": {
+    "kind": "builtin",
+    "baseline": "d015e31e90838a4c9dfa3eed45979bc70d9357fc"
+  },
+  "registries": [
+    {
+      "kind": "git",
+      "repository": "https://github.com/dune-gdt/vcpkg-registry",
+      "baseline": "684c4efed4cede66bb0e0fd1fdb567c889665664",
+      "packages": [
+        "alberta",
+        "autoconf",
+        "autoconf-archive",
+        "automake",
+        "dune-alugrid",
+        "dune-common",
+        "dune-geometry",
+        "dune-grid",
+        "dune-grid-glue",
+        "dune-istl",
+        "dune-localfunctions",
+        "dune-testtools",
+        "dune-uggrid",
+        "gmp",
+        "gmsh",
+        "lapack-reference",
+        "libtirpc",
+        "libtool",
+        "mpfr",
+        "pybind11",
+        "uv"
+      ]
+    }
+  ]
+}
