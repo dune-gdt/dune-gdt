@@ -25,11 +25,12 @@ the pinned commit. To refresh a pin, edit `deps/module_list.bash` and rerun:
 .vcpkg-overlays/update_ports.bash
 ```
 
-> Note: `update_ports.bash` clones every module, including the GitLab-hosted
-> `dune-alugrid`. Networks that block `gitlab.dune-project.org` (e.g. the
-> Claude Code web sandbox) cannot run the full regeneration; in that case edit
-> `deps/module_list.bash` and the affected `portfile.cmake` and `vcpkg.json`
-> together by hand, keeping them in sync.
+> Note: `update_ports.bash` clones every module listed in
+> `deps/module_list.bash`. All of them are now hosted on GitHub
+> (`dune-mirrors/*`, `dune-community/*`), so the regeneration no longer needs
+> `gitlab.dune-project.org` to be reachable. Where the script cannot be run at
+> all, edit `deps/module_list.bash` and the affected `portfile.cmake` and
+> `vcpkg.json` together by hand, keeping them in sync.
 
 ## Hand-maintained ports (not generated)
 
@@ -154,13 +155,50 @@ branch** (i.e. 2.10.x plus accumulated bugfixes), not the exact `v2.10.0` tags.
 | dune-istl | `dune-mirrors/dune-istl` | `releases/2.10` HEAD |
 | dune-localfunctions | `dune-mirrors/dune-localfunctions` | `releases/2.10` HEAD |
 | dune-grid-glue | `dune-mirrors/dune-grid-glue` | `releases/2.10` HEAD |
-| dune-alugrid | `gitlab .../extensions/dune-alugrid` | 2.10 |
+| dune-alugrid | `dune-mirrors/dune-alugrid` | `releases/2.10` HEAD, **rewritten hash** (see below) |
 | dune-uggrid | `dune-mirrors/dune-uggrid` | `releases/2.10` HEAD |
 | dune-testtools | `dune-community/dune-testtools` | community fork |
 
-The core modules are sourced from GitHub mirrors (`dune-mirrors/*`,
+Every module is sourced from GitHub mirrors (`dune-mirrors/*`,
 `dune-community/*`) rather than upstream `gitlab.dune-project.org` so that builds
 work on networks where GitLab is not reachable.
+
+The `dune-mirrors/*` mirrors are refreshed from upstream GitLab by the
+[`dune-mirrors/mirrorer`](https://github.com/dune-mirrors/mirrorer) workflow,
+which mirrors every repository listed in that repo's `repos.json` once a day. A
+module that is pointed at a `dune-mirrors/*` URL here must also be listed there,
+or its mirror goes stale and the pinned commit eventually becomes unreachable.
+
+### dune-alugrid's hash does not match upstream
+
+`dune-alugrid` is the one module whose mirror is **not** a byte-identical copy
+of upstream, and its pin is therefore not an upstream GitLab commit hash.
+
+Upstream carries two benchmark outputs (`results/mb_kway_314/mb.2048.out` at
+506 MB and `mb.4096.out` at 435 MB) that were committed in February 2014 and
+deleted a fortnight later. GitHub refuses any pushed blob over 100 MB (`GH001`)
+and declines the *entire* push when it finds one, so — although the files are
+absent from every current tree — their presence in the ancestry of 82 of the
+repo's 83 refs made the whole repository unmirrorable. (This is why
+`dune-mirrors/dune-alugrid` sat frozen at `releases/2.6` for years.)
+
+The mirrorer therefore runs `git-filter-repo` on this one repository to strip
+blobs over 100 MB before pushing, which rewrites every commit from February
+2014 onward. Consequences for this overlay:
+
+- The pin `bf551bd6740ba01d30feea9daaec4d77cdaed47c` is the **rewritten**
+  `releases/2.10` HEAD. Its upstream GitLab counterpart is
+  `60aa6fa7e9e146911b653f5dab0aafa6e7fe9fe8`; the two are not interchangeable
+  and only the rewritten one exists on the mirror.
+- **The built source is unaffected.** Both commits have the identical tree
+  (`d5a0f7549d19cf507b5d6bf273f958708ca362b7`) — only the stripped benchmark
+  outputs, which no tree at or after 2014 references, are gone.
+- The rewrite is reproducible (the mirrorer pins its `git-filter-repo`
+  version), so refreshes fast-forward and this pin stays valid. If that version
+  is ever bumped, re-check that the hashes are unchanged before assuming this
+  pin still resolves.
+- To map an upstream commit to its mirrored equivalent, re-run the same filter
+  locally and consult `.git/filter-repo/commit-map`.
 
 ### Pin policy caveat
 

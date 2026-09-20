@@ -2,7 +2,7 @@
   "name": "dune-alugrid",
   "version": "2.10",
   "description": "Local overlay port for dune-alugrid",
-  "homepage": "https://gitlab.dune-project.org/extensions/dune-alugrid.git",
+  "homepage": "https://github.com/dune-mirrors/dune-alugrid.git",
   "dependencies": [
     {
       "name": "vcpkg-cmake",
