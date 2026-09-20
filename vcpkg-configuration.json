@@ -7,7 +7,7 @@
     {
       "kind": "git",
       "repository": "https://github.com/dune-gdt/vcpkg-registry",
-      "baseline": "d082b9045574a8f0065deb5a081928fa929ccd22",
+      "baseline": "1d038f0d75b30a9ef00772ff390b0a7e03594863",
       "packages": [
         "alberta",
         "autoconf",
