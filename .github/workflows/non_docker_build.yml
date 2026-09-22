@@ -772,7 +772,7 @@ jobs:
         # pymor's gmsh discretizer used in example__gmsh_grid -- comes from the
         # vcpkg `gmsh` manifest feature the configure step below requests
         # instead of apt, to keep dependency provenance in one place; see
-        # .vcpkg-overlays/README.md for why that needed a portfile.cmake change
+        # the vcpkg-registry README for why that needed a portfile.cmake change
         # (upstream vcpkg's own gmsh port builds an unusable placeholder CLI).
         sudo apt-get install -y xvfb ninja-build
 
@@ -918,7 +918,7 @@ jobs:
         # without one and would otherwise scan build/*/ for the newest build tree
         CLANGQUILL_COMPILE_COMMANDS: ${{ github.workspace }}/build/clang22-debug
         # the vcpkg `gmsh` feature requested in the configure step above installs
-        # the CLI here (vcpkg_copy_tools in .vcpkg-overlays/ports/gmsh/portfile.cmake);
+        # the CLI here (vcpkg_copy_tools in the registry's gmsh portfile.cmake);
         # pymor's discretize_gmsh (example__gmsh_grid) shells out to a bare `gmsh`
         # on PATH, not a configurable path
         GMSH_TOOLS_DIR: ${{ github.workspace }}/build/clang22-debug/vcpkg_installed/x64-linux-shared/tools/gmsh

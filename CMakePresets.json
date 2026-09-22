@@ -15,10 +15,6 @@
         "CMAKE_CXX_EXTENSIONS": "OFF",
         "DUNE_PYTHON_ALLOW_GET_PIP": "ON",
         "CMAKE_DISABLE_FIND_PACKAGE_MPI": "TRUE",
-        "VCPKG_OVERLAY_PORTS": {
-          "type": "PATH",
-          "value": "${sourceDir}/.vcpkg-overlays/ports"
-        },
         "VCPKG_OVERLAY_TRIPLETS": {
           "type": "PATH",
           "value": "${sourceDir}/.vcpkg-overlays/triplets"

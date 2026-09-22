@@ -36,9 +36,6 @@ dependencies.m4
 *Doxyfile.in
 install-sh
 libtool
-# but keep the libtool vcpkg overlay port (the bare "libtool" rule above is for the
-# autotools-generated script, not this hand-maintained port directory)
-!/.vcpkg-overlays/ports/libtool/
 ltmain.sh
 missing
 stamp-h1
@@ -77,5 +74,8 @@ wheelhouse
 /docs/source/*.vtu
 venvs
 /.vcpkg-root/
+# `vcpkg install` run by hand from the manifest root (the presets install into
+# build/<preset>/vcpkg_installed, which build/ already covers)
+/vcpkg_installed/
 tmp
 /.ci/docker.env

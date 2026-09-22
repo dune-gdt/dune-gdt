@@ -26,7 +26,7 @@ repository.
 | `docs/source/` | Sphinx + myst-nb sources; the tutorials/examples are executed notebooks |
 | `examples/`, `benchmarks/` | standalone demos and nanobench benchmarks |
 | `.ci/` | wheel, coverage and disk-space helper scripts used by the workflows |
-| `.vcpkg-overlays/` | vcpkg overlay ports and triplets |
+| `.vcpkg-overlays/` | vcpkg overlay triplets (the ports live in [dune-gdt/vcpkg-registry](https://github.com/dune-gdt/vcpkg-registry)) |
 
 Headers mirror the core modules: an extension of `dune/common/fvector.hh` lives at
 `dune/xt/common/fvector.hh` and includes it. Test sources mirror header paths — tests for
