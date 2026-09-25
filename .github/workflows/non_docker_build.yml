@@ -224,7 +224,7 @@ jobs:
     - name: Set up uv
       # Both legs run the Python test suite, which the ctest xt_test_python /
       # gdt_test_python tests execute via `uv run` (no manually-managed venv).
-      uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
       with:
         # gate the uv cache to trusted runs (pushes/merge queue and same-repo
         # PRs); disable it for external-fork PRs so a fork cannot poison the cache
@@ -388,7 +388,7 @@ jobs:
       # line with untaken branches as a partial). The line-only variant is kept as
       # an artifact; switching the upload to it is a one-filename change.
       if: ${{ matrix.coverage_llvm }}
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         # OIDC (id-token) auth instead of an upload token; see job permissions.
         use_oidc: true
@@ -405,7 +405,7 @@ jobs:
 
     - name: Upload Python coverage to Codecov
       if: ${{ matrix.coverage_llvm }}
-      uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         use_oidc: true
         files: ${{ github.workspace }}/build/${{ matrix.preset }}/coverage-python.xml
@@ -709,7 +709,7 @@ jobs:
     # uv provides and manages the Python interpreter itself, so there is no
     # separate actions/setup-python step; all execution below goes through uv.
     - name: Set up uv
-      uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
       with:
         # gate the uv cache to trusted runs (pushes/merge queue and same-repo
         # PRs); disable it for external-fork PRs so a fork cannot poison the cache
@@ -1013,7 +1013,7 @@ jobs:
 
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0
+      uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
   test_publish:
     name: Publish to Test PyPI
