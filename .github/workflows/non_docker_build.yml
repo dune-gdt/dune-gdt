@@ -278,11 +278,9 @@ jobs:
       #
       # This deliberately installs only the cmake/modules subtree (its
       # generated per-directory script, which needs no built targets and so can
-      # run right after configure) rather than the whole build tree with a
-      # plain `cmake --install`: the latter also runs
-      # DunePybindxiInstallPythonPackage.cmake's install(CODE) rule, which
-      # shells out to `pip wheel` and therefore needs the compiled bindings
-      # that only exist much later in this workflow.
+      # run right after configure) rather than the whole build tree: a plain
+      # `cmake --install` also installs the built libraries, so it can only run
+      # after the Build step (see "Test full install" below).
       #
       # The grep is the regression test for issue #401: install(CODE) text is
       # not run at configure time but by the generated cmake_install.cmake,
@@ -310,6 +308,21 @@ jobs:
       # Cap the library build at the memory-bounded -j too: ninja would otherwise
       # default to nproc+2, and the heavy template TUs can exhaust the 16 GB runner.
       run: cmake --build --preset=${{ matrix.preset }} --parallel -- -j ${{ needs.config.outputs.linux_build_jobs }}
+
+    - name: Test full install
+      # Regression test for issue #493: a plain `cmake --install` of the whole
+      # build tree -- exactly what a packager's `vcpkg_cmake_install()` runs --
+      # must succeed after a default build. The python wheel rule from
+      # DunePybindxiInstallPythonPackage.cmake is in the EXCLUDE_FROM_ALL
+      # `python` component, so it must not run here; it used to, and aborted on
+      # an empty program name.
+      run: |
+        prefix="$(mktemp -d)"
+        cmake --install "build/${{ matrix.preset }}" --prefix "${prefix}"
+        if find "${prefix}" -name '*.whl' | grep -q .; then
+          echo "::error::a plain cmake --install built a python wheel; that rule belongs to the opt-in python component"
+          exit 1
+        fi
 
     - name: Build test binaries
       run: |

@@ -130,24 +130,49 @@ function(dune_pybindxi_install_python_package)
 
   add_dependencies(install_python ${targetname})
 
-  # Define rules for `make install` that install a wheel into a central wheelhouse
+  # Define an install rule that builds a wheel into a central wheelhouse
   #
   # NB: This is necessary, to allow mixing installed and non-installed modules with python packages. The wheelhouse will
   # allow to install any missing python packages into a virtual environment.
   #
+  # The rule lives in the `python` install component and is EXCLUDE_FROM_ALL, so a plain `cmake --install` (e.g. a
+  # C++-only install, or a packager's `vcpkg_cmake_install()`) skips it; request it explicitly with `cmake --install
+  # <build-dir> --component python` after building the `bindings` target. It is opt-in because the compiled modules are
+  # EXCLUDE_FROM_ALL themselves, so after a default build the wheel would lack them, and because `pip wheel` fetches the
+  # hatchling build backend.
+  #
+  # The wheel is built by ${Python_EXECUTABLE}, the interpreter the bindings were compiled against, since hatch_build.py
+  # stamps the building interpreter's tag (e.g. cp313-cp313-linux_x86_64) into the wheel. This replaces the former
+  # "${RUN_IN_ENV_SCRIPT}" "python3" wrapper, which has been unset ever since the dune-testtools virtualenv was dropped
+  # and expanded to an empty program name (issue #493).
+  if(NOT Python_EXECUTABLE)
+    message(STATUS "No Python interpreter found, not adding a wheel install rule for ${pyinst_fullpath}")
+    return()
+  endif()
 
-  # Construct the wheel installation commandline
-  set(wheel_command "${RUN_IN_ENV_SCRIPT}" "python3" -m pip wheel -w ${DUNE_PYTHON_WHEELHOUSE} ${pyinst_fullpath})
+  # The wheelhouse is resolved when the install script runs rather than from DUNE_PYTHON_WHEELHOUSE (which dune-common
+  # derives from the configure-time CMAKE_INSTALL_PREFIX), so `cmake --install --prefix ...` and DESTDIR are honoured.
+  # The bracket arguments keep the references literal, for the install script to expand.
+  include(GNUInstallDirs)
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_DATADIR}")
+    set(wheelhouse_code [=[$ENV{DESTDIR}]=])
+  else()
+    set(wheelhouse_code [=[$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/]=])
+  endif()
+  string(APPEND wheelhouse_code "${CMAKE_INSTALL_DATADIR}/dune/wheelhouse")
 
-  # Render the wheel commandline as an explicitly quoted argument list for the install script below. The list cannot
-  # simply be expanded into the install(CODE) text: that text is re-parsed by a separate CMake parser, where an unquoted
-  # ${wheel_command} would split on any space in DUNE_PYTHON_WHEELHOUSE, RUN_IN_ENV_SCRIPT or the package path.
+  # Construct the wheel installation commandline, rendered as an explicitly quoted argument list for the install script
+  # below. The list cannot simply be expanded into the install(CODE) text: that text is re-parsed by a separate CMake
+  # parser, where an unquoted ${wheel_command} would split on any space in the interpreter or the package path. The
+  # wheelhouse is appended unescaped, as it is meant to be expanded by that parser.
+  set(wheel_command "${Python_EXECUTABLE}" -m pip wheel ${pyinst_fullpath})
   set(wheel_command_code "")
   foreach(arg IN LISTS wheel_command)
     string(REPLACE "\\" "\\\\" arg "${arg}")
     string(REPLACE "\"" "\\\"" arg "${arg}")
     string(APPEND wheel_command_code " \"${arg}\"")
   endforeach()
+  string(APPEND wheel_command_code " \"-w\" \"${wheelhouse_code}\"")
 
   # Add the installation rule
   #
@@ -161,5 +186,7 @@ function(dune_pybindxi_install_python_package)
                 execute_process(COMMAND${wheel_command_code} RESULT_VARIABLE dune_pybindxi_wheel_result)
                 if(NOT dune_pybindxi_wheel_result EQUAL \"0\")
                   message(FATAL_ERROR \"Error installing wheel for python package at ${pyinst_fullpath}\")
-                endif()")
+                endif()"
+    COMPONENT python
+    EXCLUDE_FROM_ALL)
 endfunction()
