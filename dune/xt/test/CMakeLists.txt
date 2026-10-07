@@ -22,8 +22,6 @@ dependencycheck(${xtcommon})
 dune_library_add_sources(gtest_dune_xt SOURCES common.cxx)
 target_link_libraries(gtest_dune_xt PUBLIC GTest::gtest)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/main.hxx DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/xt/test/)
-
 add_subdir_tests(common)
 add_subdir_tests(grid)
 add_subdir_tests(la)
