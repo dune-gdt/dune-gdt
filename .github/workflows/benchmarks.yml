@@ -53,7 +53,7 @@ jobs:
       # dxt_codegen_command in cmake/modules/DuneXTTesting.cmake), and CMakeLists.txt
       # resolves the Python interpreter with `uv python find`. Without uv on PATH the
       # configure dies ~30 minutes in, after vcpkg has built every dependency.
-      uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
       with:
         # this workflow only runs on pushes to main and workflow_dispatch, so the
         # cache is never written from an untrusted fork
@@ -75,7 +75,7 @@ jobs:
 
     - name: Upload benchmark reports artifact
       if: always()
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: benchmark-reports
         path: build/release/benchmarks/reports/*.json
