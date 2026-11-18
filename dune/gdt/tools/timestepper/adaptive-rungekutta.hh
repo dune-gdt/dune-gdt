@@ -243,6 +243,13 @@ public:
     for (size_t ii = 0; ii < num_stages_; ++ii) {
       stages_k_.emplace_back(current_solution().copy_as_discrete_function());
     }
+    // The first-same-as-last (FSAL) optimization in step() reuses the last stage of the previous (accepted) step as
+    // the first stage of the new step. This is only valid if the last stage is evaluated at (u_{n+1}, t_{n+1}), i.e.
+    // if the last row of A equals b_1, c_0 = 0 and c_{s-1} = 1 (true for Bogacki-Shampine and Dormand-Prince, but
+    // not for arbitrary user-provided embedded methods).
+    fsal_ = Dune::XT::Common::FloatCmp::eq(c_[0], 0.) && Dune::XT::Common::FloatCmp::eq(c_[num_stages_ - 1], 1.);
+    for (size_t jj = 0; jj < num_stages_; ++jj)
+      fsal_ = fsal_ && Dune::XT::Common::FloatCmp::eq(A_[num_stages_ - 1][jj], b_1_[jj]);
   } // constructor AdaptiveRungeKuttaTimeStepper
 
   using BaseType::current_solution;
@@ -299,7 +306,7 @@ public:
       bool skip_error_computation = false;
       actual_dt *= time_step_scale_factor;
       size_t first_stage_to_compute = 0;
-      if (last_stage_of_previous_step_) {
+      if (fsal_ && last_stage_of_previous_step_) {
         stages_k_[0]->dofs().vector() = last_stage_of_previous_step_->dofs().vector();
         first_stage_to_compute = 1;
       }
@@ -310,7 +317,9 @@ public:
         for (size_t jj = 0; jj < ii; ++jj)
           u_tmp_->dofs().vector() += stages_k_[jj]->dofs().vector() * (actual_dt * r_ * (A_[ii][jj]));
         try {
-          op_.apply(u_tmp_->dofs().vector(), stages_k_[ii]->dofs().vector(), t + actual_dt * c_[ii]);
+          op_.apply(u_tmp_->dofs().vector(),
+                    stages_k_[ii]->dofs().vector(),
+                    XT::Common::Parameter({{"t", {t + actual_dt * c_[ii]}}, {"dt", {actual_dt}}}));
         } catch (const Dune::MathError&) {
           mixed_error = 1e10;
           skip_error_computation = true;
@@ -354,9 +363,11 @@ public:
         }
       }
     } // while (mixed_error > tol_)
-    if (!last_stage_of_previous_step_)
-      last_stage_of_previous_step_ = u_n.copy_as_discrete_function();
-    last_stage_of_previous_step_->dofs().vector() = stages_k_[num_stages_ - 1]->dofs().vector();
+    if (fsal_) {
+      if (!last_stage_of_previous_step_)
+        last_stage_of_previous_step_ = u_n.copy_as_discrete_function();
+      last_stage_of_previous_step_->dofs().vector() = stages_k_[num_stages_ - 1]->dofs().vector();
+    }
 
     t += actual_dt;
 
@@ -377,6 +388,7 @@ private:
   const VectorType b_diff_;
   std::vector<std::unique_ptr<DiscreteFunctionType>> stages_k_;
   const size_t num_stages_;
+  bool fsal_;
   std::unique_ptr<DiscreteFunctionType> last_stage_of_previous_step_;
 }; // class AdaptiveRungeKuttaTimeStepper
 
