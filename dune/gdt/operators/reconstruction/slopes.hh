@@ -306,12 +306,18 @@ public:
   {
     VectorType ret(0.);
     for (size_t ii = 0; ii < first_slope.size(); ++ii)
-      // superbee limiter: maxmod(minmod(a, 2b), minmod(2a, b)). The per-component call used to read
-      // superbee(first_slope[ii], second_slope[ii]) -- with no scalar overload the arguments converted
-      // back to VectorType and it recursed into itself until the stack overflowed (segfault).
-      ret[ii] = XT::Common::maxmod(XT::Common::minmod(first_slope[ii], 2. * second_slope[ii]),
-                                   XT::Common::minmod(2. * first_slope[ii], second_slope[ii]));
+      ret[ii] = superbee_scalar(first_slope[ii], second_slope[ii]);
     return ret;
+  }
+
+  // superbee(a, b) = maxmod(minmod(2a, b), minmod(a, 2b)), see e.g. LeVeque, "Finite Volume Methods for Hyperbolic
+  // Problems", 2002, Section 6.10. This has to be a separate scalar function: the per-component call used to read
+  // superbee(first_slope[ii], second_slope[ii]) -- with no scalar overload the arguments converted back to VectorType
+  // and it recursed into itself until the stack overflowed (segfault).
+  template <class FieldType>
+  static FieldType superbee_scalar(const FieldType a, const FieldType b)
+  {
+    return XT::Common::maxmod(XT::Common::minmod(2. * a, b), XT::Common::minmod(a, 2. * b));
   }
 }; // class SuperbeeSlope
 
